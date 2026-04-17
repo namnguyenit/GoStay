@@ -8,7 +8,7 @@ public class IdentityApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(IdentityApplication.class, args);
-		System.out.print("hello");
+		System.out.print("hello nhan");
 	}
 
 }
