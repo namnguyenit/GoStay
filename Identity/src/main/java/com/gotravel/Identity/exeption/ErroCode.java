@@ -3,6 +3,10 @@ import org.springframework.http.HttpStatusCode;
 
 public interface ErroCode {
 
+    public boolean getSuccess();
+
+    public  void setSuccess(boolean success);
+
     public int getCode();
 
     public void setCode(int code) ;

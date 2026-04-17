@@ -12,7 +12,9 @@ import lombok.experimental.FieldDefaults;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiRequest <T>{
     @Builder.Default
-    int code = 200;
+    boolean success= true;
     String messeger;
-    T result;
+    @Builder.Default
+    int code = 200;
+    T data;
 }
