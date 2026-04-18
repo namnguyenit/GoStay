@@ -25,4 +25,15 @@ public class GlobalExeptionHandler {
                 .body(apiRequest);
 
     }
+
+    @ExceptionHandler(value = RuntimeException.class)
+    ResponseEntity<ApiRequest> handleRuntimeException(RuntimeException runtimeException){
+        ApiRequest apiRequest = new ApiRequest();
+
+        apiRequest.setSuccess(false);
+        apiRequest.setCode(400); 
+        apiRequest.setMesseger(runtimeException.getMessage());
+
+        return ResponseEntity.badRequest().body(apiRequest);
+    }
 }
