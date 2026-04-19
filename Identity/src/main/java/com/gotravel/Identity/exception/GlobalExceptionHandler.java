@@ -56,7 +56,7 @@ public class GlobalExceptionHandler {
     ResponseEntity<ApiRequest> handleDataIntegrityViolationException(DataIntegrityViolationException exception) {
         ApiRequest apiRequest = new ApiRequest();
         apiRequest.setSuccess(false);
-        apiRequest.setCode(409); // 409 Conflict
+        apiRequest.setCode(409);
         apiRequest.setMessage("Data integrity violation: This record already exists or violates a unique constraint.");
 
         return ResponseEntity.status(409).body(apiRequest);

@@ -10,6 +10,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -42,16 +43,18 @@ public class UserController {
                 .build();
     }
 
-    @GetMapping("/{username}")
-    public ApiRequest<UserResponse> getUser(@PathVariable String username) {
+    @GetMapping("/me")
+    public ApiRequest<UserResponse> getMyInfo() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return ApiRequest.<UserResponse>builder()
                 .success(true)
                 .data(userService.getUserByUsername(username))
                 .build();
     }
 
-    @PutMapping("/{username}")
-    public ApiRequest<UserResponse> updateUser(@PathVariable String username, @RequestBody UserRequest userRequest) {
+    @PutMapping("/me")
+    public ApiRequest<UserResponse> updateMyInfo(@RequestBody UserRequest userRequest) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return ApiRequest.<UserResponse>builder()
                 .success(true)
                 .data(userService.updateUser(username, userRequest))
@@ -59,8 +62,9 @@ public class UserController {
                 .build();
     }
 
-    @DeleteMapping("/{username}")
-    public ApiRequest<Void> deleteUser(@PathVariable String username) {
+    @DeleteMapping("/me")
+    public ApiRequest<Void> deleteMyAccount() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
         userService.deleteUser(username);
         return ApiRequest.<Void>builder()
                 .success(true)
@@ -69,8 +73,9 @@ public class UserController {
     }
 
 
-    @PostMapping("/{username}/upgrade-role")
-    public ApiRequest<String> upgradeRole(@PathVariable String username, @RequestParam String role) {
+    @PostMapping("/me/upgrade-role")
+    public ApiRequest<String> upgradeMyRole(@RequestParam String role) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
         userService.upgradeToRole(username, role);
         return ApiRequest.<String>builder()
                 .success(true)
@@ -79,9 +84,9 @@ public class UserController {
                 .build();
     }
 
-    @PostMapping("/{username}/upgradetohost")
-    public ApiRequest<UserResponse> upgradeToHost(@PathVariable String username, @RequestBody HostProfileRequest hostProfileRequest) {
-
+    @PostMapping("/me/upgradetohost")
+    public ApiRequest<UserResponse> upgradeToHost(@RequestBody HostProfileRequest hostProfileRequest) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return ApiRequest.<UserResponse>builder()
                 .success(true)
                 .message("Upgraded to HOST successfully")
@@ -89,9 +94,9 @@ public class UserController {
                 .build();
     }
 
-    @PostMapping("/{username}/upgradetoenterprise")
-    public ApiRequest<UserResponse> upgradeToEnterprise(@PathVariable String username, @RequestBody EnterpriseProfileRequest enterpriseProfileRequest) {
-
+    @PostMapping("/me/upgradetoenterprise")
+    public ApiRequest<UserResponse> upgradeToEnterprise(@RequestBody EnterpriseProfileRequest enterpriseProfileRequest) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return ApiRequest.<UserResponse>builder()
                 .success(true)
                 .message("Upgraded to ENTERPRISE successfully")
@@ -100,48 +105,54 @@ public class UserController {
     }
 
 
-    @GetMapping("/{username}/profile")
-    public ApiRequest<UserProfileResponse> getUserProfile(@PathVariable String username) {
+    @GetMapping("/me/profile")
+    public ApiRequest<UserProfileResponse> getMyProfile() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return ApiRequest.<UserProfileResponse>builder()
                 .success(true)
                 .data(userService.getUserProfile(username))
                 .build();
     }
 
-    @PutMapping("/{username}/profile")
-    public ApiRequest<UserProfileResponse> updateUserProfile(@PathVariable String username, @RequestBody UserProfileRequest dto) {
+    @PutMapping("/me/profile")
+    public ApiRequest<UserProfileResponse> updateMyProfile(@RequestBody UserProfileRequest dto) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return ApiRequest.<UserProfileResponse>builder()
                 .success(true)
                 .data(userService.updateUserProfile(username, dto))
                 .build();
     }
 
-    @GetMapping("/{username}/host-profile")
-    public ApiRequest<HostProfileResponse> getHostProfile(@PathVariable String username) {
+    @GetMapping("/me/host-profile")
+    public ApiRequest<HostProfileResponse> getMyHostProfile() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return ApiRequest.<HostProfileResponse>builder()
                 .success(true)
                 .data(userService.getHostProfile(username))
                 .build();
     }
 
-    @PutMapping("/{username}/host-profile")
-    public ApiRequest<HostProfileResponse> updateHostProfile(@PathVariable String username, @RequestBody HostProfileRequest dto) {
+    @PutMapping("/me/host-profile")
+    public ApiRequest<HostProfileResponse> updateMyHostProfile(@RequestBody HostProfileRequest dto) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return ApiRequest.<HostProfileResponse>builder()
                 .success(true)
                 .data(userService.updateHostProfile(username, dto))
                 .build();
     }
 
-    @GetMapping("/{username}/enterprise-profile")
-    public ApiRequest<EnterpriseProfileResponse> getEnterpriseProfile(@PathVariable String username) {
+    @GetMapping("/me/enterprise-profile")
+    public ApiRequest<EnterpriseProfileResponse> getMyEnterpriseProfile() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return ApiRequest.<EnterpriseProfileResponse>builder()
                 .success(true)
                 .data(userService.getEnterpriseProfile(username))
                 .build();
     }
 
-    @PutMapping("/{username}/enterprise-profile")
-    public ApiRequest<EnterpriseProfileResponse> updateEnterpriseProfile(@PathVariable String username, @RequestBody EnterpriseProfileRequest dto) {
+    @PutMapping("/me/enterprise-profile")
+    public ApiRequest<EnterpriseProfileResponse> updateMyEnterpriseProfile(@RequestBody EnterpriseProfileRequest dto) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return ApiRequest.<EnterpriseProfileResponse>builder()
                 .success(true)
                 .data(userService.updateEnterpriseProfile(username, dto))

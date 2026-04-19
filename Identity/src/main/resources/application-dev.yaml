@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/gotravel_db
+    username: gotravel_db
+    password:
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+jwt:
+  signerKey: "eT1eBf9B1Oq8gD6Gf9N4xZg3Ua6Cv1QxGk5Lm7Op9Rt2Vw4Yr7As0Df3Hj6Kl8Zn"
