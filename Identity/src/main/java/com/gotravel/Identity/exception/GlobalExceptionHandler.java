@@ -16,7 +16,7 @@ public class GlobalExceptionHandler {
         ErrorCode errorCode = appException.getErrorCode();
 
         ApiRequest apiRequest = new ApiRequest();
-        apiRequest.setSuccess(errorCode.getSuccess());
+        apiRequest.setSuccess(errorCode.isSuccess());
         apiRequest.setCode(errorCode.getCode());
         apiRequest.setMessage(errorCode.getMessage());
 

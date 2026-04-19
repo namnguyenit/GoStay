@@ -17,6 +17,7 @@ import com.gotravel.Identity.entity.EnterpriseProfile;
 import com.gotravel.Identity.enums.Provider;
 import com.gotravel.Identity.dto.request.*;
 import com.gotravel.Identity.dto.response.*;
+import com.gotravel.Identity.exception.*;
 
 import java.util.HashSet;
 import java.util.List;
@@ -40,14 +41,14 @@ public class UserService {
      */
     public UserResponse createUser(UserRequest userRequest) {
         if (userRepository.existsByUsername(userRequest.getUsername())) {
-            throw new RuntimeException("User already exists");
+            throw new AppException(UserErrorCode.USER_ALREADY_EXISTS);
         }
         // mapper toàn bộ dữ liệu sang user
         User user = userMapper.userRequestToUser(userRequest);
 
         // set thêm các dữ liệu mặc định
         Role userRole = roleRepository.findById("USER")
-                .orElseThrow(() -> new RuntimeException("Role USER not found"));
+                .orElseThrow(() -> new AppException(UserErrorCode.ROLE_NOT_FOUND));
         user.setRoles(new HashSet<>(Set.of(userRole)));
         user.setProvider(Provider.LOCAL);
         user.setIsActive(true);
@@ -72,7 +73,7 @@ public class UserService {
      */
     public UserResponse getUserByUsername(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
         return userMapper.userToUserResponse(user);
     }
 
@@ -95,7 +96,7 @@ public class UserService {
      */
     public UserResponse updateUser(String username, UserRequest userRequest) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
         userRepository.save(user);
         return userMapper.userToUserResponse(user);
     }
@@ -107,7 +108,7 @@ public class UserService {
      */
     public void deleteUser(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
         userRepository.delete(user);
     }
 
@@ -119,9 +120,9 @@ public class UserService {
      */
     public void upgradeToRole(String username, String roleName) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
         Role role = roleRepository.findById(roleName.toUpperCase())
-                .orElseThrow(() -> new RuntimeException("Role not found"));
+                .orElseThrow(() -> new AppException(UserErrorCode.ROLE_NOT_FOUND));
 
         user.getRoles().add(role);
 
@@ -143,9 +144,9 @@ public class UserService {
 
     public UserResponse upgradeToHost(String username, HostProfileRequest hostProfileRequest) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
         Role role = roleRepository.findById("HOST")
-                .orElseThrow(() -> new RuntimeException("Role not found"));
+                .orElseThrow(() -> new AppException(UserErrorCode.ROLE_NOT_FOUND));
 
         user.getRoles().add(role);
 
@@ -164,9 +165,9 @@ public class UserService {
 
     public UserResponse upgradeToEnterprise(String username, EnterpriseProfileRequest enterpriseProfileRequest) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
         Role role = roleRepository.findById("ENTERPRISE")
-                .orElseThrow(() -> new RuntimeException("Role not found"));
+                .orElseThrow(() -> new AppException(UserErrorCode.ROLE_NOT_FOUND));
 
         user.getRoles().add(role);
 
@@ -185,13 +186,13 @@ public class UserService {
 
     public UserProfileResponse getUserProfile(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
         return userMapper.toUserProfileResponse(user.getUserProfile());
     }
 
     public UserProfileResponse updateUserProfile(String username, UserProfileRequest request) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
         if (user.getUserProfile() == null) {
             user.setUserProfile(UserProfile.builder().user(user).build());
         }
@@ -202,18 +203,18 @@ public class UserService {
 
     public HostProfileResponse getHostProfile(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
         if (user.getHostProfile() == null) {
-            throw new RuntimeException("User does not have a Host profile");
+            throw new AppException(HostErrorCode.HOST_PROFILE_NOT_FOUND);
         }
         return userMapper.toHostProfileResponse(user.getHostProfile());
     }
 
     public HostProfileResponse updateHostProfile(String username, HostProfileRequest request) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
         if (user.getHostProfile() == null) {
-            throw new RuntimeException("User is not a HOST");
+            throw new AppException(HostErrorCode.USER_NOT_HOST);
         }
         userMapper.updateHostProfileFromRequest(request, user.getHostProfile());
         userRepository.save(user);
@@ -222,18 +223,18 @@ public class UserService {
 
     public EnterpriseProfileResponse getEnterpriseProfile(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
         if (user.getEnterpriseProfile() == null) {
-            throw new RuntimeException("User does not have an Enterprise profile");
+            throw new AppException(EnterpriseErrorCode.ENTERPRISE_PROFILE_NOT_FOUND);
         }
         return userMapper.toEnterpriseProfileResponse(user.getEnterpriseProfile());
     }
 
     public EnterpriseProfileResponse updateEnterpriseProfile(String username, EnterpriseProfileRequest request) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
         if (user.getEnterpriseProfile() == null) {
-            throw new RuntimeException("User is not an ENTERPRISE");
+            throw new AppException(EnterpriseErrorCode.USER_NOT_ENTERPRISE);
         }
         userMapper.updateEnterpriseProfileFromRequest(request, user.getEnterpriseProfile());
         userRepository.save(user);
