@@ -4,10 +4,13 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class AuthenticationReponse {
-    String tocken;
+public class EnterpriseProfileResponse {
+    String companyName;
+    String taxCode;
+    String companyAddress;
+    String representativeName;
 }

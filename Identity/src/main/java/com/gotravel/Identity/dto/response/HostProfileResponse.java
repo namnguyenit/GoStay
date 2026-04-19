@@ -4,13 +4,12 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserReponse {
-    String username;
-    String email;
-    String fullName;
-    String phoneNumber;
+public class HostProfileResponse {
+    String cccdNumber;
+    String bankAccount;
+    String bankName;
 }
