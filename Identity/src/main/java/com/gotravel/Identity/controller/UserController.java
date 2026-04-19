@@ -10,6 +10,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,6 +37,7 @@ public class UserController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiRequest<List<UserResponse>> getAllUser() {
         return ApiRequest.<List<UserResponse>>builder()
                 .success(true)
@@ -44,8 +46,10 @@ public class UserController {
     }
 
     @GetMapping("/me")
+    @PreAuthorize("hasAnyRole('USER')")
     public ApiRequest<UserResponse> getMyInfo() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        log.info(SecurityContextHolder.getContext().getAuthentication().toString());
         return ApiRequest.<UserResponse>builder()
                 .success(true)
                 .data(userService.getUserByUsername(username))
@@ -53,6 +57,7 @@ public class UserController {
     }
 
     @PutMapping("/me")
+    @PreAuthorize("hasAnyRole('USER')")
     public ApiRequest<UserResponse> updateMyInfo(@RequestBody UserRequest userRequest) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return ApiRequest.<UserResponse>builder()
@@ -63,6 +68,7 @@ public class UserController {
     }
 
     @DeleteMapping("/me")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiRequest<Void> deleteMyAccount() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         userService.deleteUser(username);
@@ -74,6 +80,7 @@ public class UserController {
 
 
     @PostMapping("/me/upgrade-role")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiRequest<String> upgradeMyRole(@RequestParam String role) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         userService.upgradeToRole(username, role);
@@ -85,6 +92,7 @@ public class UserController {
     }
 
     @PostMapping("/me/upgradetohost")
+    @PreAuthorize("hasAnyRole('USER')")
     public ApiRequest<UserResponse> upgradeToHost(@RequestBody HostProfileRequest hostProfileRequest) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return ApiRequest.<UserResponse>builder()
@@ -95,6 +103,7 @@ public class UserController {
     }
 
     @PostMapping("/me/upgradetoenterprise")
+    @PreAuthorize("hasAnyRole('USER')")
     public ApiRequest<UserResponse> upgradeToEnterprise(@RequestBody EnterpriseProfileRequest enterpriseProfileRequest) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return ApiRequest.<UserResponse>builder()
@@ -106,6 +115,7 @@ public class UserController {
 
 
     @GetMapping("/me/profile")
+    @PreAuthorize("hasAnyRole('USER')")
     public ApiRequest<UserProfileResponse> getMyProfile() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return ApiRequest.<UserProfileResponse>builder()
@@ -115,6 +125,7 @@ public class UserController {
     }
 
     @PutMapping("/me/profile")
+    @PreAuthorize("hasAnyRole('USER')")
     public ApiRequest<UserProfileResponse> updateMyProfile(@RequestBody UserProfileRequest dto) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return ApiRequest.<UserProfileResponse>builder()
@@ -124,6 +135,7 @@ public class UserController {
     }
 
     @GetMapping("/me/host-profile")
+    @PreAuthorize("hasAnyRole('HOST')")
     public ApiRequest<HostProfileResponse> getMyHostProfile() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return ApiRequest.<HostProfileResponse>builder()
@@ -133,6 +145,7 @@ public class UserController {
     }
 
     @PutMapping("/me/host-profile")
+    @PreAuthorize("hasAnyRole('HOST')")
     public ApiRequest<HostProfileResponse> updateMyHostProfile(@RequestBody HostProfileRequest dto) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return ApiRequest.<HostProfileResponse>builder()
@@ -142,6 +155,7 @@ public class UserController {
     }
 
     @GetMapping("/me/enterprise-profile")
+    @PreAuthorize("hasAnyRole('ENTERPRISE')")
     public ApiRequest<EnterpriseProfileResponse> getMyEnterpriseProfile() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return ApiRequest.<EnterpriseProfileResponse>builder()
@@ -151,6 +165,7 @@ public class UserController {
     }
 
     @PutMapping("/me/enterprise-profile")
+    @PreAuthorize("hasAnyRole('ENTERPRISE')")
     public ApiRequest<EnterpriseProfileResponse> updateMyEnterpriseProfile(@RequestBody EnterpriseProfileRequest dto) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return ApiRequest.<EnterpriseProfileResponse>builder()
