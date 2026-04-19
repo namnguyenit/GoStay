@@ -8,4 +8,5 @@ import com.gotravel.Identity.entity.User;
 public interface UserMapper {
     UserReponse UserRequestToUserReponse(UserRequest userRequest);
     User UserRequestToUser(UserRequest userRequest);
+    UserReponse UserToUserReponse(User user);
 }

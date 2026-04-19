@@ -8,7 +8,10 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
@@ -28,6 +31,30 @@ public class UserController {
                 .messeger("tao thanh cong")
                 .build();
     }
+
+    @GetMapping
+    public ApiRequest<List<UserReponse>> getAllUser(){
+        return ApiRequest.<List<UserReponse>>builder()
+                .success(true)
+                .data(userService.getAllUser())
+                .build();
+    }
+
+//    @Modifying
+//    public ApiRequest<UserReponse> modifyUser(@RequestBody @Valid UserRequest user){
+//
+//    }
+
+    @DeleteMapping
+    public ApiRequest deleteUser(@RequestBody @Valid UserRequest user){
+        userService.deleteUser(user);
+        return ApiRequest.builder()
+                .success(true)
+                .messeger("xao thanh cong")
+                .build();
+    }
+
+
 
 
 }

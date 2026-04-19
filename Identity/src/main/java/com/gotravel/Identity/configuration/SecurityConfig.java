@@ -14,12 +14,15 @@ public class SecurityConfig {
     private String[] PUBLICURLPOST = {
             "/api/users",
     };
+    private String[] PUBLICURLGET = {
+            "/api/users",
+    };
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             http.authorizeHttpRequests(
                     request ->
                             request.requestMatchers(HttpMethod.POST ,PUBLICURLPOST).permitAll()
-                                    .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll() 
+                                    .requestMatchers(HttpMethod.GET,PUBLICURLGET).permitAll()
                                     .requestMatchers("/error").permitAll()
                                     .anyRequest().authenticated()
             );
