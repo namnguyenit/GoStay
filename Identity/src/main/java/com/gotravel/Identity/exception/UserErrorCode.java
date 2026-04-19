@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatusCode;
 public enum UserErrorCode implements ErrorCode {
     USER_NOT_FOUND(404, "User not found", HttpStatus.NOT_FOUND),
     USER_ALREADY_EXISTS(400, "User already exists", HttpStatus.BAD_REQUEST),
+    EMAIL_ALREADY_EXISTS(400, "Email already exists", HttpStatus.BAD_REQUEST),
     ROLE_NOT_FOUND(404, "Role not found", HttpStatus.NOT_FOUND);
 
     private final boolean success = false;

@@ -4,6 +4,7 @@ import com.gotravel.Identity.dto.request.ApiRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -49,5 +50,15 @@ public class GlobalExceptionHandler {
         apiRequest.setMessage(runtimeException.getMessage());
 
         return ResponseEntity.badRequest().body(apiRequest);
+    }
+
+    @ExceptionHandler(value = DataIntegrityViolationException.class)
+    ResponseEntity<ApiRequest> handleDataIntegrityViolationException(DataIntegrityViolationException exception) {
+        ApiRequest apiRequest = new ApiRequest();
+        apiRequest.setSuccess(false);
+        apiRequest.setCode(409); // 409 Conflict
+        apiRequest.setMessage("Data integrity violation: This record already exists or violates a unique constraint.");
+
+        return ResponseEntity.status(409).body(apiRequest);
     }
 }

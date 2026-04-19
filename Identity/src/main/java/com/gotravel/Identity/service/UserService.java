@@ -43,6 +43,9 @@ public class UserService {
         if (userRepository.existsByUsername(userRequest.getUsername())) {
             throw new AppException(UserErrorCode.USER_ALREADY_EXISTS);
         }
+        if (userRequest.getEmail() != null && userRepository.existsByEmail(userRequest.getEmail())) {
+            throw new AppException(UserErrorCode.EMAIL_ALREADY_EXISTS);
+        }
         // mapper toàn bộ dữ liệu sang user
         User user = userMapper.userRequestToUser(userRequest);
 
@@ -97,6 +100,14 @@ public class UserService {
     public UserResponse updateUser(String username, UserRequest userRequest) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
+        
+        if (userRequest.getEmail() != null && !userRequest.getEmail().equals(user.getEmail())) {
+            if (userRepository.existsByEmail(userRequest.getEmail())) {
+                throw new AppException(UserErrorCode.EMAIL_ALREADY_EXISTS);
+            }
+            user.setEmail(userRequest.getEmail());
+        }
+
         userRepository.save(user);
         return userMapper.userToUserResponse(user);
     }
