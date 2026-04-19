@@ -20,4 +20,8 @@ public interface UserMapper {
 
     EnterpriseProfileResponse toEnterpriseProfileResponse(EnterpriseProfile enterpriseProfile);
     void updateEnterpriseProfileFromRequest(EnterpriseProfileRequest dto, @MappingTarget EnterpriseProfile profile);
+
+    default String mapRoleString(Role role) {
+        return role != null ? role.getName() : null;
+    }
 }

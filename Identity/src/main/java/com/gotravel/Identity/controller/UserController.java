@@ -80,21 +80,21 @@ public class UserController {
     }
 
     @PostMapping("/{username}/upgradetohost")
-    public ApiRequest<HostProfileResponse> upgradeToHost(@PathVariable String username, @RequestBody HostProfileRequest hostProfileRequest) {
+    public ApiRequest<UserResponse> upgradeToHost(@PathVariable String username, @RequestBody HostProfileRequest hostProfileRequest) {
 
-        return ApiRequest.<HostProfileResponse>builder()
+        return ApiRequest.<UserResponse>builder()
                 .success(true)
-                .message("Role upgraded successfully")
+                .message("Upgraded to HOST successfully")
                 .data(userService.upgradeToHost(username, hostProfileRequest))
                 .build();
     }
 
     @PostMapping("/{username}/upgradetoenterprise")
-    public ApiRequest<EnterpriseProfileResponse> upgradeToHost(@PathVariable String username, @RequestBody EnterpriseProfileRequest enterpriseProfileRequest) {
+    public ApiRequest<UserResponse> upgradeToEnterprise(@PathVariable String username, @RequestBody EnterpriseProfileRequest enterpriseProfileRequest) {
 
-        return ApiRequest.<EnterpriseProfileResponse>builder()
+        return ApiRequest.<UserResponse>builder()
                 .success(true)
-                .message("Role upgraded successfully")
+                .message("Upgraded to ENTERPRISE successfully")
                 .data(userService.upgradeToEnterprise(username, enterpriseProfileRequest))
                 .build();
     }

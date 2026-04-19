@@ -62,9 +62,7 @@ public class UserService {
         // lưu user
         userRepository.save(user);
 
-        UserResponse response = userMapper.userRequestToUserResponse(userRequest);
-        response.setEmail(user.getEmail());
-        return response;
+        return userMapper.userToUserResponse(user);
     }
 
     /**
@@ -143,7 +141,7 @@ public class UserService {
     }
 
 
-    public HostProfileResponse upgradeToHost(String username, HostProfileRequest hostProfileRequest) {
+    public UserResponse upgradeToHost(String username, HostProfileRequest hostProfileRequest) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         Role role = roleRepository.findById("HOST")
@@ -151,17 +149,20 @@ public class UserService {
 
         user.getRoles().add(role);
 
-        HostProfile hostProfile = HostProfile.builder()
-                .user(user)
-                .build();
-        user.setHostProfile(hostProfile);
-
+        if (user.getHostProfile() == null) {
+            HostProfile hostProfile = HostProfile.builder()
+                    .user(user)
+                    .build();
+            user.setHostProfile(hostProfile);
+        }
+        
+        userMapper.updateHostProfileFromRequest(hostProfileRequest, user.getHostProfile());
         userRepository.save(user);
-        return updateHostProfile(username,hostProfileRequest);
+        return userMapper.userToUserResponse(user);
     }
 
 
-    public EnterpriseProfileResponse upgradeToEnterprise(String username, EnterpriseProfileRequest enterpriseProfileRequest) {
+    public UserResponse upgradeToEnterprise(String username, EnterpriseProfileRequest enterpriseProfileRequest) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         Role role = roleRepository.findById("ENTERPRISE")
@@ -169,13 +170,17 @@ public class UserService {
 
         user.getRoles().add(role);
 
-        HostProfile hostProfile = HostProfile.builder()
-                .user(user)
-                .build();
-        user.setHostProfile(hostProfile);
+        if (user.getEnterpriseProfile() == null) {
+            EnterpriseProfile enterpriseProfile = EnterpriseProfile.builder()
+                    .user(user)
+                    .build();
+            user.setEnterpriseProfile(enterpriseProfile);
+        }
+
+        userMapper.updateEnterpriseProfileFromRequest(enterpriseProfileRequest, user.getEnterpriseProfile());
 
         userRepository.save(user);
-        return updateEnterpriseProfile(username,enterpriseProfileRequest);
+        return userMapper.userToUserResponse(user);
     }
 
     public UserProfileResponse getUserProfile(String username) {

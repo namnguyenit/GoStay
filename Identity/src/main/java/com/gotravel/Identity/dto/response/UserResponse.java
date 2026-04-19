@@ -2,6 +2,8 @@ package com.gotravel.Identity.dto.response;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import com.gotravel.Identity.enums.Provider;
+import java.util.Set;
 
 @Data
 @Builder
@@ -11,6 +13,11 @@ import lombok.experimental.FieldDefaults;
 public class UserResponse {
     String username;
     String email;
-    String fullName;
-    String phoneNumber;
+    Boolean isActive;
+    Provider provider;
+    Set<String> roles;
+    
+    UserProfileResponse userProfile;
+    HostProfileResponse hostProfile;
+    EnterpriseProfileResponse enterpriseProfile;
 }
