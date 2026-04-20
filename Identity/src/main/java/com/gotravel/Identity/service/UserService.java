@@ -1,7 +1,5 @@
 package com.gotravel.Identity.service;
 
-import com.gotravel.Identity.dto.request.UserRequest;
-import com.gotravel.Identity.dto.response.UserResponse;
 import com.gotravel.Identity.mapper.UserMapper;
 import com.gotravel.Identity.repository.RoleRepository;
 import com.gotravel.Identity.repository.UserRepository;
@@ -70,9 +68,9 @@ public class UserService {
     }
 
     /**
-     *
+     * logic lấy user từ username
      * @param username
-     * @return
+     * @return UserReponse
      */
     public UserResponse getUserByUsername(String username) {
         User user = userRepository.findByUsername(username)
@@ -92,7 +90,7 @@ public class UserService {
 
 
     /**
-     *
+     *  update user 
      * @param username
      * @param userRequest
      * @return UserResponse
@@ -114,7 +112,7 @@ public class UserService {
 
 
     /**
-     *
+     * @Logic tìm người dùng theo username và xoá người dùng
      * @param username
      */
     public void deleteUser(String username) {
@@ -152,7 +150,12 @@ public class UserService {
         userRepository.save(user);
     }
 
-
+    /**
+     * @Logic upgrade từ người dùng lên Host 
+     * @param username
+     * @param hostProfileRequest
+     * @retuhostn UserReponse
+     */
     public UserResponse upgradeToHost(String username, HostProfileRequest hostProfileRequest) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
@@ -173,7 +176,12 @@ public class UserService {
         return userMapper.userToUserResponse(user);
     }
 
-
+    /**
+     * @Logic upgrade từ người dùng lên  enterprise
+     * @param username
+     * @param hostProfileRequest
+     * @retuhostn UserReponse
+     */
     public UserResponse upgradeToEnterprise(String username, EnterpriseProfileRequest enterpriseProfileRequest) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
@@ -195,12 +203,23 @@ public class UserService {
         return userMapper.userToUserResponse(user);
     }
 
+    /**
+     * @Logic lấy profile của user 
+     * @param username
+     * @return UserProfileResponse
+     */
     public UserProfileResponse getUserProfile(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
         return userMapper.toUserProfileResponse(user.getUserProfile());
     }
 
+    /**
+     * @Logic lấy username và request để cập nhật userprofilereponse 
+     * @param username
+     * @param request
+     * @return UserProfileResponse
+     */
     public UserProfileResponse updateUserProfile(String username, UserProfileRequest request) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
@@ -212,6 +231,11 @@ public class UserService {
         return userMapper.toUserProfileResponse(user.getUserProfile());
     }
 
+    /**
+     * 
+     * @param username
+     * @return HostProfileResponse
+     */
     public HostProfileResponse getHostProfile(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
@@ -221,6 +245,12 @@ public class UserService {
         return userMapper.toHostProfileResponse(user.getHostProfile());
     }
 
+    /**
+     *
+     * @param username
+     * @param request
+     * @return HostProfileResponse
+     */
     public HostProfileResponse updateHostProfile(String username, HostProfileRequest request) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
@@ -232,6 +262,11 @@ public class UserService {
         return userMapper.toHostProfileResponse(user.getHostProfile());
     }
 
+    /**
+     *
+     * @param username
+     * @return EnterpriseProfileResponse
+     */
     public EnterpriseProfileResponse getEnterpriseProfile(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
@@ -241,6 +276,12 @@ public class UserService {
         return userMapper.toEnterpriseProfileResponse(user.getEnterpriseProfile());
     }
 
+    /**
+     *
+     * @param username
+     * @param request
+     * @return EnterpriseProfileResponse
+     */
     public EnterpriseProfileResponse updateEnterpriseProfile(String username, EnterpriseProfileRequest request) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
