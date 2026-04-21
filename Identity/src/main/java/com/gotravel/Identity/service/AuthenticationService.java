@@ -16,6 +16,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -31,6 +32,7 @@ import java.util.StringJoiner;
 public class AuthenticationService {
 
     UserRepository userRepository;
+    PasswordEncoder passwordEncoder;
 
     @NonFinal
     @Value("${jwt.signerKey}")
@@ -40,7 +42,8 @@ public class AuthenticationService {
         var user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
 
-        if (!user.getPassword().equals(request.getPassword())) {
+        boolean checkpassword = passwordEncoder.matches(request.getPassword(),user.getPassword());
+        if (!checkpassword) {
             throw new AppException(AuthErrorCode.UNAUTHENTICATED);
         }
 

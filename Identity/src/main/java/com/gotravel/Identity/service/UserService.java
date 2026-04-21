@@ -6,6 +6,7 @@ import com.gotravel.Identity.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.gotravel.Identity.entity.User;
 import com.gotravel.Identity.entity.Role;
@@ -29,6 +30,7 @@ public class UserService {
     final UserMapper userMapper;
     final RoleRepository roleRepository;
 
+    PasswordEncoder passwordEncoder;
     /**
      * hàm sẽ set role mặc định là USER khi tạo tài khoản và setProvider Local
      * user thì phải set role và provider và isActive
@@ -46,7 +48,7 @@ public class UserService {
         }
         // mapper toàn bộ dữ liệu sang user
         User user = userMapper.userRequestToUser(userRequest);
-
+        user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
         // set thêm các dữ liệu mặc định
         Role userRole = roleRepository.findById("USER")
                 .orElseThrow(() -> new AppException(UserErrorCode.ROLE_NOT_FOUND));
