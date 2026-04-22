@@ -1,25 +1,28 @@
-import { useSafeContext } from "@/hooks";
+import { useSafeContext } from "@/shared/hooks";
 import { cn } from "@/lib/utils";
-import { HomeContext } from "@/provider/home";
-import { ServiceContext } from "@/provider/service";
+import { HomeContext } from "@/app/(main)/providers/home.provider";
 import { useContext } from "react";
 import { Fragment } from "react/jsx-runtime";
 
 export default function ServiceImageNavigation() {
-  const { serviceData, imageIndex, setImageIndex, clock, setClock } =
-    useSafeContext(ServiceContext);
-
-  const ctx = useContext(ServiceContext);
+  const {
+    imageIndex,
+    setImageIndex,
+    clock,
+    setClock,
+    experiences,
+    setExperiences,
+  } = useSafeContext(HomeContext);
 
   return (
     <div className="row justify-end">
-      {serviceData?.map((e: any, index: any) => (
+      {experiences?.map((e: any, index: any) => (
         <Fragment key={e?.id}>
           <div className="w-[10]" />
           <div
             className={cn(
               "border-app-muted-fg/25 aspect-video min-w-14 rounded-sm border hover:border-white lg:w-1/20",
-              serviceData?.[imageIndex]?.id == e.id
+              experiences?.[imageIndex]?.id == e.id
                 ? "border-3 border-white"
                 : "border-transparent",
             )}

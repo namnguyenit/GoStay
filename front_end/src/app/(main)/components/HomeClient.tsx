@@ -1,30 +1,25 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-
-import { useContext, useEffect, useRef, useState } from "react";
-import { CSSProperties } from "react";
-
+import { CSSProperties, useEffect } from "react";
+import { ConciergeBell, Home, PartyPopper } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-import { ConciergeBell, Home, PartyPopper } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ServiceContext } from "@/provider/service";
 import ServiceImageNavigation from "@/features/experience/components/ImageNavigation";
-import { HomeContext } from "@/provider/home";
-import { useSafeContext } from "@/hooks";
+import { useSafeContext } from "@/shared/hooks";
+import { HomeContext } from "../providers/home.provider";
 
 export default function HomeClient() {
   const {
-    serviceData,
-    setServiceData,
     imageIndex,
     setImageIndex,
     clock,
     setClock,
-  } = useSafeContext(ServiceContext);
+    experiences,
+    setExperiences,
+  } = useSafeContext(HomeContext);
 
   useEffect(() => {
     if (clock) return;
@@ -32,7 +27,7 @@ export default function HomeClient() {
       setInterval(() => {
         setImageIndex((prev: any) => {
           let i = prev + 1;
-          if (i >= (serviceData?.length ?? 0)) {
+          if (i >= (experiences?.length ?? 0)) {
             i = 0;
           }
           return i;
@@ -103,7 +98,7 @@ export default function HomeClient() {
         <div className="absolute inset-0 scale-115 bg-black">
           <AnimatePresence mode="wait">
             <motion.div
-              key={serviceData?.[imageIndex]?.id}
+              key={experiences?.[imageIndex]?.id}
               initial={{ opacity: 0, x: "5%" }}
               animate={{ opacity: [0, 1, 1], x: 0 }}
               exit={{ opacity: 0 }}
@@ -111,7 +106,7 @@ export default function HomeClient() {
               className="size-full"
             >
               <img
-                src={serviceData?.[imageIndex]?.image ?? undefined}
+                src={experiences?.[imageIndex]?.image ?? undefined}
                 alt=""
                 className="size-full object-cover"
               />
@@ -127,7 +122,7 @@ export default function HomeClient() {
           {/* INFO */}
           <div className="pos-center-y">
             <motion.div
-              key={serviceData?.[imageIndex]?.id}
+              key={experiences?.[imageIndex]?.id}
               initial={{ opacity: 0, x: "-100%" }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0 }}
@@ -136,16 +131,16 @@ export default function HomeClient() {
             >
               <div>
                 <div className="text-header text-white">
-                  {serviceData?.[imageIndex]?.name}
+                  {experiences?.[imageIndex]?.name}
                 </div>
                 <div className="text-content text-white">
-                  {serviceData?.[imageIndex]?.price}
+                  {experiences?.[imageIndex]?.price}
                 </div>
                 <div className="text-content text-white">
-                  {serviceData?.[imageIndex]?.address}
+                  {experiences?.[imageIndex]?.address}
                 </div>
                 <div className="text-content text-white">
-                  {serviceData?.[imageIndex]?.rating}
+                  {experiences?.[imageIndex]?.rating}
                 </div>
                 <div className="h-[20]" />
                 <Button className="text-title bg-app-primary hover:bg-app-accent w-[200]">

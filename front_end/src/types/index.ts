@@ -1,1 +1,1 @@
-export type { default as ProviderType } from "./ProviderType";
+export type { default as Provider } from "./Provider";
