@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const ServiceSchema = z.object({
+export const ExperienceSchema = z.object({
   id: z.string(),
   name: z.string().nullable().default(null).catch(null),
   price: z.number().nullable().default(null).catch(null),
@@ -10,6 +10,6 @@ export const ServiceSchema = z.object({
   image: z.string().nullable().default(null).catch(null),
 });
 
-const ServicesSchema = z.array(ServiceSchema);
-
-export type ServiceType = z.infer<typeof ServiceSchema>;
+export const ExperiencesSchema = z.array(ExperienceSchema);
+export type Experience = z.infer<typeof ExperienceSchema>;
+export type Experiences = z.infer<typeof ExperiencesSchema>;

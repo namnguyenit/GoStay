@@ -12,7 +12,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConciergeBell, Home, PartyPopper } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ServiceContext } from "@/provider/service";
-import ServiceImageNavigation from "@/features/service/components/ServiceImageNavigation";
+import ServiceImageNavigation from "@/features/experience/components/ImageNavigation";
 import { HomeContext } from "@/provider/home";
 import { useSafeContext } from "@/hooks";
 

@@ -40,6 +40,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-#test data
+# test data
 /src/data
 /public/images
+
+# template env
+!.env.example
