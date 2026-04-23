@@ -1,7 +1,15 @@
 "use client";
 
-import { CSSProperties, useEffect } from "react";
-import { ConciergeBell, Home, PartyPopper } from "lucide-react";
+import { CSSProperties, useEffect, useState } from "react";
+import {
+  ConciergeBell,
+  Home,
+  PartyPopper,
+  Star,
+  MoveRight,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
@@ -10,6 +18,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import ServiceImageNavigation from "@/features/experience/components/ImageNavigation";
 import { useSafeContext } from "@/shared/hooks";
 import { HomeContext } from "../providers/home.provider";
+import { formatMoney } from "@/shared/utils";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/components/ui/carousel";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function HomeClient() {
   const {
@@ -19,6 +34,7 @@ export default function HomeClient() {
     setClock,
     experiences,
     setExperiences,
+    places,
   } = useSafeContext(HomeContext);
 
   useEffect(() => {
@@ -36,6 +52,8 @@ export default function HomeClient() {
     );
     return () => clearInterval(clock ?? undefined);
   }, [clock]);
+
+  const [carousel, setCarousel] = useState<any>(null);
 
   return (
     <main className="scrollbar h-screen overflow-x-hidden overflow-y-auto">
@@ -149,13 +167,81 @@ export default function HomeClient() {
               </div>
             </motion.div>
           </div>
-          {/* IMAGE NAVIGATION */}
           <div className="absolute right-0 bottom-1/12 w-full">
             <ServiceImageNavigation />
           </div>
         </div>
       </div>
-      <div>Some thing...</div>
+      <div className="h-10" />
+      {/* ROW LIST */}
+      <div className="px-4">
+        <div className="row justify-between">
+          <div className="center-y flex-1">
+            <div className="text-title line-clamp-1">Địa điểm ưu chuộng</div>
+            <div className="w-2" />
+            <Button className="bg-app-muted hover:bg-app-accent flex aspect-square h-auto items-center justify-center rounded-full border-0 p-0">
+              <MoveRight className="text-app-fg size-7 p-2" />
+            </Button>
+          </div>
+          <div>
+            <Button
+              className="bg-app-muted hover:bg-app-accent"
+              onClick={() => carousel?.scrollPrev()}
+            >
+              <ChevronLeft className="text-app-muted-fg" />
+            </Button>
+            <Button
+              className="bg-app-muted hover:bg-app-accent"
+              onClick={() => carousel?.scrollNext()}
+            >
+              <ChevronRight className="text-app-muted-fg" />
+            </Button>
+          </div>
+        </div>
+        <div className="h-4" />
+        <Carousel
+          opts={{
+            align: "start",
+          }}
+          setApi={setCarousel}
+          className="w-full"
+        >
+          <CarouselContent>
+            {places?.map((e, index) => (
+              <CarouselItem
+                key={index}
+                className="basis-1/2 md:basis-1/3 lg:basis-1/7"
+              >
+                <Card className="aspect-square border-0 p-0 shadow-none ring-0 outline-0">
+                  <img
+                    src={e?.image ?? undefined}
+                    alt=""
+                    className="size-full object-cover"
+                  />
+                </Card>
+                <div className="p-1">
+                  <div className="text-app-fg line-clamp-1">{e?.name}</div>
+                  <div className="center-y line-clamp-1 flex justify-between">
+                    <div className="center-y gap-1">
+                      <div className="text-caption underline">đ</div>
+                      <div className="text-caption line-clamp-1">
+                        {formatMoney(e?.price ?? 0)}
+                      </div>
+                    </div>
+                    <div className="row center-y gap-0.5">
+                      <Star className="text-caption line-clamp-1 w-4" />
+                      <div className="text-caption line-clamp-1">
+                        {e?.rating ?? 0}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+        </Carousel>
+      </div>
+      <div className="h-10" />
     </main>
   );
 }

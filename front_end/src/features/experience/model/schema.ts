@@ -10,6 +10,7 @@ export const ExperienceSchema = z
     rating: z.number().nullable().default(null).catch(null),
     image: z.string().nullable().default(null).catch(null),
   })
-  .nullable();
+  .nullable()
+  .catch(null);
 
 export const ExperiencesSchema = z.array(ExperienceSchema).nullable();
