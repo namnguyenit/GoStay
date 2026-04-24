@@ -7,8 +7,9 @@ import com.gotravel.Identity.exception.AppException;
 import com.gotravel.Identity.exception.AuthErrorCode;
 import com.gotravel.Identity.exception.UserErrorCode;
 import com.gotravel.Identity.repository.UserRepository;
+import com.gotravel.Identity.configuration.RsaKeyConfig;
 import com.nimbusds.jose.*;
-import com.nimbusds.jose.crypto.MACSigner;
+import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -33,10 +34,9 @@ public class AuthenticationService {
 
     UserRepository userRepository;
     PasswordEncoder passwordEncoder;
-
-    @NonFinal
-    @Value("${jwt.signerKey}")
-    protected String SIGNER_KEY;
+    
+    // Inject cấu hình RsaKeyConfig
+    RsaKeyConfig rsaKeyConfig;
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         var user = userRepository.findByUsername(request.getUsername())
@@ -53,8 +53,13 @@ public class AuthenticationService {
                 .build();
     }
 
+    // BƯỚC 3: SỬA HÀM TẠO TOKEN ĐỂ DÙNG PRIVATE KEY KÝ VÀO.
     private String generateToken(User user) {
-        JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
+        // Chuyển sang thuật toán RSA256, phải gắn kèm keyID để người phân loại (ở ngoài ai thích lấy thì gọi key này)
+        JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.RS256)
+                .keyID("identity-key")
+                .type(JOSEObjectType.JWT)
+                .build();
 
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
                 .subject(user.getUsername())
@@ -71,7 +76,8 @@ public class AuthenticationService {
         JWSObject jwsObject = new JWSObject(header, payload);
 
         try {
-            jwsObject.sign(new MACSigner(SIGNER_KEY.getBytes()));
+            // Bước 3.1: Sử dụng RSASSASigner và lấy cái Khóa Bí Mật Private ra ký vào nội dung
+            jwsObject.sign(new RSASSASigner(rsaKeyConfig.getPrivateKey()));
             return jwsObject.serialize();
         } catch (JOSEException e) {
             log.error("Cannot create token", e);
