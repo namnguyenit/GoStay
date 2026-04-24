@@ -1,3 +1,5 @@
 spring:
   application:
     name: CatalogandListing
+server:
+  port: 8081
