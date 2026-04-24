@@ -30,7 +30,7 @@ public class UserService {
     final UserMapper userMapper;
     final RoleRepository roleRepository;
 
-    PasswordEncoder passwordEncoder;
+    final PasswordEncoder passwordEncoder;
     /**
      * hàm sẽ set role mặc định là USER khi tạo tài khoản và setProvider Local
      * user thì phải set role và provider và isActive
@@ -94,20 +94,29 @@ public class UserService {
     /**
      *  update user 
      * @param username
-     * @param userRequest
+     * @param userUpdateRequest
      * @return UserResponse
      */
-    public UserResponse updateUser(String username, UserRequest userRequest) {
+    public UserResponse updateUser(String username, UserUpdateRequest userUpdateRequest) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
         
-        if (userRequest.getEmail() != null && !userRequest.getEmail().equals(user.getEmail())) {
-            if (userRepository.existsByEmail(userRequest.getEmail())) {
-                throw new AppException(UserErrorCode.EMAIL_ALREADY_EXISTS);
-            }
-            user.setEmail(userRequest.getEmail());
+        if(userUpdateRequest.getPassword() != null || !userUpdateRequest.getPassword().isEmpty() ) {
+            user.setPassword(passwordEncoder.encode(userUpdateRequest.getPassword()));
+        }
+        user.setPassword(userUpdateRequest.getPassword());
+        UserProfile userProfile = user.getUserProfile();
+        if (userProfile == null) {
+            userProfile = UserProfile.builder().user(user).build();
+            user.setUserProfile(userProfile);
+        }
+        if (userUpdateRequest.getFullName() != null && !userUpdateRequest.getFullName().trim().isEmpty()) {
+            userProfile.setFullName(userUpdateRequest.getFullName());
         }
 
+        if (userUpdateRequest.getPhoneNumber() != null && !userUpdateRequest.getPhoneNumber().trim().isEmpty()) {
+            userProfile.setPhoneNumber(userUpdateRequest.getPhoneNumber());
+        }
         userRepository.save(user);
         return userMapper.userToUserResponse(user);
     }
@@ -181,7 +190,6 @@ public class UserService {
     /**
      * @Logic upgrade từ người dùng lên  enterprise
      * @param username
-     * @param hostProfileRequest
      * @retuhostn UserReponse
      */
     public UserResponse upgradeToEnterprise(String username, EnterpriseProfileRequest enterpriseProfileRequest) {

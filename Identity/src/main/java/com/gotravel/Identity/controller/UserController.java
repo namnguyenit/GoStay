@@ -58,11 +58,11 @@ public class UserController {
 
     @PutMapping("/me")
     @PreAuthorize("hasAnyRole('USER')")
-    public ApiRequest<UserResponse> updateMyInfo(@RequestBody UserRequest userRequest) {
+    public ApiRequest<UserResponse> updateMyInfo(@RequestBody UserUpdateRequest userUpdateRequest) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return ApiRequest.<UserResponse>builder()
                 .success(true)
-                .data(userService.updateUser(username, userRequest))
+                .data(userService.updateUser(username, userUpdateRequest))
                 .message("User updated successfully")
                 .build();
     }
