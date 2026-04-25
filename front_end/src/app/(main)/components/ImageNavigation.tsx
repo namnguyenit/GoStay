@@ -4,7 +4,7 @@ import { HomeContext } from "@/app/(main)/providers/home.provider";
 import { useContext } from "react";
 import { Fragment } from "react/jsx-runtime";
 
-export default function ServiceImageNavigation() {
+export default function ImageNavigation() {
   const {
     imageIndex,
     setImageIndex,

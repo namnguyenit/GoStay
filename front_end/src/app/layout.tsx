@@ -23,7 +23,7 @@ export default async function RootLayout({
 }>) {
   return (
     <html lang="vi" className={`${fontSans.variable}`}>
-      <body className="">{children}</body>
+      <body className="app-dark">{children}</body>
     </html>
   );
 }

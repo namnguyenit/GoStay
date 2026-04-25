@@ -1,4 +1,4 @@
-import HomeClient from "@/app/(main)/components/HomeClient";
+import HomeClient from "./components/HomeClient";
 import { ExperienceService, PlaceService } from "@/services";
 import HomeProvider from "./providers/home.provider";
 
@@ -8,8 +8,6 @@ export default async function Page() {
 
   const placesRes = await PlaceService.getAll();
   const places = placesRes?.data;
-
-  console.log(places);
 
   return (
     <HomeProvider

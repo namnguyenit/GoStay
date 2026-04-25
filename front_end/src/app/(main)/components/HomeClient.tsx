@@ -1,30 +1,34 @@
 "use client";
 
-import { CSSProperties, useEffect, useState } from "react";
+import { CSSProperties, useEffect, useRef, useState } from "react";
 import {
   ConciergeBell,
   Home,
+  LogIn,
+  LogOutIcon,
   PartyPopper,
-  Star,
-  MoveRight,
-  ChevronLeft,
-  ChevronRight,
+  SettingsIcon,
+  UserIcon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import ServiceImageNavigation from "@/features/experience/components/ImageNavigation";
+import ImageNavigation from "./ImageNavigation";
 import { useSafeContext } from "@/shared/hooks";
 import { HomeContext } from "../providers/home.provider";
-import { formatMoney } from "@/shared/utils";
+import { CarouselSection, SearchInfoSection } from "@/shared/components";
+import PlaceCarouselItem from "@/features/place/components/PlaceCarouselItem";
+import clsx from "clsx";
 import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from "@/components/ui/carousel";
-import { Card, CardContent } from "@/components/ui/card";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import Link from "next/link";
 
 export default function HomeClient() {
   const {
@@ -53,12 +57,32 @@ export default function HomeClient() {
     return () => clearInterval(clock ?? undefined);
   }, [clock]);
 
-  const [carousel, setCarousel] = useState<any>(null);
+  const itemRef = useRef<HTMLDivElement>(null);
+  // useEffect(() => {
+  //   itemRef.current?.scrollIntoView({
+  //     behavior: "smooth",
+  //     block: "center", // hoặc "center"
+  //   });
+  // }, []);
+
+  const [scrolled, setScrolled] = useState(false);
 
   return (
-    <main className="scrollbar h-screen overflow-x-hidden overflow-y-auto">
+    <main
+      className="scrollbar h-screen overflow-x-hidden overflow-y-auto"
+      onScroll={(event) => {
+        if ((event.target as HTMLDivElement).scrollTop > 50) setScrolled(true);
+        if ((event.target as HTMLDivElement).scrollTop <= 50)
+          setScrolled(false);
+      }}
+    >
       {/* MAIN NAVIGATION */}
-      <div className="center bg-col fixed z-10 h-[60]">
+      <div
+        className={clsx(
+          "center fixed z-10 h-[70] transition-colors duration-700",
+          scrolled ? "bg-app-primary" : "bg-transparent",
+        )}
+      >
         <div className="pos-center-y text-header left-10 hidden text-white sm:block">
           Logo
         </div>
@@ -73,7 +97,7 @@ export default function HomeClient() {
             style={{ "--foreground": "white" } as CSSProperties}
           >
             <TabsTrigger value="1" className="data-[state=active]:text-white">
-              <div className="center-y hover:text-app-primary text-white text-shadow-gray-400 text-shadow-md hover:text-shadow-none">
+              <div className="center-y hover:text-app-accent text-white text-shadow-gray-400 text-shadow-md hover:text-shadow-none">
                 <Home />
                 <div className="w-2" />
                 Nơi cư trú
@@ -81,7 +105,7 @@ export default function HomeClient() {
             </TabsTrigger>
             <div className="w-1" />
             <TabsTrigger value="2" className="data-[state=active]:text-white">
-              <div className="center-y hover:text-app-primary text-white text-shadow-gray-400 text-shadow-md hover:text-shadow-none">
+              <div className="center-y hover:text-app-accent text-white text-shadow-gray-400 text-shadow-md hover:text-shadow-none">
                 <PartyPopper />
                 <div className="w-2" />
                 Trải nghiệm
@@ -89,7 +113,7 @@ export default function HomeClient() {
             </TabsTrigger>
             <div className="w-1" />
             <TabsTrigger value="3" className="data-[state=active]:text-white">
-              <div className="center-y hover:text-app-primary text-white text-shadow-gray-400 text-shadow-md hover:text-shadow-none">
+              <div className="center-y hover:text-app-accent text-white text-shadow-gray-400 text-shadow-md hover:text-shadow-none">
                 <ConciergeBell />
                 <div className="w-2" />
                 Dịch vụ
@@ -102,34 +126,69 @@ export default function HomeClient() {
             <p className="text-sm font-medium text-white text-shadow-gray-400 text-shadow-md">
               Le Duc Long
             </p>
-            <p className="text-muted-foreground text-xs">Admin</p>
+            <p
+              className={clsx(
+                "text-xs transition-colors duration-700",
+                scrolled ? "text-app-primary-fg" : "text-muted-foreground",
+              )}
+            >
+              Admin
+            </p>
           </div>
-
-          <Avatar>
-            <AvatarImage src="https://github.com/shadcn.png" />
-            <AvatarFallback>LL</AvatarFallback>
-          </Avatar>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <Avatar>
+                  <AvatarImage src="https://github.com/shadcn.png" />
+                  <AvatarFallback>LL</AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem>
+                <UserIcon />
+                Profile
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <SettingsIcon />
+                Settings
+              </DropdownMenuItem>
+              <Link href="/log-in">
+                <DropdownMenuItem>
+                  <LogIn />
+                  Log In
+                </DropdownMenuItem>
+              </Link>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem variant="destructive">
+                <LogOutIcon />
+                Log out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
-      <div className="center relative size-full overflow-hidden">
+      <div className="center relative size-full">
         {/* BG */}
-        <div className="absolute inset-0 scale-115 bg-black">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={experiences?.[imageIndex]?.id}
-              initial={{ opacity: 0, x: "5%" }}
-              animate={{ opacity: [0, 1, 1], x: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3, ease: "easeIn" }}
-              className="size-full"
-            >
-              <img
-                src={experiences?.[imageIndex]?.image ?? undefined}
-                alt=""
-                className="size-full object-cover"
-              />
-            </motion.div>
-          </AnimatePresence>
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="size-full scale-115 bg-black">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={experiences?.[imageIndex]?.id}
+                initial={{ opacity: 0, x: "5%" }}
+                animate={{ opacity: [0, 1, 1], x: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3, ease: "easeIn" }}
+                className="size-full"
+              >
+                <img
+                  src={experiences?.[imageIndex]?.image ?? undefined}
+                  alt=""
+                  className="size-full object-cover"
+                />
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
         {/* Overlay */}
         <div className="absolute inset-0">
@@ -167,81 +226,33 @@ export default function HomeClient() {
               </div>
             </motion.div>
           </div>
-          <div className="absolute right-0 bottom-1/12 w-full">
-            <ServiceImageNavigation />
+          <div className="absolute right-0 bottom-1/6 w-full">
+            <ImageNavigation />
           </div>
         </div>
-      </div>
-      <div className="h-10" />
-      {/* ROW LIST */}
-      <div className="px-4">
-        <div className="row justify-between">
-          <div className="center-y flex-1">
-            <div className="text-title line-clamp-1">Địa điểm ưu chuộng</div>
-            <div className="w-2" />
-            <Button className="bg-app-muted hover:bg-app-accent flex aspect-square h-auto items-center justify-center rounded-full border-0 p-0">
-              <MoveRight className="text-app-fg size-7 p-2" />
-            </Button>
-          </div>
-          <div>
-            <Button
-              className="bg-app-muted hover:bg-app-accent"
-              onClick={() => carousel?.scrollPrev()}
-            >
-              <ChevronLeft className="text-app-muted-fg" />
-            </Button>
-            <Button
-              className="bg-app-muted hover:bg-app-accent"
-              onClick={() => carousel?.scrollNext()}
-            >
-              <ChevronRight className="text-app-muted-fg" />
-            </Button>
-          </div>
+        {/* Search Info */}
+        <div className="pos-center-x bottom-[-30] w-6/10">
+          <SearchInfoSection />
         </div>
-        <div className="h-4" />
-        <Carousel
-          opts={{
-            align: "start",
-          }}
-          setApi={setCarousel}
-          className="w-full"
-        >
-          <CarouselContent>
-            {places?.map((e, index) => (
-              <CarouselItem
-                key={index}
-                className="basis-1/2 md:basis-1/3 lg:basis-1/7"
-              >
-                <Card className="aspect-square border-0 p-0 shadow-none ring-0 outline-0">
-                  <img
-                    src={e?.image ?? undefined}
-                    alt=""
-                    className="size-full object-cover"
-                  />
-                </Card>
-                <div className="p-1">
-                  <div className="text-app-fg line-clamp-1">{e?.name}</div>
-                  <div className="center-y line-clamp-1 flex justify-between">
-                    <div className="center-y gap-1">
-                      <div className="text-caption underline">đ</div>
-                      <div className="text-caption line-clamp-1">
-                        {formatMoney(e?.price ?? 0)}
-                      </div>
-                    </div>
-                    <div className="row center-y gap-0.5">
-                      <Star className="text-caption line-clamp-1 w-4" />
-                      <div className="text-caption line-clamp-1">
-                        {e?.rating ?? 0}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-        </Carousel>
       </div>
+      <div className="h-18" />
+      <CarouselSection title="Địa điểm ưu chuộng">
+        {places?.map((e, index) => (
+          <PlaceCarouselItem key={e?.id} item={e} onSelect={console.log} />
+        ))}
+      </CarouselSection>
       <div className="h-10" />
+      <CarouselSection title="Địa điểm ưu chuộng">
+        {places?.map((e, index) => (
+          <PlaceCarouselItem key={e?.id} item={e} onSelect={console.log} />
+        ))}
+      </CarouselSection>
+      <div className="h-10" />
+      <CarouselSection title="Địa điểm ưu chuộng">
+        {places?.map((e, index) => (
+          <PlaceCarouselItem key={e?.id} item={e} onSelect={console.log} />
+        ))}
+      </CarouselSection>
     </main>
   );
 }

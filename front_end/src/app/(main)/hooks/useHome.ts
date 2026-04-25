@@ -1,4 +1,6 @@
-import { useState } from "react";
+"use client";
+
+import { useEffect, useState } from "react";
 import { Experiences } from "@/features/experience";
 import { Places } from "@/features/place";
 

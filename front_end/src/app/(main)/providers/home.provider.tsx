@@ -19,5 +19,6 @@ export default function HomeProvider({
   initPlace,
 }: HomeProviderProp) {
   const home = useHome(initExperiences, initPlace);
+
   return <HomeContext.Provider value={home}>{children}</HomeContext.Provider>;
 }

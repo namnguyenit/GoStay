@@ -1,9 +1,9 @@
 import { env } from "@/config";
 
-const API = {
+const Api = {
   get: async (endpoint: string) => {
     try {
-      const res = await fetch(`${env.apiUrl}${endpoint}`);
+      const res = await fetch(`${env.apiUrl}${endpoint}`, {});
       const json = await res.json();
       return json;
     } catch (error: any) {
@@ -12,4 +12,4 @@ const API = {
   },
 };
 
-export default API;
+export default Api;
