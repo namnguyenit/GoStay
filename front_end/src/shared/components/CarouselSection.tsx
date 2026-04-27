@@ -1,12 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from "@/components/ui/carousel";
+import { Carousel, CarouselContent } from "@/components/ui/carousel";
 import { ChevronLeft, ChevronRight, MoveRight, Star } from "lucide-react";
-import { formatMoney } from "../utils";
 import { ReactNode, useEffect, useState } from "react";
 import type { EmblaCarouselType } from "embla-carousel";
 

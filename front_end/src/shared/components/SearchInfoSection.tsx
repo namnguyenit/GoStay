@@ -11,11 +11,10 @@ import {
   SelectItem,
   SelectLabel,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import clsx from "clsx";
 import { format } from "date-fns";
+import { Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { DateRange } from "react-day-picker";
 
@@ -28,11 +27,15 @@ type SearchInfo =
     }
   | undefined;
 
-export default function SearchInfoSection() {
+export default function SearchInfoSection({
+  onClickSearch,
+}: {
+  onClickSearch?: (value: SearchInfo) => void;
+}) {
   const [searchInfo, setSearchInfo] = useState<SearchInfo>();
   const [hover, setHover] = useState<FieldState>();
   const [searchButtonHover, setSearchButtonHover] = useState(false);
-  const [openDate, setOpenDate] = useState(false);
+  const [open, setOpen] = useState<FieldState>();
   const searchButton = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = searchButton.current;
@@ -52,10 +55,9 @@ export default function SearchInfoSection() {
       <div></div>
       {/* Chọn địa điểm */}
       <Select
+        open={open == "place" ? true : false}
         onOpenChange={(e) => {
-          if (e) {
-            setOpenDate(false);
-          }
+          setOpen(e ? "place" : undefined);
         }}
         onValueChange={(value) =>
           setSearchInfo({ ...searchInfo, place: value })
@@ -100,7 +102,12 @@ export default function SearchInfoSection() {
         )}
       />
       {/* Chọn ngày */}
-      <Popover open={openDate} onOpenChange={setOpenDate}>
+      <Popover
+        open={open == "date" ? true : false}
+        onOpenChange={(e) => {
+          setOpen(e ? "date" : undefined);
+        }}
+      >
         <PopoverTrigger asChild className="w-1/3 border-none whitespace-normal">
           <div
             className="col hover:bg-app-muted size-full items-start justify-evenly gap-0 rounded-full px-4"
@@ -160,17 +167,19 @@ export default function SearchInfoSection() {
       />
       {/* Chọn dịch vụ */}
       <Select
+        open={open == "service" ? true : false}
         onOpenChange={(e) => {
-          if (e) {
-            setOpenDate(false);
+          if (searchButtonHover) {
+            return;
           }
+          setOpen(e ? "service" : undefined);
         }}
         onValueChange={(value) =>
           setSearchInfo({ ...searchInfo, service: value })
         }
       >
         <SelectTrigger
-          className={clsx(
+          className={cn(
             "row h-full! w-1/3 min-w-0 gap-0 rounded-full border-none p-0 pr-3 pl-4 break-all whitespace-normal focus-visible:ring-0 [&>svg]:hidden",
             searchButtonHover || "hover:bg-app-muted",
           )}
@@ -193,14 +202,14 @@ export default function SearchInfoSection() {
               )}
             </div>
           </div>
-
+          {/* SEARCH BUTTON */}
           <div
             ref={searchButton}
-            className="bg-app-primary h-[calc(100%-12px)] rounded-full transition-[width] duration-500"
+            className="row bg-app-primary h-[calc(100%-12px)] items-center overflow-hidden rounded-full transition-[width] duration-500"
             onMouseEnter={(e) => {
               const el = e.currentTarget;
               const h = el.offsetHeight;
-              el.style.width = `${h * 3}px`;
+              el.style.width = `${h * 2.5}px`;
               setSearchButtonHover(true);
             }}
             onMouseLeave={(e) => {
@@ -211,9 +220,16 @@ export default function SearchInfoSection() {
             }}
             onPointerDown={(e) => {
               e.stopPropagation();
-              console.log(searchInfo);
+              onClickSearch?.(searchInfo);
             }}
-          ></div>
+          >
+            <div className="center aspect-square h-full w-auto">
+              <Search className="text-app-primary-fg" />
+            </div>
+            <div className="">
+              <div className="text-app-primary-fg line-clamp-1">Tìm kiếm</div>
+            </div>
+          </div>
         </SelectTrigger>
         <SelectContent side="bottom" sideOffset={4} position="popper">
           <SelectGroup>

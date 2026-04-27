@@ -232,7 +232,7 @@ export default function HomeClient() {
         </div>
         {/* Search Info */}
         <div className="pos-center-x bottom-[-30] w-6/10">
-          <SearchInfoSection />
+          <SearchInfoSection onClickSearch={console.log} />
         </div>
       </div>
       <div className="h-18" />

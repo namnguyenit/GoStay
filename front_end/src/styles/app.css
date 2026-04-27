@@ -168,6 +168,8 @@
 @layer base {
   body {
     @apply bg-app-bg text-app-fg;
+    /* CUSTOM BỎ CHẶN DO SELECT TRIGGER */
+    pointer-events: auto !important;
   }
 
   html {
