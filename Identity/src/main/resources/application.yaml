@@ -1,5 +1,12 @@
+server:
+  port: 8080
+
 spring:
   application:
     name: Identity
   profiles:
     active: dev
+  config:
+    import:
+      - optional:classpath:database.yaml
+      - optional:classpath:jwt.yaml
