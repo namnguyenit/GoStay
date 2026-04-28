@@ -1,41 +1,112 @@
 package com.Listing.CatalogandListing.entity;
 
+import com.Listing.CatalogandListing.entity.attributes.BaseListingAttributes;
+import com.Listing.CatalogandListing.enums.ListingCategory;
+import com.Listing.CatalogandListing.enums.ListingStatus;
+import com.Listing.CatalogandListing.enums.PriceUnit;
+import com.Listing.CatalogandListing.enums.SubCategory;
+
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import jakarta.persistence.*;
 import lombok.*;
 
+import org.locationtech.jts.geom.Point;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
-@Table(name = "listings")
-@Getter
-@Setter
+@Table(name = "listings", indexes = {
+    @Index(name = "idx_listing_host_id", columnList = "host_id"),
+    @Index(name = "idx_listing_complex_id", columnList = "complex_id"),
+    @Index(name = "idx_listing_category", columnList = "category"),
+    @Index(name = "idx_listing_sub_category", columnList = "sub_category"),
+    @Index(name = "idx_listing_province", columnList = "province")
+})
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Listing {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
-    // Tên cơ sở/nhà hàng (VD: The Coffee House)
-    private String name;
+    @Column(name = "host_id")
+    private UUID hostId;
 
-    // ID hoặc Username của chủ nhà hàng. Lấy từ token của bên Identity truyền sang
-    private String ownerUsername;
-
-    // 1 trường chứa tọa độ gộp trong entity (Embedded)
-    @Embedded
-    private Coordinate coordinate;
-
-    // Thông tin tọa độ sẽ xử lý logic để móc nối thuộc vào tỉnh thành Location nào.
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "location_id")
-    private Location location;
+    @JoinColumn(name = "complex_id")
+    private Complex complex;
 
-    // ** QUAN TRỌNG VỀ LOGIC PHÂN QUYỀN**:
-    // 1 cơ sở chứa nhiều loại dịch vụ. 
-    // Nếu là 'ROLE_HOST' -> Logic bên Service sẽ kiểm tra và CHỈ CHO PHÉP 1 service duy nhất.
-    // Nếu là 'ROLE_ENTERPRISE' -> Logic bên Service sẽ cho MỞ KHÓA thêm List các service thoả mái.
-    @OneToMany(mappedBy = "listing", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ListingService> services;
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private ListingCategory category;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "sub_category", length = 50)
+    private SubCategory subCategory;
+
+    @Column(length = 255)
+    private String title;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Column(length = 100)
+    private String province;
+
+    @Column(name = "base_price", precision = 10, scale = 2)
+    private BigDecimal basePrice;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "price_unit", length = 20)
+    private PriceUnit priceUnit;
+
+    private Double latitude;
+    private Double longitude;
+
+    @Column(columnDefinition = "geometry(Point,4326)")
+    private Point location;
+
+    @Column(name = "thumbnail_url", length = 255)
+    private String thumbnailUrl;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private BaseListingAttributes attributes;
+
+    @Column(name = "average_rating", precision = 2, scale = 1, columnDefinition = "DECIMAL(2,1) DEFAULT 0.0")
+    private BigDecimal averageRating;
+
+    @Column(name = "total_reviews", columnDefinition = "INT DEFAULT 0")
+    private Integer totalReviews;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private ListingStatus status;
+
+    @OneToMany(mappedBy = "listing", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Review> reviews;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    public void prePersist() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+        if (averageRating == null) averageRating = BigDecimal.ZERO;
+        if (totalReviews == null) totalReviews = 0;
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }

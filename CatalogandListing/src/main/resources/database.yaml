@@ -1,9 +1,6 @@
-server:
-  port: 8081 # Chạy port 8081 để không đụng với 8080 của con Identity
-
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/gotravel_catalog
+    url: jdbc:postgresql://localhost:5432/cataloglisting
     username: gotravel_db
     password: 123456
     driver-class-name: org.postgresql.Driver
@@ -15,9 +12,3 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          jwk-set-uri: http://localhost:8080/.well-known/jwks.json
