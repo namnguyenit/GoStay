@@ -70,12 +70,12 @@ public class UserService {
     }
 
     /**
-     * logic lấy user từ username
-     * @param username
+     * logic lấy user từ userId
+     * @param userId
      * @return UserReponse
      */
-    public UserResponse getUserByUsername(String username) {
-        User user = userRepository.findByUsername(username)
+    public UserResponse getUserById(String userId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
         return userMapper.userToUserResponse(user);
     }
@@ -93,12 +93,12 @@ public class UserService {
 
     /**
      *  update user 
-     * @param username
+     * @param userId
      * @param userUpdateRequest
      * @return UserResponse
      */
-    public UserResponse updateUser(String username, UserUpdateRequest userUpdateRequest) {
-        User user = userRepository.findByUsername(username)
+    public UserResponse updateUser(String userId, UserUpdateRequest userUpdateRequest) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
         
         if(userUpdateRequest.getPassword() != null || !userUpdateRequest.getPassword().isEmpty() ) {
@@ -123,11 +123,11 @@ public class UserService {
 
 
     /**
-     * @Logic tìm người dùng theo username và xoá người dùng
-     * @param username
+     * @Logic tìm người dùng theo userId và xoá người dùng
+     * @param userId
      */
-    public void deleteUser(String username) {
-        User user = userRepository.findByUsername(username)
+    public void deleteUser(String userId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
         userRepository.delete(user);
     }
@@ -135,11 +135,11 @@ public class UserService {
 
     /**
      * @Note khi update role phải cần hỏi thêm về các thông tin và map thêm vào user cho từng hạng mục nữa .
-     * @param username
+     * @param userId
      * @param roleName
      */
-    public void upgradeToRole(String username, String roleName) {
-        User user = userRepository.findByUsername(username)
+    public void upgradeToRole(String userId, String roleName) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
         Role role = roleRepository.findById(roleName.toUpperCase())
                 .orElseThrow(() -> new AppException(UserErrorCode.ROLE_NOT_FOUND));
@@ -163,12 +163,12 @@ public class UserService {
 
     /**
      * @Logic upgrade từ người dùng lên Host 
-     * @param username
+     * @param userId
      * @param hostProfileRequest
      * @retuhostn UserReponse
      */
-    public UserResponse upgradeToHost(String username, HostProfileRequest hostProfileRequest) {
-        User user = userRepository.findByUsername(username)
+    public UserResponse upgradeToHost(String userId, HostProfileRequest hostProfileRequest) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
         Role role = roleRepository.findById("HOST")
                 .orElseThrow(() -> new AppException(UserErrorCode.ROLE_NOT_FOUND));
@@ -189,11 +189,11 @@ public class UserService {
 
     /**
      * @Logic upgrade từ người dùng lên  enterprise
-     * @param username
+     * @param userId
      * @retuhostn UserReponse
      */
-    public UserResponse upgradeToEnterprise(String username, EnterpriseProfileRequest enterpriseProfileRequest) {
-        User user = userRepository.findByUsername(username)
+    public UserResponse upgradeToEnterprise(String userId, EnterpriseProfileRequest enterpriseProfileRequest) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
         Role role = roleRepository.findById("ENTERPRISE")
                 .orElseThrow(() -> new AppException(UserErrorCode.ROLE_NOT_FOUND));
@@ -215,23 +215,23 @@ public class UserService {
 
     /**
      * @Logic lấy profile của user 
-     * @param username
+     * @param userId
      * @return UserProfileResponse
      */
-    public UserProfileResponse getUserProfile(String username) {
-        User user = userRepository.findByUsername(username)
+    public UserProfileResponse getUserProfile(String userId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
         return userMapper.toUserProfileResponse(user.getUserProfile());
     }
 
     /**
-     * @Logic lấy username và request để cập nhật userprofilereponse 
-     * @param username
+     * @Logic lấy userId và request để cập nhật userprofilereponse 
+     * @param userId
      * @param request
      * @return UserProfileResponse
      */
-    public UserProfileResponse updateUserProfile(String username, UserProfileRequest request) {
-        User user = userRepository.findByUsername(username)
+    public UserProfileResponse updateUserProfile(String userId, UserProfileRequest request) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
         if (user.getUserProfile() == null) {
             user.setUserProfile(UserProfile.builder().user(user).build());
@@ -243,11 +243,11 @@ public class UserService {
 
     /**
      * 
-     * @param username
+     * @param userId
      * @return HostProfileResponse
      */
-    public HostProfileResponse getHostProfile(String username) {
-        User user = userRepository.findByUsername(username)
+    public HostProfileResponse getHostProfile(String userId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
         if (user.getHostProfile() == null) {
             throw new AppException(HostErrorCode.HOST_PROFILE_NOT_FOUND);
@@ -257,12 +257,12 @@ public class UserService {
 
     /**
      *
-     * @param username
+     * @param userId
      * @param request
      * @return HostProfileResponse
      */
-    public HostProfileResponse updateHostProfile(String username, HostProfileRequest request) {
-        User user = userRepository.findByUsername(username)
+    public HostProfileResponse updateHostProfile(String userId, HostProfileRequest request) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
         if (user.getHostProfile() == null) {
             throw new AppException(HostErrorCode.USER_NOT_HOST);
@@ -274,11 +274,11 @@ public class UserService {
 
     /**
      *
-     * @param username
+     * @param userId
      * @return EnterpriseProfileResponse
      */
-    public EnterpriseProfileResponse getEnterpriseProfile(String username) {
-        User user = userRepository.findByUsername(username)
+    public EnterpriseProfileResponse getEnterpriseProfile(String userId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
         if (user.getEnterpriseProfile() == null) {
             throw new AppException(EnterpriseErrorCode.ENTERPRISE_PROFILE_NOT_FOUND);
@@ -288,12 +288,12 @@ public class UserService {
 
     /**
      *
-     * @param username
+     * @param userId
      * @param request
      * @return EnterpriseProfileResponse
      */
-    public EnterpriseProfileResponse updateEnterpriseProfile(String username, EnterpriseProfileRequest request) {
-        User user = userRepository.findByUsername(username)
+    public EnterpriseProfileResponse updateEnterpriseProfile(String userId, EnterpriseProfileRequest request) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
         if (user.getEnterpriseProfile() == null) {
             throw new AppException(EnterpriseErrorCode.USER_NOT_ENTERPRISE);
