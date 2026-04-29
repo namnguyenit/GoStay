@@ -1,6 +1,8 @@
 package com.Listing.CatalogandListing.controller;
 
+import com.Listing.CatalogandListing.dto.request.landmark.SuggestLandmarkRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -14,13 +16,13 @@ public class CatalogHostController {
      * Phương thức: POST
      * Auth: Header Authorization: Bearer <token> (Role: HOST)
      * 
-     * @param request DTO chứa thông tin địa danh do Host đề xuất
+     * @param suggestLandmarkRequest DTO chứa thông tin địa danh do Host đề xuất
      * @return 201 Created (Trạng thái PENDING chờ Admin duyệt)
      */
     @PostMapping("/landmark-suggestions")
-    public ResponseEntity<?> suggestLandmark(@RequestBody Object request) { // TODO: Thay bằng SuggestionRequest DTO
-        // TODO: Lấy Host ID từ token
-        // TODO: Tạo bản ghi LandmarkSuggestion mới với status = PENDING
+    public ResponseEntity<?> suggestLandmark(@RequestBody SuggestLandmarkRequest suggestLandmarkRequest) { // TODO: Thay bằng SuggestionRequest DTO
+        String id = SecurityContextHolder.getContext().getAuthentication().getName();
+
         return ResponseEntity.status(201).build();
     }
 
