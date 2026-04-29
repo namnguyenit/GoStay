@@ -62,7 +62,7 @@ public class AuthenticationService {
                 .build();
 
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(user.getUsername())
+                .subject(user.getId())
                 .issuer("com.gotravel")
                 .issueTime(new Date())
                 .expirationTime(new Date(
