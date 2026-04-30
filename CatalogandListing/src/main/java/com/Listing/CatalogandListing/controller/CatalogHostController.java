@@ -83,12 +83,10 @@ public class CatalogHostController {
      * @return 200 OK
      */
     @PutMapping("/listings/{listingId}")
-    public ResponseEntity<?> updateListing(@PathVariable UUID listingId, @RequestBody Object request) {
-        // TODO: Lấy Host ID từ token
-        // TODO: BẮT BUỘC kiểm tra (Check Authorization): Host này có phải là chủ sở hữu
-        // của Listing {listingId} hay không?
-        // TODO: Cập nhật thông tin Listing
-        return ResponseEntity.ok().build();
+    public ResponseEntity<ApiResponse<Void>> updateListing(@PathVariable UUID listingId, @RequestBody @Valid SaveListingRequest request) {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        listingService.updateListing(listingId, userId, request);
+        return ResponseEntity.ok(ApiResponse.success("Cập nhật dịch vụ lưu trú thành công."));
     }
 
     /**
@@ -100,10 +98,9 @@ public class CatalogHostController {
      * @return 200 OK
      */
     @DeleteMapping("/listings/{listingId}")
-    public ResponseEntity<?> deleteListing(@PathVariable UUID listingId) {
-        // TODO: Kiểm tra quyền sở hữu của Host với Listing
-        // TODO: Update cột status của Listing thành "DELETED" (Soft delete) thay vì xóa
-        // hoàn toàn khỏi DB
-        return ResponseEntity.ok().build();
+    public ResponseEntity<ApiResponse<Void>> deleteListing(@PathVariable UUID listingId) {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        listingService.deleteListing(listingId, userId);
+        return ResponseEntity.ok(ApiResponse.success("Xóa dịch vụ lưu trú thành công."));
     }
 }

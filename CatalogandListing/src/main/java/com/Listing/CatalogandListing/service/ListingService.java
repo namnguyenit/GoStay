@@ -26,4 +26,28 @@ public class ListingService {
         listing.setStatus(ListingStatus.ACTIVE);
         listingRepository.save(listing);
     }
+
+    public void updateListing(UUID listingId, String userId, SaveListingRequest request) {
+        Listing listing = listingRepository.findById(listingId)
+                .orElseThrow(() -> new com.Listing.CatalogandListing.exception.AppException(com.Listing.CatalogandListing.exception.ListingErrorCode.LISTING_NOT_FOUND));
+
+        if (!listing.getHostId().equals(UUID.fromString(userId))) {
+            throw new com.Listing.CatalogandListing.exception.AppException(com.Listing.CatalogandListing.exception.ListingErrorCode.LISTING_ACCESS_DENIED);
+        }
+
+        listingMapper.updateEntityFromRequest(request, listing);
+        listingRepository.save(listing);
+    }
+
+    public void deleteListing(UUID listingId, String userId) {
+        Listing listing = listingRepository.findById(listingId)
+                .orElseThrow(() -> new com.Listing.CatalogandListing.exception.AppException(com.Listing.CatalogandListing.exception.ListingErrorCode.LISTING_NOT_FOUND));
+
+        if (!listing.getHostId().equals(UUID.fromString(userId))) {
+            throw new com.Listing.CatalogandListing.exception.AppException(com.Listing.CatalogandListing.exception.ListingErrorCode.LISTING_ACCESS_DENIED);
+        }
+
+        listing.setStatus(ListingStatus.DELETED);
+        listingRepository.save(listing);
+    }
 }

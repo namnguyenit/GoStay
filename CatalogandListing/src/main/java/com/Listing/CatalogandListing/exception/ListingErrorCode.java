@@ -9,7 +9,8 @@ public enum ListingErrorCode implements ErrorCode {
     LISTING_NOT_FOUND(404, "Listing not found", HttpStatus.NOT_FOUND),
     LISTING_ALREADY_EXISTS(400, "Listing already exists", HttpStatus.BAD_REQUEST),
     INVALID_LISTING_DATA(400, "Invalid listing data provided", HttpStatus.BAD_REQUEST),
-    LISTING_UNAVAILABLE(400, "Listing is currently unavailable", HttpStatus.BAD_REQUEST);
+    LISTING_UNAVAILABLE(400, "Listing is currently unavailable", HttpStatus.BAD_REQUEST),
+    LISTING_ACCESS_DENIED(403, "You don't have permission to modify this listing", HttpStatus.FORBIDDEN);
 
     private final int code;
     private final String message;
