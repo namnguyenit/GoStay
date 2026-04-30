@@ -1,5 +1,12 @@
 package com.Listing.CatalogandListing.controller;
 
+import com.Listing.CatalogandListing.dto.request.landmark.SaveLandmarkRequest;
+import com.Listing.CatalogandListing.dto.request.landmark.UpdateLandmarkStatusRequest;
+import com.Listing.CatalogandListing.dto.request.landmark.UpdateSuggestionStatusRequest;
+import com.Listing.CatalogandListing.dto.response.ApiResponse;
+import com.Listing.CatalogandListing.service.LandmarkService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -7,7 +14,10 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/catalog/admin")
+@RequiredArgsConstructor
 public class CatalogAdminController {
+
+    final LandmarkService landmarkService;
 
     /**
      * 3.4.1. Xem danh sách Đề xuất Địa danh (Landmark Suggestions)
@@ -38,11 +48,11 @@ public class CatalogAdminController {
      * @return 200 OK
      */
     @PutMapping("/landmark-suggestions/{suggestionId}/status")
-    public ResponseEntity<?> updateSuggestionStatus(
+    public ResponseEntity<ApiResponse<Void>> updateSuggestionStatus(
             @PathVariable UUID suggestionId, 
-            @RequestBody Object request) { // TODO: Thay bằng UpdateSuggestionStatusRequest
-        // TODO: Cập nhật status của Suggestion. Nếu REJECTED thì lưu kèm lý do từ chối.
-        return ResponseEntity.ok().build();
+            @RequestBody @Valid UpdateSuggestionStatusRequest request) {
+        landmarkService.updateSuggestionStatus(suggestionId, request);
+        return ResponseEntity.ok(ApiResponse.success("Xử lý đề xuất địa danh thành công."));
     }
 
     /**
@@ -54,10 +64,9 @@ public class CatalogAdminController {
      * @return 201 Created
      */
     @PostMapping("/landmarks")
-    public ResponseEntity<?> createLandmark(@RequestBody Object request) { // TODO: Thay bằng CreateLandmarkRequest DTO
-        // TODO: Tạo Landmark mới vào DB.
-        // TODO: (Nghiệp vụ) Nếu trong request có truyền 'resolvedSuggestionId' thì cập nhật trạng thái của Suggestion đó thành RESOLVED.
-        return ResponseEntity.status(201).build();
+    public ResponseEntity<ApiResponse<Void>> createLandmark(@RequestBody @Valid SaveLandmarkRequest request) {
+        landmarkService.createLandmark(request);
+        return ResponseEntity.status(201).body(ApiResponse.created("Tạo địa danh mới thành công."));
     }
 
     /**
@@ -70,9 +79,9 @@ public class CatalogAdminController {
      * @return 200 OK
      */
     @PutMapping("/landmarks/{landmarkId}")
-    public ResponseEntity<?> updateLandmark(@PathVariable UUID landmarkId, @RequestBody Object request) {
-        // TODO: Cập nhật thông tin Landmark
-        return ResponseEntity.ok().build();
+    public ResponseEntity<ApiResponse<Void>> updateLandmark(@PathVariable UUID landmarkId, @RequestBody @Valid SaveLandmarkRequest request) {
+        landmarkService.updateLandmark(landmarkId, request);
+        return ResponseEntity.ok(ApiResponse.success("Cập nhật địa danh thành công."));
     }
 
     /**
@@ -86,10 +95,10 @@ public class CatalogAdminController {
      * @return 200 OK
      */
     @PatchMapping("/landmarks/{landmarkId}/status")
-    public ResponseEntity<?> changeLandmarkStatus(
+    public ResponseEntity<ApiResponse<Void>> changeLandmarkStatus(
             @PathVariable UUID landmarkId, 
-            @RequestBody Object request) { // TODO: Thay bằng UpdateLandmarkStatusRequest
-        // TODO: Đổi trạng thái của Landmark thay vì xóa bỏ
-        return ResponseEntity.ok().build();
+            @RequestBody @Valid UpdateLandmarkStatusRequest request) {
+        landmarkService.changeLandmarkStatus(landmarkId, request);
+        return ResponseEntity.ok(ApiResponse.success("Đổi trạng thái địa danh thành công."));
     }
 }
