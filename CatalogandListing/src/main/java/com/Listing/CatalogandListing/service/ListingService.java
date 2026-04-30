@@ -1,0 +1,29 @@
+package com.Listing.CatalogandListing.service;
+
+import com.Listing.CatalogandListing.dto.request.listing.SaveListingRequest;
+import com.Listing.CatalogandListing.entity.Listing;
+import com.Listing.CatalogandListing.enums.ListingStatus;
+import com.Listing.CatalogandListing.mapper.ListingMapper;
+import com.Listing.CatalogandListing.repository.ListingRepository;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.springframework.stereotype.Service;
+
+import java.util.UUID;
+
+@Service
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@RequiredArgsConstructor
+public class ListingService {
+
+    ListingMapper listingMapper;
+    ListingRepository listingRepository;
+
+    public void createListing(String userId, SaveListingRequest request) {
+        Listing listing = listingMapper.toEntity(request);
+        listing.setHostId(UUID.fromString(userId));
+        listing.setStatus(ListingStatus.ACTIVE);
+        listingRepository.save(listing);
+    }
+}

@@ -17,7 +17,8 @@ public class GlobalExceptionHandler {
         ErrorCode errorCode = appException.getErrorCode();
 
         ApiResponse<Void> apiResponse = new ApiResponse<>();
-        apiResponse.setStatus(errorCode.getCode());
+        apiResponse.setSuccess(false);
+        apiResponse.setCode(errorCode.getCode());
         apiResponse.setMessage(errorCode.getMessage());
 
         return ResponseEntity
@@ -34,7 +35,8 @@ public class GlobalExceptionHandler {
                 .orElse(exception.getMessage());
 
         ApiResponse<Void> apiResponse = new ApiResponse<>();
-        apiResponse.setStatus(400);
+        apiResponse.setSuccess(false);
+        apiResponse.setCode(400);
         apiResponse.setMessage(errorMessage);
 
         return ResponseEntity.badRequest().body(apiResponse);
@@ -44,7 +46,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleRuntimeException(RuntimeException runtimeException) {
         log.error("Unhandled exception", runtimeException);
         ApiResponse<Void> apiResponse = new ApiResponse<>();
-        apiResponse.setStatus(400);
+        apiResponse.setSuccess(false);
+        apiResponse.setCode(400);
         apiResponse.setMessage(runtimeException.getMessage());
 
         return ResponseEntity.badRequest().body(apiResponse);
@@ -53,7 +56,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = DataIntegrityViolationException.class)
     public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolationException(DataIntegrityViolationException exception) {
         ApiResponse<Void> apiResponse = new ApiResponse<>();
-        apiResponse.setStatus(409);
+        apiResponse.setSuccess(false);
+        apiResponse.setCode(409);
         apiResponse.setMessage("Data integrity violation: This record already exists or violates a unique constraint.");
 
         return ResponseEntity.status(409).body(apiResponse);
