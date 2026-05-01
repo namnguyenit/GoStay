@@ -2,6 +2,8 @@ package com.Listing.CatalogandListing.controller;
 
 import com.Listing.CatalogandListing.dto.request.landmark.SuggestLandmarkRequest;
 import com.Listing.CatalogandListing.dto.response.ApiResponse;
+import com.Listing.CatalogandListing.dto.response.ListingDetailResponse;
+import com.Listing.CatalogandListing.dto.response.PaginationResponse;
 import com.Listing.CatalogandListing.service.LandmarkService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -74,6 +76,18 @@ public class CatalogHostController {
     }
 
     /**
+     * Lấy danh sách các dịch vụ lưu trú do Host đăng
+     */
+    @GetMapping("/listings")
+    public ResponseEntity<ApiResponse<PaginationResponse<ListingDetailResponse>>> getMyListings(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        PaginationResponse<ListingDetailResponse> response = listingService.getListingsByHost(userId, page, size);
+        return ResponseEntity.ok(ApiResponse.success("Lấy danh sách dịch vụ lưu trú thành công.", response));
+    }
+
+    /**
      * 3.3.4. Cập nhật Dịch vụ
      * Phương thức: PUT
      * Auth: Role HOST
@@ -83,7 +97,8 @@ public class CatalogHostController {
      * @return 200 OK
      */
     @PutMapping("/listings/{listingId}")
-    public ResponseEntity<ApiResponse<Void>> updateListing(@PathVariable UUID listingId, @RequestBody @Valid SaveListingRequest request) {
+    public ResponseEntity<ApiResponse<Void>> updateListing(@PathVariable UUID listingId,
+            @RequestBody @Valid SaveListingRequest request) {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         listingService.updateListing(listingId, userId, request);
         return ResponseEntity.ok(ApiResponse.success("Cập nhật dịch vụ lưu trú thành công."));

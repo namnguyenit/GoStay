@@ -42,6 +42,7 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
+			<version>1.18.46</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
@@ -71,6 +72,12 @@
 		<dependency>
 			<groupId>org.hibernate.orm</groupId>
 			<artifactId>hibernate-spatial</artifactId>
+		</dependency>
+		<!-- Thêm Jackson 2 cho Hibernate FormatMapper (vì Spring Boot 4 dùng Jackson 3) -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.18.2</version>
 		</dependency>
 
 		<!-- Thêm Jackson Validation để hỗ trợ @Valid -->

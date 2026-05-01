@@ -4,6 +4,8 @@ import com.Listing.CatalogandListing.dto.request.landmark.SaveLandmarkRequest;
 import com.Listing.CatalogandListing.dto.request.landmark.UpdateLandmarkStatusRequest;
 import com.Listing.CatalogandListing.dto.request.landmark.UpdateSuggestionStatusRequest;
 import com.Listing.CatalogandListing.dto.response.ApiResponse;
+import com.Listing.CatalogandListing.dto.response.PaginationResponse;
+import com.Listing.CatalogandListing.entity.LandmarkSuggestion;
 import com.Listing.CatalogandListing.service.LandmarkService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,17 +27,17 @@ public class CatalogAdminController {
      * Auth: Header Authorization: Bearer <token> (Role: ADMIN)
      * 
      * @param status Trạng thái cần lọc (PENDING, RESOLVED, REJECTED)
-     * @param page Số trang
-     * @param size Số phần tử mỗi trang
+     * @param page   Số trang
+     * @param size   Số phần tử mỗi trang
      * @return Danh sách đề xuất phân trang
      */
     @GetMapping("/landmark-suggestions")
-    public ResponseEntity<?> getLandmarkSuggestions(
+    public ResponseEntity<ApiResponse<PaginationResponse<LandmarkSuggestion>>> getLandmarkSuggestions(
             @RequestParam(required = false) String status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        // TODO: Viết logic lọc LandmarkSuggestion theo status và phân trang
-        return ResponseEntity.ok().build();
+        PaginationResponse<LandmarkSuggestion> response = landmarkService.getLandmarkSuggestions(status, page, size);
+        return ResponseEntity.ok(ApiResponse.success("Lấy danh sách đề xuất thành công.", response));
     }
 
     /**
@@ -44,12 +46,13 @@ public class CatalogAdminController {
      * Auth: Role ADMIN
      * 
      * @param suggestionId ID của đề xuất
-     * @param request DTO chứa status (REJECTED/RESOLVED) và rejectReason (nếu REJECTED)
+     * @param request      DTO chứa status (REJECTED/RESOLVED) và rejectReason (nếu
+     *                     REJECTED)
      * @return 200 OK
      */
     @PutMapping("/landmark-suggestions/{suggestionId}/status")
     public ResponseEntity<ApiResponse<Void>> updateSuggestionStatus(
-            @PathVariable UUID suggestionId, 
+            @PathVariable UUID suggestionId,
             @RequestBody @Valid UpdateSuggestionStatusRequest request) {
         landmarkService.updateSuggestionStatus(suggestionId, request);
         return ResponseEntity.ok(ApiResponse.success("Xử lý đề xuất địa danh thành công."));
@@ -75,11 +78,12 @@ public class CatalogAdminController {
      * Auth: Role ADMIN
      * 
      * @param landmarkId ID của địa danh
-     * @param request DTO chứa thông tin mới để ghi đè
+     * @param request    DTO chứa thông tin mới để ghi đè
      * @return 200 OK
      */
     @PutMapping("/landmarks/{landmarkId}")
-    public ResponseEntity<ApiResponse<Void>> updateLandmark(@PathVariable UUID landmarkId, @RequestBody @Valid SaveLandmarkRequest request) {
+    public ResponseEntity<ApiResponse<Void>> updateLandmark(@PathVariable UUID landmarkId,
+            @RequestBody @Valid SaveLandmarkRequest request) {
         landmarkService.updateLandmark(landmarkId, request);
         return ResponseEntity.ok(ApiResponse.success("Cập nhật địa danh thành công."));
     }
@@ -91,12 +95,12 @@ public class CatalogAdminController {
      * Auth: Role ADMIN
      * 
      * @param landmarkId ID của địa danh
-     * @param request DTO chứa status mới (ACTIVE, MAINTENANCE, HIDDEN)
+     * @param request    DTO chứa status mới (ACTIVE, MAINTENANCE, HIDDEN)
      * @return 200 OK
      */
     @PatchMapping("/landmarks/{landmarkId}/status")
     public ResponseEntity<ApiResponse<Void>> changeLandmarkStatus(
-            @PathVariable UUID landmarkId, 
+            @PathVariable UUID landmarkId,
             @RequestBody @Valid UpdateLandmarkStatusRequest request) {
         landmarkService.changeLandmarkStatus(landmarkId, request);
         return ResponseEntity.ok(ApiResponse.success("Đổi trạng thái địa danh thành công."));

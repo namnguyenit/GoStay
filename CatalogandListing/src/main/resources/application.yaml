@@ -6,4 +6,4 @@ spring:
       - optional:classpath:database.yaml
       - optional:classpath:jwt.yaml
 server:
-  port: 8081
+  port: 8082
