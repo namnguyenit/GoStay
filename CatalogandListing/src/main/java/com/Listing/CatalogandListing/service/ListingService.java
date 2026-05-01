@@ -3,6 +3,8 @@ package com.Listing.CatalogandListing.service;
 import com.Listing.CatalogandListing.dto.request.listing.SaveListingRequest;
 import com.Listing.CatalogandListing.entity.Listing;
 import com.Listing.CatalogandListing.enums.ListingStatus;
+import com.Listing.CatalogandListing.exception.AppException;
+import com.Listing.CatalogandListing.exception.ListingErrorCode;
 import com.Listing.CatalogandListing.mapper.ListingMapper;
 import com.Listing.CatalogandListing.repository.ListingRepository;
 import com.Listing.CatalogandListing.dto.response.PaginationResponse;
@@ -38,6 +40,14 @@ public class ListingService {
                 .totalPages(listingPage.getTotalPages())
                 .totalElements(listingPage.getTotalElements())
                 .build();
+    }
+
+    public ListingDetailResponse getDetailListing(UUID id){
+        Listing listing = listingRepository
+                .findById(id)
+                .orElseThrow(() -> new AppException(ListingErrorCode.LISTING_NOT_FOUND));
+
+        return listingMapper.toDetailResponse(listing);
     }
 
     public void createListing(String userId, SaveListingRequest request) {

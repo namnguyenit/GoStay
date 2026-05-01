@@ -1,13 +1,20 @@
 package com.Listing.CatalogandListing.controller;
 
+import com.Listing.CatalogandListing.dto.response.ApiResponse;
+import com.Listing.CatalogandListing.dto.response.ListingDetailResponse;
+import com.Listing.CatalogandListing.service.ListingService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/catalog/listings")
 public class CatalogPublicController {
+    final ListingService listingService;
 
     /**
      * 3.1.1. Xem chi tiết một Dịch vụ (Listing Detail)
@@ -18,10 +25,9 @@ public class CatalogPublicController {
      * @return Response chứa thông tin chi tiết dịch vụ (kèm JSONB attributes)
      */
     @GetMapping("/{listingId}")
-    public ResponseEntity<?> getListingDetail(@PathVariable UUID listingId) {
-        // TODO: Code logic lấy chi tiết Listing theo ID.
-        // Trả về 200 OK nếu tìm thấy, 404 Not Found nếu không tồn tại hoặc đã bị ẩn.
-        return ResponseEntity.ok().build();
+    public ResponseEntity<ApiResponse<ListingDetailResponse>> getListingDetail(@PathVariable UUID listingId) {
+        ListingDetailResponse listingDetailResponse = listingService.getDetailListing(listingId);
+        return ResponseEntity.ok(ApiResponse.success("Lấy thành công chi tiết dịch vụ" , listingDetailResponse));
     }
 
     /**
@@ -39,7 +45,7 @@ public class CatalogPublicController {
             @PathVariable UUID listingId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        // TODO: Code logic query danh sách Review theo listingId, kết hợp phân trang (Pageable).
+
         return ResponseEntity.ok().build();
     }
 }
