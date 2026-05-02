@@ -1,11 +1,19 @@
 package com.Listing.CatalogandListing.controller;
 
+import com.Listing.CatalogandListing.dto.request.review.SubmitReviewRequest;
+import com.Listing.CatalogandListing.dto.response.ApiResponse;
+import com.Listing.CatalogandListing.service.ReviewService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/catalog/reviews")
+@RequiredArgsConstructor
 public class CatalogUserController {
+    
+    private final ReviewService reviewService;
 
     /**
      * 3.2.1. Đăng bài Đánh giá (Submit Review)
@@ -16,10 +24,9 @@ public class CatalogUserController {
      * @return 201 Created nếu thành công, 403 Forbidden nếu user chưa sử dụng dịch vụ
      */
     @PostMapping
-    public ResponseEntity<?> submitReview(@RequestBody Object request) { // TODO: Thay Object bằng DTO (vd: ReviewRequest)
-        // TODO: Lấy User ID từ Security Context (Token)
-        // TODO: Gọi Service kiểm tra xem User này đã thực sự đặt và sử dụng Listing này chưa (Check chéo với DB Booking)
-        // TODO: Nếu hợp lệ -> Lưu Review vào database. Không hợp lệ -> ném lỗi 403.
-        return ResponseEntity.status(201).build();
+    public ResponseEntity<ApiResponse<Void>> submitReview(@RequestBody SubmitReviewRequest request) {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        reviewService.submitReview(userId, request);
+        return ResponseEntity.status(201).body(ApiResponse.created("Đăng đánh giá thành công."));
     }
 }

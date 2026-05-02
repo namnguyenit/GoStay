@@ -2,7 +2,10 @@ package com.Listing.CatalogandListing.controller;
 
 import com.Listing.CatalogandListing.dto.response.ApiResponse;
 import com.Listing.CatalogandListing.dto.response.ListingDetailResponse;
+import com.Listing.CatalogandListing.dto.response.PaginationResponse;
+import com.Listing.CatalogandListing.dto.response.ReviewItemResponse;
 import com.Listing.CatalogandListing.service.ListingService;
+import com.Listing.CatalogandListing.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,6 +18,7 @@ import java.util.UUID;
 @RequestMapping("/api/v1/catalog/listings")
 public class CatalogPublicController {
     final ListingService listingService;
+    final ReviewService reviewService;
 
     /**
      * 3.1.1. Xem chi tiết một Dịch vụ (Listing Detail)
@@ -41,11 +45,12 @@ public class CatalogPublicController {
      * @return Danh sách các review của dịch vụ, có phân trang
      */
     @GetMapping("/{listingId}/reviews")
-    public ResponseEntity<?> getListingReviews(
+    public ResponseEntity<ApiResponse<PaginationResponse<ReviewItemResponse>>> getListingReviews(
             @PathVariable UUID listingId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-
-        return ResponseEntity.ok().build();
+        
+        PaginationResponse<ReviewItemResponse> response = reviewService.getListingReviews(listingId, page, size);
+        return ResponseEntity.ok(ApiResponse.success("Lấy danh sách đánh giá thành công", response));
     }
 }
