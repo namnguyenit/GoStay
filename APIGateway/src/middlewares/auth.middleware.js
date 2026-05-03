@@ -1,0 +1,21 @@
+import jwt  from "jsonwebtoken";
+
+export const verifyJWT = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (!token) {
+        return res.status(401).json({error:'Truy cập bị từ chối, Vui lòng cung cấp Token'})
+    }
+    try {
+        
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        req.headers['x-user-id'] = decoded.userId;
+        
+
+        next(); 
+    } catch (error) {
+
+        return res.status(403).json({ error: 'Token không hợp lệ hoặc đã hết hạn.' });
+    }
+}
