@@ -48,21 +48,21 @@ public class UserController {
     @GetMapping("/me")
     @PreAuthorize("hasAnyRole('USER')")
     public ApiRequest<UserResponse> getMyInfo() {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         log.info(SecurityContextHolder.getContext().getAuthentication().toString());
         return ApiRequest.<UserResponse>builder()
                 .success(true)
-                .data(userService.getUserByUsername(username))
+                .data(userService.getUserById(userId))
                 .build();
     }
 
     @PutMapping("/me")
     @PreAuthorize("hasAnyRole('USER')")
-    public ApiRequest<UserResponse> updateMyInfo(@RequestBody UserRequest userRequest) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+    public ApiRequest<UserResponse> updateMyInfo(@RequestBody UserUpdateRequest userUpdateRequest) {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         return ApiRequest.<UserResponse>builder()
                 .success(true)
-                .data(userService.updateUser(username, userRequest))
+                .data(userService.updateUser(userId, userUpdateRequest))
                 .message("User updated successfully")
                 .build();
     }
@@ -70,8 +70,8 @@ public class UserController {
     @DeleteMapping("/me")
     @PreAuthorize("hasRole('ADMIN')")
     public ApiRequest<Void> deleteMyAccount() {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        userService.deleteUser(username);
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        userService.deleteUser(userId);
         return ApiRequest.<Void>builder()
                 .success(true)
                 .message("User deleted successfully")
@@ -82,8 +82,8 @@ public class UserController {
     @PostMapping("/me/upgrade-role")
     @PreAuthorize("hasRole('ADMIN')")
     public ApiRequest<String> upgradeMyRole(@RequestParam String role) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        userService.upgradeToRole(username, role);
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        userService.upgradeToRole(userId, role);
         return ApiRequest.<String>builder()
                 .success(true)
                 .message("Role upgraded successfully")
@@ -94,22 +94,22 @@ public class UserController {
     @PostMapping("/me/upgradetohost")
     @PreAuthorize("hasAnyRole('USER')")
     public ApiRequest<UserResponse> upgradeToHost(@RequestBody HostProfileRequest hostProfileRequest) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         return ApiRequest.<UserResponse>builder()
                 .success(true)
                 .message("Upgraded to HOST successfully")
-                .data(userService.upgradeToHost(username, hostProfileRequest))
+                .data(userService.upgradeToHost(userId, hostProfileRequest))
                 .build();
     }
 
     @PostMapping("/me/upgradetoenterprise")
     @PreAuthorize("hasAnyRole('USER')")
     public ApiRequest<UserResponse> upgradeToEnterprise(@RequestBody EnterpriseProfileRequest enterpriseProfileRequest) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         return ApiRequest.<UserResponse>builder()
                 .success(true)
                 .message("Upgraded to ENTERPRISE successfully")
-                .data(userService.upgradeToEnterprise(username, enterpriseProfileRequest))
+                .data(userService.upgradeToEnterprise(userId, enterpriseProfileRequest))
                 .build();
     }
 
@@ -117,60 +117,60 @@ public class UserController {
     @GetMapping("/me/profile")
     @PreAuthorize("hasAnyRole('USER')")
     public ApiRequest<UserProfileResponse> getMyProfile() {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         return ApiRequest.<UserProfileResponse>builder()
                 .success(true)
-                .data(userService.getUserProfile(username))
+                .data(userService.getUserProfile(userId))
                 .build();
     }
 
     @PutMapping("/me/profile")
     @PreAuthorize("hasAnyRole('USER')")
     public ApiRequest<UserProfileResponse> updateMyProfile(@RequestBody UserProfileRequest dto) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         return ApiRequest.<UserProfileResponse>builder()
                 .success(true)
-                .data(userService.updateUserProfile(username, dto))
+                .data(userService.updateUserProfile(userId, dto))
                 .build();
     }
 
     @GetMapping("/me/host-profile")
     @PreAuthorize("hasAnyRole('HOST')")
     public ApiRequest<HostProfileResponse> getMyHostProfile() {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         return ApiRequest.<HostProfileResponse>builder()
                 .success(true)
-                .data(userService.getHostProfile(username))
+                .data(userService.getHostProfile(userId))
                 .build();
     }
 
     @PutMapping("/me/host-profile")
     @PreAuthorize("hasAnyRole('HOST')")
     public ApiRequest<HostProfileResponse> updateMyHostProfile(@RequestBody HostProfileRequest dto) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         return ApiRequest.<HostProfileResponse>builder()
                 .success(true)
-                .data(userService.updateHostProfile(username, dto))
+                .data(userService.updateHostProfile(userId, dto))
                 .build();
     }
 
     @GetMapping("/me/enterprise-profile")
     @PreAuthorize("hasAnyRole('ENTERPRISE')")
     public ApiRequest<EnterpriseProfileResponse> getMyEnterpriseProfile() {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         return ApiRequest.<EnterpriseProfileResponse>builder()
                 .success(true)
-                .data(userService.getEnterpriseProfile(username))
+                .data(userService.getEnterpriseProfile(userId))
                 .build();
     }
 
     @PutMapping("/me/enterprise-profile")
     @PreAuthorize("hasAnyRole('ENTERPRISE')")
     public ApiRequest<EnterpriseProfileResponse> updateMyEnterpriseProfile(@RequestBody EnterpriseProfileRequest dto) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         return ApiRequest.<EnterpriseProfileResponse>builder()
                 .success(true)
-                .data(userService.updateEnterpriseProfile(username, dto))
+                .data(userService.updateEnterpriseProfile(userId, dto))
                 .build();
     }
 }

@@ -1,0 +1,6 @@
+jwt:
+  keystore:
+    path: "/keystore.jks"
+    password: "secret"
+    alias: "identity-key"
+    private-key-password: "secret"

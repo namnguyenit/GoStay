@@ -7,6 +7,8 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
@@ -14,6 +16,9 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.beans.factory.annotation.Value;
+// BƯỚC 2: CẬP NHẬT PHẦN SECURITY. Mở cửa cho API JWKS và Decoder.
+// Import cấu hình RSA vào
+import com.gotravel.Identity.configuration.RsaKeyConfig;
 
 import javax.crypto.spec.SecretKeySpec;
 
@@ -31,11 +36,16 @@ public class SecurityConfig {
     };
 
     private final String[] PUBLIC_URL_GET = {
-            "/api/users/public/**"
+            "/api/users/public/**",
+            "/.well-known/jwks.json" // Cho phép gọi API lấy Public key hoàn toàn riêng tự do mà không cần Auth
     };
 
-    @Value("${jwt.signerKey}")
-    private String SIGNER_KEY;
+    private final RsaKeyConfig rsaKeyConfig;
+
+    // Inject class ta vừa viết ở Bước 1 vào để lấy Key ra dùng
+    public SecurityConfig(RsaKeyConfig rsaKeyConfig) {
+        this.rsaKeyConfig = rsaKeyConfig;
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -57,10 +67,9 @@ public class SecurityConfig {
 
     @Bean
     public JwtDecoder jwtDecoder() {
-        SecretKeySpec secretKeySpec = new SecretKeySpec(SIGNER_KEY.getBytes(), "HmacSHA512");
+        // Identity service tự verify token bằng khóa Public, bỏ hẳn secret dạng MAC cũ.
         return NimbusJwtDecoder
-                .withSecretKey(secretKeySpec)
-                .macAlgorithm(MacAlgorithm.HS512)
+                .withPublicKey(rsaKeyConfig.getPublicKey()) // Bước 2.1: Use public key!
                 .build();
     }
 
@@ -73,5 +82,10 @@ public class SecurityConfig {
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
 
         return jwtAuthenticationConverter;
+    }
+
+    @Bean
+    PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder(15);
     }
 }
