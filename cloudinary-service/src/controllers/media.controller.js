@@ -102,22 +102,23 @@ export const uploadBulkImg = async (req, res, next) =>{
 
 export const uploadSecImg = async (req, res, next) =>{
     try{
-        if (!req.files){
+        const files = req.files;
+        if (!files || files.length === 0){
             return res.status(400).json({
                 status: '400',
                 message: 'Vui lòng đính kèm file',
                 data: null,
             })
         }
-        const fileBuffer = req.file.buffer;
         const folder = 'secImg';
-        const result = await upToCloudinary(fileBuffer, folder,true);
+        const uploadPromise = files.map(file => upToCloudinary(file.buffer, folder, true));
+        const results = await Promise.all(uploadPromise);
         return res.status(200).json({
             status: '200',
             message: 'Upload tài liệu mật thành công',
             data: {
-                url: result.secure_url,
-                documentId : result.public_id,
+                urls: results.map(result => result.secure_url),
+                documentIds: results.map(result => result.public_id),
             }
         });
     }catch (error){

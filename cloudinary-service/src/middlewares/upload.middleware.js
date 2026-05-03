@@ -7,7 +7,7 @@ const storage = multer.memoryStorage();
 // Lọc hình ảnh
 
 const imgFilter  = (req, file, callback) => {
-    if (file.mimeType === 'image/jpg' || file.mimeType === 'image/png' || file.mimeType === 'image/jpeg' || file.mimeType === 'image/webp') {
+    if (file.mimetype === 'image/jpg' || file.mimetype === 'image/png' || file.mimetype === 'image/jpeg' || file.mimetype === 'image/webp') {
         callback(null, true);
     }else{
         callback(new Error("Chỉ được phép upload img ở định dạng ảnh"), false);
@@ -18,7 +18,7 @@ const imgFilter  = (req, file, callback) => {
 //Lọc hình ảnh bảo mật
 
 const secureImgFilter = (req, file, callback) => {
-    if (file.mimeType === 'image/webp'|| file.mimeType === 'image/png' || file.mimeType === 'image/jpeg') {
+    if (file.mimetype === 'image/webp'|| file.mimetype === 'image/png' || file.mimetype === 'image/jpeg') {
         callback(null, true);
     }else{
         callback(new Error('Chỉ được phép upload tài liệu ở dạng ảnh'),false);
