@@ -1,4 +1,6 @@
 import multer from "multer";
+import {throwError} from "../utils/throwError.js";
+
 
 const storage = multer.memoryStorage();
 
@@ -10,7 +12,7 @@ const imgFilter  = (req, file, callback) => {
     if (file.mimetype === 'image/jpg' || file.mimetype === 'image/png' || file.mimetype === 'image/jpeg' || file.mimetype === 'image/webp') {
         callback(null, true);
     }else{
-        callback(new Error("Chỉ được phép upload img ở định dạng ảnh"), false);
+        callback(throwError("INVALID_IMAGE_FORMAT"), false);
     }
 };
 
@@ -21,7 +23,7 @@ const secureImgFilter = (req, file, callback) => {
     if (file.mimetype === 'image/webp'|| file.mimetype === 'image/png' || file.mimetype === 'image/jpeg') {
         callback(null, true);
     }else{
-        callback(new Error('Chỉ được phép upload tài liệu ở dạng ảnh'),false);
+        callback(throwError("INVALID_IMAGE_FORMAT"),false);
     }
 }
 

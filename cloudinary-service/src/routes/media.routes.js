@@ -4,41 +4,20 @@ import {
     deleteImg,
     uploadBulkImg,
     uploadSingleImg
-} from "../controllers/media.controller";
+} from "../controllers/media.controller.js";
 import {
     uploadSingImage,
     uploadSecImage,
     uploadBulkImage
-} from "../middlewares/upload.middleware";
+} from "../middlewares/upload.middleware.js";
 
 const router = express.Router();
 
-router.post("/upload",(req,res,next)=>{
-    uploadSingImage(req,res, function (error){
-        if(error){
-            return next(error);
-        }
-        next();
-    })
-}, uploadSingleImg);
+router.post("/upload", uploadSingImage, uploadSingleImg);
 
-router.post('/upload/bulk',(req,res,next)=>{
-    uploadBulkImage(req,res, function (error){
-        if(error){
-            return next(error);
-        }
-        next();
-    })
-}, uploadBulkImg);
+router.post('/upload/bulk', uploadBulkImage, uploadBulkImg);
 
-router.post('/upload/secure-document',(req,res,next)=>{
-    uploadSecImage(req,res, function (error){
-        if(error){
-            return next(error);
-        }
-        next();
-    })
-}, uploadSecImg);
+router.post('/upload/secure-documents', uploadSecImage, uploadSecImg);
 
 router.delete('/',deleteImg);
 
