@@ -43,7 +43,7 @@ export const uploadBulkImage = multer({
     limits: {
         fileSize: 10 * 1024 * 1024
     }
-}).array('file',10);
+}).array('files',10);
 
 
 //up ảnh căn cước mặt trước mặt sau
@@ -54,7 +54,7 @@ export const uploadSecImage = multer({
     limits: {
         fileSize: 10 * 1024 * 1024
     }
-}).array('file',2);
+}).array('files',2);
 
 
 
