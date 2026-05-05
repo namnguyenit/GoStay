@@ -1,5 +1,6 @@
 package com.gotravel.Identity.service;
 
+import com.gotravel.Identity.enums.Approval_status;
 import com.gotravel.Identity.mapper.UserMapper;
 import com.gotravel.Identity.repository.RoleRepository;
 import com.gotravel.Identity.repository.UserRepository;
@@ -179,6 +180,7 @@ public class UserService {
         if (user.getHostProfile() == null) {
             HostProfile hostProfile = HostProfile.builder()
                     .user(user)
+                    .approvalStatus(Approval_status.PENDING)
                     .build();
             user.setHostProfile(hostProfile);
         }
