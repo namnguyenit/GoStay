@@ -35,6 +35,9 @@ public class User{
     @Builder.Default
     Boolean isActive = true;
 
+    @Builder.Default
+    Boolean isDeleted = false;
+
     @ManyToMany
     Set<Role> roles;
 
