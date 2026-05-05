@@ -173,4 +173,15 @@ public class UserController {
                 .data(userService.updateEnterpriseProfile(userId, dto))
                 .build();
     }
+
+    // Endpoint: GET /api/users/internal/{userId}/status
+    @GetMapping("/internal/{userId}/status")
+    public ApiRequest<UserStatusResponese> checkUserStatus(@PathVariable String userId) {
+        UserStatusResponese statusResponese = userService.checkUserStatus(userId);
+        return ApiRequest.<UserStatusResponese>builder()
+                .success(true)
+                .data(statusResponese)
+                .message("User status retrieved successfully")
+                .build();
+    }
 }

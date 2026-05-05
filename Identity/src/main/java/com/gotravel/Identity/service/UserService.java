@@ -129,7 +129,8 @@ public class UserService {
     public void deleteUser(String userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
-        userRepository.delete(user);
+        user.setIsDeleted(true);
+        userRepository.save(user);
     }
 
 
@@ -301,5 +302,22 @@ public class UserService {
         userMapper.updateEnterpriseProfileFromRequest(request, user.getEnterpriseProfile());
         userRepository.save(user);
         return userMapper.toEnterpriseProfileResponse(user.getEnterpriseProfile());
+    }
+    /**
+     * @Logic Dùng để kiểm tra trạng thái User sống hay là chết
+     * @param userId
+     * @return UserStatusResponse (chứa trạng thái isActive)
+     */
+    public UserStatusResponese checkUserStatus(String userId) {
+        User user  = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
+
+        boolean isAllow = (user.getIsActive() !=null && user.getIsActive())
+                            && (user.getIsDeleted() !=null && user.getIsDeleted());
+        
+        return  UserStatusResponese.builder()
+                .isActive(isAllow)
+                .build();
+
     }
 }
