@@ -22,6 +22,7 @@ import com.gotravel.Identity.exception.*;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -172,11 +173,6 @@ public class UserService {
     public UserResponse upgradeToHost(String userId, HostProfileRequest hostProfileRequest) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
-        Role role = roleRepository.findById("HOST")
-                .orElseThrow(() -> new AppException(UserErrorCode.ROLE_NOT_FOUND));
-
-        user.getRoles().add(role);
-
         if (user.getHostProfile() == null) {
             HostProfile hostProfile = HostProfile.builder()
                     .user(user)
@@ -188,6 +184,16 @@ public class UserService {
         userMapper.updateHostProfileFromRequest(hostProfileRequest, user.getHostProfile());
         userRepository.save(user);
         return userMapper.userToUserResponse(user);
+    }
+
+    public boolean successUpgradeToHost(String userId){
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
+        Role role = roleRepository.findById("HOST")
+                .orElseThrow(() -> new AppException(UserErrorCode.ROLE_NOT_FOUND));
+
+        user.getRoles().add(role);
+        return true;
     }
 
     /**
