@@ -314,7 +314,7 @@ public class UserService {
 
         boolean isAllow = (user.getIsActive() !=null && user.getIsActive())
                             && (user.getIsDeleted() !=null && user.getIsDeleted());
-        
+
         return  UserStatusResponese.builder()
                 .isActive(isAllow)
                 .build();
