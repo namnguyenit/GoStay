@@ -1,5 +1,6 @@
 package com.gotravel.Identity.service;
 
+import com.gotravel.Identity.enums.Approval_status;
 import com.gotravel.Identity.mapper.UserMapper;
 import com.gotravel.Identity.repository.RoleRepository;
 import com.gotravel.Identity.repository.UserRepository;
@@ -179,6 +180,7 @@ public class UserService {
         if (user.getHostProfile() == null) {
             HostProfile hostProfile = HostProfile.builder()
                     .user(user)
+                    .approvalStatus(Approval_status.PENDING)
                     .build();
             user.setHostProfile(hostProfile);
         }
@@ -302,22 +304,5 @@ public class UserService {
         userMapper.updateEnterpriseProfileFromRequest(request, user.getEnterpriseProfile());
         userRepository.save(user);
         return userMapper.toEnterpriseProfileResponse(user.getEnterpriseProfile());
-    }
-    /**
-     * @Logic Dùng để kiểm tra trạng thái User sống hay là chết
-     * @param userId
-     * @return UserStatusResponse (chứa trạng thái isActive)
-     */
-    public UserStatusResponese checkUserStatus(String userId) {
-        User user  = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
-
-        boolean isAllow = (user.getIsActive() !=null && user.getIsActive())
-                            && (user.getIsDeleted() !=null && user.getIsDeleted());
-
-        return  UserStatusResponese.builder()
-                .isActive(isAllow)
-                .build();
-
     }
 }
