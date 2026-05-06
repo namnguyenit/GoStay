@@ -4,7 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d2d4dc8d-e433-4093-a36d-060757ca3890" name="Changes" comment="" />
+    <list default="true" id="d2d4dc8d-e433-4093-a36d-060757ca3890" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/configuration/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/configuration/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/service/UserService.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -33,6 +38,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "Spring Boot.IdentityApplication.executor": "Run",
+    "git-widget-placeholder": "APIGateway",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "D:/PROJECT/GoStay/Identity",
     "node.js.detected.package.eslint": "true",
@@ -70,6 +76,7 @@
       <updated>1776772367091</updated>
       <workItem from="1776772368223" duration="8104000" />
       <workItem from="1776938485960" duration="3655000" />
+      <workItem from="1778053313590" duration="1149000" />
     </task>
     <servers />
   </component>

@@ -37,7 +37,8 @@ public class SecurityConfig {
 
     private final String[] PUBLIC_URL_GET = {
             "/api/users/public/**",
-            "/.well-known/jwks.json" // Cho phép gọi API lấy Public key hoàn toàn riêng tự do mà không cần Auth
+            "/.well-known/jwks.json",// Cho phép gọi API lấy Public key hoàn toàn riêng tự do mà không cần Auth
+            "/api/users/internal/**"
     };
 
     private final RsaKeyConfig rsaKeyConfig;
