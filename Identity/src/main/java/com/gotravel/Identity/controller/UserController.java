@@ -1,20 +1,37 @@
 package com.gotravel.Identity.controller;
 
+import java.util.List;
+
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.gotravel.Identity.dto.request.ApiRequest;
+import com.gotravel.Identity.dto.request.EnterpriseProfileRequest;
+import com.gotravel.Identity.dto.request.HostProfileRequest;
+import com.gotravel.Identity.dto.request.UserProfileRequest;
 import com.gotravel.Identity.dto.request.UserRequest;
-import com.gotravel.Identity.dto.request.*;
-import com.gotravel.Identity.dto.response.*;
+import com.gotravel.Identity.dto.request.UserUpdateRequest;
+import com.gotravel.Identity.dto.response.EnterpriseProfileResponse;
+import com.gotravel.Identity.dto.response.HostProfileResponse;
+import com.gotravel.Identity.dto.response.UserProfileResponse;
+import com.gotravel.Identity.dto.response.UserResponse;
+import com.gotravel.Identity.dto.response.UserStatusResponese;
 import com.gotravel.Identity.service.UserService;
+
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
@@ -31,6 +48,7 @@ public class UserController {
     public ApiRequest<UserResponse> createUser(@RequestBody @Valid UserRequest user) {
         return ApiRequest.<UserResponse>builder()
                 .success(true)
+                .code("USER_CREATED_SUCCESS")
                 .data(userService.createUser(user))
                 .message("User created successfully")
                 .build();

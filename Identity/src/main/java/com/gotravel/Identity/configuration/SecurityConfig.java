@@ -15,6 +15,16 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.beans.factory.annotation.Value;
+// BƯỚC 2: CẬP NHẬT PHẦN SECURITY. Mở cửa cho API JWKS và Decoder.
+// Import cấu hình RSA vào
+import com.gotravel.Identity.configuration.RsaKeyConfig;
+
+import javax.crypto.spec.SecretKeySpec;
+
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
 @Configuration
 @EnableWebSecurity

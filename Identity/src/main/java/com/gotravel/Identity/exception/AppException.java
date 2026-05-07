@@ -1,18 +1,18 @@
 package com.gotravel.Identity.exception;
 
 public class AppException extends RuntimeException {
-    private ErrorCode errorCode;
+    private AppCode appCode;
 
-    public AppException(ErrorCode errorCode) {
-        super(errorCode.getMessage());
-        this.errorCode = errorCode;
+    public AppException(AppCode appCode) {
+        super(appCode.getMessage());
+        this.appCode = appCode;
     }
 
-    public ErrorCode getErrorCode() {
-        return errorCode;
+    public AppCode getAppCode() {
+        return appCode;
     }
 
-    public void setErrorCode(ErrorCode errorCode) {
-        this.errorCode = errorCode;
+    public void setAppCode(AppCode appCode) {
+        this.appCode = appCode;
     }
 }
