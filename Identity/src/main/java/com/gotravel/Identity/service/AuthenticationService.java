@@ -47,6 +47,10 @@ public class AuthenticationService {
         var user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
 
+        if (Boolean.TRUE.equals(user.getIsDeleted())) {
+            throw new AppException(UserErrorCode.BANED_USER);
+        }
+
         boolean checkpassword = passwordEncoder.matches(request.getPassword(),user.getPassword());
         if (!checkpassword) {
             throw new AppException(AuthErrorCode.UNAUTHENTICATED);

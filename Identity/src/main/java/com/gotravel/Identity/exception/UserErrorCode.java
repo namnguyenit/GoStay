@@ -9,7 +9,10 @@ public enum UserErrorCode implements ErrorCode {
     USER_NOT_FOUND(404, "USER_NOT_FOUND", "User not found", HttpStatus.NOT_FOUND),
     USER_ALREADY_EXISTS(400, "USER_ALREADY_EXISTS", "User already exists", HttpStatus.BAD_REQUEST),
     EMAIL_ALREADY_EXISTS(400, "EMAIL_ALREADY_EXISTS", "Email already exists", HttpStatus.BAD_REQUEST),
-    ROLE_NOT_FOUND(404, "ROLE_NOT_FOUND", "Role not found", HttpStatus.NOT_FOUND);
+    ROLE_NOT_FOUND(404, "ROLE_NOT_FOUND", "Role not found", HttpStatus.NOT_FOUND)
+    ,ROLE_USER_ALREADY_EXISTS(400 , "ROLE_USER_ALREADY_EXISTS" , "Role user already exists" , HttpStatus.BAD_REQUEST)
+    ,BANED_USER(400 , "BANNED_USER" , "banned account" , HttpStatus.BAD_REQUEST )
+    ,POFILE_USER_AWAITING_EXISTS(409 , "POFILE_USER_AWAITING_EXISTS" , "User profile awaiting approval" , HttpStatus.BAD_REQUEST);
 
     private final boolean success = false;
     private final int status;
