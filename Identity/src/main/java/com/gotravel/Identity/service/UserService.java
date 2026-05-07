@@ -311,6 +311,7 @@ public class UserService {
         userRepository.save(user);
         return userMapper.toEnterpriseProfileResponse(user.getEnterpriseProfile());
     }
+
     /**
      * @Logic Dùng để kiểm tra trạng thái User sống hay là chết
      * @param userId
@@ -321,8 +322,8 @@ public class UserService {
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
 
         boolean isAllow = (user.getIsActive() !=null && user.getIsActive())
-                            && (user.getIsDeleted() !=null && user.getIsDeleted());
-        
+                && (user.getIsDeleted() !=null || !user.getIsDeleted());
+
         return  UserStatusResponese.builder()
                 .isActive(isAllow)
                 .build();

@@ -1,16 +1,18 @@
 package com.gotravel.Identity.controller;
 
-import com.gotravel.Identity.dto.request.ApiRequest;
-import com.gotravel.Identity.dto.request.AuthenticationRequest;
-import com.gotravel.Identity.dto.response.AuthenticationResponse;
-import com.gotravel.Identity.service.AuthenticationService;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.gotravel.Identity.dto.request.ApiRequest;
+import com.gotravel.Identity.dto.request.AuthenticationRequest;
+import com.gotravel.Identity.dto.response.AuthenticationResponse;
+import com.gotravel.Identity.service.AuthenticationService;
+
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -25,6 +27,7 @@ public class AuthenticationController {
         var result = authenticationService.authenticate(request);
         return ApiRequest.<AuthenticationResponse>builder()
                 .success(true)
+                .code("LOGIN_SUCCESS")
                 .data(result)
                 .message("Authenticated successfully")
                 .build();

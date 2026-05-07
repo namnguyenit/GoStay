@@ -4,17 +4,18 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
 // BƯỚC 2: CẬP NHẬT PHẦN SECURITY. Mở cửa cho API JWKS và Decoder.
 // Import cấu hình RSA vào
@@ -37,7 +38,8 @@ public class SecurityConfig {
 
     private final String[] PUBLIC_URL_GET = {
             "/api/users/public/**",
-            "/.well-known/jwks.json" // Cho phép gọi API lấy Public key hoàn toàn riêng tự do mà không cần Auth
+            "/.well-known/jwks.json",// Cho phép gọi API lấy Public key hoàn toàn riêng tự do mà không cần Auth
+            "/api/users/internal/**"
     };
 
     private final RsaKeyConfig rsaKeyConfig;
@@ -50,6 +52,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            .cors(Customizer.withDefaults())
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(HttpMethod.POST, PUBLIC_URL_POST).permitAll()

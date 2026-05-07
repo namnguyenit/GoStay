@@ -13,8 +13,9 @@ import lombok.experimental.FieldDefaults;
 public class ApiRequest <T>{
     @Builder.Default
     boolean success = true;
-    String message;
     @Builder.Default
-    int code = 200;
+    int status = 200;
+    String code;
+    String message;
     T data;
 }
