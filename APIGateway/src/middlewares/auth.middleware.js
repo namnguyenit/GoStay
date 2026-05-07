@@ -1,21 +1,64 @@
 import jwt  from "jsonwebtoken";
+import jwksClient from "jwks-rsa";
+import NodeCache from "node-cache";
+
+
+const client = jwksClient({
+    jwksUri: '${process.env.IDENTITY_SERVICE_URL}/.well-known/jwks.json',
+    cache: true,
+    rateLimit:true,
+});
+
+
+function getKey(headers,callback){
+    client.getSigningKey(header.kid, function(err,key){
+        if(err){
+            return callback(err);
+        }
+        const signingKey = key.publicKey || key.rsaPublicKey;
+        callback(null, signingKey);
+    });
+}
+
+
+// lưu trạng thái của user trong 5 phút
+const userCache = new Cache(
+    {
+        stdTTL: 300
+    }
+)
+
+
+
+
 
 export const verifyJWT = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
+    const authHeader = req.headers["authorization"];
     const token = authHeader && authHeader.split(' ')[1];
+
     if (!token) {
-        return res.status(401).json({error:'Truy cập bị từ chối, Vui lòng cung cấp Token'})
+        return res.status(401).json(
+            {
+                status: "401",
+                success: false,
+                message: "Vui lòng cung cấp token",
+
+            }
+        )
     }
-    try {
-        
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        req.headers['x-user-id'] = decoded.userId;
-        
-
-        next(); 
-    } catch (error) {
-
-        return res.status(403).json({ error: 'Token không hợp lệ hoặc đã hết hạn.' });
-    }
+    jwt.verify(token, getKey , { algorithms: ["RS256"] }, async (err, decoded) => {
+        if (err){
+            return res.status(403).json({
+                status: "403",
+                success: false,
+                message: "Token không hợp lệ"
+            })
+        }
+        const userId=decoded.sub;
+        const role = decoded.scope;
+        try{
+            
+        }
+    })
 }
