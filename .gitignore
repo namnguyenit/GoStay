@@ -1,6 +1,23 @@
-.idea/checkstyle-idea.xml
-.idea/workspace.xml
-.idea/workspace.xml
+# JetBrains IDEs (IntelliJ, WebStorm, etc.)
+.idea/
+**/.idea/
+*.iml
+*.iws
+
 *.xml
-.idea/workspace.xml
-.idea
+
+# Node.js (APIGateway, cloudinary-service)
+**/node_modules/
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/.env
+
+# Java/Spring Boot (Identity)
+**/target/
+**/.mvn/wrapper/maven-wrapper.jar
+**/logs/
+**/*.class
+**/*.log
+
+
