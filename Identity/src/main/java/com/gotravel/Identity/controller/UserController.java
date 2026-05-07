@@ -102,6 +102,16 @@ public class UserController {
                 .build();
     }
 
+    @PostMapping("/{id}/successupgradetohost")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ApiRequest<UserResponse> SuccessUpgradeToHost(@PathVariable String id) {
+        Boolean check = userService.successUpgradeToHost(id);
+        return ApiRequest.<UserResponse>builder()
+                .success(check)
+                .message("Upgraded to HOST successfully")
+                .build();
+    }
+
     @PostMapping("/me/upgradetoenterprise")
     @PreAuthorize("hasAnyRole('USER')")
     public ApiRequest<UserResponse> upgradeToEnterprise(@RequestBody EnterpriseProfileRequest enterpriseProfileRequest) {
