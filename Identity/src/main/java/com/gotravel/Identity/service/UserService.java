@@ -472,7 +472,7 @@ public class UserService {
                 .orElseThrow(() -> new AppException(com.gotravel.Identity.exception.AppCode.USER_NOT_FOUND));
 
         boolean isAllow = (user.getIsActive() !=null && user.getIsActive())
-                && (user.getIsDeleted() !=null || !user.getIsDeleted());
+                && (user.getIsDeleted() ==null || !user.getIsDeleted());
 
         return  UserStatusResponese.builder()
                 .isActive(isAllow)

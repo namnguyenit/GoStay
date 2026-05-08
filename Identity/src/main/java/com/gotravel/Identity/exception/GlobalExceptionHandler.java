@@ -16,7 +16,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = AppException.class)
     ResponseEntity<ApiRequest> handleAppException(AppException appException) {
-        AppCode appCode = appException.getAppCode();
+        ErrorCode errorCode = appException.getErrorCode();
 
         ApiRequest apiRequest = new ApiRequest();
         apiRequest.setSuccess(errorCode.isSuccess());
@@ -25,7 +25,7 @@ public class GlobalExceptionHandler {
         apiRequest.setMessage(errorCode.getMessage());
 
         return ResponseEntity
-                .status(appCode.getHttpStatus())
+                .status(errorCode.getHttpStatus())
                 .body(apiRequest);
     }
 
@@ -41,8 +41,13 @@ public class GlobalExceptionHandler {
         apiRequest.setSuccess(false);
         apiRequest.setStatus(AppErrorCode.VALIDATION_ERROR.getStatus());
         apiRequest.setCode(AppErrorCode.VALIDATION_ERROR.getCode());
+        apiRequest.setMessage(errorMessage);
+
+        return ResponseEntity.badRequest().body(apiRequest);
+    }
 
     @ExceptionHandler(value = RuntimeException.class)
+    ResponseEntity<ApiRequest> handleRuntimeException(RuntimeException runtimeException) {
         ApiRequest apiRequest = new ApiRequest();
         apiRequest.setSuccess(false);
         apiRequest.setStatus(AppErrorCode.RUNTIME_ERROR.getStatus());
