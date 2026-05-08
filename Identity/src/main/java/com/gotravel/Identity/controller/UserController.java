@@ -2,6 +2,8 @@ package com.gotravel.Identity.controller;
 
 import java.util.List;
 
+import com.gotravel.Identity.dto.request.*;
+import com.gotravel.Identity.dto.response.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,17 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.gotravel.Identity.dto.request.ApiRequest;
-import com.gotravel.Identity.dto.request.EnterpriseProfileRequest;
-import com.gotravel.Identity.dto.request.HostProfileRequest;
-import com.gotravel.Identity.dto.request.UserProfileRequest;
-import com.gotravel.Identity.dto.request.UserRequest;
-import com.gotravel.Identity.dto.request.UserUpdateRequest;
-import com.gotravel.Identity.dto.response.EnterpriseProfileResponse;
-import com.gotravel.Identity.dto.response.HostProfileResponse;
-import com.gotravel.Identity.dto.response.UserProfileResponse;
-import com.gotravel.Identity.dto.response.UserResponse;
-import com.gotravel.Identity.dto.response.UserStatusResponese;
 import com.gotravel.Identity.service.UserService;
 
 import jakarta.validation.Valid;
@@ -56,10 +47,80 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ApiRequest<List<UserResponse>> getAllUser() {
-        return ApiRequest.<List<UserResponse>>builder()
+    public ApiRequest<PageResponse<UserResponse>> getAllUser(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "ACTIVE") String status) {
+        return ApiRequest.<PageResponse<UserResponse>>builder()
                 .success(true)
-                .data(userService.getAllUser())
+                .message("Success")
+                .code("GET_USERS_SUCCESS")
+                .data(userService.getAllUsers(page, size, status))
+                .build();
+    }
+
+    @GetMapping("/hosts")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiRequest<PageResponse<UserResponse>> getAllHostPending(
+            @RequestParam(defaultValue = "PENDING") String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ApiRequest.<PageResponse<UserResponse>>builder()
+                .success(true)
+                .message("Success")
+                .code("GET_HOSTS_SUCCESS")
+                .data(userService.getHostsByStatus(page, size, status))
+                .build();
+    }
+
+    @GetMapping("/hosts/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiRequest<PageResponse<UserResponse>> getAllHosts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ApiRequest.<PageResponse<UserResponse>>builder()
+                .success(true)
+                .message("Success")
+                .code("GET_ALL_HOSTS_SUCCESS")
+                .data(userService.getAllHosts(page, size))
+                .build();
+    }
+
+
+    @GetMapping("/hosts/{accountId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiRequest<HostDetailResponse> getHostDetail(@PathVariable String accountId) {
+        return ApiRequest.<HostDetailResponse>builder()
+                .success(true)
+                .message("Success")
+                .data(userService.getHostDetail(accountId))
+                .build();
+    }
+
+    @PutMapping("/hosts/{accountId}/approval-status")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiRequest<Void> approvalHostStatus(
+            @PathVariable String accountId,
+            @RequestBody ApprovalRequest request) {
+        userService.approvalHostStatus(accountId, request);
+        return ApiRequest.<Void>builder()
+                .success(true)
+                .message("Đã cập nhật trạng thái phê duyệt thành " + request.getStatus())
+                .code("APPROVAL_HOST_SUCCESS")
+                .build();
+    }
+
+    @PutMapping("/accounts/{accountId}/status")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiRequest<Void> updateAccountStatus(
+            @PathVariable String accountId,
+            @RequestBody AccountStatusRequest request) {
+        userService.updateAccountStatus(accountId, request);
+        String message = "BANNED".equalsIgnoreCase(request.getStatus()) ? "Đã khóa tài khoản thành công" : "Đã mở khóa tài khoản thành công";
+        return ApiRequest.<Void>builder()
+                .success(true)
+                .message(message)
+                .code("UPDATE_ACCOUNT_STATUS_SUCCESS")
                 .build();
     }
 
@@ -111,14 +172,30 @@ public class UserController {
 
     @PostMapping("/me/upgradetohost")
     @PreAuthorize("hasAnyRole('USER')")
-    public ApiRequest<UserResponse> upgradeToHost(@RequestBody HostProfileRequest hostProfileRequest) {
+    public ApiRequest<ApprovalStatusResponse> upgradeToHost(@RequestBody HostProfileRequest hostProfileRequest) {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-        return ApiRequest.<UserResponse>builder()
+        return ApiRequest.<ApprovalStatusResponse>builder()
                 .success(true)
-                .message("Upgraded to HOST successfully")
+                .message("Nộp hồ sơ thành công")
+                .code("APPLICATION_SUBMITTED_SUCCESSFULLY")
                 .data(userService.upgradeToHost(userId, hostProfileRequest))
                 .build();
     }
+
+
+
+    @DeleteMapping("/me/upgradetohost")
+    @PreAuthorize("hasAnyRole('USER')")
+    public ApiRequest<ApprovalStatusResponse> deleteProfileUpgradeToHost() {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        userService.deleteProfileUpgradeToHost(userId);
+        return ApiRequest.<ApprovalStatusResponse>builder()
+                .success(true)
+                .message("Xoá hồ sơ thành công")
+                .code("DELETE_SUCCESSFULLY")
+                .build();
+    }
+
 
     @PostMapping("/{id}/successupgradetohost")
     @PreAuthorize("hasAnyRole('ADMIN')")

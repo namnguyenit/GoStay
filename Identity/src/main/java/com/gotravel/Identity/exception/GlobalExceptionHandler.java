@@ -19,10 +19,10 @@ public class GlobalExceptionHandler {
         AppCode appCode = appException.getAppCode();
 
         ApiRequest apiRequest = new ApiRequest();
-        apiRequest.setSuccess(appCode.isSuccess());
-        apiRequest.setStatus(appCode.getStatus());
-        apiRequest.setCode(appCode.getCode());
-        apiRequest.setMessage(appCode.getMessage());
+        apiRequest.setSuccess(errorCode.isSuccess());
+        apiRequest.setStatus(errorCode.getStatus());
+        apiRequest.setCode(errorCode.getCode());
+        apiRequest.setMessage(errorCode.getMessage());
 
         return ResponseEntity
                 .status(appCode.getHttpStatus())
@@ -39,19 +39,14 @@ public class GlobalExceptionHandler {
 
         ApiRequest apiRequest = new ApiRequest();
         apiRequest.setSuccess(false);
-        apiRequest.setStatus(AppCode.VALIDATION_ERROR.getStatus());
-        apiRequest.setCode(AppCode.VALIDATION_ERROR.getCode());
-        apiRequest.setMessage(errorMessage);
-
-        return ResponseEntity.badRequest().body(apiRequest);
-    }
+        apiRequest.setStatus(AppErrorCode.VALIDATION_ERROR.getStatus());
+        apiRequest.setCode(AppErrorCode.VALIDATION_ERROR.getCode());
 
     @ExceptionHandler(value = RuntimeException.class)
-    ResponseEntity<ApiRequest> handleRuntimeException(RuntimeException runtimeException) {
         ApiRequest apiRequest = new ApiRequest();
         apiRequest.setSuccess(false);
-        apiRequest.setStatus(AppCode.RUNTIME_ERROR.getStatus());
-        apiRequest.setCode(AppCode.RUNTIME_ERROR.getCode());
+        apiRequest.setStatus(AppErrorCode.RUNTIME_ERROR.getStatus());
+        apiRequest.setCode(AppErrorCode.RUNTIME_ERROR.getCode());
         apiRequest.setMessage(runtimeException.getMessage());
 
         return ResponseEntity.badRequest().body(apiRequest);
@@ -61,10 +56,10 @@ public class GlobalExceptionHandler {
     ResponseEntity<ApiRequest> handleDataIntegrityViolationException(DataIntegrityViolationException exception) {
         ApiRequest apiRequest = new ApiRequest();
         apiRequest.setSuccess(false);
-        apiRequest.setStatus(AppCode.DATA_INTEGRITY_VIOLATION.getStatus());
-        apiRequest.setCode(AppCode.DATA_INTEGRITY_VIOLATION.getCode());
-        apiRequest.setMessage(AppCode.DATA_INTEGRITY_VIOLATION.getMessage());
+        apiRequest.setStatus(AppErrorCode.DATA_INTEGRITY_VIOLATION.getStatus());
+        apiRequest.setCode(AppErrorCode.DATA_INTEGRITY_VIOLATION.getCode());
+        apiRequest.setMessage(AppErrorCode.DATA_INTEGRITY_VIOLATION.getMessage());
 
-        return ResponseEntity.status(AppCode.DATA_INTEGRITY_VIOLATION.getHttpStatus()).body(apiRequest);
+        return ResponseEntity.status(AppErrorCode.DATA_INTEGRITY_VIOLATION.getHttpStatus()).body(apiRequest);
     }
 }
