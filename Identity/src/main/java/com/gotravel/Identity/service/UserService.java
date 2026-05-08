@@ -46,17 +46,17 @@ public class UserService {
      */
     public UserResponse createUser(UserRequest userRequest) {
         if (userRepository.existsByUsername(userRequest.getUsername())) {
-            throw new AppException(com.gotravel.Identity.exception.AppCode.USER_ALREADY_EXISTS);
+            throw new AppException(UserErrorCode.USER_ALREADY_EXISTS);
         }
         if (userRequest.getEmail() != null && userRepository.existsByEmail(userRequest.getEmail())) {
-            throw new AppException(com.gotravel.Identity.exception.AppCode.EMAIL_ALREADY_EXISTS);
+            throw new AppException(UserErrorCode.EMAIL_ALREADY_EXISTS);
         }
         // mapper toàn bộ dữ liệu sang user
         User user = userMapper.userRequestToUser(userRequest);
         user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
         // set thêm các dữ liệu mặc định
         Role userRole = roleRepository.findById("USER")
-                .orElseThrow(() -> new AppException(com.gotravel.Identity.exception.AppCode.ROLE_NOT_FOUND));
+                .orElseThrow(() -> new AppException(UserErrorCode.ROLE_NOT_FOUND));
         user.setRoles(new HashSet<>(Set.of(userRole)));
         user.setProvider(Provider.LOCAL);
         user.setIsActive(true);
@@ -151,7 +151,7 @@ public class UserService {
     public void upgradeToRole(String userId, String roleName) {
         User user = findUserById(userId);
         Role role = roleRepository.findById(roleName.toUpperCase())
-                .orElseThrow(() -> new AppException(com.gotravel.Identity.exception.AppCode.ROLE_NOT_FOUND));
+                .orElseThrow(() -> new AppException(UserErrorCode.ROLE_NOT_FOUND));
 
         user.getRoles().add(role);
 
@@ -337,7 +337,7 @@ public class UserService {
     public boolean successUpgradeToHost(String userId){
         User user = findUserById(userId);
         Role role = roleRepository.findById("HOST")
-                .orElseThrow(() -> new AppException(com.gotravel.Identity.exception.AppCode.ROLE_NOT_FOUND));
+                .orElseThrow(() -> new AppException(UserErrorCode.ROLE_NOT_FOUND));
 
         user.getRoles().add(role);
         return true;
@@ -351,7 +351,7 @@ public class UserService {
     public UserResponse upgradeToEnterprise(String userId, EnterpriseProfileRequest enterpriseProfileRequest) {
         User user = findUserById(userId);
         Role role = roleRepository.findById("ENTERPRISE")
-                .orElseThrow(() -> new AppException(com.gotravel.Identity.exception.AppCode.ROLE_NOT_FOUND));
+                .orElseThrow(() -> new AppException(UserErrorCode.ROLE_NOT_FOUND));
 
         user.getRoles().add(role);
 
@@ -402,7 +402,7 @@ public class UserService {
     public HostProfileResponse getHostProfile(String userId) {
         User user = findUserById(userId);
         if (user.getHostProfile() == null) {
-            throw new AppException(com.gotravel.Identity.exception.AppCode.HOST_PROFILE_NOT_FOUND);
+            throw new AppException(HostErrorCode.HOST_PROFILE_NOT_FOUND);
         }
         return userMapper.toHostProfileResponse(user.getHostProfile());
     }
@@ -416,7 +416,7 @@ public class UserService {
     public HostProfileResponse updateHostProfile(String userId, HostProfileRequest request) {
         User user = findUserById(userId);
         if (user.getHostProfile() == null) {
-            throw new AppException(com.gotravel.Identity.exception.AppCode.USER_NOT_HOST);
+            throw new AppException(HostErrorCode.USER_NOT_HOST);
         }
         userMapper.updateHostProfileFromRequest(request, user.getHostProfile());
         userRepository.save(user);
@@ -431,7 +431,7 @@ public class UserService {
     public EnterpriseProfileResponse getEnterpriseProfile(String userId) {
         User user = findUserById(userId);
         if (user.getEnterpriseProfile() == null) {
-            throw new AppException(com.gotravel.Identity.exception.AppCode.ENTERPRISE_PROFILE_NOT_FOUND);
+            throw new AppException(EnterpriseErrorCode.ENTERPRISE_PROFILE_NOT_FOUND);
         }
         return userMapper.toEnterpriseProfileResponse(user.getEnterpriseProfile());
     }
@@ -445,7 +445,7 @@ public class UserService {
     public EnterpriseProfileResponse updateEnterpriseProfile(String userId, EnterpriseProfileRequest request) {
         User user = findUserById(userId);
         if (user.getEnterpriseProfile() == null) {
-            throw new AppException(com.gotravel.Identity.exception.AppCode.USER_NOT_ENTERPRISE);
+            throw new AppException(EnterpriseErrorCode.USER_NOT_ENTERPRISE);
         }
         userMapper.updateEnterpriseProfileFromRequest(request, user.getEnterpriseProfile());
         userRepository.save(user);
@@ -468,8 +468,7 @@ public class UserService {
     }
 
     public UserStatusResponese checkUserStatus(String userId) {
-        User user  = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(com.gotravel.Identity.exception.AppCode.USER_NOT_FOUND));
+        User user = findUserById(userId);
 
         boolean isAllow = (user.getIsActive() !=null && user.getIsActive())
                 && (user.getIsDeleted() ==null || !user.getIsDeleted());

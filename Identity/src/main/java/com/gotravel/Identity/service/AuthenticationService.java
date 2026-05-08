@@ -45,7 +45,7 @@ public class AuthenticationService {
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         var user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new AppException(com.gotravel.Identity.exception.AppCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
 
         if (Boolean.TRUE.equals(user.getIsDeleted())) {
             throw new AppException(UserErrorCode.BANED_USER);
@@ -53,7 +53,7 @@ public class AuthenticationService {
 
         boolean checkpassword = passwordEncoder.matches(request.getPassword(),user.getPassword());
         if (!checkpassword) {
-            throw new AppException(com.gotravel.Identity.exception.AppCode.UNAUTHENTICATED);
+            throw new AppException(AuthErrorCode.UNAUTHENTICATED);
         }
 
         var token = generateToken(user);
