@@ -5,16 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d2d4dc8d-e433-4093-a36d-060757ca3890" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/configuration/DataSeedForAdmin.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/dto/response/ApprovalStatusResponse.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/controller/UserController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/dto/response/UserResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/dto/response/UserResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/exception/HostErrorCode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/exception/HostErrorCode.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/entity/EnterpriseProfile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/entity/EnterpriseProfile.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/exception/EnterpriseErrorCode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/exception/EnterpriseErrorCode.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/exception/UserErrorCode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/exception/UserErrorCode.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/repository/HostProfileRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/repository/HostProfileRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/repository/UserRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/service/AuthenticationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/service/AuthenticationService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/service/UserService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
