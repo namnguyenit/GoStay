@@ -6,15 +6,7 @@ import com.gotravel.Identity.dto.request.*;
 import com.gotravel.Identity.dto.response.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.gotravel.Identity.service.UserService;
 
@@ -97,12 +89,13 @@ public class UserController {
                 .build();
     }
 
-    @PutMapping("/hosts/{accountId}/approval-status")
+    @PutMapping("/{accountId}/approvalstatus")
     @PreAuthorize("hasRole('ADMIN')")
     public ApiRequest<Void> approvalHostStatus(
+            @RequestParam String type,
             @PathVariable String accountId,
             @RequestBody ApprovalRequest request) {
-        userService.approvalHostStatus(accountId, request);
+        userService.approvalHostStatus(accountId,type, request );
         return ApiRequest.<Void>builder()
                 .success(true)
                 .message("Đã cập nhật trạng thái phê duyệt thành " + request.getStatus())
@@ -112,10 +105,10 @@ public class UserController {
 
     @PutMapping("/accounts/{accountId}/status")
     @PreAuthorize("hasRole('ADMIN')")
-    public ApiRequest<Void> updateAccountStatus(
+    public ApiRequest<Void> updateBanAccountStatus(
             @PathVariable String accountId,
             @RequestBody AccountStatusRequest request) {
-        userService.updateAccountStatus(accountId, request);
+        userService.updateBanAccountStatus(accountId, request);
         String message = "BANNED".equalsIgnoreCase(request.getStatus()) ? "Đã khóa tài khoản thành công" : "Đã mở khóa tài khoản thành công";
         return ApiRequest.<Void>builder()
                 .success(true)
@@ -146,23 +139,30 @@ public class UserController {
                 .build();
     }
 
-    @DeleteMapping("/me")
+    @DeleteMapping("/admin/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ApiRequest<Void> deleteMyAccount() {
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-        userService.deleteUser(userId);
+    public ApiRequest<Void> deleteAccount(@PathVariable String id) {
+        userService.deleteUser(id);
         return ApiRequest.<Void>builder()
                 .success(true)
                 .message("User deleted successfully")
                 .build();
     }
 
-
-    @PostMapping("/me/upgrade-role")
+    @PatchMapping("/admin/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ApiRequest<String> upgradeMyRole(@RequestParam String role) {
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-        userService.upgradeToRole(userId, role);
+    public  ApiRequest<Void> banAccount(@PathVariable String id){
+        userService.banUser(id);
+        return ApiRequest.<Void>builder()
+                .success(true)
+                .message("User Banned successfully")
+                .build();
+    }
+
+    @PostMapping("/{id}/upgraderole")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiRequest<String> upgradeRole(@PathVariable String id,@RequestParam String role) {
+        userService.upgradeToRole(id, role);
         return ApiRequest.<String>builder()
                 .success(true)
                 .message("Role upgraded successfully")

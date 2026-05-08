@@ -1,5 +1,6 @@
 package com.gotravel.Identity.entity;
 
+import com.gotravel.Identity.enums.Approval_status;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -20,6 +21,9 @@ public class EnterpriseProfile {
     @MapsId
     @JoinColumn(name = "user_id")
     User user;
+
+    @Enumerated(EnumType.STRING)
+    Approval_status approvalStatus;
 
     String companyName;
     

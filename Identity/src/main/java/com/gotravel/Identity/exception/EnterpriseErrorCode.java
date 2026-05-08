@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatusCode;
 @Getter
 public enum EnterpriseErrorCode implements ErrorCode {
     ENTERPRISE_PROFILE_NOT_FOUND(404, "ENTERPRISE_PROFILE_NOT_FOUND", "User does not have an Enterprise profile", HttpStatus.NOT_FOUND),
+    ENTERPRISE_PROFILE_NOT_EXIST(400 , "ENTERPRISE_PROFILE_NOT_EXIST" , "Profile user don't exist" , HttpStatus.BAD_REQUEST),
     USER_NOT_ENTERPRISE(403, "USER_NOT_ENTERPRISE", "User is not an ENTERPRISE", HttpStatus.FORBIDDEN);
 
     private final boolean success = false;

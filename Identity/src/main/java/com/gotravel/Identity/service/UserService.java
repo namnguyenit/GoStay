@@ -5,6 +5,8 @@ import com.gotravel.Identity.mapper.UserMapper;
 import com.gotravel.Identity.repository.HostProfileRepository;
 import com.gotravel.Identity.repository.RoleRepository;
 import com.gotravel.Identity.repository.UserRepository;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -85,14 +87,14 @@ public class UserService {
     }
 
     /**
-     *
+     * lấy cả người dùng bị ban hay bị xoá
      * @return list người dùng
      */
     public PageResponse<UserResponse> getAllUsers(int page, int size, String status) {
         Pageable pageable = PageRequest.of(page, size);
         boolean isDeleted = "BANNED".equalsIgnoreCase(status);
         
-        Page<User> userPage = userRepository.findAllByIsDeleted(isDeleted, pageable);
+        Page<User> userPage = userRepository.findAllByIsActive(isDeleted, pageable);
         
         return PageResponse.<UserResponse>builder()
                 .content(userPage.getContent().stream().map(userMapper::userToUserResponse).toList())
@@ -139,6 +141,12 @@ public class UserService {
     public void deleteUser(String userId) {
         User user = findUserById(userId);
         user.setIsDeleted(true);
+        userRepository.save(user);
+    }
+
+    public void banUser(String userId) {
+        User user = findUserById(userId);
+        user.setIsActive(false);
         userRepository.save(user);
     }
 
@@ -228,7 +236,7 @@ public class UserService {
         if(user.getHostProfile() != null){
             HostProfile hostProfile = user.getHostProfile();
             String appprovalstatus = String.valueOf(hostProfile.getApprovalStatus());
-            if(appprovalstatus != "APPROVED"){
+            if(appprovalstatus.equals("APPROVED")){
                 throw new AppException(UserErrorCode.POFILE_USER_AWAITING_EXISTS);
             }
         }
@@ -260,7 +268,7 @@ public class UserService {
     }
 
     public HostDetailResponse getHostDetail(String userId) {
-        User user = findUserById(userId);
+        User user = userRepository.findById(userId).orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
         HostProfile hostProfile = user.getHostProfile();
         if (hostProfile == null) {
             throw new AppException(HostErrorCode.HOST_PROFILE_NOT_EXIST);
@@ -306,29 +314,34 @@ public class UserService {
                 .build();
     }
 
-    public Boolean approvalHostStatus(String userId, ApprovalRequest request) {
+    public Boolean approvalHostStatus(String userId,String type, ApprovalRequest request) {
         User user = findUserById(userId);
-        HostProfile hostProfile = user.getHostProfile();
-        if (hostProfile == null) {
-            throw new AppException(HostErrorCode.HOST_PROFILE_NOT_EXIST);
+        if(type.equals(com.gotravel.Identity.enums.Role.HOST.toString())){
+            HostProfile hostProfile = user.getHostProfile();
+            if (hostProfile == null) {
+                throw new AppException(HostErrorCode.HOST_PROFILE_NOT_EXIST);
+            }
+            Approval_status status = Approval_status.valueOf(request.getStatus().toUpperCase());
+            hostProfile.setApprovalStatus(status);
+            userRepository.save(user);
+        }else if(type.equals(com.gotravel.Identity.enums.Role.ENTERPRISE.toString())){
+            EnterpriseProfile enterpriseProfile = user.getEnterpriseProfile();
+            if(enterpriseProfile == null){
+                throw new AppException(EnterpriseErrorCode.ENTERPRISE_PROFILE_NOT_EXIST);
+            }
+            Approval_status status = Approval_status.valueOf(request.getStatus().toUpperCase());
+            enterpriseProfile.setApprovalStatus(status);
+            userRepository.save(user);
         }
-
-        Approval_status status = Approval_status.valueOf(request.getStatus().toUpperCase());
-        hostProfile.setApprovalStatus(status);
-        
-        // Có thể lưu reason vào database nếu Entity HostProfile có trường này
-        // hostProfile.setReason(request.getReason());
-
-        userRepository.save(user);
         return true;
     }
 
-    public Boolean updateAccountStatus(String userId, AccountStatusRequest request) {
+    public Boolean updateBanAccountStatus(String userId, AccountStatusRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
         
         boolean isBan = "BANNED".equalsIgnoreCase(request.getStatus());
-        user.setIsDeleted(isBan);
+        user.setIsActive(isBan);
         
         userRepository.save(user);
         return true;
@@ -340,6 +353,7 @@ public class UserService {
                 .orElseThrow(() -> new AppException(UserErrorCode.ROLE_NOT_FOUND));
 
         user.getRoles().add(role);
+        userRepository.save(user);
         return true;
     }
 
@@ -353,17 +367,34 @@ public class UserService {
         Role role = roleRepository.findById("ENTERPRISE")
                 .orElseThrow(() -> new AppException(UserErrorCode.ROLE_NOT_FOUND));
 
-        user.getRoles().add(role);
+        Boolean check = user.getRoles().stream()
+                .anyMatch(roleEn -> role.getName().equals("ENTERPRISE"));
+        if(check){
+            throw new AppException(UserErrorCode.ROLE_USER_ALREADY_EXISTS);
+        }
+
+        if(user.getEnterpriseProfile() == null){
+            throw  new AppException(EnterpriseErrorCode.ENTERPRISE_PROFILE_NOT_EXIST);
+        }
+
+
+        if(user.getEnterpriseProfile() != null){
+            EnterpriseProfile enterpriseProfile = user.getEnterpriseProfile();
+            String appprovalstatus = String.valueOf(enterpriseProfile.getApprovalStatus());
+            if(appprovalstatus.equals("APPROVED")){
+                throw new AppException(UserErrorCode.POFILE_USER_AWAITING_EXISTS);
+            }
+        }
 
         if (user.getEnterpriseProfile() == null) {
             EnterpriseProfile enterpriseProfile = EnterpriseProfile.builder()
                     .user(user)
+                    .approvalStatus(Approval_status.PENDING)
                     .build();
             user.setEnterpriseProfile(enterpriseProfile);
         }
 
         userMapper.updateEnterpriseProfileFromRequest(enterpriseProfileRequest, user.getEnterpriseProfile());
-
         userRepository.save(user);
         return userMapper.userToUserResponse(user);
     }
@@ -395,7 +426,7 @@ public class UserService {
     }
 
     /**
-     * 
+     *
      * @param userId
      * @return HostProfileResponse
      */
@@ -447,6 +478,9 @@ public class UserService {
         if (user.getEnterpriseProfile() == null) {
             throw new AppException(EnterpriseErrorCode.USER_NOT_ENTERPRISE);
         }
+        if(!user.getEnterpriseProfile().getApprovalStatus().equals(Approval_status.APPROVED))
+            throw new AppException(UserErrorCode.POFILE_USER_AWAITING_EXISTS);
+
         userMapper.updateEnterpriseProfileFromRequest(request, user.getEnterpriseProfile());
         userRepository.save(user);
         return userMapper.toEnterpriseProfileResponse(user.getEnterpriseProfile());
@@ -461,6 +495,10 @@ public class UserService {
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
 
         if (Boolean.TRUE.equals(user.getIsDeleted())) {
+            throw new AppException(UserErrorCode.DELETE_USER);
+        }
+
+        if(Boolean.TRUE.equals(user.getIsActive())){
             throw new AppException(UserErrorCode.BANED_USER);
         }
 
@@ -468,10 +506,10 @@ public class UserService {
     }
 
     public UserStatusResponese checkUserStatus(String userId) {
-        User user = findUserById(userId);
+        User user  =findUserById(userId);
 
         boolean isAllow = (user.getIsActive() !=null && user.getIsActive())
-                && (user.getIsDeleted() ==null || !user.getIsDeleted());
+                && (user.getIsDeleted() !=null || !user.getIsDeleted());
 
         return  UserStatusResponese.builder()
                 .isActive(isAllow)

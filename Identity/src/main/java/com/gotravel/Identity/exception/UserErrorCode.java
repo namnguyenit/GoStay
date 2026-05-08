@@ -12,6 +12,7 @@ public enum UserErrorCode implements ErrorCode {
     ROLE_NOT_FOUND(404, "ROLE_NOT_FOUND", "Role not found", HttpStatus.NOT_FOUND)
     ,ROLE_USER_ALREADY_EXISTS(400 , "ROLE_USER_ALREADY_EXISTS" , "Role user already exists" , HttpStatus.BAD_REQUEST)
     ,BANED_USER(400 , "BANNED_USER" , "banned account" , HttpStatus.BAD_REQUEST )
+    ,DELETE_USER(400 , "DELETE_USER" , "deleted account" , HttpStatus.BAD_REQUEST )
     ,POFILE_USER_AWAITING_EXISTS(409 , "POFILE_USER_AWAITING_EXISTS" , "User profile awaiting approval" , HttpStatus.BAD_REQUEST);
 
     private final boolean success = false;
