@@ -1,12 +1,14 @@
 package com.gotravel.Identity.exception;
 
-import com.gotravel.Identity.dto.request.ApiRequest;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+
+import com.gotravel.Identity.dto.request.ApiRequest;
+
+import lombok.extern.slf4j.Slf4j;
 
 @ControllerAdvice
 @Slf4j
@@ -18,6 +20,7 @@ public class GlobalExceptionHandler {
 
         ApiRequest apiRequest = new ApiRequest();
         apiRequest.setSuccess(errorCode.isSuccess());
+        apiRequest.setStatus(errorCode.getStatus());
         apiRequest.setCode(errorCode.getCode());
         apiRequest.setMessage(errorCode.getMessage());
 
@@ -36,7 +39,8 @@ public class GlobalExceptionHandler {
 
         ApiRequest apiRequest = new ApiRequest();
         apiRequest.setSuccess(false);
-        apiRequest.setCode(400);
+        apiRequest.setStatus(AppErrorCode.VALIDATION_ERROR.getStatus());
+        apiRequest.setCode(AppErrorCode.VALIDATION_ERROR.getCode());
         apiRequest.setMessage(errorMessage);
 
         return ResponseEntity.badRequest().body(apiRequest);
@@ -46,7 +50,8 @@ public class GlobalExceptionHandler {
     ResponseEntity<ApiRequest> handleRuntimeException(RuntimeException runtimeException) {
         ApiRequest apiRequest = new ApiRequest();
         apiRequest.setSuccess(false);
-        apiRequest.setCode(400);
+        apiRequest.setStatus(AppErrorCode.RUNTIME_ERROR.getStatus());
+        apiRequest.setCode(AppErrorCode.RUNTIME_ERROR.getCode());
         apiRequest.setMessage(runtimeException.getMessage());
 
         return ResponseEntity.badRequest().body(apiRequest);
@@ -56,9 +61,10 @@ public class GlobalExceptionHandler {
     ResponseEntity<ApiRequest> handleDataIntegrityViolationException(DataIntegrityViolationException exception) {
         ApiRequest apiRequest = new ApiRequest();
         apiRequest.setSuccess(false);
-        apiRequest.setCode(409);
-        apiRequest.setMessage("Data integrity violation: This record already exists or violates a unique constraint.");
+        apiRequest.setStatus(AppErrorCode.DATA_INTEGRITY_VIOLATION.getStatus());
+        apiRequest.setCode(AppErrorCode.DATA_INTEGRITY_VIOLATION.getCode());
+        apiRequest.setMessage(AppErrorCode.DATA_INTEGRITY_VIOLATION.getMessage());
 
-        return ResponseEntity.status(409).body(apiRequest);
+        return ResponseEntity.status(AppErrorCode.DATA_INTEGRITY_VIOLATION.getHttpStatus()).body(apiRequest);
     }
 }

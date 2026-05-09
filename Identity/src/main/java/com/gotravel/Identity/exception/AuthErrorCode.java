@@ -6,15 +6,17 @@ import org.springframework.http.HttpStatusCode;
 
 @Getter
 public enum AuthErrorCode implements ErrorCode {
-    UNAUTHENTICATED(401, "Unauthenticated", HttpStatus.UNAUTHORIZED),
-    UNAUTHORIZED(403, "You do not have permission", HttpStatus.FORBIDDEN);
+    UNAUTHENTICATED(401, "UNAUTHENTICATED", "Unauthenticated", HttpStatus.UNAUTHORIZED),
+    UNAUTHORIZED(403, "UNAUTHORIZED", "You do not have permission", HttpStatus.FORBIDDEN);
 
     private final boolean success = false;
-    private final int code;
+    private final int status;
+    private final String code;
     private final String message;
     private final HttpStatusCode httpStatus;
 
-    AuthErrorCode(int code, String message, HttpStatusCode httpStatus) {
+    AuthErrorCode(int status, String code, String message, HttpStatusCode httpStatus) {
+        this.status = status;
         this.code = code;
         this.message = message;
         this.httpStatus = httpStatus;

@@ -1,30 +1,35 @@
 package com.gotravel.Identity.service;
 
-import com.gotravel.Identity.dto.request.AuthenticationRequest;
-import com.gotravel.Identity.dto.response.AuthenticationResponse;
-import com.gotravel.Identity.entity.User;
-import com.gotravel.Identity.exception.AppException;
-import com.gotravel.Identity.exception.AuthErrorCode;
-import com.gotravel.Identity.exception.UserErrorCode;
-import com.gotravel.Identity.repository.UserRepository;
-import com.gotravel.Identity.configuration.RsaKeyConfig;
-import com.nimbusds.jose.*;
-import com.nimbusds.jose.crypto.RSASSASigner;
-import com.nimbusds.jwt.JWTClaimsSet;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.experimental.NonFinal;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.StringJoiner;
+
+import com.gotravel.Identity.exception.AuthErrorCode;
+import com.gotravel.Identity.exception.UserErrorCode;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
+import com.gotravel.Identity.configuration.RsaKeyConfig;
+import com.gotravel.Identity.dto.request.AuthenticationRequest;
+import com.gotravel.Identity.dto.response.AuthenticationResponse;
+import com.gotravel.Identity.entity.User;
+import com.gotravel.Identity.exception.AppException;
+import com.gotravel.Identity.repository.UserRepository;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JOSEObjectType;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSObject;
+import com.nimbusds.jose.Payload;
+import com.nimbusds.jose.crypto.RSASSASigner;
+import com.nimbusds.jwt.JWTClaimsSet;
+
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
@@ -34,13 +39,21 @@ public class AuthenticationService {
 
     UserRepository userRepository;
     PasswordEncoder passwordEncoder;
-    
+
     // Inject cấu hình RsaKeyConfig
     RsaKeyConfig rsaKeyConfig;
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         var user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
+
+        if (Boolean.TRUE.equals(user.getIsDeleted())) {
+            throw new AppException(UserErrorCode.DELETE_USER);
+        }
+
+        if (Boolean.FALSE.equals(user.getIsActive())) {
+            throw new AppException(UserErrorCode.BANED_USER);
+        }
 
         boolean checkpassword = passwordEncoder.matches(request.getPassword(),user.getPassword());
         if (!checkpassword) {
