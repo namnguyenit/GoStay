@@ -9,6 +9,8 @@ import com.Listing.CatalogandListing.exception.ListingErrorCode;
 import com.Listing.CatalogandListing.exception.ReviewErrorCode;
 import com.Listing.CatalogandListing.repository.ListingRepository;
 import com.Listing.CatalogandListing.repository.ReviewRepository;
+import com.Listing.CatalogandListing.event.ReviewSubmittedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,6 +28,7 @@ import java.util.stream.Collectors;
 public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final ListingRepository listingRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public void submitReview(String userIdStr, SubmitReviewRequest request) {
@@ -47,6 +50,9 @@ public class ReviewService {
                 .build();
 
         reviewRepository.save(review);
+        
+        // Bắn event ra ngoài để xử lý ngầm (update rating)
+        eventPublisher.publishEvent(new ReviewSubmittedEvent(this, listing.getId()));
     }
 
     @Transactional(readOnly = true)

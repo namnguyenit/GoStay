@@ -8,6 +8,7 @@ import com.Listing.CatalogandListing.entity.Landmark;
 import com.Listing.CatalogandListing.entity.LandmarkSuggestion;
 import com.Listing.CatalogandListing.enums.SuggestionStatus;
 import com.Listing.CatalogandListing.dto.response.PaginationResponse;
+import com.Listing.CatalogandListing.dto.response.LandmarkSuggestionResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import com.Listing.CatalogandListing.mapper.LandmarkMapper;
@@ -20,6 +21,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -31,7 +33,7 @@ public class LandmarkService {
     final LandmarkMapper landmarkMapper;
     final LandmarkRepository landmarkRepository;
 
-    public PaginationResponse<LandmarkSuggestion> getLandmarkSuggestions(String status, int page, int size) {
+    public PaginationResponse<LandmarkSuggestionResponse> getLandmarkSuggestions(String status, int page, int size) {
         Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
         Page<LandmarkSuggestion> suggestionPage;
         if (status != null && !status.isBlank()) {
@@ -41,8 +43,12 @@ public class LandmarkService {
             suggestionPage = landmarkSuggestionRepository.findAll(pageable);
         }
 
-        return PaginationResponse.<LandmarkSuggestion>builder()
-                .content(suggestionPage.getContent())
+        java.util.List<LandmarkSuggestionResponse> content = suggestionPage.getContent().stream()
+                .map(landmarkSuggestionMapper::toResponse)
+                .collect(java.util.stream.Collectors.toList());
+
+        return PaginationResponse.<LandmarkSuggestionResponse>builder()
+                .content(content)
                 .totalPages(suggestionPage.getTotalPages())
                 .totalElements(suggestionPage.getTotalElements())
                 .build();
@@ -55,6 +61,7 @@ public class LandmarkService {
      * @param suggestLandmarkRequest Dữ liệu gợi ý
      * @return void
      */
+    @Transactional
     public void suggestLandmark(String userId, SuggestLandmarkRequest suggestLandmarkRequest) {
         LandmarkSuggestion landmarkSuggestion = landmarkSuggestionMapper.toEntity(suggestLandmarkRequest);
         landmarkSuggestion.setHostId(UUID.fromString(userId));
@@ -62,6 +69,7 @@ public class LandmarkService {
         landmarkSuggestionRepository.save(landmarkSuggestion);
     }
 
+    @Transactional
     public void updateSuggestionStatus(UUID suggestionId, UpdateSuggestionStatusRequest request) {
         LandmarkSuggestion suggestion = landmarkSuggestionRepository.findById(suggestionId)
                 .orElseThrow(() -> new com.Listing.CatalogandListing.exception.AppException(
@@ -74,6 +82,7 @@ public class LandmarkService {
         landmarkSuggestionRepository.save(suggestion);
     }
 
+    @Transactional
     public void createLandmark(SaveLandmarkRequest request) {
         Landmark landmark = landmarkMapper.toEntity(request);
         landmark.setStatus(com.Listing.CatalogandListing.enums.LandmarkStatus.ACTIVE);
@@ -87,6 +96,7 @@ public class LandmarkService {
         }
     }
 
+    @Transactional
     public void updateLandmark(UUID landmarkId, SaveLandmarkRequest request) {
         Landmark landmark = landmarkRepository.findById(landmarkId)
                 .orElseThrow(() -> new com.Listing.CatalogandListing.exception.AppException(
@@ -96,6 +106,7 @@ public class LandmarkService {
         landmarkRepository.save(landmark);
     }
 
+    @Transactional
     public void changeLandmarkStatus(UUID landmarkId, UpdateLandmarkStatusRequest request) {
         Landmark landmark = landmarkRepository.findById(landmarkId)
                 .orElseThrow(() -> new com.Listing.CatalogandListing.exception.AppException(

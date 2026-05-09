@@ -11,6 +11,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -20,6 +21,7 @@ public class ComplexService {
     ComplexMapper complexMapper;
     ComplexRepository complexRepository;
 
+    @Transactional
     public void createComplex(String userId, CreateComplexRequest request) {
         Complex complex = complexMapper.toEntity(request);
         complex.setHostId(UUID.fromString(userId));

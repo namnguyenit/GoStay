@@ -5,7 +5,7 @@ import com.Listing.CatalogandListing.dto.request.landmark.UpdateLandmarkStatusRe
 import com.Listing.CatalogandListing.dto.request.landmark.UpdateSuggestionStatusRequest;
 import com.Listing.CatalogandListing.dto.response.ApiResponse;
 import com.Listing.CatalogandListing.dto.response.PaginationResponse;
-import com.Listing.CatalogandListing.entity.LandmarkSuggestion;
+import com.Listing.CatalogandListing.dto.response.LandmarkSuggestionResponse;
 import com.Listing.CatalogandListing.service.LandmarkService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,11 +32,11 @@ public class CatalogAdminController {
      * @return Danh sách đề xuất phân trang
      */
     @GetMapping("/landmark-suggestions")
-    public ResponseEntity<ApiResponse<PaginationResponse<LandmarkSuggestion>>> getLandmarkSuggestions(
+    public ResponseEntity<ApiResponse<PaginationResponse<LandmarkSuggestionResponse>>> getLandmarkSuggestions(
             @RequestParam(required = false) String status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        PaginationResponse<LandmarkSuggestion> response = landmarkService.getLandmarkSuggestions(status, page, size);
+        PaginationResponse<LandmarkSuggestionResponse> response = landmarkService.getLandmarkSuggestions(status, page, size);
         return ResponseEntity.ok(ApiResponse.success("Lấy danh sách đề xuất thành công.", response));
     }
 

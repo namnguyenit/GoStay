@@ -15,4 +15,9 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
     Page<Review> findByListingId(UUID listingId, Pageable pageable);
     List<Review> findByUserId(UUID userId);
     boolean existsByListingIdAndUserId(UUID listingId, UUID userId);
+    
+    long countByListingId(UUID listingId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT COALESCE(AVG(r.rating), 0.0) FROM Review r WHERE r.listing.id = :listingId")
+    java.math.BigDecimal getAverageRatingByListingId(@org.springframework.data.repository.query.Param("listingId") UUID listingId);
 }

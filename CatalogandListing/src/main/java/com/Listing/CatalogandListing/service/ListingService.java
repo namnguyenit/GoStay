@@ -17,6 +17,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -50,6 +51,7 @@ public class ListingService {
         return listingMapper.toDetailResponse(listing);
     }
 
+    @Transactional
     public void createListing(String userId, SaveListingRequest request) {
         Listing listing = listingMapper.toEntity(request);
         listing.setHostId(UUID.fromString(userId));
@@ -57,6 +59,7 @@ public class ListingService {
         listingRepository.save(listing);
     }
 
+    @Transactional
     public void updateListing(UUID listingId, String userId, SaveListingRequest request) {
         Listing listing = listingRepository.findById(listingId)
                 .orElseThrow(() -> new com.Listing.CatalogandListing.exception.AppException(
@@ -71,6 +74,7 @@ public class ListingService {
         listingRepository.save(listing);
     }
 
+    @Transactional
     public void deleteListing(UUID listingId, String userId) {
         Listing listing = listingRepository.findById(listingId)
                 .orElseThrow(() -> new com.Listing.CatalogandListing.exception.AppException(
