@@ -112,11 +112,10 @@ public class UserService {
      */
     public UserResponse updateUser(String userId, UserUpdateRequest userUpdateRequest) {
         User user = findUserById(userId);
-        
-        if(userUpdateRequest.getPassword() != null || !userUpdateRequest.getPassword().isEmpty() ) {
+
+        if(userUpdateRequest.getPassword() != null && !userUpdateRequest.getPassword().isEmpty() ) {
             user.setPassword(passwordEncoder.encode(userUpdateRequest.getPassword()));
         }
-        user.setPassword(userUpdateRequest.getPassword());
         UserProfile userProfile = user.getUserProfile();
         if (userProfile == null) {
             userProfile = UserProfile.builder().user(user).build();
@@ -194,7 +193,7 @@ public class UserService {
         if(user.getHostProfile() != null){
             HostProfile hostProfile = user.getHostProfile();
             String appprovalstatus = String.valueOf(hostProfile.getApprovalStatus());
-            if(appprovalstatus != "APPROVED"){
+            if(!appprovalstatus.equals("APPROVED")){
                 throw new AppException(UserErrorCode.POFILE_USER_AWAITING_EXISTS);
             }
 
@@ -229,25 +228,19 @@ public class UserService {
         if(check){
             throw new AppException(UserErrorCode.ROLE_USER_ALREADY_EXISTS);
         }
-        if(user.getHostProfile() == null){
-            throw  new AppException(HostErrorCode.HOST_PROFILE_NOT_EXIST);
+        HostProfile existingProfile = user.getHostProfile();
+        if(existingProfile == null){
+            throw new AppException(HostErrorCode.HOST_PROFILE_NOT_EXIST);
         }
 
-        if(user.getHostProfile() != null){
-            HostProfile hostProfile = user.getHostProfile();
-            String appprovalstatus = String.valueOf(hostProfile.getApprovalStatus());
-            if(appprovalstatus.equals("APPROVED")){
-                throw new AppException(UserErrorCode.POFILE_USER_AWAITING_EXISTS);
-            }
+        if(existingProfile.getApprovalStatus() == Approval_status.APPROVED){
+            throw new AppException(UserErrorCode.POFILE_USER_AWAITING_EXISTS);
         }
 
-        HostProfile hostProfile = HostProfile.builder()
-                .user(user)
-                .build();
-        user.setHostProfile(hostProfile);
+        userMapper.updateHostProfileFromRequest(hostProfileRequest, existingProfile);
 
 
-        userMapper.updateHostProfileFromRequest(hostProfileRequest, user.getHostProfile());
+        existingProfile.setApprovalStatus(Approval_status.PENDING);
         userRepository.save(user);
         return ApprovalStatusResponse
                 .builder()
@@ -364,17 +357,11 @@ public class UserService {
      */
     public UserResponse upgradeToEnterprise(String userId, EnterpriseProfileRequest enterpriseProfileRequest) {
         User user = findUserById(userId);
-        Role role = roleRepository.findById("ENTERPRISE")
-                .orElseThrow(() -> new AppException(UserErrorCode.ROLE_NOT_FOUND));
 
         Boolean check = user.getRoles().stream()
-                .anyMatch(roleEn -> role.getName().equals("ENTERPRISE"));
+                .anyMatch(role -> role.getName().equals("ENTERPRISE"));
         if(check){
             throw new AppException(UserErrorCode.ROLE_USER_ALREADY_EXISTS);
-        }
-
-        if(user.getEnterpriseProfile() == null){
-            throw  new AppException(EnterpriseErrorCode.ENTERPRISE_PROFILE_NOT_EXIST);
         }
 
 
@@ -498,7 +485,7 @@ public class UserService {
             throw new AppException(UserErrorCode.DELETE_USER);
         }
 
-        if(Boolean.TRUE.equals(user.getIsActive())){
+        if(Boolean.FALSE.equals(user.getIsActive())){
             throw new AppException(UserErrorCode.BANED_USER);
         }
 
@@ -506,13 +493,10 @@ public class UserService {
     }
 
     public UserStatusResponese checkUserStatus(String userId) {
-        User user  =findUserById(userId);
-
-        boolean isAllow = (user.getIsActive() !=null && user.getIsActive())
-                && (user.getIsDeleted() !=null || !user.getIsDeleted());
+        User user  = findUserById(userId);
 
         return  UserStatusResponese.builder()
-                .isActive(isAllow)
+                .isActive(user.getIsActive())
                 .build();
 
     }

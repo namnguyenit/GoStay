@@ -5,13 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d2d4dc8d-e433-4093-a36d-060757ca3890" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/controller/UserController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/entity/EnterpriseProfile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/entity/EnterpriseProfile.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/exception/EnterpriseErrorCode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/exception/EnterpriseErrorCode.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/exception/UserErrorCode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/exception/UserErrorCode.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/repository/UserRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/service/UserService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -90,7 +84,7 @@
       <command value="mvn clean" />
     </option>
   </component>
-  <component name="RunManager" selected="Application.Unnamed">
+  <component name="RunManager" selected="Spring Boot.IdentityApplication">
     <configuration name="Unnamed" type="Application" factoryName="Application" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.gotravel.Identity.IdentityApplication" />
       <module name="Identity" />
