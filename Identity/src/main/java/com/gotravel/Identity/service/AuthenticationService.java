@@ -39,7 +39,7 @@ public class AuthenticationService {
 
     UserRepository userRepository;
     PasswordEncoder passwordEncoder;
-    
+
     // Inject cấu hình RsaKeyConfig
     RsaKeyConfig rsaKeyConfig;
 
@@ -48,6 +48,10 @@ public class AuthenticationService {
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
 
         if (Boolean.TRUE.equals(user.getIsDeleted())) {
+            throw new AppException(UserErrorCode.DELETE_USER);
+        }
+
+        if (Boolean.FALSE.equals(user.getIsActive())) {
             throw new AppException(UserErrorCode.BANED_USER);
         }
 

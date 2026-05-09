@@ -28,6 +28,7 @@ import com.gotravel.Identity.exception.*;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -46,6 +47,7 @@ public class UserService {
      * @param userRequest
      * @return trả về Userresponse
      */
+    @Transactional
     public UserResponse createUser(UserRequest userRequest) {
         if (userRepository.existsByUsername(userRequest.getUsername())) {
             throw new AppException(UserErrorCode.USER_ALREADY_EXISTS);
@@ -92,7 +94,7 @@ public class UserService {
      */
     public PageResponse<UserResponse> getAllUsers(int page, int size, String status) {
         Pageable pageable = PageRequest.of(page, size);
-        boolean isDeleted = "BANNED".equalsIgnoreCase(status);
+        boolean isDeleted = !"BANNED".equalsIgnoreCase(status);
         
         Page<User> userPage = userRepository.findAllByIsActive(isDeleted, pageable);
         
@@ -110,6 +112,7 @@ public class UserService {
      * @param userUpdateRequest
      * @return UserResponse
      */
+    @Transactional
     public UserResponse updateUser(String userId, UserUpdateRequest userUpdateRequest) {
         User user = findUserById(userId);
 
@@ -137,12 +140,14 @@ public class UserService {
      * @Logic tìm người dùng theo userId và xoá người dùng
      * @param userId
      */
+    @Transactional
     public void deleteUser(String userId) {
         User user = findUserById(userId);
         user.setIsDeleted(true);
         userRepository.save(user);
     }
 
+    @Transactional
     public void banUser(String userId) {
         User user = findUserById(userId);
         user.setIsActive(false);
@@ -155,6 +160,7 @@ public class UserService {
      * @param userId
      * @param roleName
      */
+    @Transactional
     public void upgradeToRole(String userId, String roleName) {
         User user = findUserById(userId);
         Role role = roleRepository.findById(roleName.toUpperCase())
@@ -183,6 +189,7 @@ public class UserService {
      * @param hostProfileRequest
      * @retuhostn UserReponse
      */
+    @Transactional
     public ApprovalStatusResponse upgradeToHost(String userId, HostProfileRequest hostProfileRequest) {
         User user = findUserById(userId);
         Boolean check = user.getRoles().stream()
@@ -221,6 +228,7 @@ public class UserService {
      * @param hostProfileRequest
      * @retuhostn UserReponse
      */
+    @Transactional
     public ApprovalStatusResponse updateProfileUpgradeToHost(String userId, HostProfileRequest hostProfileRequest) {
         User user = findUserById(userId);
         Boolean check = user.getRoles().stream()
@@ -248,6 +256,7 @@ public class UserService {
                 .build();
     }
 
+    @Transactional
     public boolean deleteProfileUpgradeToHost(String userId){
         User user = findUserById(userId);
 
@@ -307,6 +316,7 @@ public class UserService {
                 .build();
     }
 
+    @Transactional
     public Boolean approvalHostStatus(String userId,String type, ApprovalRequest request) {
         User user = findUserById(userId);
         if(type.equals(com.gotravel.Identity.enums.Role.HOST.toString())){
@@ -329,17 +339,19 @@ public class UserService {
         return true;
     }
 
+    @Transactional
     public Boolean updateBanAccountStatus(String userId, AccountStatusRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
         
-        boolean isBan = "BANNED".equalsIgnoreCase(request.getStatus());
-        user.setIsActive(isBan);
+        boolean isActive = !"BANNED".equalsIgnoreCase(request.getStatus());
+        user.setIsActive(isActive);
         
         userRepository.save(user);
         return true;
     }
 
+    @Transactional
     public boolean successUpgradeToHost(String userId){
         User user = findUserById(userId);
         Role role = roleRepository.findById("HOST")
@@ -355,6 +367,7 @@ public class UserService {
      * @param userId
      * @retuhostn UserReponse
      */
+    @Transactional
     public UserResponse upgradeToEnterprise(String userId, EnterpriseProfileRequest enterpriseProfileRequest) {
         User user = findUserById(userId);
 
@@ -402,6 +415,7 @@ public class UserService {
      * @param request
      * @return UserProfileResponse
      */
+    @Transactional
     public UserProfileResponse updateUserProfile(String userId, UserProfileRequest request) {
         User user = findUserById(userId);
         if (user.getUserProfile() == null) {
@@ -431,6 +445,7 @@ public class UserService {
      * @param request
      * @return HostProfileResponse
      */
+    @Transactional
     public HostProfileResponse updateHostProfile(String userId, HostProfileRequest request) {
         User user = findUserById(userId);
         if (user.getHostProfile() == null) {
@@ -460,6 +475,7 @@ public class UserService {
      * @param request
      * @return EnterpriseProfileResponse
      */
+    @Transactional
     public EnterpriseProfileResponse updateEnterpriseProfile(String userId, EnterpriseProfileRequest request) {
         User user = findUserById(userId);
         if (user.getEnterpriseProfile() == null) {
@@ -493,11 +509,11 @@ public class UserService {
     }
 
     public UserStatusResponese checkUserStatus(String userId) {
-        User user  = findUserById(userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
 
-        return  UserStatusResponese.builder()
+        return UserStatusResponese.builder()
                 .isActive(user.getIsActive())
                 .build();
-
     }
 }
