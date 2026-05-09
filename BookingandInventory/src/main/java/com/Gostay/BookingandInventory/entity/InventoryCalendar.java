@@ -7,7 +7,6 @@ import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -51,12 +50,6 @@ public class InventoryCalendar {
 
     @Column(name = "available_quantity")
     Integer availableQuantity;
-
-    /**
-     * Nơi Host cấu hình giá động cho các ngày Lễ/Tết.
-     */
-    @Column(name = "base_price", precision = 10, scale = 2)
-    BigDecimal basePrice;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20)
