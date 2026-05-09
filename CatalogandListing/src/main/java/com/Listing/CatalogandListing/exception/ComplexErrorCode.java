@@ -7,7 +7,8 @@ import org.springframework.http.HttpStatusCode;
 @Getter
 public enum ComplexErrorCode implements ErrorCode {
     COMPLEX_NOT_FOUND(404, "Complex not found", HttpStatus.NOT_FOUND),
-    COMPLEX_ALREADY_EXISTS(400, "Complex already exists", HttpStatus.BAD_REQUEST);
+    COMPLEX_ALREADY_EXISTS(400, "Complex already exists", HttpStatus.BAD_REQUEST),
+    COMPLEX_ACCESS_DENIED(403, "You do not have permission to access this complex", HttpStatus.FORBIDDEN);
 
     private final int code;
     private final String message;

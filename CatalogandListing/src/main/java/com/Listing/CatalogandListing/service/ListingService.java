@@ -27,9 +27,15 @@ public class ListingService {
     ListingMapper listingMapper;
     ListingRepository listingRepository;
 
-    public PaginationResponse<ListingDetailResponse> getListingsByHost(String userId, int page, int size) {
+    public PaginationResponse<ListingDetailResponse> getListingsByHost(String userId, String complexId, int page, int size) {
         Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
-        Page<Listing> listingPage = listingRepository.findByHostId(UUID.fromString(userId), pageable);
+        Page<Listing> listingPage;
+        
+        if (complexId != null && !complexId.isBlank()) {
+            listingPage = listingRepository.findByHostIdAndComplexId(UUID.fromString(userId), UUID.fromString(complexId), pageable);
+        } else {
+            listingPage = listingRepository.findByHostId(UUID.fromString(userId), pageable);
+        }
 
         java.util.List<ListingDetailResponse> dtoList = listingPage.getContent()
                 .stream()
