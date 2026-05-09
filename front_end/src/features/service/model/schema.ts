@@ -1,6 +1,6 @@
 import z from "zod";
 
-export const ExperienceSchema = z
+export const ServiceSchema = z
   .object({
     id: z.string(),
     name: z.string().optional().catch(undefined),
@@ -13,4 +13,7 @@ export const ExperienceSchema = z
   .optional()
   .catch(undefined);
 
-export const ExperiencesSchema = z.array(ExperienceSchema).nullable();
+export const ServicesSchema = z
+  .array(ServiceSchema)
+  .optional()
+  .catch(undefined);

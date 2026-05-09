@@ -1,1 +1,1 @@
-export { default as PlaceItem } from "./PlaceCarouselItem";
+export { default as PlaceItem } from "../../../shared/components/OfferingCarouselItem";

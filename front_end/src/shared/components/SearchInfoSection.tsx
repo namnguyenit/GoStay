@@ -220,6 +220,7 @@ export default function SearchInfoSection({
             }}
             onPointerDown={(e) => {
               e.stopPropagation();
+              setOpen(undefined);
               onClickSearch?.(searchInfo);
             }}
           >

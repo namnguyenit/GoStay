@@ -1,18 +1,12 @@
 import { useSafeContext } from "@/shared/hooks";
 import { cn } from "@/lib/utils";
-import { HomeContext } from "@/app/(main)/providers/home.provider";
+import { HomeContext } from "@/screens/home/providers/home.provider";
 import { useContext } from "react";
 import { Fragment } from "react/jsx-runtime";
 
 export default function ImageNavigation() {
-  const {
-    imageIndex,
-    setImageIndex,
-    clock,
-    setClock,
-    experiences,
-    setExperiences,
-  } = useSafeContext(HomeContext);
+  const { imageIndex, setImageIndex, setClock, experiences, setExperiences } =
+    useSafeContext(HomeContext);
 
   return (
     <div className="row justify-end">
@@ -27,8 +21,7 @@ export default function ImageNavigation() {
                 : "border-transparent",
             )}
             onClick={() => {
-              clearInterval(clock ?? undefined);
-              setClock(null);
+              setClock(6000);
               setImageIndex(index);
             }}
           >

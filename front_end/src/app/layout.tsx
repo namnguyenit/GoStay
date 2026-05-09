@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Merriweather } from "next/font/google";
 import "@/styles/globals.css";
+import { AppProvider } from "../features/app/providers/app.provider";
 
 export const metadata: Metadata = {
   title: "Go Travel",
@@ -16,14 +17,16 @@ const fontSans = Merriweather({
   subsets: ["latin"],
 });
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" className={`${fontSans.variable}`}>
-      <body className="">{children}</body>
-    </html>
+    <AppProvider>
+      <html lang="vi" className={`${fontSans.variable}`}>
+        <body className="">{children}</body>
+      </html>
+    </AppProvider>
   );
 }

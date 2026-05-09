@@ -6,4 +6,7 @@ export const endpoint = {
   place: {
     getAll: "/place",
   },
+  service: {
+    getAll: "/service",
+  },
 };

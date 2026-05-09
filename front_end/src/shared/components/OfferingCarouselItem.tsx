@@ -2,14 +2,28 @@ import { Card } from "@/components/ui/card";
 import { CarouselItem } from "@/components/ui/carousel";
 import { formatMoney } from "@/shared/utils";
 import { Star } from "lucide-react";
-import { Place } from "../model";
 
-type PlaceCarouselItemProp = { item: Place; onSelect?: (value: Place) => void };
+type Offering =
+  | {
+      id: string;
+      name?: string;
+      description?: string;
+      image?: string;
+      price?: number;
+      rating?: number;
+    }
+  | undefined
+  | null;
 
-export default function PlaceCarouselItem({
+type OfferingCarouselItemProp = {
+  item: Offering;
+  onSelect?: (value: Offering) => void;
+};
+
+export default function OfferingCarouselItem({
   item,
   onSelect,
-}: PlaceCarouselItemProp) {
+}: OfferingCarouselItemProp) {
   return (
     <CarouselItem
       key={item?.id}
