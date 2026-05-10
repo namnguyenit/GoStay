@@ -7,12 +7,15 @@ import com.gotravel.Identity.repository.RoleRepository;
 import com.gotravel.Identity.repository.UserRepository;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.PersistenceUnit;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.gotravel.Identity.entity.User;
@@ -24,11 +27,15 @@ import com.gotravel.Identity.enums.Provider;
 import com.gotravel.Identity.dto.request.*;
 import com.gotravel.Identity.dto.response.*;
 import com.gotravel.Identity.exception.*;
+import java.security.PublicKey;
+import java.util.*;
+import java.util.stream.Collectors;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -95,9 +102,9 @@ public class UserService {
     public PageResponse<UserResponse> getAllUsers(int page, int size, String status) {
         Pageable pageable = PageRequest.of(page, size);
         boolean isDeleted = !"BANNED".equalsIgnoreCase(status);
-        
+
         Page<User> userPage = userRepository.findAllByIsActive(isDeleted, pageable);
-        
+
         return PageResponse.<UserResponse>builder()
                 .content(userPage.getContent().stream().map(userMapper::userToUserResponse).toList())
                 .totalPages(userPage.getTotalPages())
@@ -107,7 +114,7 @@ public class UserService {
 
 
     /**
-     *  update user 
+     *  update user
      * @param userId
      * @param userUpdateRequest
      * @return UserResponse
@@ -184,7 +191,7 @@ public class UserService {
     }
 
     /**
-     * @Logic upgrade từ người dùng lên Host 
+     * @Logic upgrade từ người dùng lên Host
      * @param userId
      * @param hostProfileRequest
      * @retuhostn UserReponse
@@ -213,7 +220,7 @@ public class UserService {
                     .build();
             user.setHostProfile(hostProfile);
         }
-        
+
         userMapper.updateHostProfileFromRequest(hostProfileRequest, user.getHostProfile());
         userRepository.save(user);
         return ApprovalStatusResponse
@@ -343,10 +350,10 @@ public class UserService {
     public Boolean updateBanAccountStatus(String userId, AccountStatusRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
-        
+
         boolean isActive = !"BANNED".equalsIgnoreCase(request.getStatus());
         user.setIsActive(isActive);
-        
+
         userRepository.save(user);
         return true;
     }
@@ -400,7 +407,7 @@ public class UserService {
     }
 
     /**
-     * @Logic lấy profile của user 
+     * @Logic lấy profile của user
      * @param userId
      * @return UserProfileResponse
      */
@@ -410,7 +417,7 @@ public class UserService {
     }
 
     /**
-     * @Logic lấy userId và request để cập nhật userprofilereponse 
+     * @Logic lấy userId và request để cập nhật userprofilereponse
      * @param userId
      * @param request
      * @return UserProfileResponse
@@ -516,4 +523,58 @@ public class UserService {
                 .isActive(user.getIsActive())
                 .build();
     }
+
+
+    @Value("${media.service.url}")
+    private String mediaServiceUrl;
+/**
+ * @Logic Nhận file từ FE, gọi sang Node.js upload Cloudinary, lưu URL vào DB
+ */
+    public UserProfileResponse uploadAvatar(String userId , MultipartFile file){
+        User user = findUserById(userId);
+        try{
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+            String rolesStr = user.getRoles().stream()
+                    .map(role -> role.getName())
+                    .collect(Collectors.joining(","));
+            headers.set("x-user-roles", rolesStr);
+            headers.set("x-user-id", userId);
+
+            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+            body.add("file", file.getResource());
+            body.add("folder", "avatar");
+
+
+            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<Map> response = restTemplate.postForEntity(mediaServiceUrl, requestEntity, Map.class);
+
+
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                Map<String ,Object> responseBody = response.getBody();
+                Map<String, Object> data = (Map<String, Object>) responseBody.get("data");
+                String avatarUrl = (String) data.get("url");
+                if(user.getUserProfile()==null){
+                    user.setUserProfile(UserProfile.builder().user(user).build());
+                }
+                user.getUserProfile().setAvatarUrl(avatarUrl);
+                userRepository.save(user);
+
+                return userMapper.toUserProfileResponse(user.getUserProfile());
+            }else {
+                throw new AppException(UserErrorCode.UPLOAD_IMAGE_FAILED);
+            }
+
+
+        } catch (AppException e){
+            throw e;
+        } catch (Exception e) {
+            throw new AppException(UserErrorCode.UPLOAD_IMAGE_FAILED);
+        }
+    }
+
+
+
 }

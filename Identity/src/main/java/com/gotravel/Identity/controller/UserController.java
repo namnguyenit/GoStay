@@ -1,9 +1,8 @@
 package com.gotravel.Identity.controller;
 
-import java.util.List;
-
 import com.gotravel.Identity.dto.request.*;
 import com.gotravel.Identity.dto.response.*;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +14,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/users")
@@ -26,7 +26,7 @@ public class UserController {
     UserService userService;
 
 
-    
+
     @PostMapping
     public ApiRequest<UserResponse> createUser(@RequestBody @Valid UserRequest user) {
         return ApiRequest.<UserResponse>builder()
@@ -199,7 +199,7 @@ public class UserController {
 
     @PostMapping("/{id}/successupgradetohost")
     @PreAuthorize("hasAnyRole('ADMIN')")
-    public ApiRequest<UserResponse> SuccessUpgradeToHost(@PathVariable String id) {
+    public ApiRequest<UserResponse> successUpgradeToHost(@PathVariable String id) {
         Boolean check = userService.successUpgradeToHost(id);
         return ApiRequest.<UserResponse>builder()
                 .success(check)
@@ -287,6 +287,18 @@ public class UserController {
                 .success(true)
                 .data(statusResponese)
                 .message("User status retrieved successfully")
+                .build();
+    }
+
+    @PostMapping(value = "/me/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('USER', 'HOST', 'ENTERPRISE')")
+    public ApiRequest<UserProfileResponse> uploadAvatar(@RequestParam("file") MultipartFile file) {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        UserProfileResponse response = userService.uploadAvatar(userId, file);
+
+        return ApiRequest.<UserProfileResponse>builder()
+                .success(true)
+                .data(response)
                 .build();
     }
 }
