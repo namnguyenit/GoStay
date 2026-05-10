@@ -8,7 +8,9 @@ import org.springframework.http.HttpStatusCode;
 public enum ReviewErrorCode implements ErrorCode {
     REVIEW_NOT_FOUND(404, "Review not found", HttpStatus.NOT_FOUND),
     USER_ALREADY_REVIEWED(400, "User has already reviewed this listing", HttpStatus.BAD_REQUEST),
-    INVALID_REVIEW_RATING(400, "Rating must be between 1 and 5", HttpStatus.BAD_REQUEST);
+    INVALID_REVIEW_RATING(400, "Rating must be between 1 and 5", HttpStatus.BAD_REQUEST),
+    REVIEW_ACCESS_DENIED(403, "You are not the owner of this review", HttpStatus.FORBIDDEN),
+    REVIEW_UPDATE_EXPIRED(400, "Review can only be updated within 7 days", HttpStatus.BAD_REQUEST);
 
     private final int code;
     private final String message;

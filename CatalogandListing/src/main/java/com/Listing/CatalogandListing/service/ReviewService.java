@@ -7,6 +7,8 @@ import com.Listing.CatalogandListing.entity.Listing;
 import com.Listing.CatalogandListing.entity.Review;
 import com.Listing.CatalogandListing.exception.ListingErrorCode;
 import com.Listing.CatalogandListing.exception.ReviewErrorCode;
+import com.Listing.CatalogandListing.exception.AppException;
+import com.Listing.CatalogandListing.dto.request.review.UpdateReviewRequest;
 import com.Listing.CatalogandListing.repository.ListingRepository;
 import com.Listing.CatalogandListing.repository.ReviewRepository;
 import com.Listing.CatalogandListing.event.ReviewSubmittedEvent;
@@ -19,6 +21,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -53,6 +56,30 @@ public class ReviewService {
         
         // Bắn event ra ngoài để xử lý ngầm (update rating)
         eventPublisher.publishEvent(new ReviewSubmittedEvent(this, listing.getId()));
+    }
+
+    @Transactional
+    public void updateReview(UUID reviewId, String userIdStr, UpdateReviewRequest request) {
+        UUID userId = UUID.fromString(userIdStr);
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new AppException(ReviewErrorCode.REVIEW_NOT_FOUND));
+
+        if (!review.getUserId().equals(userId)) {
+            throw new AppException(ReviewErrorCode.REVIEW_ACCESS_DENIED);
+        }
+
+        if (review.getCreatedAt() != null && review.getCreatedAt().plusDays(7).isBefore(LocalDateTime.now())) {
+            throw new AppException(ReviewErrorCode.REVIEW_UPDATE_EXPIRED);
+        }
+
+        review.setRating(request.getRating());
+        review.setComment(request.getComment());
+        review.setImages(request.getImages());
+
+        reviewRepository.save(review);
+        
+        // Bắn event ra ngoài để tính toán lại điểm trung bình nếu rating bị thay đổi
+        eventPublisher.publishEvent(new ReviewSubmittedEvent(this, review.getListing().getId()));
     }
 
     @Transactional(readOnly = true)
