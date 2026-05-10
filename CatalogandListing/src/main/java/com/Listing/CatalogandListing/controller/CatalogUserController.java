@@ -46,4 +46,16 @@ public class CatalogUserController {
         reviewService.updateReview(reviewId, userId, request);
         return ResponseEntity.ok(ApiResponse.success("Cập nhật đánh giá thành công."));
     }
+
+    /**
+     * 2.2. Xóa Đánh giá (Delete Review)
+     * Phương thức: DELETE
+     * Auth: Role USER
+     */
+    @DeleteMapping("/{reviewId}")
+    public ResponseEntity<ApiResponse<Void>> deleteReview(@PathVariable UUID reviewId) {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        reviewService.deleteReview(reviewId, userId);
+        return ResponseEntity.ok(ApiResponse.success("Xóa đánh giá thành công."));
+    }
 }

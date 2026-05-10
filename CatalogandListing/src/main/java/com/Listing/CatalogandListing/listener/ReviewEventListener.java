@@ -4,6 +4,7 @@ import com.Listing.CatalogandListing.entity.Listing;
 import com.Listing.CatalogandListing.event.ReviewSubmittedEvent;
 import com.Listing.CatalogandListing.repository.ListingRepository;
 import com.Listing.CatalogandListing.repository.ReviewRepository;
+import com.Listing.CatalogandListing.enums.ReviewStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -37,8 +38,8 @@ public class ReviewEventListener {
                 return;
             }
 
-            long totalReviews = reviewRepository.countByListingId(listing.getId());
-            BigDecimal averageRating = reviewRepository.getAverageRatingByListingId(listing.getId());
+            long totalReviews = reviewRepository.countByListingIdAndStatus(listing.getId(), ReviewStatus.ACTIVE);
+            BigDecimal averageRating = reviewRepository.getAverageRatingByListingId(listing.getId(), ReviewStatus.ACTIVE);
 
             // Làm tròn đến 1 chữ số thập phân
             averageRating = averageRating.setScale(1, RoundingMode.HALF_UP);

@@ -1,10 +1,15 @@
 package com.Listing.CatalogandListing.service;
 
+import com.Listing.CatalogandListing.exception.AppException;
 import com.Listing.CatalogandListing.dto.request.review.SubmitReviewRequest;
+import com.Listing.CatalogandListing.dto.request.review.UpdateReviewRequest;
+import com.Listing.CatalogandListing.dto.request.review.ReplyReviewRequest;
+import com.Listing.CatalogandListing.dto.request.review.ModerateReviewRequest;
 import com.Listing.CatalogandListing.dto.response.PaginationResponse;
 import com.Listing.CatalogandListing.dto.response.ReviewItemResponse;
 import com.Listing.CatalogandListing.entity.Listing;
 import com.Listing.CatalogandListing.entity.Review;
+import com.Listing.CatalogandListing.enums.ReviewStatus;
 import com.Listing.CatalogandListing.exception.ListingErrorCode;
 import com.Listing.CatalogandListing.exception.ReviewErrorCode;
 import com.Listing.CatalogandListing.exception.AppException;
@@ -82,6 +87,50 @@ public class ReviewService {
         eventPublisher.publishEvent(new ReviewSubmittedEvent(this, review.getListing().getId()));
     }
 
+    @Transactional
+    public void deleteReview(UUID reviewId, String userIdStr) {
+        UUID userId = UUID.fromString(userIdStr);
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new AppException(ReviewErrorCode.REVIEW_NOT_FOUND));
+
+        if (!review.getUserId().equals(userId)) {
+            throw new AppException(ReviewErrorCode.REVIEW_ACCESS_DENIED);
+        }
+
+        review.setStatus(ReviewStatus.DELETED);
+        reviewRepository.save(review);
+        
+        eventPublisher.publishEvent(new ReviewSubmittedEvent(this, review.getListing().getId()));
+    }
+
+    @Transactional
+    public void replyToReview(UUID reviewId, String userIdStr, ReplyReviewRequest request) {
+        UUID hostId = UUID.fromString(userIdStr);
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new AppException(ReviewErrorCode.REVIEW_NOT_FOUND));
+
+        // Check if the host owns the listing
+        if (!review.getListing().getHostId().equals(hostId)) {
+            throw new AppException(ReviewErrorCode.REVIEW_ACCESS_DENIED);
+        }
+
+        review.setReplyComment(request.getReplyComment());
+        reviewRepository.save(review);
+    }
+
+    @Transactional
+    public void moderateReview(UUID reviewId, ModerateReviewRequest request) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new AppException(ReviewErrorCode.REVIEW_NOT_FOUND));
+
+        review.setStatus(request.getStatus());
+        review.setModerationReason(request.getReason());
+        reviewRepository.save(review);
+
+        // Recalculate rating because status might change to HIDDEN/ACTIVE
+        eventPublisher.publishEvent(new ReviewSubmittedEvent(this, review.getListing().getId()));
+    }
+
     @Transactional(readOnly = true)
     public PaginationResponse<ReviewItemResponse> getListingReviews(UUID listingId, int page, int size) {
         // Check if listing exists
@@ -90,7 +139,7 @@ public class ReviewService {
         }
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<Review> reviewPage = reviewRepository.findByListingId(listingId, pageable);
+        Page<Review> reviewPage = reviewRepository.findByListingIdAndStatus(listingId, ReviewStatus.ACTIVE, pageable);
 
         List<ReviewItemResponse> items = reviewPage.getContent().stream()
                 .map(review -> ReviewItemResponse.builder()
@@ -101,6 +150,7 @@ public class ReviewService {
                         .rating(review.getRating())
                         .comment(review.getComment())
                         .images(review.getImages())
+                        .replyComment(review.getReplyComment())
                         .createdAt(review.getCreatedAt())
                         .build())
                 .collect(Collectors.toList());

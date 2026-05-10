@@ -21,5 +21,6 @@ public class ReviewItemResponse {
     private Integer rating;
     private String comment;
     private List<String> images;
+    private String replyComment;
     private LocalDateTime createdAt;
 }
