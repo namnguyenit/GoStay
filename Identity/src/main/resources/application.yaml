@@ -16,4 +16,4 @@ spring:
       - optional:classpath:jwt.yaml
 media:
   service:
-    url: http://localhost:5001/api/v1/media/upload/single
+    url: http://localhost:5001/api/v1/media/upload/

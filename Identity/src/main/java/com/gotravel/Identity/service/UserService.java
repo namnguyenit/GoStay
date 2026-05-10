@@ -534,7 +534,6 @@ public class UserService {
         User user = findUserById(userId);
         try{
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
             String rolesStr = user.getRoles().stream()
                     .map(role -> role.getName())
@@ -543,7 +542,22 @@ public class UserService {
             headers.set("x-user-id", userId);
 
             MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-            body.add("file", file.getResource());
+            
+            HttpHeaders fileHeaders = new HttpHeaders();
+            if (file.getContentType() != null) {
+                fileHeaders.setContentType(MediaType.parseMediaType(file.getContentType()));
+            }
+            
+            org.springframework.core.io.ByteArrayResource fileResource = new org.springframework.core.io.ByteArrayResource(file.getBytes()) {
+                @Override
+                public String getFilename() {
+                    return file.getOriginalFilename() != null ? file.getOriginalFilename() : "avatar.jpg";
+                }
+            };
+            
+            HttpEntity<org.springframework.core.io.ByteArrayResource> filePart = new HttpEntity<>(fileResource, fileHeaders);
+            
+            body.add("file", filePart);
             body.add("folder", "avatar");
 
 
