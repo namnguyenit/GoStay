@@ -42,11 +42,12 @@ public class InventoryCalendar {
     LocalDate date;
 
     /**
-     * + STAY (Lưu trú): null
-     * + EXP/SVC (Trải nghiệm/Dịch vụ): VD "08:00", "14:00 - 16:00"
+     * + STAY (Lưu trú): "ALL_DAY" (Không dùng null để tránh lỗi Unique Constraint của DB)
+     * + EXP/SVC (Trải nghiệm/Dịch vụ): VD "08:00 - 10:00"
      */
-    @Column(name = "time_slot", length = 50)
-    String timeSlot;
+    @Column(name = "time_slot", length = 50, nullable = false)
+    @Builder.Default
+    String timeSlot = "ALL_DAY";
 
     @Column(name = "available_quantity")
     Integer availableQuantity;

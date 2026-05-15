@@ -18,7 +18,8 @@ public class GlobalExceptionHandler {
 
         ApiResponse<Void> apiResponse = new ApiResponse<>();
         apiResponse.setSuccess(errorCode.isSuccess());
-        apiResponse.setCode(errorCode.getStatus());
+        apiResponse.setStatus(errorCode.getStatus());
+        apiResponse.setCode(errorCode.getCode());
         apiResponse.setMessage(errorCode.getMessage());
 
         return ResponseEntity
@@ -36,7 +37,8 @@ public class GlobalExceptionHandler {
 
         ApiResponse<Void> apiResponse = new ApiResponse<>();
         apiResponse.setSuccess(false);
-        apiResponse.setCode(400);
+        apiResponse.setStatus(400);
+        apiResponse.setCode("VALIDATION_ERROR");
         apiResponse.setMessage(errorMessage);
 
         return ResponseEntity.badRequest().body(apiResponse);
@@ -47,17 +49,20 @@ public class GlobalExceptionHandler {
         log.error("Unhandled exception", runtimeException);
         ApiResponse<Void> apiResponse = new ApiResponse<>();
         apiResponse.setSuccess(false);
-        apiResponse.setCode(400);
+        apiResponse.setStatus(400);
+        apiResponse.setCode("RUNTIME_ERROR");
         apiResponse.setMessage(runtimeException.getMessage());
 
         return ResponseEntity.badRequest().body(apiResponse);
     }
 
     @ExceptionHandler(value = DataIntegrityViolationException.class)
-    public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolationException(DataIntegrityViolationException exception) {
+    public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolationException(
+            DataIntegrityViolationException exception) {
         ApiResponse<Void> apiResponse = new ApiResponse<>();
         apiResponse.setSuccess(false);
-        apiResponse.setCode(409);
+        apiResponse.setStatus(409);
+        apiResponse.setCode("DATA_INTEGRITY_VIOLATION");
         apiResponse.setMessage("Data integrity violation: This record already exists or violates a unique constraint.");
 
         return ResponseEntity.status(409).body(apiResponse);
