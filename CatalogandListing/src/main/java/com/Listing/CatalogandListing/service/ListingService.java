@@ -11,8 +11,11 @@ import com.Listing.CatalogandListing.dto.response.PaginationResponse;
 import com.Listing.CatalogandListing.dto.response.ListingDetailResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import com.Listing.CatalogandListing.client.InventoryClient;
+import com.Listing.CatalogandListing.dto.request.InitializeInventoryRequest;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
@@ -21,10 +24,12 @@ import java.util.UUID;
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
+@Slf4j
 public class ListingService {
 
     ListingMapper listingMapper;
     ListingRepository listingRepository;
+    InventoryClient inventoryClient;
 
     public PaginationResponse<ListingDetailResponse> getListingsByHost(String userId, int page, int size) {
         Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
@@ -54,7 +59,19 @@ public class ListingService {
         Listing listing = listingMapper.toEntity(request);
         listing.setHostId(UUID.fromString(userId));
         listing.setStatus(ListingStatus.ACTIVE);
-        listingRepository.save(listing);
+        listing = listingRepository.save(listing);
+
+        // Call Inventory Service to automatically create calendar
+        try {
+            InitializeInventoryRequest initReq = InitializeInventoryRequest.builder()
+                .listingId(listing.getId())
+                .totalQuantity(5) // Default quantity for demo
+                .build();
+            inventoryClient.initializeInventory(initReq);
+            log.info("Successfully requested inventory initialization for listing {}", listing.getId());
+        } catch (Exception e) {
+            log.error("Failed to initialize inventory for listing {}", listing.getId(), e);
+        }
     }
 
     public void updateListing(UUID listingId, String userId, SaveListingRequest request) {
