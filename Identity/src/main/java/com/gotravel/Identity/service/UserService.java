@@ -534,7 +534,7 @@ public class UserService {
         User user = findUserById(userId);
         try{
             HttpHeaders headers = new HttpHeaders();
-
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
             String rolesStr = user.getRoles().stream()
                     .map(role -> role.getName())
                     .collect(Collectors.joining(","));

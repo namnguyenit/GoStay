@@ -1,25 +1,31 @@
 import { createProxyMiddleware } from "http-proxy-middleware";
 import { verifyJWT } from "../middlewares/auth.middleware";
+import {buildErorRespone, GatewayError} from "../utils/response.helper.js";
+
+import {identityRoutes} from "../configs/routes/identity.route.js";
+import {mediaRoutes } from "../configs/routes/media.route.js";
+
 
 export const setupProxy = (app) => {
     const routes = [
-        {
-            url: 'api/auth',
-            target : process.env.IDENTITY_SERVICE_URL,
-            auth:false
-        }
-
+        ...identityRoutes, ...mediaRoutes
     ];
 
+    routes.sort((a, b) => b.url.length  - a.url.length);
+
     routes.forEach(route => {
-        const middleware = route.auth ? [verifyJWT] :[]
-        app.use(route.url, middleware, createProxyMiddleware({
+        const middlewares = route.auth ? [verifyJWT] : [];
+
+        app.use(route.url, middlewares, createProxyMiddleware({
             target: route.target,
             changeOrigin: true,
-            onProxyReg: (proxyReg, req,res) => {
-                const userId = req.header['x-user-id'];
-                if (req.header[])
+            pathRewrite: route.pathRewrite,
+            onError: (err, req, res) => {
+                console.error(`[Proxy Error] Chết kết nối tới ${route.target}${req.url} - Lý do: ${err.message}`);
+                if (!res.headersSent){
+                    return buildErorRespone(res, GatewayError.SERVICE_UNAVAILABLE)
+                }
             }
-        }))
-    })
+        }));
+    });
 }

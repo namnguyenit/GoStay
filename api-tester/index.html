@@ -117,36 +117,80 @@
             id: 'get_all_users',
             title: 'Lấy tất cả Users',
             method: 'GET',
-            path: '/api/users',
+            path: '/api/users?page=0&size=10&status=ACTIVE',
             roles: 'ADMIN'
         },
         {
+            id: 'get_all_host_pending',
+            title: 'Lấy tất cả Host Đang Chờ Duyệt (Pending)',
+            method: 'GET',
+            path: '/api/users/hosts?status=PENDING&page=0&size=10',
+            roles: 'ADMIN'
+        },
+        {
+            id: 'get_all_hosts',
+            title: 'Lấy tất cả Hosts',
+            method: 'GET',
+            path: '/api/users/hosts/all?page=0&size=10',
+            roles: 'ADMIN'
+        },
+        {
+            id: 'get_host_detail',
+            title: 'Xem Chi Tiết Host',
+            method: 'GET',
+            path: '/api/users/hosts/ACCOUNT_ID_HERE',
+            roles: 'ADMIN'
+        },
+        {
+            id: 'approval_host_status',
+            title: 'Phê Duyệt Trạng Thái Host',
+            method: 'PUT',
+            path: '/api/users/ACCOUNT_ID_HERE/approvalstatus?type=TYPE_HERE',
+            roles: 'ADMIN',
+            bodyTemplate: '{\n  "status": "APPROVED",\n  "reason": "OK"\n}'
+        },
+        {
+            id: 'update_ban_account_status',
+            title: 'Khóa / Mở Khóa Tài Khoản (Status)',
+            method: 'PUT',
+            path: '/api/users/accounts/ACCOUNT_ID_HERE/status',
+            roles: 'ADMIN',
+            bodyTemplate: '{\n  "status": "BANNED"\n}'
+        },
+        {
             id: 'get_my_info',
-            title: 'Lấy thông tin User/Tài khoản hiện tại',
+            title: 'Lấy thông tin User hiện tại',
             method: 'GET',
             path: '/api/users/me',
-            roles: 'USER / EVERYONE'
+            roles: 'USER'
         },
         {
             id: 'update_my_info',
-            title: 'Cập nhật Mật khẩu/Tài khoản',
+            title: 'Cập nhật tài khoản hiện tại',
             method: 'PUT',
             path: '/api/users/me',
             roles: 'USER',
             bodyTemplate: '{\n  "password": "newpassword123"\n}'
         },
         {
-            id: 'delete_my_account',
-            title: 'Xóa tài khoản',
+            id: 'delete_account',
+            title: 'Xóa tài khoản (xóa cứng - Admin)',
             method: 'DELETE',
-            path: '/api/users/me',
+            path: '/api/users/admin/USER_ID_HERE',
+            roles: 'ADMIN'
+        },
+        {
+            id: 'ban_account_patch',
+            title: 'Cấm tài khoản (Patch - Admin)',
+            method: 'PATCH',
+            path: '/api/users/admin/USER_ID_HERE',
             roles: 'ADMIN'
         },
         {
             id: 'upgrade_role_admin',
-            title: 'Nâng cấp Role (Chỉ Admin Mới Được Dùng)',
+            title: 'Nâng cấp Role User',
             method: 'POST',
-            path: '/api/users/me/upgrade-role?role=ADMIN',
+            path: '/api/users/USER_ID_HERE/upgraderole?role=ADMIN',
             roles: 'ADMIN'
         },
         {
@@ -158,8 +202,15 @@
             bodyTemplate: '{\n  "hotelName": "My Hotel",\n  "address": "Hanoi"\n}' 
         },
         {
+            id: 'delete_profile_host',
+            title: 'Xóa hồ sơ đăng ký nâng lên HOST',
+            method: 'DELETE',
+            path: '/api/users/me/upgradetohost',
+            roles: 'USER'
+        },
+        {
             id: 'success_upgrade_host',
-            title: 'Admin Duyệt HOST cho User (Đổi ID trên Path)',
+            title: 'Admin Duyệt HOST cho User',
             method: 'POST',
             path: '/api/users/USER_ID_HERE/successupgradetohost',
             roles: 'ADMIN'
@@ -223,6 +274,21 @@
             method: 'GET',
             path: '/api/users/internal/USER_ID_HERE/status',
             roles: 'INTERNAL'
+        },
+        {
+            id: 'upload_avatar',
+            title: 'Cập nhật Ảnh Đại Diện (Avatar - Form Data)',
+            method: 'POST',
+            path: '/api/users/me/avatar',
+            roles: 'USER',
+            isFormData: true
+        },
+        {
+            id: 'jwks_endpoint',
+            title: 'Lấy Public Key JWKS (.well-known)',
+            method: 'GET',
+            path: '/.well-known/jwks.json',
+            roles: 'PUBLIC'
         }
     ];
 
@@ -238,19 +304,25 @@
         // Lấy dường dẫn có thể đã bị sửa trên giao diện (Path variables/Params)
         const pathInput = document.getElementById(`path_${id}`).value;
         const bodyInputArea = document.getElementById(`body_input_${id}`);
+        // Chứa file
+        const fileInput = document.getElementById(`file_input_${id}`);
         
         let requestOptions = {
             method: spec.method,
-            headers: {
-                'Content-Type': 'application/json'
-            }
+            headers: {}
         };
 
         if (globalToken) {
             requestOptions.headers['Authorization'] = `Bearer ${globalToken}`;
         }
 
-        if (bodyInputArea && bodyInputArea.value.trim() !== '') {
+        if (spec.isFormData && fileInput && fileInput.files.length > 0) {
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            requestOptions.body = formData;
+            // Trình duyệt tự nhận Content-Type là multipart/form-data
+        } else if (bodyInputArea && bodyInputArea.value.trim() !== '') {
+            requestOptions.headers['Content-Type'] = 'application/json';
             try {
                 // Parse để validate json trước khi gửi
                 JSON.parse(bodyInputArea.value);
@@ -259,6 +331,8 @@
                 alert("Lỗi cú pháp JSON ở Body Request! Bạn hãy kiểm tra lại dấu phẩy, ngoặc.");
                 return;
             }
+        } else if (spec.method !== 'GET' && spec.method !== 'DELETE') {
+             requestOptions.headers['Content-Type'] = 'application/json';
         }
 
         const resBox = document.getElementById(`res_box_${id}`);
@@ -266,7 +340,7 @@
         const reqContent = document.getElementById(`req_content_${id}`);
         
         resBox.style.display = 'block';
-        reqContent.innerText = `${spec.method} ${baseUrl}${pathInput}\nHeaders: ${JSON.stringify(requestOptions.headers, null, 2)}${requestOptions.body ? '\nBody:\n' + requestOptions.body : ''}`;
+        reqContent.innerText = `${spec.method} ${baseUrl}${pathInput}\nHeaders: ${JSON.stringify(requestOptions.headers, null, 2)}${requestOptions.body instanceof FormData ? '\nBody: [FormData]' : (requestOptions.body ? '\nBody:\n' + requestOptions.body : '')}`;
         resContent.innerText = "Loading...";
 
         try {
@@ -307,6 +381,11 @@
                     <div class="form-group">
                         <label>Request Body JSON</label>
                         <textarea id="body_input_${api.id}">${api.bodyTemplate}</textarea>
+                    </div>` : ''}
+                    ${api.isFormData ? `
+                    <div class="form-group">
+                        <label>Upload File / Thêm Ảnh</label>
+                        <input type="file" id="file_input_${api.id}" />
                     </div>` : ''}
                     
                     <button class="btn btn-success" onclick="sendRequest('${api.id}')">Gửi Request (Send)</button>

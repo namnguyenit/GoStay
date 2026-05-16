@@ -1,16 +1,16 @@
 import jwt  from "jsonwebtoken";
 import jwksClient from "jwks-rsa";
 import NodeCache from "node-cache";
-
+import { buildErorRespone, GatewayError} from "../utils/response.helper.js";
 
 const client = jwksClient({
-    jwksUri: '${process.env.IDENTITY_SERVICE_URL}/.well-known/jwks.json',
+    jwksUri: `${process.env.IDENTITY_SERVICE_URL}/.well-known/jwks.json`,
     cache: true,
     rateLimit:true,
 });
 
 
-function getKey(headers,callback){
+function getKey(header,callback){
     client.getSigningKey(header.kid, function(err,key){
         if(err){
             return callback(err);
@@ -20,16 +20,12 @@ function getKey(headers,callback){
     });
 }
 
-
 // lưu trạng thái của user trong 5 phút
-const userCache = new Cache(
+const userCache = new NodeCache(
     {
         stdTTL: 300
     }
 )
-
-
-
 
 
 export const verifyJWT = (req, res, next) => {
@@ -37,28 +33,42 @@ export const verifyJWT = (req, res, next) => {
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
-        return res.status(401).json(
-            {
-                status: "401",
-                success: false,
-                message: "Vui lòng cung cấp token",
-
-            }
-        )
+        return buildErorRespone(res, GatewayError.MISSING_TOKEN);
     }
 
     jwt.verify(token, getKey , { algorithms: ["RS256"] }, async (err, decoded) => {
         if (err){
-            return res.status(403).json({
-                status: "403",
-                success: false,
-                message: "Token không hợp lệ"
-            })
+            return  buildErorRespone(res, GatewayError.INVALID_TOKEN);
         }
         const userId=decoded.sub;
-        const role = decoded.scope;
+        const roles = decoded.scope;
         try{
-            
+            let isAlow = userCache.get(userId);
+
+            if (isAlow == undefined){
+                const response = await fetch(`${process.env.IDENTITY_SERVICE_URL}/api/users/internal/${userId}/status`);
+                if (!response.ok){
+                    throw new Error("Lỗi gọi Identity Service")
+                }
+                const data = await response.json();
+                isAlow = data.data.isActive;
+
+                userCache.set(userId, isAlow);
+            }
+            if (!isAlow){
+                res.status(403).json({
+                    status: "403",
+                    success: false,
+                    message: "Tài khoản bị vô hiệu hóa hoặc xóa đi"
+                })
+
+            }
+            req.headers['x-user-id']= userId;
+            req.headers['x-user-roles']= roles;
+            next();
+        }catch (error){
+            console.error("Lỗi Internal Gateway",error);
+            return buildErorRespone(res, GatewayError.INTERNAL_ERROR);
         }
     })
 }
