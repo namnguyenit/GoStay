@@ -1,117 +1,107 @@
 export const identityRoutes = [
-    // --- Lấy Public Key (Không Auth) ---
+    // ==========================================
+    // 1. JWKS (Public - Không Auth)
+    // ==========================================
     {
         url: '/.well-known/jwks.json',
         target: process.env.IDENTITY_SERVICE_URL,
         auth: false
     },
-    // --- Nhóm Auth / Đăng nhập, Đăng ký (Từ Frontend map sang Backend) ---
+
+    // ==========================================
+    // 2. NHÓM AUTH (Đăng nhập, Đăng ký)
+    // ==========================================
     {
         url: '/api/v1/auth',
         target: process.env.IDENTITY_SERVICE_URL,
         auth: false,
-        pathRewrite: {
-            '^/api/v1/auth/login': '/api/auth/login',
-            '^/api/v1/auth/register/user': '/api/users', // Backend: POST /api/users
-            // '^/api/v1/auth/register/host': '/api/auth/register-host-not-implemented' // Backend code chưa hỗ trợ đăng ký host không cần auth
+        pathRewrite: (path, req) => {
+            const parts = req.originalUrl.split('?');
+            let url = parts[0];
+            const query = parts[1] ? `?${parts[1]}` : '';
+
+            // Phiên dịch URL từ Frontend sang Backend
+            if (url === '/api/v1/auth/login') return '/api/auth/login' + query;
+            if (url === '/api/v1/auth/register') return '/api/users' + query; // Nối vào @PostMapping("/api/users")
+
+            return path;
         }
     },
-    // --- Internal Status Check ---
+
+    // ==========================================
+    // 3. NHÓM CÁ NHÂN (Tiền tố: /api/v1/me)
+    // Bao gồm User, Host, Enterprise xem hồ sơ của chính mình
+    // ==========================================
     {
-        url: '/api/v1/users/internal',
-        target: process.env.IDENTITY_SERVICE_URL,
-        auth: false,
-        pathRewrite: {
-            '^/api/v1/users/internal': '/api/users/internal'
-        }
-    },
-    // --- Nhóm User (ROLE: USER) ---
-    {
-        url: '/api/v1/users/me',
-        target: process.env.IDENTITY_SERVICE_URL,
-        auth: true,
-        pathRewrite: {
-            '^/api/v1/users/me': '/api/users/me'
-        }
-    },
-    // --- Nhóm Host (ROLE: HOST) ---
-    {
-        url: '/api/v1/hosts/me',
+        url: '/api/v1/me',
         target: process.env.IDENTITY_SERVICE_URL,
         auth: true,
-        pathRewrite: {
-            '^/api/v1/hosts/me': '/api/users/me/host-profile'  // Backend: GET /api/users/me/host-profile
+        pathRewrite: (path, req) => {
+            const parts = req.originalUrl.split('?');
+            let url = parts[0];
+            const query = parts[1] ? `?${parts[1]}` : '';
+
+            // Dùng Regex để bắt và phiên dịch URL
+            url = url.replace(/^\/api\/v1\/me\/?$/, '/api/users/me'); // GET, PUT Thông tin tài khoản
+            url = url.replace(/^\/api\/v1\/me\/profile$/, '/api/users/me/profile'); // GET, PUT Hồ sơ User
+            url = url.replace(/^\/api\/v1\/me\/avatar$/, '/api/users/me/avatar'); // POST Upload Avatar
+
+            // Cập nhật lên Host / Enterprise
+            url = url.replace(/^\/api\/v1\/me\/upgrade-host$/, '/api/users/me/upgradetohost');
+            url = url.replace(/^\/api\/v1\/me\/upgrade-enterprise$/, '/api/users/me/upgradetoenterprise');
+
+            // Lấy hồ sơ đặc thù
+            url = url.replace(/^\/api\/v1\/me\/host-profile$/, '/api/users/me/host-profile');
+            url = url.replace(/^\/api\/v1\/me\/enterprise-profile$/, '/api/users/me/enterprise-profile');
+
+            return url + query;
         }
     },
-    // --- Nhóm Admin (ROLE: ADMIN) ---
+
+    // ==========================================
+    // 4. NHÓM ADMIN (Tiền tố: /api/v1/admin)
+    // ==========================================
     {
         url: '/api/v1/admin',
         target: process.env.IDENTITY_SERVICE_URL,
         auth: true,
-        pathRewrite: {
-            // Cần dấu '$' hoặc cấu trúc regex chặt chẽ để không bị ghi đè nhầm (từ chi tiết tới tổng quát)
-            '^/api/v1/admin/hosts/([a-zA-Z0-9_-]+)/approval-status$': '/api/users/$1/approvalstatus',
-            '^/api/v1/admin/accounts/([a-zA-Z0-9_-]+)/status$': '/api/users/accounts/$1/status',
-            '^/api/v1/admin/hosts/([a-zA-Z0-9_-]+)$': '/api/users/hosts/$1',
-            '^/api/v1/admin/hosts': '/api/users/hosts'
+        pathRewrite: (path, req) => {
+            const parts = req.originalUrl.split('?');
+            let url = parts[0];
+            const query = parts[1] ? `?${parts[1]}` : '';
+
+            // --- Quản lý Users ---
+            url = url.replace(/^\/api\/v1\/admin\/users\/?$/, '/api/users'); // GET All Users
+            url = url.replace(/^\/api\/v1\/admin\/users\/([^\/]+)$/, '/api/users/admin/$1'); // DELETE, PATCH user
+            url = url.replace(/^\/api\/v1\/admin\/users\/([^\/]+)\/role$/, '/api/users/$1/upgraderole');
+            url = url.replace(/^\/api\/v1\/admin\/accounts\/([^\/]+)\/status$/, '/api/users/accounts/$1/status');
+
+            // --- Quản lý Hosts ---
+            url = url.replace(/^\/api\/v1\/admin\/hosts\/?$/, '/api/users/hosts'); // GET Host Pending
+            url = url.replace(/^\/api\/v1\/admin\/hosts\/all$/, '/api/users/hosts/all'); // GET All Hosts
+            url = url.replace(/^\/api\/v1\/admin\/hosts\/([^\/]+)$/, '/api/users/hosts/$1'); // Lấy Host Detail
+            url = url.replace(/^\/api\/v1\/admin\/hosts\/([^\/]+)\/approval$/, '/api/users/$1/approvalstatus');
+            url = url.replace(/^\/api\/v1\/admin\/hosts\/([^\/]+)\/success$/, '/api/users/$1/successupgradetohost');
+
+            return url + query;
         }
     },
+    // ==========================================
+    // 5. NHÓM INTERNAL (Chỉ dùng nội bộ - Không Auth)
+    // ==========================================
+    {
+        url: '/api/v1/internal',
+        target: process.env.IDENTITY_SERVICE_URL,
+        auth: false,
+        pathRewrite: (path, req) => {
+            const parts = req.originalUrl.split('?');
+            let url = parts[0];
+            const query = parts[1] ? `?${parts[1]}` : '';
 
-    // =========================================================================
-    // PHẦN BỔ SUNG: CÁC API THEO CODE BACKEND CHƯA ĐƯỢC FRONTEND DOCUMENT
-    // Cho phép gọi thẳng qua Native URL của Identity /api/users/... 
-    // =========================================================================
-    
-    // Check Internal (Native Endpoint)
-    {
-        url: '/api/users/internal',
-        target: process.env.IDENTITY_SERVICE_URL,
-        auth: false
-    },
-    // Các endpoint của Nhóm Tài Khoản Cá Nhân (Hồ sơ, Upgrade lên Doanh Nghiệp / Host, Xóa hồ sơ...)
-    {
-        url: '/api/users/me', 
-        target: process.env.IDENTITY_SERVICE_URL,
-        auth: true
-    },
-    // Các endpoint của Admin quản lý Host List
-    {
-        url: '/api/users/hosts',
-        target: process.env.IDENTITY_SERVICE_URL,
-        auth: true
-    },
-    // Quản trị viên (Khóa, xóa cứng Admin)
-    {
-        url: '/api/users/admin',
-        target: process.env.IDENTITY_SERVICE_URL,
-        auth: true
-    },
-    // Quản lý status tài khoản
-    {
-        url: '/api/users/accounts',
-        target: process.env.IDENTITY_SERVICE_URL,
-        auth: true
-    },
-    // --- Tránh lọt qua auth: false của /api/users bằng cách bắt URL Pattern ---
-    {
-        url: '/api/users/*/approvalstatus',
-        target: process.env.IDENTITY_SERVICE_URL,
-        auth: true
-    },
-    {
-        url: '/api/users/*/upgraderole',
-        target: process.env.IDENTITY_SERVICE_URL,
-        auth: true
-    },
-    {
-        url: '/api/users/*/successupgradetohost',
-        target: process.env.IDENTITY_SERVICE_URL,
-        auth: true
-    },
-    // --- GET All Users & Đăng Ký (POST /api/users) (Gateway thả rông, Spring phân quyền) ---
-    {
-        url: '/api/users',
-        target: process.env.IDENTITY_SERVICE_URL,
-        auth: false
+            // Map từ /api/v1/internal/users/{id}/status sang Backend
+            url = url.replace(/^\/api\/v1\/internal\/users\/([^\/]+)\/status$/, '/api/users/internal/$1/status');
+            
+            return url + query;
+        }
     }
 ];

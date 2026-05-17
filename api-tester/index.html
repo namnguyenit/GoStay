@@ -109,7 +109,7 @@
             id: 'user_register',
             title: 'Đăng ký tài khoản qua Gateway',
             method: 'POST',
-            path: '/api/v1/auth/register/user',
+            path: '/api/v1/auth/register',
             roles: 'PUBLIC',
             bodyTemplate: '{\n  "username": "test2",\n  "email": "test2@gmail.com",\n  "password": "123"\n}'
         },
@@ -117,35 +117,35 @@
             id: 'get_all_users',
             title: 'Lấy tất cả Users',
             method: 'GET',
-            path: '/api/users?page=0&size=10&status=ACTIVE',
+            path: '/api/v1/admin/users?page=0&size=10&status=ACTIVE',
             roles: 'ADMIN'
         },
         {
             id: 'get_all_host_pending',
             title: 'Lấy tất cả Host Đang Chờ Duyệt (Pending)',
             method: 'GET',
-            path: '/api/users/hosts?status=PENDING&page=0&size=10',
+            path: '/api/v1/admin/hosts?status=PENDING&page=0&size=10',
             roles: 'ADMIN'
         },
         {
             id: 'get_all_hosts',
             title: 'Lấy tất cả Hosts',
             method: 'GET',
-            path: '/api/users/hosts/all?page=0&size=10',
+            path: '/api/v1/admin/hosts/all?page=0&size=10',
             roles: 'ADMIN'
         },
         {
             id: 'get_host_detail',
             title: 'Xem Chi Tiết Host',
             method: 'GET',
-            path: '/api/users/hosts/ACCOUNT_ID_HERE',
+            path: '/api/v1/admin/hosts/ACCOUNT_ID_HERE',
             roles: 'ADMIN'
         },
         {
             id: 'approval_host_status',
             title: 'Phê Duyệt Trạng Thái Host',
             method: 'PUT',
-            path: '/api/users/ACCOUNT_ID_HERE/approvalstatus?type=TYPE_HERE',
+            path: '/api/v1/admin/hosts/ACCOUNT_ID_HERE/approval?type=TYPE_HERE',
             roles: 'ADMIN',
             bodyTemplate: '{\n  "status": "APPROVED",\n  "reason": "OK"\n}'
         },
@@ -153,7 +153,7 @@
             id: 'update_ban_account_status',
             title: 'Khóa / Mở Khóa Tài Khoản (Status)',
             method: 'PUT',
-            path: '/api/users/accounts/ACCOUNT_ID_HERE/status',
+            path: '/api/v1/admin/accounts/ACCOUNT_ID_HERE/status',
             roles: 'ADMIN',
             bodyTemplate: '{\n  "status": "BANNED"\n}'
         },
@@ -161,14 +161,14 @@
             id: 'get_my_info',
             title: 'Lấy thông tin User hiện tại',
             method: 'GET',
-            path: '/api/users/me',
+            path: '/api/v1/me',
             roles: 'USER'
         },
         {
             id: 'update_my_info',
             title: 'Cập nhật tài khoản hiện tại',
             method: 'PUT',
-            path: '/api/users/me',
+            path: '/api/v1/me',
             roles: 'USER',
             bodyTemplate: '{\n  "password": "newpassword123"\n}'
         },
@@ -176,28 +176,28 @@
             id: 'delete_account',
             title: 'Xóa tài khoản (xóa cứng - Admin)',
             method: 'DELETE',
-            path: '/api/users/admin/USER_ID_HERE',
+            path: '/api/v1/admin/users/USER_ID_HERE',
             roles: 'ADMIN'
         },
         {
             id: 'ban_account_patch',
             title: 'Cấm tài khoản (Patch - Admin)',
             method: 'PATCH',
-            path: '/api/users/admin/USER_ID_HERE',
+            path: '/api/v1/admin/users/USER_ID_HERE',
             roles: 'ADMIN'
         },
         {
             id: 'upgrade_role_admin',
             title: 'Nâng cấp Role User',
             method: 'POST',
-            path: '/api/users/USER_ID_HERE/upgraderole?role=ADMIN',
+            path: '/api/v1/admin/users/USER_ID_HERE/role?role=ADMIN',
             roles: 'ADMIN'
         },
         {
             id: 'upgrade_to_host',
             title: 'Đăng ký nâng Profile lên HOST',
             method: 'POST',
-            path: '/api/users/me/upgradetohost',
+            path: '/api/v1/me/upgrade-host',
             roles: 'USER',
             bodyTemplate: '{\n  "hotelName": "My Hotel",\n  "address": "Hanoi"\n}' 
         },
@@ -205,21 +205,21 @@
             id: 'delete_profile_host',
             title: 'Xóa hồ sơ đăng ký nâng lên HOST',
             method: 'DELETE',
-            path: '/api/users/me/upgradetohost',
+            path: '/api/v1/me/upgrade-host',
             roles: 'USER'
         },
         {
             id: 'success_upgrade_host',
             title: 'Admin Duyệt HOST cho User',
             method: 'POST',
-            path: '/api/users/USER_ID_HERE/successupgradetohost',
+            path: '/api/v1/admin/hosts/USER_ID_HERE/success',
             roles: 'ADMIN'
         },
         {
             id: 'upgrade_to_enterprise',
             title: 'Đăng ký nâng Profile lên ENTERPRISE',
             method: 'POST',
-            path: '/api/users/me/upgradetoenterprise',
+            path: '/api/v1/me/upgrade-enterprise',
             roles: 'USER',
             bodyTemplate: '{\n  "companyName": "Tech Corp",\n  "taxCode": "123456789"\n}'
         },
@@ -227,14 +227,14 @@
             id: 'get_user_profile',
             title: 'Xem Profile Cơ Bản',
             method: 'GET',
-            path: '/api/users/me/profile',
+            path: '/api/v1/me/profile',
             roles: 'USER'
         },
         {
             id: 'update_user_profile',
             title: 'Cập nhật Profile Cơ Bản',
             method: 'PUT',
-            path: '/api/users/me/profile',
+            path: '/api/v1/me/profile',
             roles: 'USER',
             bodyTemplate: '{\n  "fullName": "Nguyen Van A",\n  "phoneNumber": "0987654321",\n  "dateOfBirth": "1990-01-01"\n}'
         },
@@ -242,14 +242,14 @@
             id: 'get_host_profile',
             title: 'Xem Host Profile',
             method: 'GET',
-            path: '/api/users/me/host-profile',
+            path: '/api/v1/me/host-profile',
             roles: 'HOST'
         },
         {
             id: 'update_host_profile',
             title: 'Sửa Host Profile',
             method: 'PUT',
-            path: '/api/users/me/host-profile',
+            path: '/api/v1/me/host-profile',
             roles: 'HOST',
             bodyTemplate: '{\n  "hotelName": "Updated Hotel"\n}'
         },
@@ -257,14 +257,14 @@
             id: 'get_enterprise_profile',
             title: 'Xem Enterprise Profile',
             method: 'GET',
-            path: '/api/users/me/enterprise-profile',
+            path: '/api/v1/me/enterprise-profile',
             roles: 'ENTERPRISE'
         },
         {
             id: 'update_enterprise_profile',
             title: 'Sửa Enterprise Profile',
             method: 'PUT',
-            path: '/api/users/me/enterprise-profile',
+            path: '/api/v1/me/enterprise-profile',
             roles: 'ENTERPRISE',
             bodyTemplate: '{\n  "companyName": "Updated Corp"\n}'
         },
@@ -272,14 +272,14 @@
             id: 'check_internal_status',
             title: 'Internal API User Status (No Auth)',
             method: 'GET',
-            path: '/api/users/internal/USER_ID_HERE/status',
+            path: '/api/v1/internal/users/USER_ID_HERE/status',
             roles: 'INTERNAL'
         },
         {
             id: 'upload_avatar',
             title: 'Cập nhật Ảnh Đại Diện (Avatar - Form Data)',
             method: 'POST',
-            path: '/api/users/me/avatar',
+            path: '/api/v1/me/avatar',
             roles: 'USER',
             isFormData: true
         },

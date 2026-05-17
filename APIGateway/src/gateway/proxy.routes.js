@@ -1,5 +1,5 @@
 import { createProxyMiddleware } from "http-proxy-middleware";
-import { verifyJWT } from "../middlewares/auth.middleware";
+import { verifyJWT } from "../middlewares/auth.middleware.js";
 import {buildErorRespone, GatewayError} from "../utils/response.helper.js";
 
 import {identityRoutes} from "../configs/routes/identity.route.js";
