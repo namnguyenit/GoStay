@@ -30,7 +30,15 @@ curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt-get install -y nodejs
 # Cài đặt PM2 để chạy tiến trình nền
 sudo npm install -g pm2
+# 3.5. Cài đặt Cloudflare Tunnel
+echo "[3.5/7] Cài đặt Cloudflare Tunnel..."
 
+wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+
+sudo dpkg -i cloudflared-linux-amd64.deb
+
+echo "Cloudflare Tunnel version:"
+cloudflared --version
 # 4. Cài đặt và cấu hình PostgreSQL
 echo "[4/7] Cài đặt PostgreSQL..."
 sudo apt-get install -y postgresql postgresql-contrib
