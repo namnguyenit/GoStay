@@ -34,19 +34,25 @@ sudo npm install -g pm2
 # 4. Cài đặt và cấu hình PostgreSQL
 echo "[4/7] Cài đặt PostgreSQL..."
 sudo apt-get install -y postgresql postgresql-contrib
-sudo systemctl enable postgresql
-sudo systemctl start postgresql
+
+echo "Khởi động DB..."
+if command -v systemctl >/dev/null 2>&1; then
+    sudo systemctl enable postgresql
+    sudo systemctl start postgresql
+else
+    sudo service postgresql start
+fi
 
 echo "Cấu hình Database và User cho Identity Service..."
-# Drop nếu đã tồn tại để tránh lỗi
-sudo -u postgres psql -c "DROP DATABASE IF EXISTS auth_db;"
-sudo -u postgres psql -c "DROP ROLE IF EXISTS gotravel_db;"
+# Dùng bash shell của quyền root để su sang postgres (tránh lỗi permission denied trên Codespaces)
+sudo bash -c 'su - postgres -c "psql -c \"DROP DATABASE IF EXISTS auth_db;\""'
+sudo bash -c 'su - postgres -c "psql -c \"DROP ROLE IF EXISTS gotravel_db;\""'
 
 # Tạo user gotravel_db / pass: 123456 và database auth_db theo file database.yaml
-sudo -u postgres psql -c "CREATE USER gotravel_db WITH PASSWORD '123456';"
-sudo -u postgres psql -c "CREATE DATABASE auth_db OWNER gotravel_db;"
-sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE auth_db TO gotravel_db;"
-sudo -u postgres psql -c "ALTER DATABASE auth_db OWNER TO gotravel_db;"
+sudo bash -c 'su - postgres -c "psql -c \"CREATE USER gotravel_db WITH PASSWORD '\'123456'\';\""'
+sudo bash -c 'su - postgres -c "psql -c \"CREATE DATABASE auth_db OWNER gotravel_db;\""'
+sudo bash -c 'su - postgres -c "psql -c \"GRANT ALL PRIVILEGES ON DATABASE auth_db TO gotravel_db;\""'
+sudo bash -c 'su - postgres -c "psql -c \"ALTER DATABASE auth_db OWNER TO gotravel_db;\""'
 
 # 5. Build Identity Service (Java / Spring Boot)
 echo "[5/7] Build Identity Service..."
