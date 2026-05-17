@@ -33,18 +33,16 @@ export const uploadSingleImg = async (req, res, next) =>{
         if (!req.file){
             return next(throwError("INVALID_IMAGE_FORMAT"))
         }
-        const {folder} = req.body;
-        if (!folder){
-            return next(throwError("MISSING_FOLDER"))
-        }
+        const targetFolder  = req.body.folder;
         const optimizedBuffer = await sharp(req.file.buffer)
             .webp({quality:80})
             .toBuffer();
-        const result = await upToCloudinary(optimizedBuffer, folder,false);
+        const result = await upToCloudinary(optimizedBuffer, targetFolder,false);
         const data =  {
             url: result.secure_url,
             publicId : result.public_id,
             resourceType : result.resource_type,
+            folder: targetFolder
         }
         return res.status(SUCCESS_CODE.UPLOAD_SINGLE_SUCCESS.status).json(
             buildSuccess('UPLOAD_SINGLE_SUCCESS',data),
@@ -61,13 +59,13 @@ export const uploadBulkImg = async (req, res, next) =>{
             if (!req.files||req.files.length === 0){
                 return next(throwError('MISSING_FILE'))
             }
-            const folder = req.body.folder || 'listing/galleries';
+            const targetFolder = req.body.folder || 'listing/galleries';
 
             const uploadPromise = req.files.map(async file => {
                 const optimizedBuffer = await sharp(file.buffer)
                     .webp({quality:80})
                     .toBuffer();
-                return upToCloudinary(optimizedBuffer, folder,false);
+                return upToCloudinary(optimizedBuffer, targetFolder,false);
             });
             const results = await Promise.all(uploadPromise);
 
@@ -75,6 +73,7 @@ export const uploadBulkImg = async (req, res, next) =>{
             const urls = results.map(result => result.secure_url);
             const data =  {
                 url: urls,
+                folder: targetFolder
             }
             return res.status(SUCCESS_CODE.UPLOAD_BULK_SUCCESS.status).json(
                 buildSuccess('UPLOAD_BULK_SUCCESS',data),
@@ -93,7 +92,7 @@ export const uploadSecImg = async (req, res, next) =>{
         if (!files || files.length === 0){
             return next(throwError("MISSING_FILE"))
         }
-        const folder = 'secImg';
+        const folder = req.body.folder ? `secImg/${req.body.folder}` : 'secImg';
         const uploadPromise = files.map(file => upToCloudinary(file.buffer, folder, true));
         const results = await Promise.all(uploadPromise);
         const data =  {

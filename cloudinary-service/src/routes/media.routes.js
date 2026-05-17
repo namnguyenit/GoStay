@@ -1,3 +1,5 @@
+
+
 import express from 'express';
 import {
     uploadSecImg,
@@ -10,16 +12,17 @@ import {
     uploadSecImage,
     uploadBulkImage
 } from "../middlewares/upload.middleware.js";
+import {rbacMedia} from "../middlewares/rbac.middleware.js";
 
 const router = express.Router();
 
-router.post("/upload", uploadSingImage, uploadSingleImg);
+router.post("/upload", uploadSingImage, rbacMedia('single'), uploadSingleImg);
 
-router.post('/upload/bulk', uploadBulkImage, uploadBulkImg);
+router.post('/upload/bulk', uploadBulkImage,rbacMedia('bulk'), uploadBulkImg);
 
-router.post('/upload/secure-documents', uploadSecImage, uploadSecImg);
+router.post('/upload/secure-documents', uploadSecImage,rbacMedia('secure'), uploadSecImg);
 
-router.delete('/',deleteImg);
+router.delete('/',rbacMedia('delete'),deleteImg);
 
 
 export default router;

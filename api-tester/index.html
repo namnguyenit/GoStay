@@ -51,8 +51,8 @@
     <div class="header-panel">
         <div>
             <div class="config-group">
-                <label>Base URL:</label>
-                <input type="text" id="baseUrl" value="http://localhost:8080">
+                <label>Base URL (API Gateway):</label>
+                <input type="text" id="baseUrl" value="http://localhost:5000">
             </div>
         </div>
         <div>
@@ -99,17 +99,17 @@
     const apiSpecs = [
         {
             id: 'auth_login',
-            title: 'Đăng nhập (Auth)',
+            title: 'Đăng nhập qua Gateway',
             method: 'POST',
-            path: '/api/auth/login',
+            path: '/api/v1/auth/login',
             roles: 'PUBLIC',
             bodyTemplate: '{\n  "username": "test",\n  "password": "123"\n}'
         },
         {
             id: 'user_register',
-            title: 'Đăng ký tài khoản (Register)',
+            title: 'Đăng ký tài khoản qua Gateway',
             method: 'POST',
-            path: '/api/users',
+            path: '/api/v1/auth/register/user',
             roles: 'PUBLIC',
             bodyTemplate: '{\n  "username": "test2",\n  "email": "test2@gmail.com",\n  "password": "123"\n}'
         },

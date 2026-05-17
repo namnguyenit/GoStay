@@ -13,7 +13,7 @@ export const identityRoutes = [
         pathRewrite: {
             '^/api/v1/auth/login': '/api/auth/login',
             '^/api/v1/auth/register/user': '/api/users', // Backend: POST /api/users
-            '^/api/v1/auth/register/host': '/api/auth/register-host-not-implemented' // Backend code chưa hỗ trợ đăng ký host không cần auth
+            // '^/api/v1/auth/register/host': '/api/auth/register-host-not-implemented' // Backend code chưa hỗ trợ đăng ký host không cần auth
         }
     },
     // --- Internal Status Check ---
