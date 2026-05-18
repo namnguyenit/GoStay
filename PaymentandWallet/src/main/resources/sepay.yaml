@@ -1,0 +1,5 @@
+sepay:
+  bank-account: "0010000000355"
+  bank-name: "Vietcombank"
+  api-token: "YOUR_SEPAY_API_TOKEN"
+  webhook-secret: "YOUR_WEBHOOK_SECRET"
