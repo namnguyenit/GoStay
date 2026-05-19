@@ -150,6 +150,7 @@ public class UserService {
     public void deleteUser(String userId) {
         User user = findUserById(userId);
         user.setIsDeleted(true);
+        user.setIsActive(false);
         userRepository.save(user);
     }
 
@@ -517,9 +518,13 @@ public class UserService {
     public UserStatusResponese checkUserStatus(String userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
+        boolean isActive = Boolean.TRUE.equals(user.getIsActive());
+        boolean isDeleted = Boolean.TRUE.equals(user.getIsDeleted());
 
         return UserStatusResponese.builder()
-                .isActive(user.getIsActive())
+                .isActive(isActive)
+                .isDeleted(isDeleted)
+                .isAllowed(isActive && !isDeleted)
                 .build();
     }
 

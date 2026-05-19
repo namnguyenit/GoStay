@@ -51,7 +51,7 @@ export const verifyJWT = (req, res, next) => {
                     throw new Error("Lỗi gọi Identity Service")
                 }
                 const data = await response.json();
-                isAlow = data.data.isActive;
+                isAlow = data.data.isAllowed;
 
                 userCache.set(userId, isAlow);
             }
