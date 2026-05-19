@@ -1,3 +1,5 @@
+import { authRateLimiters } from "../../middlewares/auth-rate-limit.middleware.js";
+
 export const identityRoutes = [
     // ==========================================
     // 1. JWKS (Public - Không Auth)
@@ -15,6 +17,7 @@ export const identityRoutes = [
         url: '/api/v1/auth',
         target: process.env.IDENTITY_SERVICE_URL,
         auth: false,
+        middlewares: authRateLimiters,
         pathRewrite: (path, req) => {
             const parts = req.originalUrl.split('?');
             let url = parts[0];

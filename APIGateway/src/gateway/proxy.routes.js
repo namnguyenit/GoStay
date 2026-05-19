@@ -14,7 +14,10 @@ export const setupProxy = (app) => {
     routes.sort((a, b) => b.url.length  - a.url.length);
 
     routes.forEach(route => {
-        const middlewares = route.auth ? [verifyJWT] : [];
+        const middlewares = [
+            ...(route.middlewares || []),
+            ...(route.auth ? [verifyJWT] : [])
+        ];
 
         app.use(route.url, middlewares, createProxyMiddleware({
             target: route.target,
