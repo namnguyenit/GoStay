@@ -56,12 +56,7 @@ export const verifyJWT = (req, res, next) => {
                 userCache.set(userId, isAlow);
             }
             if (!isAlow){
-                return res.status(403).json({
-                    status: "403",
-                    success: false,
-                    message: "Tài khoản bị vô hiệu hóa hoặc xóa đi"
-                })
-
+                return buildErorRespone(res, GatewayError.ACCOUNT_BANNED);
             }
             req.headers['x-user-id']= userId;
             req.headers['x-user-roles']= roles;

@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import {setupProxy} from './gateway/proxy.routes.js';
+import { buildSuccessResponse, GatewaySuccess } from './utils/response.helper.js';
 
 const app = express();
 
@@ -11,9 +12,8 @@ setupProxy(app);
 app.get('/health', (req, res) => {
     // Log ra console để ghi nhận có request (tạo activity log)
     console.log(`[${new Date().toISOString()}] Health check pinged!`);
-    res.status(200).json({
-        status: 'OK',
-        message: 'API gateway đang hoạt động bình thường',
+    return buildSuccessResponse(res, GatewaySuccess.HEALTH_CHECK_SUCCESS, {
+        service: 'APIGateway',
         uptime: process.uptime(),
         timestamp: new Date().toISOString()
     });
