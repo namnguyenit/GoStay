@@ -5,6 +5,20 @@ import { buildSuccessResponse, GatewaySuccess } from './utils/response.helper.js
 
 const app = express();
 
+const parseTrustProxy = (value) => {
+    if (!value) return undefined;
+    if (value === "true") return true;
+    if (value === "false") return false;
+
+    const numericValue = Number(value);
+    return Number.isNaN(numericValue) ? value : numericValue;
+};
+
+const trustProxy = parseTrustProxy(process.env.TRUST_PROXY);
+if (trustProxy !== undefined) {
+    app.set("trust proxy", trustProxy);
+}
+
 app.use(cors());
 
 setupProxy(app);
