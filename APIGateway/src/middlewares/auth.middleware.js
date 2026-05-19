@@ -56,7 +56,7 @@ export const verifyJWT = (req, res, next) => {
                 userCache.set(userId, isAlow);
             }
             if (!isAlow){
-                res.status(403).json({
+                return res.status(403).json({
                     status: "403",
                     success: false,
                     message: "Tài khoản bị vô hiệu hóa hoặc xóa đi"

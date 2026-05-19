@@ -29,7 +29,6 @@ import com.gotravel.Identity.dto.response.*;
 import com.gotravel.Identity.exception.*;
 import java.security.PublicKey;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
@@ -530,16 +529,12 @@ public class UserService {
 /**
  * @Logic Nhận file từ FE, gọi sang Node.js upload Cloudinary, lưu URL vào DB
  */
-    public UserProfileResponse uploadAvatar(String userId , MultipartFile file){
+    public UserProfileResponse uploadAvatar(String userId, MultipartFile file, String authorizationHeader){
         User user = findUserById(userId);
         try{
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-            String rolesStr = user.getRoles().stream()
-                    .map(role -> role.getName())
-                    .collect(Collectors.joining(","));
-            headers.set("x-user-roles", rolesStr);
-            headers.set("x-user-id", userId);
+            headers.set(HttpHeaders.AUTHORIZATION, authorizationHeader);
 
             MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
             

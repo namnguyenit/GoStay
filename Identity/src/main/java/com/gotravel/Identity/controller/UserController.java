@@ -292,9 +292,11 @@ public class UserController {
 
     @PostMapping(value = "/me/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('USER', 'HOST', 'ENTERPRISE')")
-    public ApiRequest<UserProfileResponse> uploadAvatar(@RequestParam("file") MultipartFile file) {
+    public ApiRequest<UserProfileResponse> uploadAvatar(
+            @RequestParam("file") MultipartFile file,
+            @RequestHeader("Authorization") String authorizationHeader) {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-        UserProfileResponse response = userService.uploadAvatar(userId, file);
+        UserProfileResponse response = userService.uploadAvatar(userId, file, authorizationHeader);
 
         return ApiRequest.<UserProfileResponse>builder()
                 .success(true)
