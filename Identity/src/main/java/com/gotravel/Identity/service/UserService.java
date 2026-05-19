@@ -289,6 +289,7 @@ public class UserService {
         return HostDetailResponse.builder()
                 .accountId(user.getId())
                 .fullName(hostProfile.getFullName())
+                .avatarUrl(getAvatarUrl(user))
                 .hostType(hostType)
                 .approvalStatus(hostProfile.getApprovalStatus().toString())
                 .identityInfo(HostDetailResponse.IdentityInfo.builder()
@@ -443,7 +444,9 @@ public class UserService {
         if (user.getHostProfile() == null) {
             throw new AppException(HostErrorCode.HOST_PROFILE_NOT_FOUND);
         }
-        return userMapper.toHostProfileResponse(user.getHostProfile());
+        HostProfileResponse response = userMapper.toHostProfileResponse(user.getHostProfile());
+        response.setAvatarUrl(getAvatarUrl(user));
+        return response;
     }
 
     /**
@@ -460,7 +463,9 @@ public class UserService {
         }
         userMapper.updateHostProfileFromRequest(request, user.getHostProfile());
         userRepository.save(user);
-        return userMapper.toHostProfileResponse(user.getHostProfile());
+        HostProfileResponse response = userMapper.toHostProfileResponse(user.getHostProfile());
+        response.setAvatarUrl(getAvatarUrl(user));
+        return response;
     }
 
     /**
@@ -473,7 +478,9 @@ public class UserService {
         if (user.getEnterpriseProfile() == null) {
             throw new AppException(EnterpriseErrorCode.ENTERPRISE_PROFILE_NOT_FOUND);
         }
-        return userMapper.toEnterpriseProfileResponse(user.getEnterpriseProfile());
+        EnterpriseProfileResponse response = userMapper.toEnterpriseProfileResponse(user.getEnterpriseProfile());
+        response.setAvatarUrl(getAvatarUrl(user));
+        return response;
     }
 
     /**
@@ -493,7 +500,13 @@ public class UserService {
 
         userMapper.updateEnterpriseProfileFromRequest(request, user.getEnterpriseProfile());
         userRepository.save(user);
-        return userMapper.toEnterpriseProfileResponse(user.getEnterpriseProfile());
+        EnterpriseProfileResponse response = userMapper.toEnterpriseProfileResponse(user.getEnterpriseProfile());
+        response.setAvatarUrl(getAvatarUrl(user));
+        return response;
+    }
+
+    private String getAvatarUrl(User user) {
+        return user.getUserProfile() != null ? user.getUserProfile().getAvatarUrl() : null;
     }
 
     /**

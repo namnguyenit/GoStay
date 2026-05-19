@@ -13,4 +13,5 @@ public class EnterpriseProfileResponse {
     String taxCode;
     String companyAddress;
     String representativeName;
+    String avatarUrl;
 }
