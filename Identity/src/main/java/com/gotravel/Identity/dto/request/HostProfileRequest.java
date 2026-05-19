@@ -9,7 +9,11 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class HostProfileRequest {
+    String fullName;
+    String phone;
     String cccdNumber;
+    String taxCode;
+    String idCard;
     String bankAccount;
     String bankName;
 }

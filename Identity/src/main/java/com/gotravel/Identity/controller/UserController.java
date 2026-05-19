@@ -124,11 +124,17 @@ public class UserController {
         return ApiRequest.success(SuccessCode.ROLE_UPGRADED_SUCCESS, role);
     }
 
-    @PostMapping("/me/upgradetohost")
+    @PostMapping(value = "/me/upgradetohost", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('USER')")
-    public ApiRequest<ApprovalStatusResponse> upgradeToHost(@RequestBody HostProfileRequest hostProfileRequest) {
+    public ApiRequest<ApprovalStatusResponse> upgradeToHost(
+            @ModelAttribute HostProfileRequest hostProfileRequest,
+            @RequestParam("frontImage") MultipartFile frontImage,
+            @RequestParam("backImage") MultipartFile backImage) {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-        return ApiRequest.success(SuccessCode.APPLICATION_SUBMITTED_SUCCESS, userService.upgradeToHost(userId, hostProfileRequest));
+        return ApiRequest.success(
+                SuccessCode.APPLICATION_SUBMITTED_SUCCESS,
+                userService.upgradeToHost(userId, hostProfileRequest, frontImage, backImage)
+        );
     }
 
 

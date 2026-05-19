@@ -8,7 +8,11 @@ export const rbacMedia = (actionType) =>{
             const userRoles = req.headers["x-user-roles"]||'';
             let {folder} = req.body;
 
-            if (userRoles.includes("ADMIN")){
+            if (userRoles.includes("INTERNAL_SERVICE")){
+                if (!folder){
+                    folder = "internal-uploads";
+                }
+            }else if (userRoles.includes("ADMIN")){
                 if (!folder){
                     folder = "admin-uploads";
                 }

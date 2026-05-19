@@ -197,7 +197,11 @@ public class UserService {
      * @retuhostn UserReponse
      */
     @Transactional
-    public ApprovalStatusResponse upgradeToHost(String userId, HostProfileRequest hostProfileRequest) {
+    public ApprovalStatusResponse upgradeToHost(
+            String userId,
+            HostProfileRequest hostProfileRequest,
+            MultipartFile frontImage,
+            MultipartFile backImage) {
         User user = findUserById(userId);
         Boolean check = user.getRoles().stream()
                 .anyMatch(role -> role.getName().equals("HOST"));
@@ -222,6 +226,9 @@ public class UserService {
         }
 
         userMapper.updateHostProfileFromRequest(hostProfileRequest, user.getHostProfile());
+        List<String> documentUrls = uploadSecureDocuments(userId, frontImage, backImage);
+        user.getHostProfile().setFrontImageUrl(documentUrls.get(0));
+        user.getHostProfile().setBackImageUrl(documentUrls.get(1));
         userRepository.save(user);
         return ApprovalStatusResponse
                 .builder()
@@ -544,6 +551,9 @@ public class UserService {
 
     @Value("${media.service.url}")
     private String mediaServiceUrl;
+
+    @Value("${media.service.token:}")
+    private String mediaServiceToken;
 /**
  * @Logic Nhận file từ FE, gọi sang Node.js upload Cloudinary, lưu URL vào DB
  */
@@ -600,6 +610,76 @@ public class UserService {
         } catch (Exception e) {
             throw new AppException(UserErrorCode.UPLOAD_IMAGE_FAILED);
         }
+    }
+
+    private List<String> uploadSecureDocuments(String userId, MultipartFile frontImage, MultipartFile backImage) {
+        if (mediaServiceToken == null || mediaServiceToken.isBlank()) {
+            throw new AppException(UserErrorCode.UPLOAD_IMAGE_FAILED);
+        }
+        if (frontImage == null || frontImage.isEmpty() || backImage == null || backImage.isEmpty()) {
+            throw new AppException(UserErrorCode.UPLOAD_IMAGE_FAILED);
+        }
+
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+            headers.set("x-internal-service-token", mediaServiceToken);
+
+            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+            body.add("files", toFilePart(frontImage, "front-image.jpg"));
+            body.add("files", toFilePart(backImage, "back-image.jpg"));
+            body.add("folder", "host-applications/" + userId);
+
+            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<Map> response = restTemplate.postForEntity(getSecureMediaUploadUrl(), requestEntity, Map.class);
+
+            if (response.getStatusCode() != HttpStatus.OK || response.getBody() == null) {
+                throw new AppException(UserErrorCode.UPLOAD_IMAGE_FAILED);
+            }
+
+            Map<String, Object> responseBody = response.getBody();
+            Map<String, Object> data = (Map<String, Object>) responseBody.get("data");
+            List<?> urls = data != null ? (List<?>) data.get("urls") : null;
+
+            if (urls == null || urls.size() < 2) {
+                throw new AppException(UserErrorCode.UPLOAD_IMAGE_FAILED);
+            }
+
+            return List.of(String.valueOf(urls.get(0)), String.valueOf(urls.get(1)));
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new AppException(UserErrorCode.UPLOAD_IMAGE_FAILED);
+        }
+    }
+
+    private HttpEntity<org.springframework.core.io.ByteArrayResource> toFilePart(MultipartFile file, String defaultFileName) throws java.io.IOException {
+        HttpHeaders fileHeaders = new HttpHeaders();
+        if (file.getContentType() != null) {
+            fileHeaders.setContentType(MediaType.parseMediaType(file.getContentType()));
+        }
+
+        org.springframework.core.io.ByteArrayResource fileResource = new org.springframework.core.io.ByteArrayResource(file.getBytes()) {
+            @Override
+            public String getFilename() {
+                return file.getOriginalFilename() != null ? file.getOriginalFilename() : defaultFileName;
+            }
+        };
+
+        return new HttpEntity<>(fileResource, fileHeaders);
+    }
+
+    private String getSecureMediaUploadUrl() {
+        String uploadUrl = mediaServiceUrl.endsWith("/")
+                ? mediaServiceUrl.substring(0, mediaServiceUrl.length() - 1)
+                : mediaServiceUrl;
+
+        if (uploadUrl.endsWith("/secure-documents")) {
+            return uploadUrl;
+        }
+
+        return uploadUrl + "/secure-documents";
     }
 
 

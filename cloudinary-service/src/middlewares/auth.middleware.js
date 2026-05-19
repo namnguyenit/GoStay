@@ -22,6 +22,15 @@ function getKey(header, callback) {
 }
 
 export const verifyMediaJWT = (req, res, next) => {
+    const internalServiceToken = process.env.INTERNAL_SERVICE_TOKEN || process.env.MEDIA_INTERNAL_SERVICE_TOKEN;
+    const providedServiceToken = req.headers["x-internal-service-token"];
+
+    if (internalServiceToken && providedServiceToken === internalServiceToken) {
+        req.headers["x-user-id"] = "identity-service";
+        req.headers["x-user-roles"] = "INTERNAL_SERVICE";
+        return next();
+    }
+
     const authHeader = req.headers.authorization || "";
     const [scheme, token] = authHeader.split(" ");
 

@@ -4,7 +4,7 @@ server:
 spring:
   servlet:
     multipart:
-      max-request-size: 10MB
+      max-request-size: 25MB
       max-file-size: 10MB
   application:
     name: Identity
@@ -17,3 +17,4 @@ spring:
 media:
   service:
     url: http://localhost:5001/api/v1/media/upload
+    token: ${MEDIA_INTERNAL_SERVICE_TOKEN:}

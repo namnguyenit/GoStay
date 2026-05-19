@@ -20,6 +20,10 @@ if (trustProxy !== undefined) {
 }
 
 app.use(cors());
+app.use((req, res, next) => {
+    delete req.headers["x-internal-service-token"];
+    next();
+});
 
 setupProxy(app);
 
