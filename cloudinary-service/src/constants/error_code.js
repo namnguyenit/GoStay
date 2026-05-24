@@ -16,6 +16,11 @@ export const ERROR_CODES = {
         message: 'Thiếu publicId để xóa file',
         errorCode: "MISSING_PUBLIC_ID"
     },
+    INVALID_PUBLIC_ID: {
+        status: 400,
+        message: 'publicId không hợp lệ',
+        errorCode: "INVALID_PUBLIC_ID"
+    },
 
     // Upload/Multer
     INVALID_IMAGE_FORMAT: {
@@ -72,6 +77,11 @@ export const ERROR_CODES = {
         status: 403,
         message: 'Không có quyền truy cập' ,
         errorCode: "FORBIDDEN"
+    },
+    MEDIA_OWNERSHIP_DENIED: {
+        status: 403,
+        message: 'Bạn không có quyền thao tác với ảnh này',
+        errorCode: "MEDIA_OWNERSHIP_DENIED"
     },
 
     // System

@@ -4,6 +4,7 @@ import sharp from "sharp";
 import {throwError} from "../utils/throwError.js";
 import {SUCCESS_CODE} from "../constants/success-code.js";
 import {buildSuccess} from "../utils/throwSuccess.js";
+import { assertCanDeletePublicId } from "../utils/mediaOwnership.js";
 
 
 
@@ -42,7 +43,8 @@ export const uploadSingleImg = async (req, res, next) =>{
             url: result.secure_url,
             publicId : result.public_id,
             resourceType : result.resource_type,
-            folder: targetFolder
+            folder: targetFolder,
+            ownerId: req.headers["x-user-id"]
         }
         return res.status(SUCCESS_CODE.UPLOAD_SINGLE_SUCCESS.status).json(
             buildSuccess('UPLOAD_SINGLE_SUCCESS',data),
@@ -73,7 +75,10 @@ export const uploadBulkImg = async (req, res, next) =>{
             const urls = results.map(result => result.secure_url);
             const data =  {
                 url: urls,
-                folder: targetFolder
+                publicIds: results.map(result => result.public_id),
+                resourceTypes: results.map(result => result.resource_type),
+                folder: targetFolder,
+                ownerId: req.headers["x-user-id"]
             }
             return res.status(SUCCESS_CODE.UPLOAD_BULK_SUCCESS.status).json(
                 buildSuccess('UPLOAD_BULK_SUCCESS',data),
@@ -115,7 +120,15 @@ export const deleteImg = async (req, res, next) =>{
         if (!publicId){
             return next(throwError("MISSING_PUBLIC_ID"))
         }
-        const result = await cloudinary.uploader.destroy(publicId);
+        const normalizedPublicId = assertCanDeletePublicId(req, publicId, req.body.deliveryType);
+        const resourceType = ["image", "video", "raw"].includes(req.body.resourceType)
+            ? req.body.resourceType
+            : "image";
+        const deliveryType = req.body.deliveryType === "private" ? "private" : "upload";
+        const result = await cloudinary.uploader.destroy(normalizedPublicId, {
+            resource_type: resourceType,
+            type: deliveryType
+        });
         if(result.result === 'not found'){
             return next(throwError("CLOUDINARY_NOT_FOUND"))
         }

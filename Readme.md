@@ -131,6 +131,14 @@ Internal inventory lock validate ở cả controller và service. `BatchLockRequ
 
 ---
 
+### BUG 8: Media delete cho phép xóa ảnh bất kỳ nếu biết publicId 🔴 ĐÃ SỬA
+
+Media service không còn xóa trực tiếp theo `publicId` client gửi lên. Upload mới được đưa vào folder có scope owner như `users/{userId}/...`, `hosts/{userId}/...`, `enterprises/{userId}/...`, `admins/{userId}/...`.
+
+Route delete giờ validate `publicId`, chặn path traversal, kiểm tra role chính xác, và chỉ gọi Cloudinary `destroy` nếu `publicId` nằm trong prefix mà user hiện tại được sở hữu. User/host/enterprise không thể xóa ảnh của account khác và không được xóa private resource; admin/internal service mới có quyền xóa phạm vi rộng hơn.
+
+---
+
 ## 🔗 APIGateway Route Coverage (Đã viết lại ĐẦY ĐỦ)
 
 ### Identity Service (Port 8080)
@@ -316,6 +324,10 @@ Admin phải bấm nút mark-paid cho từng payout. Nên cân nhắc auto-payou
 | `BookingandInventory/.../BatchLockRequest.java` | Validate inventory lock item trước controller |
 | `BookingandInventory/.../InventoryInternalService.java` | Service-level guard chống quantity âm làm sai tồn kho |
 | `PaymentandWallet/src/main/resources/sepay.yaml` | Lấy SePay secret/token từ env, không hardcode rỗng |
+| `cloudinary-service/src/utils/mediaOwnership.js` | Thêm scope ownership cho upload/delete media |
+| `cloudinary-service/src/middlewares/rbac.middleware.js` | Gắn folder theo role + owner thay vì tin folder public |
+| `cloudinary-service/src/controllers/media.controller.js` | Validate ownership trước khi Cloudinary destroy |
+| `cloudinary-service/src/constants/error_code.js` | Thêm lỗi publicId không hợp lệ/không có quyền |
 | `*/configuration/InternalServiceTokenFilter.java` | Bắt buộc `X-Internal-Service-Token` cho internal endpoint |
 | `*/configuration/InternalFeignConfig.java` | Tự gắn internal token cho Feign service-to-service |
 | `APIGateway/src/gateway/proxy.routes.js` | Import tất cả route files |
