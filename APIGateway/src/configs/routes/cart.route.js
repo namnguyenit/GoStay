@@ -35,7 +35,7 @@ export const cartRoutes = [
     // ==========================================
     {
         url: '/api/v1/carts',
-        target: process.env.CART_SERVICE_URL,
+        target: (process.env.CART_SERVICE_URL || "http://localhost:8084"),
         auth: true,
         // GET    /                   → Xem giỏ hàng
         // POST   /items              → Thêm vào giỏ
@@ -48,7 +48,7 @@ export const cartRoutes = [
     // ==========================================
     {
         url: '/api/v1/orders',
-        target: process.env.CART_SERVICE_URL,
+        target: (process.env.CART_SERVICE_URL || "http://localhost:8084"),
         auth: true,
         // POST /checkout-cart        → Checkout toàn bộ giỏ
         // POST /book-now             → Đặt nhanh 1 dịch vụ

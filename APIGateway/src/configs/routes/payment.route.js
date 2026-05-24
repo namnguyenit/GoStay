@@ -36,7 +36,7 @@ export const paymentRoutes = [
     // ==========================================
     {
         url: '/api/v1/public/payments',
-        target: process.env.PAYMENT_SERVICE_URL,
+        target: (process.env.PAYMENT_SERVICE_URL || "http://localhost:8085"),
         auth: false,
         // POST /sepay-webhook → SePay gọi khi có biến động tài khoản
     },
@@ -46,7 +46,7 @@ export const paymentRoutes = [
     // ==========================================
     {
         url: '/api/v1/payments',
-        target: process.env.PAYMENT_SERVICE_URL,
+        target: (process.env.PAYMENT_SERVICE_URL || "http://localhost:8085"),
         auth: true,
         // POST /create             → Tạo payment + sinh QR
         // GET  /{paymentId}        → Chi tiết payment
@@ -59,7 +59,7 @@ export const paymentRoutes = [
     // ==========================================
     {
         url: '/api/v1/payouts',
-        target: process.env.PAYMENT_SERVICE_URL,
+        target: (process.env.PAYMENT_SERVICE_URL || "http://localhost:8085"),
         auth: true,
         // GET /me                  → Host xem thu nhập
         // PUT /{payoutId}/mark-paid → Admin đánh dấu đã trả

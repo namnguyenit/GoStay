@@ -38,7 +38,7 @@ export const bookingRoutes = [
     // ==========================================
     {
         url: '/api/v1/public/inventory',
-        target: process.env.BOOKING_SERVICE_URL,
+        target: (process.env.BOOKING_SERVICE_URL || "http://localhost:8083"),
         auth: false,
         // GET /listings/{listingId}/availability?startDate=...&endDate=...
     },
@@ -48,7 +48,7 @@ export const bookingRoutes = [
     // ==========================================
     {
         url: '/api/v1/host/inventory',
-        target: process.env.BOOKING_SERVICE_URL,
+        target: (process.env.BOOKING_SERVICE_URL || "http://localhost:8083"),
         auth: true,
         // GET /listings/{listingId}/calendars?month=6&year=2026
         // PUT /listings/{listingId}/calendars/block
@@ -61,7 +61,7 @@ export const bookingRoutes = [
     // ==========================================
     {
         url: '/api/v1/admin/inventory',
-        target: process.env.BOOKING_SERVICE_URL,
+        target: (process.env.BOOKING_SERVICE_URL || "http://localhost:8083"),
         auth: true,
         // PUT  /listings/{listingId}/force-update
         // POST /listings/{listingId}/sync

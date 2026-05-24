@@ -45,7 +45,11 @@ export const verifyJWT = (req, res, next) => {
         return buildErorRespone(res, GatewayError.MISSING_TOKEN);
     }
 
-    jwt.verify(token, getKey , { algorithms: ["RS256"] }, async (err, decoded) => {
+    jwt.verify(token, getKey , { 
+        algorithms: ["RS256"],
+        issuer: "com.gotravel.identity",
+        audience: "gotravel-api"
+    }, async (err, decoded) => {
         if (err){
             return  buildErorRespone(res, GatewayError.INVALID_TOKEN);
         }

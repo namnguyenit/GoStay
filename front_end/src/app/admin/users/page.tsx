@@ -50,7 +50,8 @@ export default function AdminUsersPage() {
     const action = user.isActive ? "khóa" : "mở khóa";
     if (!confirm(`Bạn có chắc muốn ${action} tài khoản "${user.username}"?`)) return;
     try {
-      await AdminService.toggleAccountStatus(user.id);
+      const newStatus = user.isActive ? "BANNED" : "ACTIVE";
+      await AdminService.toggleAccountStatus(user.id, newStatus);
       fetchUsers();
     } catch (err) {
       alert("Có lỗi xảy ra.");

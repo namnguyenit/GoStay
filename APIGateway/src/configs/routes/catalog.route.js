@@ -37,7 +37,7 @@ export const catalogRoutes = [
     // ==========================================
     {
         url: '/api/v1/catalog/listings',
-        target: process.env.CATALOG_SERVICE_URL,
+        target: (process.env.CATALOG_SERVICE_URL || "http://localhost:8082"),
         auth: false,
         // GET /{listingId}          → Chi tiết listing
         // GET /{listingId}/reviews  → Reviews của listing
@@ -48,7 +48,7 @@ export const catalogRoutes = [
     // ==========================================
     {
         url: '/api/v1/catalog/reviews',
-        target: process.env.CATALOG_SERVICE_URL,
+        target: (process.env.CATALOG_SERVICE_URL || "http://localhost:8082"),
         auth: true,
         // POST / → Gửi đánh giá (Role: USER)
     },
@@ -58,7 +58,7 @@ export const catalogRoutes = [
     // ==========================================
     {
         url: '/api/v1/catalog/host',
-        target: process.env.CATALOG_SERVICE_URL,
+        target: (process.env.CATALOG_SERVICE_URL || "http://localhost:8082"),
         auth: true,
         // POST   /landmark-suggestions     → Đề xuất landmark
         // POST   /complexes                → Tạo complex
@@ -73,7 +73,7 @@ export const catalogRoutes = [
     // ==========================================
     {
         url: '/api/v1/catalog/admin',
-        target: process.env.CATALOG_SERVICE_URL,
+        target: (process.env.CATALOG_SERVICE_URL || "http://localhost:8082"),
         auth: true,
         // GET   /landmark-suggestions                → Xem đề xuất
         // PUT   /landmark-suggestions/{id}/status    → Approve/Reject

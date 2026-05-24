@@ -12,14 +12,14 @@ const AdminService = {
     return await Api.delete(`/v1/admin/users/${id}`);
   },
 
-  toggleAccountStatus: async (accountId: string) => {
+  toggleAccountStatus: async (accountId: string, status: string) => {
     // PUT /api/v1/admin/accounts/{accountId}/status
-    return await Api.put(`/v1/admin/accounts/${accountId}/status`, {});
+    return await Api.put(`/v1/admin/accounts/${accountId}/status`, { status });
   },
 
   upgradeRole: async (id: string, role: string) => {
-    // POST /api/v1/admin/users/{id}/role
-    return await Api.post(`/v1/admin/users/${id}/role`, { role });
+    // POST /api/v1/users/{id}/upgraderole
+    return await Api.post(`/v1/users/${id}/upgraderole?role=${role}`, null);
   },
 
   // ==========================================

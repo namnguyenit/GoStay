@@ -57,7 +57,7 @@ export const identityRoutes = [
     // ==========================================
     {
         url: '/.well-known/jwks.json',
-        target: process.env.IDENTITY_SERVICE_URL,
+        target: (process.env.IDENTITY_SERVICE_URL || "http://localhost:8080"),
         auth: false
     },
 
@@ -66,7 +66,7 @@ export const identityRoutes = [
     // ==========================================
     {
         url: '/api/v1/auth',
-        target: process.env.IDENTITY_SERVICE_URL,
+        target: (process.env.IDENTITY_SERVICE_URL || "http://localhost:8080"),
         auth: false,
         middlewares: authRateLimiters,
         pathRewrite: (path, req) => {
@@ -88,7 +88,7 @@ export const identityRoutes = [
     // ==========================================
     {
         url: '/api/v1/me',
-        target: process.env.IDENTITY_SERVICE_URL,
+        target: (process.env.IDENTITY_SERVICE_URL || "http://localhost:8080"),
         auth: true,
         pathRewrite: (path, req) => {
             const parts = req.originalUrl.split('?');
@@ -121,7 +121,7 @@ export const identityRoutes = [
     // ==========================================
     {
         url: '/api/v1/admin',
-        target: process.env.IDENTITY_SERVICE_URL,
+        target: (process.env.IDENTITY_SERVICE_URL || "http://localhost:8080"),
         auth: true,
         pathRewrite: (path, req) => {
             const parts = req.originalUrl.split('?');
