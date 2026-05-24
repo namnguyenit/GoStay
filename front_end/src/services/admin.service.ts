@@ -2,9 +2,9 @@ import { Api } from "@/shared/api";
 
 const AdminService = {
   // ==========================================
-  // USERS
+  // USERS (Identity Admin)
   // ==========================================
-  getUsers: async (page = 0, size = 10) => {
+  getUsers: async (page = 0, size = 20) => {
     return await Api.get(`/v1/admin/users?page=${page}&size=${size}`);
   },
 
@@ -12,65 +12,97 @@ const AdminService = {
     return await Api.delete(`/v1/admin/users/${id}`);
   },
 
-  banUser: async (id: string) => {
-    return await Api.put(`/v1/admin/accounts/${id}/status`, {});
+  toggleAccountStatus: async (accountId: string) => {
+    // PUT /api/v1/admin/accounts/{accountId}/status
+    return await Api.put(`/v1/admin/accounts/${accountId}/status`, {});
   },
 
-  unbanUser: async (id: string) => {
-    // API uses same endpoint, payload might be different or maybe it toggles.
-    // Assuming we can pass status or it toggles
-    return await Api.put(`/v1/admin/accounts/${id}/status`, {});
-  },
-
-  upgradeRole: async (id: string, roleName: string) => {
-    return await Api.post(`/v1/admin/users/${id}/role`, { role: roleName });
+  upgradeRole: async (id: string, role: string) => {
+    // POST /api/v1/admin/users/{id}/role
+    return await Api.post(`/v1/admin/users/${id}/role`, { role });
   },
 
   // ==========================================
-  // HOSTS
+  // HOSTS (Identity Admin)
   // ==========================================
-  getPendingHosts: async (page = 0, size = 10) => {
+  getPendingHosts: async (page = 0, size = 20) => {
+    // GET /api/v1/admin/hosts → Danh sách Host PENDING
     return await Api.get(`/v1/admin/hosts?page=${page}&size=${size}`);
   },
 
-  getAllHosts: async (page = 0, size = 10) => {
+  getAllHosts: async (page = 0, size = 20) => {
+    // GET /api/v1/admin/hosts/all → Tất cả Hosts
     return await Api.get(`/v1/admin/hosts/all?page=${page}&size=${size}`);
   },
 
-  getHostDetail: async (id: string) => {
-    return await Api.get(`/v1/admin/hosts/${id}`);
+  getHostDetail: async (accountId: string) => {
+    // GET /api/v1/admin/hosts/{accountId}
+    return await Api.get(`/v1/admin/hosts/${accountId}`);
   },
 
-  approveHost: async (id: string, isApproved: boolean) => {
-    return await Api.put(`/v1/admin/hosts/${id}/approval`, { approved: isApproved });
+  approveHost: async (accountId: string, approved: boolean) => {
+    // PUT /api/v1/admin/hosts/{accountId}/approval
+    return await Api.put(`/v1/admin/hosts/${accountId}/approval`, { approved });
   },
 
-  completeHostUpgrade: async (id: string) => {
-    return await Api.post(`/v1/admin/hosts/${id}/success`, {});
+  completeHostUpgrade: async (accountId: string) => {
+    // POST /api/v1/admin/hosts/{accountId}/success
+    return await Api.post(`/v1/admin/hosts/${accountId}/success`, {});
   },
 
   // ==========================================
-  // LANDMARKS
+  // LANDMARKS (Catalog Admin)
   // ==========================================
-  getLandmarkSuggestions: async (page = 0, size = 10) => {
-    // Note: uses catalog api
+  getLandmarkSuggestions: async (page = 0, size = 20) => {
+    // GET /api/v1/catalog/admin/landmark-suggestions
     return await Api.get(`/v1/catalog/admin/landmark-suggestions?page=${page}&size=${size}`);
   },
 
   updateLandmarkSuggestionStatus: async (id: string, status: string) => {
+    // PUT /api/v1/catalog/admin/landmark-suggestions/{id}/status
     return await Api.put(`/v1/catalog/admin/landmark-suggestions/${id}/status`, { status });
   },
 
-  createLandmark: async (data: any) => {
+  createLandmark: async (data: {
+    name: string;
+    description: string;
+    latitude: number;
+    longitude: number;
+    address?: string;
+  }) => {
+    // POST /api/v1/catalog/admin/landmarks
     return await Api.post(`/v1/catalog/admin/landmarks`, data);
   },
 
-  updateLandmark: async (id: string, data: any) => {
-    return await Api.put(`/v1/catalog/admin/landmarks/${id}`, data);
+  updateLandmark: async (landmarkId: string, data: any) => {
+    // PUT /api/v1/catalog/admin/landmarks/{landmarkId}
+    return await Api.put(`/v1/catalog/admin/landmarks/${landmarkId}`, data);
   },
 
-  changeLandmarkStatus: async (id: string, status: string) => {
-    return await Api.patch(`/v1/catalog/admin/landmarks/${id}/status`, { status }); 
+  changeLandmarkStatus: async (landmarkId: string, status: string) => {
+    // PATCH /api/v1/catalog/admin/landmarks/{landmarkId}/status
+    return await Api.patch(`/v1/catalog/admin/landmarks/${landmarkId}/status`, { status });
+  },
+
+  // ==========================================
+  // INVENTORY (Booking Admin)
+  // ==========================================
+  forceUpdateInventory: async (listingId: string, data: any) => {
+    // PUT /api/v1/admin/inventory/listings/{listingId}/force-update
+    return await Api.put(`/v1/admin/inventory/listings/${listingId}/force-update`, data);
+  },
+
+  syncInventory: async (listingId: string) => {
+    // POST /api/v1/admin/inventory/listings/{listingId}/sync
+    return await Api.post(`/v1/admin/inventory/listings/${listingId}/sync`, {});
+  },
+
+  // ==========================================
+  // PAYOUTS (Payment Admin)
+  // ==========================================
+  markPayoutPaid: async (payoutId: string) => {
+    // PUT /api/v1/payouts/{payoutId}/mark-paid
+    return await Api.put(`/v1/payouts/${payoutId}/mark-paid`, {});
   },
 };
 
