@@ -12,7 +12,6 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/internal/orders")
 @RequiredArgsConstructor
-@PreAuthorize("isAuthenticated()")
 public class InternalOrderController {
 
     private final OrderService orderService;
