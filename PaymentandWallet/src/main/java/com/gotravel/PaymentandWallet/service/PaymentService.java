@@ -4,13 +4,17 @@ import com.gotravel.PaymentandWallet.client.OrderClient;
 import com.gotravel.PaymentandWallet.configuration.SepayConfig;
 import com.gotravel.PaymentandWallet.dto.request.CreatePaymentRequest;
 import com.gotravel.PaymentandWallet.dto.request.SepayWebhookRequest;
+import com.gotravel.PaymentandWallet.dto.response.HostPayoutResponse;
 import com.gotravel.PaymentandWallet.dto.response.PaymentResponse;
+import com.gotravel.PaymentandWallet.entity.HostPayout;
 import com.gotravel.PaymentandWallet.entity.PaymentRequest;
 import com.gotravel.PaymentandWallet.entity.PaymentTransaction;
 import com.gotravel.PaymentandWallet.enums.PaymentStatus;
+import com.gotravel.PaymentandWallet.enums.PayoutStatus;
 import com.gotravel.PaymentandWallet.exeption.AppException;
 import com.gotravel.PaymentandWallet.exeption.PaymentErrorCode;
 import com.gotravel.PaymentandWallet.mapper.PaymentMapper;
+import com.gotravel.PaymentandWallet.repository.HostPayoutRepository;
 import com.gotravel.PaymentandWallet.repository.PaymentRequestRepository;
 import com.gotravel.PaymentandWallet.repository.PaymentTransactionRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -35,10 +40,12 @@ public class PaymentService {
 
     private final PaymentRequestRepository paymentRequestRepository;
     private final PaymentTransactionRepository paymentTransactionRepository;
+    private final HostPayoutRepository hostPayoutRepository;
     private final OrderClient orderClient;
     private final PaymentMapper paymentMapper;
     private final SepayConfig sepayConfig;
 
+    private static final BigDecimal COMMISSION_RATE = new BigDecimal("0.05"); // 5% hoa hồng GoStay
     private static final Pattern PAYMENT_CODE_PATTERN = Pattern.compile("(GS[A-Z0-9]{10})");
 
     /**
@@ -60,6 +67,7 @@ public class PaymentService {
         PaymentRequest paymentRequest = PaymentRequest.builder()
                 .orderId(request.getOrderId())
                 .userId(userId)
+                .hostId(request.getHostId())
                 .paymentCode(paymentCode)
                 .amount(request.getAmount())
                 .status(PaymentStatus.PENDING)
@@ -128,7 +136,26 @@ public class PaymentService {
         paymentRequest.setPaidAt(LocalDateTime.now());
         paymentRequestRepository.save(paymentRequest);
 
-        log.info("Payment {} completed for order {}", paymentCode, paymentRequest.getOrderId());
+        // Tính hoa hồng 5% cho GoStay, 95% cho Host
+        BigDecimal commissionAmount = paymentRequest.getAmount().multiply(COMMISSION_RATE);
+        BigDecimal hostAmount = paymentRequest.getAmount().subtract(commissionAmount);
+
+        HostPayout payout = HostPayout.builder()
+                .paymentRequestId(paymentRequest.getId())
+                .orderId(paymentRequest.getOrderId())
+                .hostId(paymentRequest.getHostId())
+                .totalAmount(paymentRequest.getAmount())
+                .commissionRate(COMMISSION_RATE)
+                .commissionAmount(commissionAmount)
+                .hostAmount(hostAmount)
+                .status(PayoutStatus.PENDING)
+                .build();
+
+        hostPayoutRepository.save(payout);
+
+        log.info("Payment {} completed for order {}. Total: {}, Commission(5%): {}, Host receives: {}",
+                paymentCode, paymentRequest.getOrderId(),
+                paymentRequest.getAmount(), commissionAmount, hostAmount);
 
         try {
             orderClient.notifyPaymentSuccess(paymentRequest.getOrderId());

@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 
 import java.util.UUID;
 
-@FeignClient(name = "cart-order", url = "http://localhost:8084")
+@FeignClient(name = "cart-order", url = "${services.cart-order.url:http://localhost:8084}")
 public interface OrderClient {
 
     @PutMapping("/api/v1/internal/orders/{orderId}/payment-success")

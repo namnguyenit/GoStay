@@ -30,6 +30,9 @@ public class PaymentRequest {
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
+    @Column(name = "host_id", nullable = false)
+    private UUID hostId;
+
     @Column(name = "payment_code", nullable = false, unique = true)
     private String paymentCode;
 

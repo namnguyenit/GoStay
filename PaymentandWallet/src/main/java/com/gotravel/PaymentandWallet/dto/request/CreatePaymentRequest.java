@@ -21,4 +21,7 @@ public class CreatePaymentRequest {
     @NotNull(message = "Số tiền không được để trống")
     @DecimalMin(value = "1000", message = "Số tiền tối thiểu 1.000đ")
     private BigDecimal amount;
+
+    @NotNull(message = "Host ID không được để trống")
+    private UUID hostId;
 }

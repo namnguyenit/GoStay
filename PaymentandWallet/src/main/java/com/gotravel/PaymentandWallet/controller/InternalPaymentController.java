@@ -16,7 +16,6 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/internal/payments")
 @RequiredArgsConstructor
-@PreAuthorize("isAuthenticated()")
 public class InternalPaymentController {
 
     private final PaymentService paymentService;
