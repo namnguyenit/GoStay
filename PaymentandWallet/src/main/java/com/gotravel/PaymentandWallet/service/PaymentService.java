@@ -89,12 +89,13 @@ public class PaymentService {
      */
     @Transactional
     public void handleSepayWebhook(SepayWebhookRequest webhook) {
-        if (webhook.getId() == null || webhook.getContent() == null) {
+        if (webhook.getId() == null || webhook.getContent() == null || webhook.getTransferAmount() == null) {
             throw new AppException(PaymentErrorCode.INVALID_WEBHOOK);
         }
 
         if (paymentTransactionRepository.existsBySepayId(webhook.getId())) {
-            throw new AppException(PaymentErrorCode.DUPLICATE_TRANSACTION);
+            log.info("SePay webhook {} was already processed; skipping duplicate delivery", webhook.getId());
+            return;
         }
 
         String paymentCode = extractPaymentCode(webhook.getContent());
@@ -103,7 +104,7 @@ public class PaymentService {
             return;
         }
 
-        PaymentRequest paymentRequest = paymentRequestRepository.findByPaymentCode(paymentCode)
+        PaymentRequest paymentRequest = paymentRequestRepository.findByPaymentCodeForUpdate(paymentCode)
                 .orElse(null);
 
         if (paymentRequest == null) {
@@ -112,12 +113,15 @@ public class PaymentService {
         }
 
         if (paymentRequest.getStatus() == PaymentStatus.COMPLETED) {
-            throw new AppException(PaymentErrorCode.PAYMENT_ALREADY_COMPLETED);
+            log.info("Payment {} is already completed; skipping webhook {}", paymentCode, webhook.getId());
+            return;
         }
 
         if (paymentRequest.getStatus() == PaymentStatus.EXPIRED) {
             throw new AppException(PaymentErrorCode.PAYMENT_EXPIRED);
         }
+
+        validateWebhookMatchesPayment(webhook, paymentRequest);
 
         PaymentTransaction transaction = PaymentTransaction.builder()
                 .paymentRequest(paymentRequest)
@@ -197,6 +201,39 @@ public class PaymentService {
         if (content == null) return null;
         Matcher matcher = PAYMENT_CODE_PATTERN.matcher(content.toUpperCase());
         return matcher.find() ? matcher.group(1) : null;
+    }
+
+    private void validateWebhookMatchesPayment(SepayWebhookRequest webhook, PaymentRequest paymentRequest) {
+        if (!"in".equalsIgnoreCase(normalize(webhook.getTransferType()))) {
+            log.warn("Rejected SePay webhook {} because transferType is not inbound: {}",
+                    webhook.getId(), webhook.getTransferType());
+            throw new AppException(PaymentErrorCode.INVALID_WEBHOOK);
+        }
+
+        if (webhook.getTransferAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            log.warn("Rejected SePay webhook {} because transferAmount is not positive: {}",
+                    webhook.getId(), webhook.getTransferAmount());
+            throw new AppException(PaymentErrorCode.INVALID_WEBHOOK);
+        }
+
+        if (webhook.getTransferAmount().compareTo(paymentRequest.getAmount()) != 0) {
+            log.warn("Rejected SePay webhook {} for payment {} due to amount mismatch. Expected={}, actual={}",
+                    webhook.getId(), paymentRequest.getPaymentCode(), paymentRequest.getAmount(), webhook.getTransferAmount());
+            throw new AppException(PaymentErrorCode.AMOUNT_MISMATCH);
+        }
+
+        String expectedBankAccount = normalize(sepayConfig.getBankAccount());
+        String actualBankAccount = normalize(webhook.getAccountNumber());
+        if (!expectedBankAccount.isBlank() && !actualBankAccount.isBlank()
+                && !expectedBankAccount.equals(actualBankAccount)) {
+            log.warn("Rejected SePay webhook {} for payment {} due to bank account mismatch. Expected={}, actual={}",
+                    webhook.getId(), paymentRequest.getPaymentCode(), expectedBankAccount, actualBankAccount);
+            throw new AppException(PaymentErrorCode.INVALID_WEBHOOK);
+        }
+    }
+
+    private String normalize(String value) {
+        return value == null ? "" : value.trim();
     }
 
     private LocalDateTime parseTransactionDate(String dateStr) {

@@ -13,5 +13,7 @@ public class SepayConfig {
     private String bankAccount;
     private String bankName;
     private String apiToken;
+    private String webhookAuthMode = "HMAC_SHA256";
     private String webhookSecret;
+    private long webhookToleranceSeconds = 300;
 }

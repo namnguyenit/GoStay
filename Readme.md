@@ -87,6 +87,28 @@ Nếu username đã tồn tại, seed sẽ bỏ qua và không sửa password/ro
 
 ---
 
+### BUG 5: SePay webhook public có thể bị giả mạo 🔴 ĐÃ SỬA
+
+`SepayWebhookController` không còn nhận webhook public không xác thực. Mặc định dùng HMAC-SHA256 theo header `X-SePay-Signature` + `X-SePay-Timestamp`; có thể đổi sang API Key bằng `SEPAY_WEBHOOK_AUTH_MODE=API_KEY`.
+
+Các biến cần cấu hình:
+
+```bash
+SEPAY_WEBHOOK_AUTH_MODE=HMAC_SHA256
+SEPAY_WEBHOOK_SECRET='secret-key-tren-dashboard-sepay'
+```
+
+Hoặc:
+
+```bash
+SEPAY_WEBHOOK_AUTH_MODE=API_KEY
+SEPAY_API_TOKEN='api-key-tren-dashboard-sepay'
+```
+
+Webhook chỉ hoàn tất payment khi giao dịch là tiền vào, số tiền chuyển khoản khớp đúng `PaymentRequest.amount`, tài khoản nhận khớp cấu hình, payment còn pending, và SePay transaction id chưa được xử lý. Duplicate webhook được xử lý idempotent.
+
+---
+
 ## 🔗 APIGateway Route Coverage (Đã viết lại ĐẦY ĐỦ)
 
 ### Identity Service (Port 8080)
@@ -258,6 +280,9 @@ Admin phải bấm nút mark-paid cho từng payout. Nên cân nhắc auto-payou
 | `APIGateway/src/configs/routes/payment.route.js` | Viết lại đầy đủ 7 endpoints |
 | `APIGateway/src/configs/routes/identity.route.js` | Viết lại với docs + endpoint mới |
 | `Identity/.../DataSeedForAdmin.java` | Không reset admin; bootstrap có điều kiện qua env |
+| `PaymentandWallet/.../SepayWebhookController.java` | Verify HMAC/API Key trước khi xử lý webhook |
+| `PaymentandWallet/.../PaymentService.java` | Check amount, transfer type, bank account, idempotency trước khi complete |
+| `PaymentandWallet/src/main/resources/sepay.yaml` | Lấy SePay secret/token từ env, không hardcode rỗng |
 | `*/configuration/InternalServiceTokenFilter.java` | Bắt buộc `X-Internal-Service-Token` cho internal endpoint |
 | `*/configuration/InternalFeignConfig.java` | Tự gắn internal token cho Feign service-to-service |
 | `APIGateway/src/gateway/proxy.routes.js` | Import tất cả route files |
