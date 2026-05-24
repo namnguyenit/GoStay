@@ -1,17 +1,19 @@
 package com.gotravel.Identity.configuration;
 
-import com.gotravel.Identity.entity.Role;
-import com.gotravel.Identity.entity.User;
-import com.gotravel.Identity.repository.RoleRepository;
-import com.gotravel.Identity.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Set;
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.Set;
+import com.gotravel.Identity.entity.Role;
+import com.gotravel.Identity.entity.User;
+import com.gotravel.Identity.repository.RoleRepository;
+import com.gotravel.Identity.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Configuration
 @RequiredArgsConstructor

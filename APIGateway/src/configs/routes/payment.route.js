@@ -25,7 +25,7 @@
  * ├──────────────────────────────────────────────────────────────────────────┤
  * │ InternalPaymentController (/api/v1/internal/payments)                   │
  * │   GET /order/{orderId}/status → CartandOrder kiểm tra trạng thái TT    │
- * │   Không Auth (Service-to-Service)                                       │
+ * │   Không expose qua Gateway, chỉ gọi service-to-service                  │
  * └──────────────────────────────────────────────────────────────────────────┘
  */
 
@@ -63,15 +63,5 @@ export const paymentRoutes = [
         auth: true,
         // GET /me                  → Host xem thu nhập
         // PUT /{payoutId}/mark-paid → Admin đánh dấu đã trả
-    },
-
-    // ==========================================
-    // 4. INTERNAL - Giao tiếp nội bộ (Không Auth)
-    // ==========================================
-    {
-        url: '/api/v1/internal/payments',
-        target: process.env.PAYMENT_SERVICE_URL,
-        auth: false,
-        // GET /order/{orderId}/status → Kiểm tra trạng thái thanh toán
     }
 ];

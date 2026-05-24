@@ -25,7 +25,7 @@
  * │ InternalOrderController (/api/v1/internal/orders)                       │
  * │   PUT /{orderId}/payment-success → Ghi nhận thanh toán thành công       │
  * │   PUT /{orderId}/payment-failed  → Ghi nhận thanh toán thất bại        │
- * │   Không Auth (Service-to-Service)                                       │
+ * │   Không expose qua Gateway, chỉ gọi service-to-service                  │
  * └──────────────────────────────────────────────────────────────────────────┘
  */
 
@@ -55,16 +55,5 @@ export const cartRoutes = [
         // GET  /{orderId}            → Chi tiết đơn
         // GET  /                     → Lịch sử đơn (phân trang)
         // PUT  /{orderId}/cancel     → Hủy đơn
-    },
-
-    // ==========================================
-    // 3. INTERNAL - Gọi nội bộ từ PaymentandWallet (Không Auth)
-    // ==========================================
-    {
-        url: '/api/v1/internal/orders',
-        target: process.env.CART_SERVICE_URL,
-        auth: false,
-        // PUT /{orderId}/payment-success
-        // PUT /{orderId}/payment-failed
     }
 ];

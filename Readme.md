@@ -55,23 +55,41 @@ Controller public thực tế dùng `/api/v1/catalog/listings/**`.
 ```diff
 - .requestMatchers("/api/public/**").permitAll()
 + .requestMatchers("/api/v1/catalog/listings/**").permitAll()
-+ .requestMatchers("/api/v1/internal/**").permitAll()
++ .requestMatchers("/api/v1/internal/**").hasAuthority(InternalServiceTokenFilter.AUTHORITY)
 ```
 
 **File:** [CatalogandListing/SecurityConfig.java](file:///Users/nhannt/Desktop/desktop/project/GoStay/CatalogandListing/src/main/java/com/Listing/CatalogandListing/configuration/SecurityConfig.java)
 
 ---
 
-### BUG 3 (phiên trước): Internal endpoints bị chặn auth 🟡 ĐÃ SỬA
+### BUG 3: Internal endpoints public qua Gateway/backend 🔴 ĐÃ SỬA
 
-`/api/v1/internal/**` trên BookingandInventory, CartandOrder, PaymentandWallet ban đầu yêu cầu JWT → Feign Client gọi nội bộ bị 401.
-Đã thêm `.requestMatchers("/api/v1/internal/**").permitAll()` và xóa `@PreAuthorize` trên internal controllers.
+`/api/v1/internal/**` và `/api/users/internal/**` không còn public. APIGateway chặn mọi request `/api/v1/internal/**`, các route proxy internal đã bị gỡ, backend yêu cầu authority `INTERNAL_SERVICE` do `InternalServiceTokenFilter` cấp sau khi verify `X-Internal-Service-Token`.
+
+Tất cả service và APIGateway phải dùng cùng `INTERNAL_SERVICE_TOKEN` từ environment; nếu token backend chưa được cấu hình, internal endpoint trả lỗi thay vì mở public.
+
+---
+
+### BUG 4: Admin seed reset mật khẩu hardcoded mỗi lần chạy 🔴 ĐÃ SỬA
+
+`DataSeedForAdmin` không còn tự reset user `admin`, không còn mật khẩu mặc định, và không tự gán role ADMIN cho account đã tồn tại.
+
+Muốn bootstrap admin lần đầu phải bật explicit bằng environment:
+
+```bash
+ADMIN_BOOTSTRAP_ENABLED=true
+ADMIN_BOOTSTRAP_USERNAME=admin
+ADMIN_BOOTSTRAP_EMAIL=admin@example.com
+ADMIN_BOOTSTRAP_PASSWORD='StrongPassword123!'
+```
+
+Nếu username đã tồn tại, seed sẽ bỏ qua và không sửa password/role của account đó. Password bootstrap bắt buộc tối thiểu 12 ký tự và có chữ thường, chữ hoa, số, ký tự đặc biệt.
 
 ---
 
 ## 🔗 APIGateway Route Coverage (Đã viết lại ĐẦY ĐỦ)
 
-### Identity Service (Port 8080) — 28 endpoints
+### Identity Service (Port 8080)
 
 | Gateway URL | → Backend URL | Auth | Method |
 |------------|---------------|------|--------|
@@ -94,7 +112,7 @@ Controller public thực tế dùng `/api/v1/catalog/listings/**`.
 | `/api/v1/admin/hosts/{id}` | → `/api/users/hosts/{id}` | ✅ | GET |
 | `/api/v1/admin/hosts/{id}/approval` | → `/api/users/{id}/approvalstatus` | ✅ | PUT |
 | `/api/v1/admin/hosts/{id}/success` | → `/api/users/{id}/successupgradetohost` | ✅ | POST |
-| `/api/v1/internal/users/{id}/status` | → `/api/users/internal/{id}/status` | ❌ | GET |
+| `/api/users/internal/{id}/status` | Không expose qua Gateway | Internal token | GET |
 
 ### CatalogandListing Service (Port 8082) — 11 endpoints
 
@@ -113,7 +131,7 @@ Controller public thực tế dùng `/api/v1/catalog/listings/**`.
 | `/api/v1/catalog/admin/landmarks/{id}` | ✅ | PUT | Sửa landmark |
 | `/api/v1/catalog/admin/landmarks/{id}/status` | ✅ | PATCH | Đổi trạng thái |
 
-### BookingandInventory Service (Port 8083) — 9 endpoints
+### BookingandInventory Service (Port 8083)
 
 | Gateway URL | Auth | Method | Mô tả |
 |------------|------|--------|-------|
@@ -124,12 +142,9 @@ Controller public thực tế dùng `/api/v1/catalog/listings/**`.
 | `/api/v1/host/inventory/listings/{id}/locks` | ✅ | GET | Xem locks |
 | `/api/v1/admin/inventory/listings/{id}/force-update` | ✅ | PUT | Phong tỏa dịch vụ |
 | `/api/v1/admin/inventory/listings/{id}/sync` | ✅ | POST | Đồng bộ tồn kho |
-| `/api/v1/internal/inventory/initialize` | ❌ | POST | Khởi tạo kho |
-| `/api/v1/internal/inventory/locks` | ❌ | POST | Batch lock |
-| `/api/v1/internal/inventory/locks/{orderId}/confirm` | ❌ | PUT | Chốt đơn |
-| `/api/v1/internal/inventory/locks/{orderId}/cancel` | ❌ | PUT | Hủy đơn |
+| `/api/v1/internal/inventory/**` | Không expose qua Gateway | Service-to-service + internal token | Khởi tạo/lock/confirm/cancel kho |
 
-### CartandOrder Service (Port 8084) — 8 endpoints
+### CartandOrder Service (Port 8084)
 
 | Gateway URL | Auth | Method | Mô tả |
 |------------|------|--------|-------|
@@ -141,10 +156,9 @@ Controller public thực tế dùng `/api/v1/catalog/listings/**`.
 | `/api/v1/orders/{orderId}` | ✅ | GET | Chi tiết đơn |
 | `/api/v1/orders` | ✅ | GET | Lịch sử đơn |
 | `/api/v1/orders/{orderId}/cancel` | ✅ | PUT | Hủy đơn |
-| `/api/v1/internal/orders/{orderId}/payment-success` | ❌ | PUT | Ghi nhận thanh toán |
-| `/api/v1/internal/orders/{orderId}/payment-failed` | ❌ | PUT | Thanh toán thất bại |
+| `/api/v1/internal/orders/**` | Không expose qua Gateway | Service-to-service + internal token | Ghi nhận kết quả thanh toán |
 
-### PaymentandWallet Service (Port 8085) — 7 endpoints
+### PaymentandWallet Service (Port 8085)
 
 | Gateway URL | Auth | Method | Mô tả |
 |------------|------|--------|-------|
@@ -155,7 +169,7 @@ Controller public thực tế dùng `/api/v1/catalog/listings/**`.
 | `/api/v1/payments/history` | ✅ | GET | Lịch sử thanh toán |
 | `/api/v1/payouts/me` | ✅ | GET | Host xem thu nhập |
 | `/api/v1/payouts/{payoutId}/mark-paid` | ✅ | PUT | Admin đánh dấu đã trả |
-| `/api/v1/internal/payments/order/{orderId}/status` | ❌ | GET | Kiểm tra trạng thái |
+| `/api/v1/internal/payments/**` | Không expose qua Gateway | Service-to-service + internal token | Kiểm tra trạng thái thanh toán |
 
 ---
 
@@ -194,6 +208,8 @@ graph LR
 | APIGateway | → Identity | `GET /api/users/internal/{id}/status` | Kiểm tra user bị ban? |
 | Identity | → cloudinary-service | `POST /api/v1/media/upload` | Upload avatar, CCCD |
 
+Các endpoint internal dùng header `X-Internal-Service-Token`; header này bị strip ở Gateway để client không thể giả mạo.
+
 ---
 
 ## ✅ Những thứ hoạt động tốt
@@ -205,7 +221,7 @@ graph LR
 5. **@EnableScheduling** — PaymentandWallet có scheduler hết hạn payment hoạt động đúng
 6. **Rate limiting** — APIGateway có rate limit cho login (10/15min) và register (5/1h)
 7. **User ban check** — APIGateway middleware kiểm tra user status trước khi forward request
-8. **Internal security** — Gateway strip header `x-internal-service-token` ngăn giả mạo
+8. **Internal security** — Gateway strip header `x-internal-service-token`, không proxy `/api/v1/internal/**`, backend verify shared internal token trước khi xử lý
 
 ---
 
@@ -241,5 +257,8 @@ Admin phải bấm nút mark-paid cho từng payout. Nên cân nhắc auto-payou
 | `APIGateway/src/configs/routes/cart.route.js` | Viết lại đầy đủ 8 endpoints |
 | `APIGateway/src/configs/routes/payment.route.js` | Viết lại đầy đủ 7 endpoints |
 | `APIGateway/src/configs/routes/identity.route.js` | Viết lại với docs + endpoint mới |
+| `Identity/.../DataSeedForAdmin.java` | Không reset admin; bootstrap có điều kiện qua env |
+| `*/configuration/InternalServiceTokenFilter.java` | Bắt buộc `X-Internal-Service-Token` cho internal endpoint |
+| `*/configuration/InternalFeignConfig.java` | Tự gắn internal token cho Feign service-to-service |
 | `APIGateway/src/gateway/proxy.routes.js` | Import tất cả route files |
-| `APIGateway/.env` | Tạo mới với tất cả service URLs |
+| `APIGateway/.env.example` | Thêm cấu hình mẫu gồm `INTERNAL_SERVICE_TOKEN` |

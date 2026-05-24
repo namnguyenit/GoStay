@@ -7,3 +7,6 @@ spring:
       - optional:classpath:jwt.yaml
 server:
   port: 8082
+internal:
+  service:
+    token: ${INTERNAL_SERVICE_TOKEN:}

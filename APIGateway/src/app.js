@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import {setupProxy} from './gateway/proxy.routes.js';
-import { buildSuccessResponse, GatewaySuccess } from './utils/response.helper.js';
+import { buildErrorResponse, buildSuccessResponse, GatewayError, GatewaySuccess } from './utils/response.helper.js';
 
 const app = express();
 
@@ -22,6 +22,14 @@ if (trustProxy !== undefined) {
 app.use(cors());
 app.use((req, res, next) => {
     delete req.headers["x-internal-service-token"];
+    next();
+});
+
+app.use((req, res, next) => {
+    if (req.path === "/api/v1/internal" || req.path.startsWith("/api/v1/internal/")) {
+        return buildErrorResponse(res, GatewayError.INTERNAL_ROUTE_BLOCKED);
+    }
+
     next();
 });
 

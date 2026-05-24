@@ -28,7 +28,7 @@
  * │   POST /locks                  → Tạm giữ chỗ (batch lock)             │
  * │   PUT  /locks/{orderId}/confirm → Chốt đơn sau thanh toán              │
  * │   PUT  /locks/{orderId}/cancel  → Hủy đơn, hoàn kho                   │
- * │   Không Auth (Service-to-Service)                                       │
+ * │   Không expose qua Gateway, chỉ gọi service-to-service                  │
  * └──────────────────────────────────────────────────────────────────────────┘
  */
 
@@ -65,18 +65,5 @@ export const bookingRoutes = [
         auth: true,
         // PUT  /listings/{listingId}/force-update
         // POST /listings/{listingId}/sync
-    },
-
-    // ==========================================
-    // 4. INTERNAL - Giao tiếp nội bộ (Không Auth)
-    // ==========================================
-    {
-        url: '/api/v1/internal/inventory',
-        target: process.env.BOOKING_SERVICE_URL,
-        auth: false,
-        // POST /initialize
-        // POST /locks
-        // PUT  /locks/{orderId}/confirm
-        // PUT  /locks/{orderId}/cancel
     }
 ];

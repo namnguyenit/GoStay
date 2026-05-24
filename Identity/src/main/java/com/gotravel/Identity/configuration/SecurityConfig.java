@@ -14,6 +14,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,8 +39,7 @@ public class SecurityConfig {
 
     private final String[] PUBLIC_URL_GET = {
             "/api/users/public/**",
-            "/.well-known/jwks.json",// Cho phép gọi API lấy Public key hoàn toàn riêng tự do mà không cần Auth
-            "/api/users/internal/**"
+            "/.well-known/jwks.json"// Cho phép gọi API lấy Public key hoàn toàn riêng tự do mà không cần Auth
     };
 
     private final RsaKeyConfig rsaKeyConfig;
@@ -50,11 +50,15 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(
+            HttpSecurity http,
+            @Value("${internal.service.token:}") String internalServiceToken
+    ) throws Exception {
         http
             .cors(Customizer.withDefaults())
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(authorize -> authorize
+                .requestMatchers(HttpMethod.GET, "/api/users/internal/**").hasAuthority(InternalServiceTokenFilter.AUTHORITY)
                 .requestMatchers(HttpMethod.POST, PUBLIC_URL_POST).permitAll()
                 .requestMatchers(HttpMethod.GET, PUBLIC_URL_GET).permitAll()
                 .requestMatchers("/error").permitAll()
@@ -63,7 +67,11 @@ public class SecurityConfig {
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer
                     .decoder(jwtDecoder())
                     .jwtAuthenticationConverter(jwtAuthenticationConverter())
-            ));
+            ))
+            .addFilterBefore(
+                    new InternalServiceTokenFilter(internalServiceToken, "/api/users/internal"),
+                    BearerTokenAuthenticationFilter.class
+            );
 
         return http.build();
     }

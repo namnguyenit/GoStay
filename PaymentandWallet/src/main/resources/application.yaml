@@ -8,3 +8,6 @@ spring:
       - optional:classpath:sepay.yaml
 server:
   port: 8085
+internal:
+  service:
+    token: ${INTERNAL_SERVICE_TOKEN:}

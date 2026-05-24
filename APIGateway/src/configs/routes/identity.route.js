@@ -45,6 +45,7 @@ import { authRateLimiters } from "../../middlewares/auth-rate-limit.middleware.j
  * │                                                                         │
  * │ --- Internal (Service-to-Service) ---                                   │
  * │   GET    /internal/{userId}/status → Kiểm tra trạng thái user           │
+ * │   Không expose qua Gateway, Gateway gọi trực tiếp bằng internal token   │
  * └──────────────────────────────────────────────────────────────────────────┘
  *
  * Lưu ý: JWKS endpoint (.well-known) đặt riêng ở đầu.
@@ -140,24 +141,6 @@ export const identityRoutes = [
             url = url.replace(/^\/api\/v1\/admin\/hosts\/([^\/]+)\/success$/, '/api/users/$1/successupgradetohost'); // POST Complete upgrade
             url = url.replace(/^\/api\/v1\/admin\/hosts\/([^\/]+)$/, '/api/users/hosts/$1'); // GET Host Detail
 
-            return url + query;
-        }
-    },
-    // ==========================================
-    // 5. NHÓM INTERNAL (Chỉ dùng nội bộ - Không Auth)
-    // ==========================================
-    {
-        url: '/api/v1/internal',
-        target: process.env.IDENTITY_SERVICE_URL,
-        auth: false,
-        pathRewrite: (path, req) => {
-            const parts = req.originalUrl.split('?');
-            let url = parts[0];
-            const query = parts[1] ? `?${parts[1]}` : '';
-
-            // Map từ /api/v1/internal/users/{id}/status sang Backend
-            url = url.replace(/^\/api\/v1\/internal\/users\/([^\/]+)\/status$/, '/api/users/internal/$1/status');
-            
             return url + query;
         }
     }

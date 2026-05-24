@@ -27,6 +27,15 @@ const userCache = new NodeCache(
     }
 )
 
+const getInternalServiceToken = () => {
+    const token = process.env.INTERNAL_SERVICE_TOKEN;
+    if (!token) {
+        throw new Error("INTERNAL_SERVICE_TOKEN is not configured");
+    }
+
+    return token;
+};
+
 
 export const verifyJWT = (req, res, next) => {
     const authHeader = req.headers["authorization"];
@@ -46,7 +55,11 @@ export const verifyJWT = (req, res, next) => {
             let isAlow = userCache.get(userId);
 
             if (isAlow == undefined){
-                const response = await fetch(`${process.env.IDENTITY_SERVICE_URL}/api/users/internal/${userId}/status`);
+                const response = await fetch(`${process.env.IDENTITY_SERVICE_URL}/api/users/internal/${userId}/status`, {
+                    headers: {
+                        "x-internal-service-token": getInternalServiceToken()
+                    }
+                });
                 if (!response.ok){
                     throw new Error("Lỗi gọi Identity Service")
                 }
