@@ -4,11 +4,15 @@ import {buildErorRespone, GatewayError} from "../utils/response.helper.js";
 
 import {identityRoutes} from "../configs/routes/identity.route.js";
 import {mediaRoutes } from "../configs/routes/media.route.js";
+import {catalogRoutes} from "../configs/routes/catalog.route.js";
+import {bookingRoutes} from "../configs/routes/booking.route.js";
+import {cartRoutes} from "../configs/routes/cart.route.js";
+import {paymentRoutes} from "../configs/routes/payment.route.js";
 
 
 export const setupProxy = (app) => {
     const routes = [
-        ...identityRoutes, ...mediaRoutes
+        ...identityRoutes, ...mediaRoutes, ...catalogRoutes, ...bookingRoutes, ...cartRoutes, ...paymentRoutes
     ];
 
     routes.sort((a, b) => b.url.length  - a.url.length);
