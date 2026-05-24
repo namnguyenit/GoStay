@@ -7,12 +7,15 @@ import com.gotravel.Identity.repository.RoleRepository;
 import com.gotravel.Identity.repository.UserRepository;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.PersistenceUnit;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.gotravel.Identity.entity.User;
@@ -24,10 +27,14 @@ import com.gotravel.Identity.enums.Provider;
 import com.gotravel.Identity.dto.request.*;
 import com.gotravel.Identity.dto.response.*;
 import com.gotravel.Identity.exception.*;
+import java.security.PublicKey;
+import java.util.*;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -46,6 +53,7 @@ public class UserService {
      * @param userRequest
      * @return trả về Userresponse
      */
+    @Transactional
     public UserResponse createUser(UserRequest userRequest) {
         if (userRepository.existsByUsername(userRequest.getUsername())) {
             throw new AppException(UserErrorCode.USER_ALREADY_EXISTS);
@@ -92,10 +100,10 @@ public class UserService {
      */
     public PageResponse<UserResponse> getAllUsers(int page, int size, String status) {
         Pageable pageable = PageRequest.of(page, size);
-        boolean isDeleted = "BANNED".equalsIgnoreCase(status);
-        
+        boolean isDeleted = !"BANNED".equalsIgnoreCase(status);
+
         Page<User> userPage = userRepository.findAllByIsActive(isDeleted, pageable);
-        
+
         return PageResponse.<UserResponse>builder()
                 .content(userPage.getContent().stream().map(userMapper::userToUserResponse).toList())
                 .totalPages(userPage.getTotalPages())
@@ -105,11 +113,12 @@ public class UserService {
 
 
     /**
-     *  update user 
+     *  update user
      * @param userId
      * @param userUpdateRequest
      * @return UserResponse
      */
+    @Transactional
     public UserResponse updateUser(String userId, UserUpdateRequest userUpdateRequest) {
         User user = findUserById(userId);
 
@@ -137,12 +146,15 @@ public class UserService {
      * @Logic tìm người dùng theo userId và xoá người dùng
      * @param userId
      */
+    @Transactional
     public void deleteUser(String userId) {
         User user = findUserById(userId);
         user.setIsDeleted(true);
+        user.setIsActive(false);
         userRepository.save(user);
     }
 
+    @Transactional
     public void banUser(String userId) {
         User user = findUserById(userId);
         user.setIsActive(false);
@@ -155,6 +167,7 @@ public class UserService {
      * @param userId
      * @param roleName
      */
+    @Transactional
     public void upgradeToRole(String userId, String roleName) {
         User user = findUserById(userId);
         Role role = roleRepository.findById(roleName.toUpperCase())
@@ -178,12 +191,17 @@ public class UserService {
     }
 
     /**
-     * @Logic upgrade từ người dùng lên Host 
+     * @Logic upgrade từ người dùng lên Host
      * @param userId
      * @param hostProfileRequest
      * @retuhostn UserReponse
      */
-    public ApprovalStatusResponse upgradeToHost(String userId, HostProfileRequest hostProfileRequest) {
+    @Transactional
+    public ApprovalStatusResponse upgradeToHost(
+            String userId,
+            HostProfileRequest hostProfileRequest,
+            MultipartFile frontImage,
+            MultipartFile backImage) {
         User user = findUserById(userId);
         Boolean check = user.getRoles().stream()
                 .anyMatch(role -> role.getName().equals("HOST"));
@@ -206,8 +224,11 @@ public class UserService {
                     .build();
             user.setHostProfile(hostProfile);
         }
-        
+
         userMapper.updateHostProfileFromRequest(hostProfileRequest, user.getHostProfile());
+        List<String> documentUrls = uploadSecureDocuments(userId, frontImage, backImage);
+        user.getHostProfile().setFrontImageUrl(documentUrls.get(0));
+        user.getHostProfile().setBackImageUrl(documentUrls.get(1));
         userRepository.save(user);
         return ApprovalStatusResponse
                 .builder()
@@ -221,6 +242,7 @@ public class UserService {
      * @param hostProfileRequest
      * @retuhostn UserReponse
      */
+    @Transactional
     public ApprovalStatusResponse updateProfileUpgradeToHost(String userId, HostProfileRequest hostProfileRequest) {
         User user = findUserById(userId);
         Boolean check = user.getRoles().stream()
@@ -248,6 +270,7 @@ public class UserService {
                 .build();
     }
 
+    @Transactional
     public boolean deleteProfileUpgradeToHost(String userId){
         User user = findUserById(userId);
 
@@ -273,6 +296,7 @@ public class UserService {
         return HostDetailResponse.builder()
                 .accountId(user.getId())
                 .fullName(hostProfile.getFullName())
+                .avatarUrl(getAvatarUrl(user))
                 .hostType(hostType)
                 .approvalStatus(hostProfile.getApprovalStatus().toString())
                 .identityInfo(HostDetailResponse.IdentityInfo.builder()
@@ -307,6 +331,7 @@ public class UserService {
                 .build();
     }
 
+    @Transactional
     public Boolean approvalHostStatus(String userId,String type, ApprovalRequest request) {
         User user = findUserById(userId);
         if(type.equals(com.gotravel.Identity.enums.Role.HOST.toString())){
@@ -329,17 +354,20 @@ public class UserService {
         return true;
     }
 
+
+    @Transactional
     public Boolean updateBanAccountStatus(String userId, AccountStatusRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
-        
-        boolean isBan = "BANNED".equalsIgnoreCase(request.getStatus());
-        user.setIsActive(isBan);
-        
+
+        boolean isActive = !"BANNED".equalsIgnoreCase(request.getStatus());
+        user.setIsActive(isActive);
+
         userRepository.save(user);
         return true;
     }
 
+    @Transactional
     public boolean successUpgradeToHost(String userId){
         User user = findUserById(userId);
         Role role = roleRepository.findById("HOST")
@@ -355,6 +383,7 @@ public class UserService {
      * @param userId
      * @retuhostn UserReponse
      */
+    @Transactional
     public UserResponse upgradeToEnterprise(String userId, EnterpriseProfileRequest enterpriseProfileRequest) {
         User user = findUserById(userId);
 
@@ -387,7 +416,7 @@ public class UserService {
     }
 
     /**
-     * @Logic lấy profile của user 
+     * @Logic lấy profile của user
      * @param userId
      * @return UserProfileResponse
      */
@@ -397,11 +426,12 @@ public class UserService {
     }
 
     /**
-     * @Logic lấy userId và request để cập nhật userprofilereponse 
+     * @Logic lấy userId và request để cập nhật userprofilereponse
      * @param userId
      * @param request
      * @return UserProfileResponse
      */
+    @Transactional
     public UserProfileResponse updateUserProfile(String userId, UserProfileRequest request) {
         User user = findUserById(userId);
         if (user.getUserProfile() == null) {
@@ -422,7 +452,9 @@ public class UserService {
         if (user.getHostProfile() == null) {
             throw new AppException(HostErrorCode.HOST_PROFILE_NOT_FOUND);
         }
-        return userMapper.toHostProfileResponse(user.getHostProfile());
+        HostProfileResponse response = userMapper.toHostProfileResponse(user.getHostProfile());
+        response.setAvatarUrl(getAvatarUrl(user));
+        return response;
     }
 
     /**
@@ -431,6 +463,7 @@ public class UserService {
      * @param request
      * @return HostProfileResponse
      */
+    @Transactional
     public HostProfileResponse updateHostProfile(String userId, HostProfileRequest request) {
         User user = findUserById(userId);
         if (user.getHostProfile() == null) {
@@ -438,7 +471,9 @@ public class UserService {
         }
         userMapper.updateHostProfileFromRequest(request, user.getHostProfile());
         userRepository.save(user);
-        return userMapper.toHostProfileResponse(user.getHostProfile());
+        HostProfileResponse response = userMapper.toHostProfileResponse(user.getHostProfile());
+        response.setAvatarUrl(getAvatarUrl(user));
+        return response;
     }
 
     /**
@@ -451,7 +486,9 @@ public class UserService {
         if (user.getEnterpriseProfile() == null) {
             throw new AppException(EnterpriseErrorCode.ENTERPRISE_PROFILE_NOT_FOUND);
         }
-        return userMapper.toEnterpriseProfileResponse(user.getEnterpriseProfile());
+        EnterpriseProfileResponse response = userMapper.toEnterpriseProfileResponse(user.getEnterpriseProfile());
+        response.setAvatarUrl(getAvatarUrl(user));
+        return response;
     }
 
     /**
@@ -460,6 +497,7 @@ public class UserService {
      * @param request
      * @return EnterpriseProfileResponse
      */
+    @Transactional
     public EnterpriseProfileResponse updateEnterpriseProfile(String userId, EnterpriseProfileRequest request) {
         User user = findUserById(userId);
         if (user.getEnterpriseProfile() == null) {
@@ -470,7 +508,13 @@ public class UserService {
 
         userMapper.updateEnterpriseProfileFromRequest(request, user.getEnterpriseProfile());
         userRepository.save(user);
-        return userMapper.toEnterpriseProfileResponse(user.getEnterpriseProfile());
+        EnterpriseProfileResponse response = userMapper.toEnterpriseProfileResponse(user.getEnterpriseProfile());
+        response.setAvatarUrl(getAvatarUrl(user));
+        return response;
+    }
+
+    private String getAvatarUrl(User user) {
+        return user.getUserProfile() != null ? user.getUserProfile().getAvatarUrl() : null;
     }
 
     /**
@@ -493,11 +537,152 @@ public class UserService {
     }
 
     public UserStatusResponese checkUserStatus(String userId) {
-        User user  = findUserById(userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
+        boolean isActive = Boolean.TRUE.equals(user.getIsActive());
+        boolean isDeleted = Boolean.TRUE.equals(user.getIsDeleted());
 
-        return  UserStatusResponese.builder()
-                .isActive(user.getIsActive())
+        return UserStatusResponese.builder()
+                .isActive(isActive)
+                .isDeleted(isDeleted)
+                .isAllowed(isActive && !isDeleted)
                 .build();
-
     }
+
+
+    @Value("${media.service.url}")
+    private String mediaServiceUrl;
+
+    @Value("${media.service.token:}")
+    private String mediaServiceToken;
+/**
+ * @Logic Nhận file từ FE, gọi sang Node.js upload Cloudinary, lưu URL vào DB
+ */
+    public UserProfileResponse uploadAvatar(String userId, MultipartFile file, String authorizationHeader){
+        User user = findUserById(userId);
+        try{
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+            headers.set(HttpHeaders.AUTHORIZATION, authorizationHeader);
+
+            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+            
+            HttpHeaders fileHeaders = new HttpHeaders();
+            if (file.getContentType() != null) {
+                fileHeaders.setContentType(MediaType.parseMediaType(file.getContentType()));
+            }
+            
+            org.springframework.core.io.ByteArrayResource fileResource = new org.springframework.core.io.ByteArrayResource(file.getBytes()) {
+                @Override
+                public String getFilename() {
+                    return file.getOriginalFilename() != null ? file.getOriginalFilename() : "avatar.jpg";
+                }
+            };
+            
+            HttpEntity<org.springframework.core.io.ByteArrayResource> filePart = new HttpEntity<>(fileResource, fileHeaders);
+            
+            body.add("file", filePart);
+            body.add("folder", "avatar");
+
+
+            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<Map> response = restTemplate.postForEntity(mediaServiceUrl, requestEntity, Map.class);
+
+
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                Map<String ,Object> responseBody = response.getBody();
+                Map<String, Object> data = (Map<String, Object>) responseBody.get("data");
+                String avatarUrl = (String) data.get("url");
+                if(user.getUserProfile()==null){
+                    user.setUserProfile(UserProfile.builder().user(user).build());
+                }
+                user.getUserProfile().setAvatarUrl(avatarUrl);
+                userRepository.save(user);
+
+                return userMapper.toUserProfileResponse(user.getUserProfile());
+            }else {
+                throw new AppException(UserErrorCode.UPLOAD_IMAGE_FAILED);
+            }
+
+
+        } catch (AppException e){
+            throw e;
+        } catch (Exception e) {
+            throw new AppException(UserErrorCode.UPLOAD_IMAGE_FAILED);
+        }
+    }
+
+    private List<String> uploadSecureDocuments(String userId, MultipartFile frontImage, MultipartFile backImage) {
+        if (mediaServiceToken == null || mediaServiceToken.isBlank()) {
+            throw new AppException(UserErrorCode.UPLOAD_IMAGE_FAILED);
+        }
+        if (frontImage == null || frontImage.isEmpty() || backImage == null || backImage.isEmpty()) {
+            throw new AppException(UserErrorCode.UPLOAD_IMAGE_FAILED);
+        }
+
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+            headers.set("x-internal-service-token", mediaServiceToken);
+
+            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+            body.add("files", toFilePart(frontImage, "front-image.jpg"));
+            body.add("files", toFilePart(backImage, "back-image.jpg"));
+            body.add("folder", "host-applications/" + userId);
+
+            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<Map> response = restTemplate.postForEntity(getSecureMediaUploadUrl(), requestEntity, Map.class);
+
+            if (response.getStatusCode() != HttpStatus.OK || response.getBody() == null) {
+                throw new AppException(UserErrorCode.UPLOAD_IMAGE_FAILED);
+            }
+
+            Map<String, Object> responseBody = response.getBody();
+            Map<String, Object> data = (Map<String, Object>) responseBody.get("data");
+            List<?> urls = data != null ? (List<?>) data.get("urls") : null;
+
+            if (urls == null || urls.size() < 2) {
+                throw new AppException(UserErrorCode.UPLOAD_IMAGE_FAILED);
+            }
+
+            return List.of(String.valueOf(urls.get(0)), String.valueOf(urls.get(1)));
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new AppException(UserErrorCode.UPLOAD_IMAGE_FAILED);
+        }
+    }
+
+    private HttpEntity<org.springframework.core.io.ByteArrayResource> toFilePart(MultipartFile file, String defaultFileName) throws java.io.IOException {
+        HttpHeaders fileHeaders = new HttpHeaders();
+        if (file.getContentType() != null) {
+            fileHeaders.setContentType(MediaType.parseMediaType(file.getContentType()));
+        }
+
+        org.springframework.core.io.ByteArrayResource fileResource = new org.springframework.core.io.ByteArrayResource(file.getBytes()) {
+            @Override
+            public String getFilename() {
+                return file.getOriginalFilename() != null ? file.getOriginalFilename() : defaultFileName;
+            }
+        };
+
+        return new HttpEntity<>(fileResource, fileHeaders);
+    }
+
+    private String getSecureMediaUploadUrl() {
+        String uploadUrl = mediaServiceUrl.endsWith("/")
+                ? mediaServiceUrl.substring(0, mediaServiceUrl.length() - 1)
+                : mediaServiceUrl;
+
+        if (uploadUrl.endsWith("/secure-documents")) {
+            return uploadUrl;
+        }
+
+        return uploadUrl + "/secure-documents";
+    }
+
+
+
 }

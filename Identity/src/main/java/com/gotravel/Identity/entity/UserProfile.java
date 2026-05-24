@@ -25,4 +25,6 @@ public class UserProfile {
     String fullName;
     String phoneNumber;
     LocalDate dateOfBirth;
+    @Column(name = "avartar_url")
+    String avatarUrl;
 }

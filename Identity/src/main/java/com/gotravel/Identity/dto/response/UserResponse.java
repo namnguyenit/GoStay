@@ -17,6 +17,7 @@ public class UserResponse {
     Boolean isActive;
     Provider provider;
     Set<String> roles;
+    String avatarUrl;
     
     UserProfileResponse userProfile;
     HostProfileResponse hostProfile;

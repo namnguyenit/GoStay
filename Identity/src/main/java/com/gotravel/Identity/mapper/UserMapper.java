@@ -3,6 +3,7 @@ package com.gotravel.Identity.mapper;
 import com.gotravel.Identity.dto.request.*;
 import com.gotravel.Identity.dto.response.*;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import com.gotravel.Identity.entity.*;
 
@@ -10,6 +11,7 @@ import com.gotravel.Identity.entity.*;
 public interface UserMapper {
     UserResponse userRequestToUserResponse(UserRequest userRequest);
     User userRequestToUser(UserRequest userRequest);
+    @Mapping(target = "avatarUrl", source = "userProfile.avatarUrl")
     UserResponse userToUserResponse(User user);
 
     UserProfileResponse toUserProfileResponse(UserProfile userProfile);

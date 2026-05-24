@@ -12,3 +12,9 @@ spring:
 
 jwt:
   signerKey: ${JWT_SECRET_KEY:}
+
+media:
+  service:
+    url: ${MEDIA_SERVICE_URL:http://localhost:5001/api/v1/media/upload/}
+    token: ${MEDIA_INTERNAL_SERVICE_TOKEN:}
+

@@ -11,6 +11,7 @@ import lombok.experimental.FieldDefaults;
 public class HostDetailResponse {
     String accountId;
     String fullName;
+    String avatarUrl;
     String hostType; // ENTERPRISE or PERSONAL (can derive from user roles/profile)
     IdentityInfo identityInfo;
     String approvalStatus;

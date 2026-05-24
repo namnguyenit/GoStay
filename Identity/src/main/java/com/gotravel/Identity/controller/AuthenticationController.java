@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.gotravel.Identity.dto.request.ApiRequest;
 import com.gotravel.Identity.dto.request.AuthenticationRequest;
 import com.gotravel.Identity.dto.response.AuthenticationResponse;
+import com.gotravel.Identity.exception.SuccessCode;
 import com.gotravel.Identity.service.AuthenticationService;
 
 import lombok.AccessLevel;
@@ -25,11 +26,6 @@ public class AuthenticationController {
     @PostMapping("/login")
     public ApiRequest<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
         var result = authenticationService.authenticate(request);
-        return ApiRequest.<AuthenticationResponse>builder()
-                .success(true)
-                .code("LOGIN_SUCCESS")
-                .data(result)
-                .message("Authenticated successfully")
-                .build();
+        return ApiRequest.success(SuccessCode.LOGIN_SUCCESS, result);
     }
 }

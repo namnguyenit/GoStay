@@ -13,4 +13,6 @@ import lombok.experimental.FieldDefaults;
 
 public class UserStatusResponese {
     Boolean isActive;
+    Boolean isDeleted;
+    Boolean isAllowed;
 }
