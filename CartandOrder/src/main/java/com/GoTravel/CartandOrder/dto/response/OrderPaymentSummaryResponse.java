@@ -1,6 +1,5 @@
-package com.gotravel.PaymentandWallet.dto.request;
+package com.GoTravel.CartandOrder.dto.response;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,11 +12,11 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreatePaymentRequest {
-    @NotNull(message = "Order ID không được để trống")
+public class OrderPaymentSummaryResponse {
     private UUID orderId;
-
-    private BigDecimal amount;
-
+    private UUID userId;
     private UUID hostId;
+    private BigDecimal totalAmount;
+    private String currency;
+    private String status;
 }

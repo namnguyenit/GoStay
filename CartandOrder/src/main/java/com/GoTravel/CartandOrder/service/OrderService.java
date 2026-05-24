@@ -1,11 +1,14 @@
 package com.GoTravel.CartandOrder.service;
 
+import com.GoTravel.CartandOrder.client.CatalogClient;
 import com.GoTravel.CartandOrder.client.InventoryClient;
 import com.GoTravel.CartandOrder.dto.request.BatchLockRequest;
 import com.GoTravel.CartandOrder.dto.request.BookNowRequest;
 import com.GoTravel.CartandOrder.dto.request.CartItemRequest;
 import com.GoTravel.CartandOrder.dto.response.ApiResponse;
 import com.GoTravel.CartandOrder.dto.response.BatchLockResponse;
+import com.GoTravel.CartandOrder.dto.response.CatalogListingResponse;
+import com.GoTravel.CartandOrder.dto.response.OrderPaymentSummaryResponse;
 import com.GoTravel.CartandOrder.dto.response.OrderResponse;
 import com.GoTravel.CartandOrder.entity.Cart;
 import com.GoTravel.CartandOrder.entity.CartItem;
@@ -37,6 +40,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final CartRepository cartRepository;
     private final InventoryClient inventoryClient;
+    private final CatalogClient catalogClient;
     private final OrderMapper orderMapper;
 
     @Transactional
@@ -48,6 +52,7 @@ public class OrderService {
             throw new AppException(OrderErrorCode.CART_IS_EMPTY);
         }
 
+        refreshCartItemsFromCatalog(cart);
         Order order = createOrderFromCart(cart, customerInfo);
         order = orderRepository.save(order);
 
@@ -101,12 +106,14 @@ public class OrderService {
     }
 
     private Order createOrderFromCart(Cart cart, Order.CustomerInfo customerInfo) {
+        UUID hostId = resolveSingleHostId(cart.getItems());
         BigDecimal totalAmount = cart.getItems().stream()
                 .map(CartItem::getTotalPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         Order order = Order.builder()
                 .userId(cart.getUserId())
+                .hostId(hostId)
                 .orderNumber("ORD-" + System.currentTimeMillis())
                 .status(OrderStatus.PENDING)
                 .totalAmount(totalAmount)
@@ -116,6 +123,7 @@ public class OrderService {
         List<OrderItem> orderItems = cart.getItems().stream().map(ci -> OrderItem.builder()
                 .order(order)
                 .listingId(ci.getListingId())
+                .hostId(ci.getHostId())
                 .listingTitle(ci.getListingTitle())
                 .thumbnailUrl(ci.getThumbnailUrl())
                 .startDate(ci.getStartDate())
@@ -131,13 +139,14 @@ public class OrderService {
     }
 
     private Order createOrderFromSingleItem(UUID userId, BookNowRequest request) {
-        CartItemRequest itemReq = request.getItem();
+        CartItemRequest itemReq = buildTrustedCartItemRequest(request.getItem());
         BigDecimal totalPrice = itemReq.getUnitPrice().multiply(BigDecimal.valueOf(itemReq.getQuantity()));
 
         Order.CustomerInfo info = new Order.CustomerInfo(request.getFullName(), request.getEmail(), request.getPhone());
 
         Order order = Order.builder()
                 .userId(userId)
+                .hostId(itemReq.getHostId())
                 .orderNumber("ORD-" + System.currentTimeMillis())
                 .status(OrderStatus.PENDING)
                 .totalAmount(totalPrice)
@@ -147,6 +156,7 @@ public class OrderService {
         OrderItem orderItem = OrderItem.builder()
                 .order(order)
                 .listingId(itemReq.getListingId())
+                .hostId(itemReq.getHostId())
                 .listingTitle(itemReq.getListingTitle())
                 .thumbnailUrl(itemReq.getThumbnailUrl())
                 .startDate(itemReq.getStartDate())
@@ -162,10 +172,29 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public OrderResponse getOrderDetails(UUID orderId) {
-        Order order = orderRepository.findById(orderId)
+    public OrderResponse getOrderDetails(UUID userId, UUID orderId) {
+        Order order = orderRepository.findByIdAndUserId(orderId, userId)
                 .orElseThrow(() -> new AppException(OrderErrorCode.ORDER_NOT_FOUND));
         return orderMapper.toOrderResponse(order);
+    }
+
+    @Transactional(readOnly = true)
+    public OrderPaymentSummaryResponse getPaymentSummary(UUID orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new AppException(OrderErrorCode.ORDER_NOT_FOUND));
+
+        if (order.getHostId() == null) {
+            throw new AppException(OrderErrorCode.INVALID_ORDER_STATE);
+        }
+
+        return OrderPaymentSummaryResponse.builder()
+                .orderId(order.getId())
+                .userId(order.getUserId())
+                .hostId(order.getHostId())
+                .totalAmount(order.getTotalAmount())
+                .currency(order.getCurrency())
+                .status(order.getStatus().name())
+                .build();
     }
 
     @Transactional(readOnly = true)
@@ -225,5 +254,67 @@ public class OrderService {
         } catch (Exception e) {
             log.error("Failed to cancel lock in inventory for order {}", orderId, e);
         }
+    }
+
+    private void refreshCartItemsFromCatalog(Cart cart) {
+        for (CartItem item : cart.getItems()) {
+            CatalogListingResponse listing = getActiveListing(item.getListingId());
+            item.setHostId(listing.getHostId());
+            item.setListingTitle(listing.getTitle());
+            item.setThumbnailUrl(listing.getThumbnailUrl());
+            item.setUnitPrice(listing.getBasePrice());
+            item.setTotalPrice(listing.getBasePrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+        }
+    }
+
+    private CartItemRequest buildTrustedCartItemRequest(CartItemRequest request) {
+        CatalogListingResponse listing = getActiveListing(request.getListingId());
+
+        return CartItemRequest.builder()
+                .listingId(listing.getId())
+                .hostId(listing.getHostId())
+                .listingTitle(listing.getTitle())
+                .thumbnailUrl(listing.getThumbnailUrl())
+                .startDate(request.getStartDate())
+                .endDate(request.getEndDate())
+                .timeSlot(request.getTimeSlot())
+                .quantity(request.getQuantity())
+                .unitPrice(listing.getBasePrice())
+                .build();
+    }
+
+    private CatalogListingResponse getActiveListing(UUID listingId) {
+        try {
+            ApiResponse<CatalogListingResponse> response = catalogClient.getListingDetail(listingId);
+            CatalogListingResponse listing = response == null ? null : response.getData();
+            if (listing == null || listing.getHostId() == null || listing.getBasePrice() == null
+                    || !"ACTIVE".equalsIgnoreCase(listing.getStatus())) {
+                throw new AppException(OrderErrorCode.LISTING_NOT_AVAILABLE);
+            }
+
+            return listing;
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            log.warn("Cannot load trusted listing snapshot for listing {}", listingId, e);
+            throw new AppException(OrderErrorCode.LISTING_NOT_AVAILABLE);
+        }
+    }
+
+    private UUID resolveSingleHostId(List<CartItem> items) {
+        UUID hostId = null;
+        for (CartItem item : items) {
+            if (item.getHostId() == null) {
+                throw new AppException(OrderErrorCode.LISTING_NOT_AVAILABLE);
+            }
+
+            if (hostId == null) {
+                hostId = item.getHostId();
+            } else if (!hostId.equals(item.getHostId())) {
+                throw new AppException(OrderErrorCode.MULTIPLE_HOSTS_NOT_SUPPORTED);
+            }
+        }
+
+        return hostId;
     }
 }

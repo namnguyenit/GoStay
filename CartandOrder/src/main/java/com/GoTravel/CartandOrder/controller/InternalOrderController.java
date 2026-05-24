@@ -1,6 +1,7 @@
 package com.GoTravel.CartandOrder.controller;
 
 import com.GoTravel.CartandOrder.dto.response.ApiResponse;
+import com.GoTravel.CartandOrder.dto.response.OrderPaymentSummaryResponse;
 import com.GoTravel.CartandOrder.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,11 @@ import java.util.UUID;
 public class InternalOrderController {
 
     private final OrderService orderService;
+
+    @GetMapping("/{orderId}/payment-summary")
+    public ResponseEntity<ApiResponse<OrderPaymentSummaryResponse>> getPaymentSummary(@PathVariable UUID orderId) {
+        return ResponseEntity.ok(ApiResponse.success(orderService.getPaymentSummary(orderId)));
+    }
 
     @PutMapping("/{orderId}/payment-success")
     public ResponseEntity<ApiResponse<Void>> handlePaymentSuccess(@PathVariable UUID orderId) {

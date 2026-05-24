@@ -38,8 +38,10 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}")
-    public ResponseEntity<ApiResponse<OrderResponse>> getOrderDetails(@PathVariable UUID orderId) {
-        return ResponseEntity.ok(ApiResponse.success(orderService.getOrderDetails(orderId)));
+    public ResponseEntity<ApiResponse<OrderResponse>> getOrderDetails(
+            @RequestHeader("X-User-Id") UUID userId,
+            @PathVariable UUID orderId) {
+        return ResponseEntity.ok(ApiResponse.success(orderService.getOrderDetails(userId, orderId)));
     }
 
     @GetMapping

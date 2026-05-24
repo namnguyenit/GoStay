@@ -26,6 +26,9 @@ public class CartItem {
     @Column(name = "listing_id", nullable = false)
     private UUID listingId;
 
+    @Column(name = "host_id")
+    private UUID hostId;
+
     @Column(name = "listing_title", nullable = false)
     private String listingTitle;
 

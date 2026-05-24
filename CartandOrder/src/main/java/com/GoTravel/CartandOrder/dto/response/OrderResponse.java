@@ -17,6 +17,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class OrderResponse {
     private UUID orderId;
+    private UUID hostId;
     private String orderNumber;
     private String status;
     private BigDecimal totalAmount;
@@ -31,6 +32,7 @@ public class OrderResponse {
     public static class OrderItemResponse {
         private UUID itemId;
         private UUID listingId;
+        private UUID hostId;
         private String listingTitle;
         private String thumbnailUrl;
         private LocalDate startDate;

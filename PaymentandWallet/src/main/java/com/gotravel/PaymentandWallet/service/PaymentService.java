@@ -4,7 +4,9 @@ import com.gotravel.PaymentandWallet.client.OrderClient;
 import com.gotravel.PaymentandWallet.configuration.SepayConfig;
 import com.gotravel.PaymentandWallet.dto.request.CreatePaymentRequest;
 import com.gotravel.PaymentandWallet.dto.request.SepayWebhookRequest;
+import com.gotravel.PaymentandWallet.dto.response.ApiResponse;
 import com.gotravel.PaymentandWallet.dto.response.HostPayoutResponse;
+import com.gotravel.PaymentandWallet.dto.response.OrderPaymentSummaryResponse;
 import com.gotravel.PaymentandWallet.dto.response.PaymentResponse;
 import com.gotravel.PaymentandWallet.entity.HostPayout;
 import com.gotravel.PaymentandWallet.entity.PaymentRequest;
@@ -54,22 +56,30 @@ public class PaymentService {
      */
     @Transactional
     public PaymentResponse createPayment(UUID userId, CreatePaymentRequest request) {
+        OrderPaymentSummaryResponse order = getTrustedOrderPaymentSummary(userId, request.getOrderId());
+
+        PaymentRequest existingPayment = paymentRequestRepository.findByOrderIdAndUserId(order.getOrderId(), userId)
+                .orElse(null);
+        if (existingPayment != null) {
+            return paymentMapper.toPaymentResponse(existingPayment);
+        }
+
         String paymentCode = generatePaymentCode();
 
         String qrUrl = String.format(
                 "https://qr.sepay.vn/img?acc=%s&bank=%s&amount=%s&des=%s",
                 sepayConfig.getBankAccount(),
                 sepayConfig.getBankName(),
-                request.getAmount().toBigInteger().toString(),
+                order.getTotalAmount().toBigInteger().toString(),
                 URLEncoder.encode(paymentCode, StandardCharsets.UTF_8)
         );
 
         PaymentRequest paymentRequest = PaymentRequest.builder()
-                .orderId(request.getOrderId())
+                .orderId(order.getOrderId())
                 .userId(userId)
-                .hostId(request.getHostId())
+                .hostId(order.getHostId())
                 .paymentCode(paymentCode)
-                .amount(request.getAmount())
+                .amount(order.getTotalAmount())
                 .status(PaymentStatus.PENDING)
                 .qrUrl(qrUrl)
                 .bankAccount(sepayConfig.getBankAccount())
@@ -78,7 +88,7 @@ public class PaymentService {
                 .build();
 
         paymentRequest = paymentRequestRepository.save(paymentRequest);
-        log.info("Created payment request {} for order {}", paymentCode, request.getOrderId());
+        log.info("Created payment request {} for order {}", paymentCode, order.getOrderId());
 
         return paymentMapper.toPaymentResponse(paymentRequest);
     }
@@ -169,15 +179,15 @@ public class PaymentService {
     }
 
     @Transactional(readOnly = true)
-    public PaymentResponse getPaymentById(UUID paymentId) {
-        PaymentRequest paymentRequest = paymentRequestRepository.findById(paymentId)
+    public PaymentResponse getPaymentById(UUID userId, UUID paymentId) {
+        PaymentRequest paymentRequest = paymentRequestRepository.findByIdAndUserId(paymentId, userId)
                 .orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
         return paymentMapper.toPaymentResponse(paymentRequest);
     }
 
     @Transactional(readOnly = true)
-    public PaymentResponse getPaymentByOrderId(UUID orderId) {
-        PaymentRequest paymentRequest = paymentRequestRepository.findByOrderId(orderId)
+    public PaymentResponse getPaymentByOrderId(UUID userId, UUID orderId) {
+        PaymentRequest paymentRequest = paymentRequestRepository.findByOrderIdAndUserId(orderId, userId)
                 .orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
         return paymentMapper.toPaymentResponse(paymentRequest);
     }
@@ -190,7 +200,36 @@ public class PaymentService {
 
     @Transactional(readOnly = true)
     public PaymentResponse getPaymentStatusByOrderId(UUID orderId) {
-        return getPaymentByOrderId(orderId);
+        PaymentRequest paymentRequest = paymentRequestRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
+        return paymentMapper.toPaymentResponse(paymentRequest);
+    }
+
+    private OrderPaymentSummaryResponse getTrustedOrderPaymentSummary(UUID userId, UUID orderId) {
+        try {
+            ApiResponse<OrderPaymentSummaryResponse> response = orderClient.getPaymentSummary(orderId);
+            OrderPaymentSummaryResponse order = response == null ? null : response.getData();
+            if (order == null || order.getOrderId() == null || order.getUserId() == null
+                    || order.getHostId() == null || order.getTotalAmount() == null) {
+                throw new AppException(PaymentErrorCode.INVALID_ORDER_FOR_PAYMENT);
+            }
+
+            if (!userId.equals(order.getUserId())) {
+                throw new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND);
+            }
+
+            if (!"PAYMENT_PENDING".equalsIgnoreCase(order.getStatus())
+                    || order.getTotalAmount().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new AppException(PaymentErrorCode.INVALID_ORDER_FOR_PAYMENT);
+            }
+
+            return order;
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            log.warn("Cannot load trusted payment summary for order {}", orderId, e);
+            throw new AppException(PaymentErrorCode.INVALID_ORDER_FOR_PAYMENT);
+        }
     }
 
     private String generatePaymentCode() {

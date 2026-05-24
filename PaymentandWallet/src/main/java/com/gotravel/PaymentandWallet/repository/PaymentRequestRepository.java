@@ -19,6 +19,8 @@ import java.util.UUID;
 @Repository
 public interface PaymentRequestRepository extends JpaRepository<PaymentRequest, UUID> {
     Optional<PaymentRequest> findByOrderId(UUID orderId);
+    Optional<PaymentRequest> findByOrderIdAndUserId(UUID orderId, UUID userId);
+    Optional<PaymentRequest> findByIdAndUserId(UUID id, UUID userId);
     Optional<PaymentRequest> findByPaymentCode(String paymentCode);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)

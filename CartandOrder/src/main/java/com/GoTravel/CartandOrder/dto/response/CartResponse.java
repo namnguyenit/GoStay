@@ -27,6 +27,7 @@ public class CartResponse {
     public static class CartItemResponse {
         private UUID itemId;
         private UUID listingId;
+        private UUID hostId;
         private String listingTitle;
         private String thumbnailUrl;
         private LocalDate startDate;

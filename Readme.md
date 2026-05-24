@@ -109,6 +109,20 @@ Webhook chỉ hoàn tất payment khi giao dịch là tiền vào, số tiền c
 
 ---
 
+### BUG 6: Client tự gửi giá/amount/hostId và IDOR order/payment 🔴 ĐÃ SỬA
+
+Cart/Order không còn tin `listingTitle`, `thumbnailUrl`, `unitPrice` từ client. CartandOrder gọi Catalog để lấy snapshot tin cậy của listing, tự set title/thumbnail/host/basePrice và tự tính total. Checkout cart cũng refresh lại toàn bộ cart item trước khi tạo order để xử lý các item cũ đã bị sửa giá.
+
+Payment không còn tin `amount` và `hostId` từ request tạo payment. PaymentandWallet gọi internal endpoint của CartandOrder để lấy order summary, kiểm tra order thuộc đúng `X-User-Id`, order đang `PAYMENT_PENDING`, rồi lấy `totalAmount`/`hostId` từ order để tạo QR/payment.
+
+Order/payment detail đã kiểm tra ownership:
+
+- `GET /api/v1/orders/{orderId}` dùng `findByIdAndUserId`.
+- `GET /api/v1/payments/{paymentId}` dùng `findByIdAndUserId`.
+- `GET /api/v1/payments/order/{orderId}` dùng `findByOrderIdAndUserId`.
+
+---
+
 ## 🔗 APIGateway Route Coverage (Đã viết lại ĐẦY ĐỦ)
 
 ### Identity Service (Port 8080)
@@ -280,6 +294,13 @@ Admin phải bấm nút mark-paid cho từng payout. Nên cân nhắc auto-payou
 | `APIGateway/src/configs/routes/payment.route.js` | Viết lại đầy đủ 7 endpoints |
 | `APIGateway/src/configs/routes/identity.route.js` | Viết lại với docs + endpoint mới |
 | `Identity/.../DataSeedForAdmin.java` | Không reset admin; bootstrap có điều kiện qua env |
+| `CartandOrder/.../CatalogClient.java` | Lấy listing snapshot server-side từ Catalog |
+| `CartandOrder/.../CartService.java` | Bỏ tin giá/title/thumbnail client gửi khi add/update cart |
+| `CartandOrder/.../OrderService.java` | Refresh giá từ Catalog, chặn multi-host checkout, check owner order detail |
+| `CartandOrder/.../InternalOrderController.java` | Thêm internal order payment summary cho Payment |
+| `PaymentandWallet/.../CreatePaymentRequest.java` | `amount`/`hostId` không còn là input tin cậy |
+| `PaymentandWallet/.../PaymentController.java` | Check `X-User-Id` khi xem payment detail |
+| `PaymentandWallet/.../OrderClient.java` | Lấy order summary nội bộ trước khi tạo payment |
 | `PaymentandWallet/.../SepayWebhookController.java` | Verify HMAC/API Key trước khi xử lý webhook |
 | `PaymentandWallet/.../PaymentService.java` | Check amount, transfer type, bank account, idempotency trước khi complete |
 | `PaymentandWallet/src/main/resources/sepay.yaml` | Lấy SePay secret/token từ env, không hardcode rỗng |

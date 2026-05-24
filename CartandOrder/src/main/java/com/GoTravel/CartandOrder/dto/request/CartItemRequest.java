@@ -18,8 +18,9 @@ import java.util.UUID;
 public class CartItemRequest {
     @NotNull(message = "Listing ID không được để trống")
     private UUID listingId;
+
+    private UUID hostId;
     
-    @NotNull(message = "Tên dịch vụ không được để trống")
     private String listingTitle;
     
     private String thumbnailUrl;
@@ -36,6 +37,5 @@ public class CartItemRequest {
     @Min(value = 1, message = "Số lượng phải lớn hơn 0")
     private Integer quantity;
     
-    @NotNull(message = "Giá đơn vị không được để trống")
     private BigDecimal unitPrice;
 }

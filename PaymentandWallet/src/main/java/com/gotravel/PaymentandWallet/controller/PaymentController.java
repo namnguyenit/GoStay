@@ -33,13 +33,17 @@ public class PaymentController {
     }
 
     @GetMapping("/{paymentId}")
-    public ResponseEntity<ApiResponse<PaymentResponse>> getPayment(@PathVariable UUID paymentId) {
-        return ResponseEntity.ok(ApiResponse.success(paymentService.getPaymentById(paymentId)));
+    public ResponseEntity<ApiResponse<PaymentResponse>> getPayment(
+            @RequestHeader("X-User-Id") UUID userId,
+            @PathVariable UUID paymentId) {
+        return ResponseEntity.ok(ApiResponse.success(paymentService.getPaymentById(userId, paymentId)));
     }
 
     @GetMapping("/order/{orderId}")
-    public ResponseEntity<ApiResponse<PaymentResponse>> getPaymentByOrder(@PathVariable UUID orderId) {
-        return ResponseEntity.ok(ApiResponse.success(paymentService.getPaymentByOrderId(orderId)));
+    public ResponseEntity<ApiResponse<PaymentResponse>> getPaymentByOrder(
+            @RequestHeader("X-User-Id") UUID userId,
+            @PathVariable UUID orderId) {
+        return ResponseEntity.ok(ApiResponse.success(paymentService.getPaymentByOrderId(userId, orderId)));
     }
 
     @GetMapping("/history")
