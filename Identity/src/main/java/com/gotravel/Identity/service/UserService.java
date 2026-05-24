@@ -470,6 +470,7 @@ public class UserService {
         return true;
     }
 
+
     @Transactional
     public Boolean updateBanAccountStatus(String userId, AccountStatusRequest request) {
         User user = userRepository.findById(userId)
