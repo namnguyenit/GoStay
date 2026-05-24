@@ -73,7 +73,12 @@ public class UserController {
             @PathVariable String accountId,
             @RequestBody ApprovalRequest request) {
         userService.approvalHostStatus(accountId,type, request );
-        return ApiRequest.success(SuccessCode.APPROVAL_STATUS_UPDATED_SUCCESS);
+        return ApiRequest.<Void>builder()
+                .success(true)
+                .message("Đã cập nhật trạng thái phê duyệt thành " + request.getStatus())
+                .code("APPROVAL_HOST_SUCCESS")
+                .build();
+
     }
 
     @PutMapping("/accounts/{accountId}/status")
@@ -82,10 +87,13 @@ public class UserController {
             @PathVariable String accountId,
             @RequestBody AccountStatusRequest request) {
         userService.updateBanAccountStatus(accountId, request);
-        SuccessCode successCode = "BANNED".equalsIgnoreCase(request.getStatus())
-                ? SuccessCode.ACCOUNT_BANNED_SUCCESS
-                : SuccessCode.ACCOUNT_ACTIVATED_SUCCESS;
-        return ApiRequest.success(successCode);
+
+        String message = "BANNED".equalsIgnoreCase(request.getStatus()) ? "Đã khóa tài khoản thành công" : "Đã mở khóa tài khoản thành công";
+        return ApiRequest.<Void>builder()
+                .success(true)
+                .message(message)
+                .code("UPDATE_ACCOUNT_STATUS_SUCCESS")
+                .build();
     }
 
     @GetMapping("/me")
@@ -107,14 +115,20 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     public ApiRequest<Void> deleteAccount(@PathVariable String id) {
         userService.deleteUser(id);
-        return ApiRequest.success(SuccessCode.USER_DELETED_SUCCESS);
+        return ApiRequest.<Void>builder()
+                .success(true)
+                .message("User deleted successfully")
+                .build();
     }
 
     @PatchMapping("/admin/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public  ApiRequest<Void> banAccount(@PathVariable String id){
         userService.banUser(id);
-        return ApiRequest.success(SuccessCode.USER_BANNED_SUCCESS);
+        return ApiRequest.<Void>builder()
+                .success(true)
+                .message("User Banned successfully")
+                .build();
     }
 
     @PostMapping("/{id}/upgraderole")
