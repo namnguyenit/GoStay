@@ -5,8 +5,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.StringJoiner;
 
-import com.gotravel.Identity.exception.AuthErrorCode;
-import com.gotravel.Identity.exception.UserErrorCode;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -16,6 +14,8 @@ import com.gotravel.Identity.dto.request.AuthenticationRequest;
 import com.gotravel.Identity.dto.response.AuthenticationResponse;
 import com.gotravel.Identity.entity.User;
 import com.gotravel.Identity.exception.AppException;
+import com.gotravel.Identity.exception.AuthErrorCode;
+import com.gotravel.Identity.exception.UserErrorCode;
 import com.gotravel.Identity.repository.UserRepository;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JOSEObjectType;
