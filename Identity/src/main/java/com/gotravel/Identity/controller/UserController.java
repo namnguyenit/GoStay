@@ -59,6 +59,52 @@ public class UserController {
         return ApiRequest.success(SuccessCode.GET_ALL_HOSTS_SUCCESS, userService.getAllHosts(page, size));
     }
 
+    @GetMapping("/admin/applications")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiRequest<PageResponse<AdminApplicationSummaryResponse>> getApplications(
+            @RequestParam(defaultValue = "PENDING") String status,
+            @RequestParam(required = false) String type,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ApiRequest.success(
+                SuccessCode.GET_APPLICATIONS_SUCCESS,
+                userService.getApplications(page, size, status, type)
+        );
+    }
+
+    @GetMapping("/admin/applications/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiRequest<AdminApplicationDetailResponse> getApplicationDetail(
+            @PathVariable String userId,
+            @RequestParam String type) {
+        return ApiRequest.success(
+                SuccessCode.GET_APPLICATION_DETAIL_SUCCESS,
+                userService.getApplicationDetail(userId, type)
+        );
+    }
+
+    @PostMapping("/admin/applications/{userId}/approve")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiRequest<AdminApplicationDetailResponse> approveApplication(
+            @PathVariable String userId,
+            @RequestBody ApplicationReviewRequest request) {
+        return ApiRequest.success(
+                SuccessCode.APPLICATION_APPROVED_SUCCESS,
+                userService.approveApplication(userId, request)
+        );
+    }
+
+    @PostMapping("/admin/applications/{userId}/reject")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiRequest<AdminApplicationDetailResponse> rejectApplication(
+            @PathVariable String userId,
+            @RequestBody ApplicationReviewRequest request) {
+        return ApiRequest.success(
+                SuccessCode.APPLICATION_REJECTED_SUCCESS,
+                userService.rejectApplication(userId, request)
+        );
+    }
+
 
     @GetMapping("/hosts/{accountId}")
     @PreAuthorize("hasRole('ADMIN')")

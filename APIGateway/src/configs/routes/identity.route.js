@@ -74,6 +74,10 @@ export const identityRoutes = [
             const query = parts[1] ? `?${parts[1]}` : '';
 
             // --- Quản lý Users ---
+            url = url.replace(/^\/api\/v1\/admin\/applications\/?$/, '/api/users/admin/applications');
+            url = url.replace(/^\/api\/v1\/admin\/applications\/([^\/]+)\/approve$/, '/api/users/admin/applications/$1/approve');
+            url = url.replace(/^\/api\/v1\/admin\/applications\/([^\/]+)\/reject$/, '/api/users/admin/applications/$1/reject');
+            url = url.replace(/^\/api\/v1\/admin\/applications\/([^\/]+)$/, '/api/users/admin/applications/$1');
             url = url.replace(/^\/api\/v1\/admin\/users\/?$/, '/api/users'); // GET All Users
             url = url.replace(/^\/api\/v1\/admin\/users\/([^\/]+)$/, '/api/users/admin/$1'); // DELETE, PATCH user
             url = url.replace(/^\/api\/v1\/admin\/users\/([^\/]+)\/role$/, '/api/users/$1/upgraderole');

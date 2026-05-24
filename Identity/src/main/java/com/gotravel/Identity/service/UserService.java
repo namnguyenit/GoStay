@@ -2,12 +2,10 @@ package com.gotravel.Identity.service;
 
 import com.gotravel.Identity.enums.Approval_status;
 import com.gotravel.Identity.mapper.UserMapper;
+import com.gotravel.Identity.repository.EnterpriseProfileRepository;
 import com.gotravel.Identity.repository.HostProfileRepository;
 import com.gotravel.Identity.repository.RoleRepository;
 import com.gotravel.Identity.repository.UserRepository;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.PersistenceUnit;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -44,6 +42,7 @@ public class UserService {
     final UserMapper userMapper;
     final RoleRepository roleRepository;
     final HostProfileRepository hostProfileRepository;
+    final EnterpriseProfileRepository enterpriseProfileRepository;
     final PasswordEncoder passwordEncoder;
     /**
      * hàm sẽ set role mặc định là USER khi tạo tài khoản và setProvider Local
@@ -331,6 +330,123 @@ public class UserService {
                 .build();
     }
 
+    public PageResponse<AdminApplicationSummaryResponse> getApplications(int page, int size, String status, String type) {
+        Approval_status approvalStatus = parseApprovalStatus(status);
+        String normalizedType = normalizeApplicationType(type);
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.max(size, 1);
+
+        if ("HOST".equals(normalizedType)) {
+            Page<HostProfile> hostPage = hostProfileRepository.findAllByApprovalStatus(approvalStatus, PageRequest.of(safePage, safeSize));
+            return PageResponse.<AdminApplicationSummaryResponse>builder()
+                    .content(hostPage.getContent().stream().map(this::toHostApplicationSummary).toList())
+                    .totalPages(hostPage.getTotalPages())
+                    .totalElements(hostPage.getTotalElements())
+                    .build();
+        }
+
+        if ("ENTERPRISE".equals(normalizedType)) {
+            Page<EnterpriseProfile> enterprisePage = enterpriseProfileRepository.findAllByApprovalStatus(approvalStatus, PageRequest.of(safePage, safeSize));
+            return PageResponse.<AdminApplicationSummaryResponse>builder()
+                    .content(enterprisePage.getContent().stream().map(this::toEnterpriseApplicationSummary).toList())
+                    .totalPages(enterprisePage.getTotalPages())
+                    .totalElements(enterprisePage.getTotalElements())
+                    .build();
+        }
+
+        List<AdminApplicationSummaryResponse> applications = new ArrayList<>();
+        applications.addAll(hostProfileRepository.findByApprovalStatus(approvalStatus).stream()
+                .map(this::toHostApplicationSummary)
+                .toList());
+        applications.addAll(enterpriseProfileRepository.findByApprovalStatus(approvalStatus).stream()
+                .map(this::toEnterpriseApplicationSummary)
+                .toList());
+
+        int totalElements = applications.size();
+        int fromIndex = Math.min(safePage * safeSize, totalElements);
+        int toIndex = Math.min(fromIndex + safeSize, totalElements);
+
+        return PageResponse.<AdminApplicationSummaryResponse>builder()
+                .content(applications.subList(fromIndex, toIndex))
+                .totalPages((int) Math.ceil((double) totalElements / safeSize))
+                .totalElements(totalElements)
+                .build();
+    }
+
+    public AdminApplicationDetailResponse getApplicationDetail(String userId, String type) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
+        String normalizedType = requireApplicationType(type);
+
+        if ("HOST".equals(normalizedType)) {
+            HostProfile hostProfile = user.getHostProfile();
+            if (hostProfile == null) {
+                throw new AppException(UserErrorCode.APPLICATION_NOT_FOUND);
+            }
+            return toApplicationDetail(user, toHostApplicationInfo(hostProfile));
+        }
+
+        EnterpriseProfile enterpriseProfile = user.getEnterpriseProfile();
+        if (enterpriseProfile == null) {
+            throw new AppException(UserErrorCode.APPLICATION_NOT_FOUND);
+        }
+        return toApplicationDetail(user, toEnterpriseApplicationInfo(enterpriseProfile));
+    }
+
+    @Transactional
+    public AdminApplicationDetailResponse approveApplication(String userId, ApplicationReviewRequest request) {
+        User user = findUserById(userId);
+        String type = requireApplicationType(request != null ? request.getType() : null);
+        Role role = roleRepository.findById(type)
+                .orElseThrow(() -> new AppException(UserErrorCode.ROLE_NOT_FOUND));
+
+        if ("HOST".equals(type)) {
+            HostProfile hostProfile = user.getHostProfile();
+            if (hostProfile == null) {
+                throw new AppException(UserErrorCode.APPLICATION_NOT_FOUND);
+            }
+            hostProfile.setApprovalStatus(Approval_status.APPROVED);
+            user.getRoles().add(role);
+            userRepository.save(user);
+            return toApplicationDetail(user, toHostApplicationInfo(hostProfile));
+        }
+
+        EnterpriseProfile enterpriseProfile = user.getEnterpriseProfile();
+        if (enterpriseProfile == null) {
+            throw new AppException(UserErrorCode.APPLICATION_NOT_FOUND);
+        }
+        enterpriseProfile.setApprovalStatus(Approval_status.APPROVED);
+        user.getRoles().add(role);
+        userRepository.save(user);
+        return toApplicationDetail(user, toEnterpriseApplicationInfo(enterpriseProfile));
+    }
+
+    @Transactional
+    public AdminApplicationDetailResponse rejectApplication(String userId, ApplicationReviewRequest request) {
+        User user = findUserById(userId);
+        String type = requireApplicationType(request != null ? request.getType() : null);
+
+        if ("HOST".equals(type)) {
+            HostProfile hostProfile = user.getHostProfile();
+            if (hostProfile == null) {
+                throw new AppException(UserErrorCode.APPLICATION_NOT_FOUND);
+            }
+            hostProfile.setApprovalStatus(Approval_status.REJECTED);
+            removeRole(user, "HOST");
+            userRepository.save(user);
+            return toApplicationDetail(user, toHostApplicationInfo(hostProfile));
+        }
+
+        EnterpriseProfile enterpriseProfile = user.getEnterpriseProfile();
+        if (enterpriseProfile == null) {
+            throw new AppException(UserErrorCode.APPLICATION_NOT_FOUND);
+        }
+        enterpriseProfile.setApprovalStatus(Approval_status.REJECTED);
+        removeRole(user, "ENTERPRISE");
+        userRepository.save(user);
+        return toApplicationDetail(user, toEnterpriseApplicationInfo(enterpriseProfile));
+    }
+
     @Transactional
     public Boolean approvalHostStatus(String userId,String type, ApprovalRequest request) {
         User user = findUserById(userId);
@@ -514,6 +630,123 @@ public class UserService {
 
     private String getAvatarUrl(User user) {
         return user.getUserProfile() != null ? user.getUserProfile().getAvatarUrl() : null;
+    }
+
+    private Approval_status parseApprovalStatus(String status) {
+        if (status == null || status.isBlank()) {
+            return Approval_status.PENDING;
+        }
+        try {
+            return Approval_status.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new AppException(UserErrorCode.INVALID_APPROVAL_STATUS);
+        }
+    }
+
+    private String normalizeApplicationType(String type) {
+        if (type == null || type.isBlank()) {
+            return null;
+        }
+        String normalizedType = type.toUpperCase();
+        if (!"HOST".equals(normalizedType) && !"ENTERPRISE".equals(normalizedType)) {
+            throw new AppException(UserErrorCode.INVALID_APPLICATION_TYPE);
+        }
+        return normalizedType;
+    }
+
+    private String requireApplicationType(String type) {
+        String normalizedType = normalizeApplicationType(type);
+        if (normalizedType == null) {
+            throw new AppException(UserErrorCode.INVALID_APPLICATION_TYPE);
+        }
+        return normalizedType;
+    }
+
+    private AdminApplicationSummaryResponse toHostApplicationSummary(HostProfile hostProfile) {
+        User user = hostProfile.getUser();
+        return AdminApplicationSummaryResponse.builder()
+                .userId(user.getId())
+                .type("HOST")
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .fullName(hostProfile.getFullName())
+                .phone(hostProfile.getPhone())
+                .approvalStatus(String.valueOf(hostProfile.getApprovalStatus()))
+                .avatarUrl(getAvatarUrl(user))
+                .build();
+    }
+
+    private AdminApplicationSummaryResponse toEnterpriseApplicationSummary(EnterpriseProfile enterpriseProfile) {
+        User user = enterpriseProfile.getUser();
+        return AdminApplicationSummaryResponse.builder()
+                .userId(user.getId())
+                .type("ENTERPRISE")
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .fullName(enterpriseProfile.getRepresentativeName())
+                .phone(user.getUserProfile() != null ? user.getUserProfile().getPhoneNumber() : null)
+                .approvalStatus(String.valueOf(enterpriseProfile.getApprovalStatus()))
+                .avatarUrl(getAvatarUrl(user))
+                .build();
+    }
+
+    private AdminApplicationDetailResponse toApplicationDetail(
+            User user,
+            AdminApplicationDetailResponse.ApplicationInfo applicationInfo) {
+        return AdminApplicationDetailResponse.builder()
+                .user(AdminApplicationDetailResponse.UserInfo.builder()
+                        .id(user.getId())
+                        .username(user.getUsername())
+                        .email(user.getEmail())
+                        .isActive(user.getIsActive())
+                        .roles(mapRoleNames(user.getRoles()))
+                        .avatarUrl(getAvatarUrl(user))
+                        .userProfile(userMapper.toUserProfileResponse(user.getUserProfile()))
+                        .build())
+                .application(applicationInfo)
+                .build();
+    }
+
+    private AdminApplicationDetailResponse.ApplicationInfo toHostApplicationInfo(HostProfile hostProfile) {
+        return AdminApplicationDetailResponse.ApplicationInfo.builder()
+                .type("HOST")
+                .approvalStatus(String.valueOf(hostProfile.getApprovalStatus()))
+                .fullName(hostProfile.getFullName())
+                .phone(hostProfile.getPhone())
+                .cccdNumber(hostProfile.getCccdNumber())
+                .taxCode(hostProfile.getTaxCode())
+                .idCard(hostProfile.getIdCard())
+                .frontImageUrl(hostProfile.getFrontImageUrl())
+                .backImageUrl(hostProfile.getBackImageUrl())
+                .bankAccount(hostProfile.getBankAccount())
+                .bankName(hostProfile.getBankName())
+                .build();
+    }
+
+    private AdminApplicationDetailResponse.ApplicationInfo toEnterpriseApplicationInfo(EnterpriseProfile enterpriseProfile) {
+        return AdminApplicationDetailResponse.ApplicationInfo.builder()
+                .type("ENTERPRISE")
+                .approvalStatus(String.valueOf(enterpriseProfile.getApprovalStatus()))
+                .companyName(enterpriseProfile.getCompanyName())
+                .taxCode(enterpriseProfile.getTaxCode())
+                .companyAddress(enterpriseProfile.getCompanyAddress())
+                .representativeName(enterpriseProfile.getRepresentativeName())
+                .build();
+    }
+
+    private Set<String> mapRoleNames(Set<Role> roles) {
+        if (roles == null) {
+            return Collections.emptySet();
+        }
+        Set<String> roleNames = new LinkedHashSet<>();
+        roles.forEach(role -> roleNames.add(role.getName()));
+        return roleNames;
+    }
+
+    private void removeRole(User user, String roleName) {
+        if (user.getRoles() != null) {
+            user.getRoles().removeIf(role -> roleName.equals(role.getName()));
+        }
     }
 
     /**

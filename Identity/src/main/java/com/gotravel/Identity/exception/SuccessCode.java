@@ -31,7 +31,11 @@ public enum SuccessCode implements ErrorCode {
     GET_ENTERPRISE_PROFILE_SUCCESS(200, "GET_ENTERPRISE_PROFILE_SUCCESS", "Enterprise profile retrieved successfully", HttpStatus.OK),
     UPDATE_ENTERPRISE_PROFILE_SUCCESS(200, "UPDATE_ENTERPRISE_PROFILE_SUCCESS", "Enterprise profile updated successfully", HttpStatus.OK),
     USER_STATUS_RETRIEVED_SUCCESS(200, "USER_STATUS_RETRIEVED_SUCCESS", "User status retrieved successfully", HttpStatus.OK),
-    UPLOAD_AVATAR_SUCCESS(200, "UPLOAD_AVATAR_SUCCESS", "Upload avatar successfully", HttpStatus.OK);
+    UPLOAD_AVATAR_SUCCESS(200, "UPLOAD_AVATAR_SUCCESS", "Upload avatar successfully", HttpStatus.OK),
+    GET_APPLICATIONS_SUCCESS(200, "GET_APPLICATIONS_SUCCESS", "Applications retrieved successfully", HttpStatus.OK),
+    GET_APPLICATION_DETAIL_SUCCESS(200, "GET_APPLICATION_DETAIL_SUCCESS", "Application detail retrieved successfully", HttpStatus.OK),
+    APPLICATION_APPROVED_SUCCESS(200, "APPLICATION_APPROVED_SUCCESS", "Application approved successfully", HttpStatus.OK),
+    APPLICATION_REJECTED_SUCCESS(200, "APPLICATION_REJECTED_SUCCESS", "Application rejected successfully", HttpStatus.OK);
 
     private final boolean success = true;
     private final int status;

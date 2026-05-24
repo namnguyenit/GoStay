@@ -14,7 +14,10 @@ public enum UserErrorCode implements ErrorCode {
     BANED_USER(400, "BANNED_USER", "banned account", HttpStatus.BAD_REQUEST),
     DELETE_USER(400, "DELETE_USER", "deleted account", HttpStatus.BAD_REQUEST),
     POFILE_USER_AWAITING_EXISTS(409, "POFILE_USER_AWAITING_EXISTS", "User profile awaiting approval", HttpStatus.BAD_REQUEST),
-    UPLOAD_IMAGE_FAILED(500, "UPLOAD_IMAGE_FAILED", "Failed to upload image", HttpStatus.INTERNAL_SERVER_ERROR);
+    UPLOAD_IMAGE_FAILED(500, "UPLOAD_IMAGE_FAILED", "Failed to upload image", HttpStatus.INTERNAL_SERVER_ERROR),
+    INVALID_APPLICATION_TYPE(400, "INVALID_APPLICATION_TYPE", "Invalid application type", HttpStatus.BAD_REQUEST),
+    INVALID_APPROVAL_STATUS(400, "INVALID_APPROVAL_STATUS", "Invalid approval status", HttpStatus.BAD_REQUEST),
+    APPLICATION_NOT_FOUND(404, "APPLICATION_NOT_FOUND", "Application not found", HttpStatus.NOT_FOUND);
 
     private final boolean success = false;
     private final int status;

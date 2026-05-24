@@ -4,15 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d2d4dc8d-e433-4093-a36d-060757ca3890" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/../APIGateway/src/configs/routes/identity.route.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../APIGateway/src/configs/routes/media.route.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../APIGateway/src/utils/response.helper.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../APIGateway/src/gateway/proxy.routes.js" beforeDir="false" afterPath="$PROJECT_DIR$/../APIGateway/src/gateway/proxy.routes.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../APIGateway/src/middlewares/auth.middleware.js" beforeDir="false" afterPath="$PROJECT_DIR$/../APIGateway/src/middlewares/auth.middleware.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../api-tester/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/../api-tester/index.html" afterDir="false" />
-    </list>
+    <list default="true" id="d2d4dc8d-e433-4093-a36d-060757ca3890" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
