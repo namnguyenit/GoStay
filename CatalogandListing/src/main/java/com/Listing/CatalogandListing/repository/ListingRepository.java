@@ -16,7 +16,6 @@ import java.util.UUID;
 public interface ListingRepository extends JpaRepository<Listing, UUID> {
     List<Listing> findByHostId(UUID hostId);
     Page<Listing> findByHostId(UUID hostId, Pageable pageable);
-    Page<Listing> findByHostIdAndComplexId(UUID hostId, UUID complexId, Pageable pageable);
     List<Listing> findByComplexId(UUID complexId);
     List<Listing> findByCategory(ListingCategory category);
     List<Listing> findByProvince(String province);

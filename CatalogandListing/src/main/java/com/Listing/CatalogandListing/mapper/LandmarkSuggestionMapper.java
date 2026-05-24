@@ -1,7 +1,6 @@
 package com.Listing.CatalogandListing.mapper;
 
 import com.Listing.CatalogandListing.dto.request.landmark.SuggestLandmarkRequest;
-import com.Listing.CatalogandListing.dto.response.LandmarkSuggestionResponse;
 import com.Listing.CatalogandListing.entity.LandmarkSuggestion;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
@@ -11,5 +10,4 @@ import org.mapstruct.ReportingPolicy;
 public interface LandmarkSuggestionMapper {
     LandmarkSuggestion toEntity(SuggestLandmarkRequest request);
     void updateEntityFromRequest(SuggestLandmarkRequest request, @MappingTarget LandmarkSuggestion entity);
-    LandmarkSuggestionResponse toResponse(LandmarkSuggestion entity);
 }

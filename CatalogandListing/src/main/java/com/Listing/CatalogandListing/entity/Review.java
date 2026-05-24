@@ -4,7 +4,6 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import jakarta.persistence.*;
 import lombok.*;
-import com.Listing.CatalogandListing.enums.ReviewStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -42,20 +41,8 @@ public class Review {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Enumerated(EnumType.STRING)
-    private ReviewStatus status;
-
-    @Column(name = "reply_comment", columnDefinition = "TEXT")
-    private String replyComment;
-
-    @Column(name = "moderation_reason", columnDefinition = "TEXT")
-    private String moderationReason;
-
     @PrePersist
     public void prePersist() {
         createdAt = LocalDateTime.now();
-        if (status == null) {
-            status = ReviewStatus.ACTIVE;
-        }
     }
 }

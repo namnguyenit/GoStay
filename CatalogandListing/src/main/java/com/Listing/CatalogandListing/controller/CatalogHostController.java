@@ -1,13 +1,10 @@
 package com.Listing.CatalogandListing.controller;
 
-import com.Listing.CatalogandListing.dto.request.complex.UpdateProfileEnterpiseRequest;
 import com.Listing.CatalogandListing.dto.request.landmark.SuggestLandmarkRequest;
 import com.Listing.CatalogandListing.dto.response.ApiResponse;
 import com.Listing.CatalogandListing.dto.response.ListingDetailResponse;
 import com.Listing.CatalogandListing.dto.response.PaginationResponse;
-import com.Listing.CatalogandListing.dto.request.review.ReplyReviewRequest;
 import com.Listing.CatalogandListing.service.LandmarkService;
-import com.Listing.CatalogandListing.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,7 +25,6 @@ public class CatalogHostController {
     final LandmarkService landmarkService;
     final ComplexService complexService;
     final ListingService listingService;
-    final ReviewService reviewService;
 
     /**
      * 3.3.1. Đề xuất Địa danh mới (Landmark Suggestion)
@@ -84,12 +80,11 @@ public class CatalogHostController {
      */
     @GetMapping("/listings")
     public ResponseEntity<ApiResponse<PaginationResponse<ListingDetailResponse>>> getMyListings(
-            @RequestParam(required = false) String complexId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-        PaginationResponse<ListingDetailResponse> response = listingService.getListingsByHost(userId, complexId, page, size);
-        return ResponseEntity.ok(ApiResponse.success("Lấy danh sách dịch vụ thành công.", response));
+        PaginationResponse<ListingDetailResponse> response = listingService.getListingsByHost(userId, page, size);
+        return ResponseEntity.ok(ApiResponse.success("Lấy danh sách dịch vụ lưu trú thành công.", response));
     }
 
     /**
@@ -109,27 +104,6 @@ public class CatalogHostController {
         return ResponseEntity.ok(ApiResponse.success("Cập nhật dịch vụ lưu trú thành công."));
     }
 
-
-    @PutMapping("/complexes/{complexId}")
-    public ResponseEntity<ApiResponse<Void>> updateComplex(@PathVariable String complexId,
-            @RequestBody @Valid UpdateProfileEnterpiseRequest request) {
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-        complexService.updateComplex(complexId, userId, request);
-        return ResponseEntity.ok(ApiResponse.success("Cập nhật tổ hợp thành công."));
-    }
-
-    /**
-     * 1.3. Vô hiệu hóa Tổ hợp (Soft Delete Complex)
-     * Phương thức: DELETE
-     * Auth: Role HOST/ENTERPRISE
-     */
-    @DeleteMapping("/complexes/{complexId}")
-    public ResponseEntity<ApiResponse<Void>> deleteComplex(@PathVariable String complexId) {
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-        complexService.deleteComplex(complexId, userId);
-        return ResponseEntity.ok(ApiResponse.success("Vô hiệu hoá tổ hợp thành công."));
-    }
-
     /**
      * 3.3.5. Xóa Dịch vụ (Soft Delete)
      * Phương thức: DELETE
@@ -143,19 +117,5 @@ public class CatalogHostController {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         listingService.deleteListing(listingId, userId);
         return ResponseEntity.ok(ApiResponse.success("Xóa dịch vụ lưu trú thành công."));
-    }
-
-    /**
-     * 2.3. Phản hồi Đánh giá (Host Reply)
-     * Phương thức: POST
-     * Auth: Role HOST/ENTERPRISE
-     */
-    @PostMapping("/reviews/{reviewId}/reply")
-    public ResponseEntity<ApiResponse<Void>> replyToReview(
-            @PathVariable UUID reviewId,
-            @RequestBody @Valid ReplyReviewRequest request) {
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-        reviewService.replyToReview(reviewId, userId, request);
-        return ResponseEntity.ok(ApiResponse.success("Phản hồi đánh giá thành công."));
     }
 }

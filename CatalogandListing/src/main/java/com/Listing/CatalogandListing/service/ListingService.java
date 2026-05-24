@@ -11,31 +11,29 @@ import com.Listing.CatalogandListing.dto.response.PaginationResponse;
 import com.Listing.CatalogandListing.dto.response.ListingDetailResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import com.Listing.CatalogandListing.client.InventoryClient;
+import com.Listing.CatalogandListing.dto.request.InitializeInventoryRequest;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
+@Slf4j
 public class ListingService {
 
     ListingMapper listingMapper;
     ListingRepository listingRepository;
+    InventoryClient inventoryClient;
 
-    public PaginationResponse<ListingDetailResponse> getListingsByHost(String userId, String complexId, int page, int size) {
+    public PaginationResponse<ListingDetailResponse> getListingsByHost(String userId, int page, int size) {
         Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
-        Page<Listing> listingPage;
-        
-        if (complexId != null && !complexId.isBlank()) {
-            listingPage = listingRepository.findByHostIdAndComplexId(UUID.fromString(userId), UUID.fromString(complexId), pageable);
-        } else {
-            listingPage = listingRepository.findByHostId(UUID.fromString(userId), pageable);
-        }
+        Page<Listing> listingPage = listingRepository.findByHostId(UUID.fromString(userId), pageable);
 
         java.util.List<ListingDetailResponse> dtoList = listingPage.getContent()
                 .stream()
@@ -57,15 +55,25 @@ public class ListingService {
         return listingMapper.toDetailResponse(listing);
     }
 
-    @Transactional
     public void createListing(String userId, SaveListingRequest request) {
         Listing listing = listingMapper.toEntity(request);
         listing.setHostId(UUID.fromString(userId));
         listing.setStatus(ListingStatus.ACTIVE);
-        listingRepository.save(listing);
+        listing = listingRepository.save(listing);
+
+        // Call Inventory Service to automatically create calendar
+        try {
+            InitializeInventoryRequest initReq = InitializeInventoryRequest.builder()
+                .listingId(listing.getId())
+                .totalQuantity(5) // Default quantity for demo
+                .build();
+            inventoryClient.initializeInventory(initReq);
+            log.info("Successfully requested inventory initialization for listing {}", listing.getId());
+        } catch (Exception e) {
+            log.error("Failed to initialize inventory for listing {}", listing.getId(), e);
+        }
     }
 
-    @Transactional
     public void updateListing(UUID listingId, String userId, SaveListingRequest request) {
         Listing listing = listingRepository.findById(listingId)
                 .orElseThrow(() -> new com.Listing.CatalogandListing.exception.AppException(
@@ -80,7 +88,6 @@ public class ListingService {
         listingRepository.save(listing);
     }
 
-    @Transactional
     public void deleteListing(UUID listingId, String userId) {
         Listing listing = listingRepository.findById(listingId)
                 .orElseThrow(() -> new com.Listing.CatalogandListing.exception.AppException(

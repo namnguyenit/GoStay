@@ -12,35 +12,28 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse<T> {
-    @Builder.Default
-    private boolean success = true;
-    @Builder.Default
-    private int status = 200;
-    private String code;
+    private boolean success;
+    private int code;
     private String message;
     private T data;
 
     public static <T> ApiResponse<T> success(T data) {
-        return new ApiResponse<>(true, 200, "SUCCESS", "Success", data);
+        return new ApiResponse<>(true, 200, "Success", data);
     }
 
     public static <T> ApiResponse<T> success(String message, T data) {
-        return new ApiResponse<>(true, 200, "SUCCESS", message, data);
+        return new ApiResponse<>(true, 200, message, data);
     }
 
     public static <T> ApiResponse<T> created(String message, T data) {
-        return new ApiResponse<>(true, 201, "CREATED", message, data);
+        return new ApiResponse<>(true, 201, message, data);
     }
 
     public static <T> ApiResponse<T> created(String message) {
-        return new ApiResponse<>(true, 201, "CREATED", message, null);
+        return new ApiResponse<>(true, 201, message, null);
     }
 
     public static <T> ApiResponse<T> success(String message) {
-        return new ApiResponse<>(true, 200, "SUCCESS", message, null);
-    }
-
-    public static <T> ApiResponse<T> success(Boolean check, String message) {
-        return new ApiResponse<>(check, 200, check ? "SUCCESS" : "FAILED", message, null);
+        return new ApiResponse<>(true, 200, message, null);
     }
 }
