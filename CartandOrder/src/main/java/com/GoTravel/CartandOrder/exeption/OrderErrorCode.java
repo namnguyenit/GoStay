@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatusCode;
 public enum OrderErrorCode implements ErrorCode {
     CART_NOT_FOUND(404, "CART_NOT_FOUND", "Giỏ hàng không tồn tại", HttpStatus.NOT_FOUND),
     CART_ITEM_NOT_FOUND(404, "CART_ITEM_NOT_FOUND", "Sản phẩm không có trong giỏ hàng", HttpStatus.NOT_FOUND),
+    INVALID_CART_ITEM_REQUEST(400, "INVALID_CART_ITEM_REQUEST", "Thông tin sản phẩm trong giỏ hàng không hợp lệ", HttpStatus.BAD_REQUEST),
     ORDER_NOT_FOUND(404, "ORDER_NOT_FOUND", "Không tìm thấy đơn hàng", HttpStatus.NOT_FOUND),
     LISTING_NOT_AVAILABLE(400, "LISTING_NOT_AVAILABLE", "Dịch vụ không tồn tại hoặc không còn khả dụng", HttpStatus.BAD_REQUEST),
     INVENTORY_LOCK_FAILED(409, "INVENTORY_LOCK_FAILED", "Phòng/Dịch vụ bạn chọn đã hết chỗ hoặc đang bảo trì", HttpStatus.CONFLICT),

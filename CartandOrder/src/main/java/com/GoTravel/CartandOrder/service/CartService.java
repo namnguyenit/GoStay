@@ -49,6 +49,7 @@ public class CartService {
     @Transactional
     public CartResponse addItemToCart(UUID userId, CartItemRequest request) {
         Cart cart = cartRepository.findByUserId(userId).orElseGet(() -> createEmptyCart(userId));
+        validateCartItemRequest(request);
         CartItemRequest trustedRequest = buildTrustedCartItemRequest(request);
 
         Optional<CartItem> existingItem = cart.getItems().stream()
@@ -102,6 +103,7 @@ public class CartService {
         if (request.getEndDate() != null) itemToUpdate.setEndDate(request.getEndDate());
         if (request.getTimeSlot() != null) itemToUpdate.setTimeSlot(request.getTimeSlot());
 
+        validateCartItemDates(itemToUpdate.getStartDate(), itemToUpdate.getEndDate());
         refreshCartItemFromCatalog(itemToUpdate);
         itemToUpdate.setTotalPrice(itemToUpdate.getUnitPrice().multiply(BigDecimal.valueOf(itemToUpdate.getQuantity())));
 
@@ -123,6 +125,29 @@ public class CartService {
                 .quantity(request.getQuantity())
                 .unitPrice(listing.getBasePrice())
                 .build();
+    }
+
+    private void validateCartItemRequest(CartItemRequest request) {
+        if (request == null
+                || request.getListingId() == null
+                || request.getStartDate() == null
+                || request.getEndDate() == null
+                || request.getQuantity() == null
+                || request.getQuantity() < 1) {
+            throw new AppException(OrderErrorCode.INVALID_CART_ITEM_REQUEST);
+        }
+
+        validateCartItemDates(request.getStartDate(), request.getEndDate());
+    }
+
+    private void validateCartItemDates(java.time.LocalDate startDate, java.time.LocalDate endDate) {
+        java.time.LocalDate today = java.time.LocalDate.now();
+        if (startDate == null || endDate == null
+                || startDate.isBefore(today)
+                || endDate.isBefore(today)
+                || endDate.isBefore(startDate)) {
+            throw new AppException(OrderErrorCode.INVALID_CART_ITEM_REQUEST);
+        }
     }
 
     private void refreshCartItemFromCatalog(CartItem item) {

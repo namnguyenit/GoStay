@@ -45,7 +45,7 @@ public class CartController {
     public ResponseEntity<ApiResponse<CartResponse>> updateCartItem(
             @RequestHeader("X-User-Id") UUID userId,
             @PathVariable UUID itemId,
-            @RequestBody UpdateCartItemRequest request) {
+            @RequestBody @Valid UpdateCartItemRequest request) {
         return ResponseEntity.ok(ApiResponse.success("Đã cập nhật giỏ hàng", cartService.updateCartItem(userId, itemId, request)));
     }
 }

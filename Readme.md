@@ -123,6 +123,14 @@ Order/payment detail đã kiểm tra ownership:
 
 ---
 
+### BUG 7: Validation thiếu làm sai tồn kho/tổng tiền 🔴 ĐÃ SỬA
+
+`BookNowRequest.item` đã cascade validate bằng `@Valid`; `CartItemRequest` và `UpdateCartItemRequest` validate quantity > 0, ngày không ở quá khứ, và endDate không trước startDate.
+
+Internal inventory lock validate ở cả controller và service. `BatchLockRequest` yêu cầu orderId, danh sách item không rỗng, listingId/date đầy đủ, quantity > 0. `InventoryInternalService` cũng tự guard lại request trước khi trừ tồn kho, nên quantity âm không thể làm tăng `availableQuantity`. Khi cancel lock, lock có quantity null/<=0 sẽ bị reject thay vì cộng/trừ tồn kho sai.
+
+---
+
 ## 🔗 APIGateway Route Coverage (Đã viết lại ĐẦY ĐỦ)
 
 ### Identity Service (Port 8080)
@@ -303,6 +311,10 @@ Admin phải bấm nút mark-paid cho từng payout. Nên cân nhắc auto-payou
 | `PaymentandWallet/.../OrderClient.java` | Lấy order summary nội bộ trước khi tạo payment |
 | `PaymentandWallet/.../SepayWebhookController.java` | Verify HMAC/API Key trước khi xử lý webhook |
 | `PaymentandWallet/.../PaymentService.java` | Check amount, transfer type, bank account, idempotency trước khi complete |
+| `CartandOrder/.../BookNowRequest.java` | Cascade validate nested item |
+| `CartandOrder/.../UpdateCartItemRequest.java` | Validate quantity/date khi update cart |
+| `BookingandInventory/.../BatchLockRequest.java` | Validate inventory lock item trước controller |
+| `BookingandInventory/.../InventoryInternalService.java` | Service-level guard chống quantity âm làm sai tồn kho |
 | `PaymentandWallet/src/main/resources/sepay.yaml` | Lấy SePay secret/token từ env, không hardcode rỗng |
 | `*/configuration/InternalServiceTokenFilter.java` | Bắt buộc `X-Internal-Service-Token` cho internal endpoint |
 | `*/configuration/InternalFeignConfig.java` | Tự gắn internal token cho Feign service-to-service |

@@ -50,6 +50,7 @@ public class InventoryInternalService {
 
     @Transactional
     public void initializeInventory(InitializeInventoryRequest request) {
+        validateInitializeInventoryRequest(request);
         log.info("Initializing inventory for listing {}", request.getListingId());
         
         Optional<InventoryConfig> existingConfig = configRepository.findByListingId(request.getListingId());
@@ -58,23 +59,25 @@ public class InventoryInternalService {
         }
         
         InventoryConfig.ScheduleConfig scheduleConfig = new InventoryConfig.ScheduleConfig();
-        if ("STAY".equalsIgnoreCase(request.getCategory())) {
-            scheduleConfig.setDefaultQuantity(request.getQuantity());
+        String category = normalizeCategory(request.getCategory());
+        int quantity = resolveQuantity(request);
+        if ("STAY".equalsIgnoreCase(category)) {
+            scheduleConfig.setDefaultQuantity(quantity);
             scheduleConfig.setTimeSlots(new ArrayList<>());
         } else {
             List<InventoryConfig.TimeSlotConfig> slots = new ArrayList<>();
             if (request.getTimeSlots() != null) {
                 for (String s : request.getTimeSlots()) {
-                    slots.add(new InventoryConfig.TimeSlotConfig(s, request.getQuantity()));
+                    slots.add(new InventoryConfig.TimeSlotConfig(s, quantity));
                 }
             }
-            scheduleConfig.setDefaultQuantity(request.getQuantity());
+            scheduleConfig.setDefaultQuantity(quantity);
             scheduleConfig.setTimeSlots(slots);
         }
 
         InventoryConfig config = InventoryConfig.builder()
                 .listingId(request.getListingId())
-                .category(request.getCategory())
+                .category(category)
                 .scheduleConfig(scheduleConfig)
                 .isActive(true)
                 .build();
@@ -117,11 +120,13 @@ public class InventoryInternalService {
 
     @Transactional
     public BatchLockResponse batchLock(BatchLockRequest request) {
+        validateBatchLockRequest(request);
         log.info("Batch locking inventory for order {}", request.getOrderId());
         
         LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(15);
         
         for (BatchLockRequest.LockItemRequest item : request.getItems()) {
+            validateLockItem(item);
             String timeSlot = item.getTimeSlot() == null || item.getTimeSlot().isEmpty() ? "ALL_DAY" : item.getTimeSlot();
             
             // Xử lý list ngày
@@ -134,8 +139,13 @@ public class InventoryInternalService {
                 if (calendar.getAvailableQuantity() < item.getQuantity()) {
                     throw new AppException(InventoryErrorCode.OVERBOOKING_DETECTED);
                 }
+
+                int remainingQuantity = calendar.getAvailableQuantity() - item.getQuantity();
+                if (remainingQuantity < 0) {
+                    throw new AppException(InventoryErrorCode.OVERBOOKING_DETECTED);
+                }
                 
-                calendar.setAvailableQuantity(calendar.getAvailableQuantity() - item.getQuantity());
+                calendar.setAvailableQuantity(remainingQuantity);
                 calendarRepository.save(calendar); // Optimistic Locking sẽ bắt lỗi nếu 2 luồng tranh nhau lưu
                 
                 InventoryLock lock = InventoryLock.builder()
@@ -177,6 +187,11 @@ public class InventoryInternalService {
         }
         
         for (InventoryLock lock : locks) {
+            if (lock.getLockedQuantity() == null || lock.getLockedQuantity() <= 0) {
+                log.error("Invalid inventory lock quantity {} for lock {}", lock.getLockedQuantity(), lock.getId());
+                throw new AppException(InventoryErrorCode.INVALID_INVENTORY_ACTION);
+            }
+
             if (lock.getLockStatus() != InventoryLockStatus.RELEASED) {
                 lock.setLockStatus(InventoryLockStatus.RELEASED);
                 lockRepository.save(lock);
@@ -186,5 +201,47 @@ public class InventoryInternalService {
                 calendarRepository.save(calendar);
             }
         }
+    }
+
+    private void validateInitializeInventoryRequest(InitializeInventoryRequest request) {
+        if (request == null || request.getListingId() == null || resolveQuantity(request) <= 0) {
+            throw new AppException(InventoryErrorCode.INVALID_INVENTORY_ACTION);
+        }
+    }
+
+    private void validateBatchLockRequest(BatchLockRequest request) {
+        if (request == null || request.getOrderId() == null || request.getItems() == null || request.getItems().isEmpty()) {
+            throw new AppException(InventoryErrorCode.INVALID_INVENTORY_ACTION);
+        }
+    }
+
+    private void validateLockItem(BatchLockRequest.LockItemRequest item) {
+        if (item == null
+                || item.getListingId() == null
+                || item.getStartDate() == null
+                || item.getEndDate() == null
+                || item.getQuantity() <= 0
+                || item.getStartDate().isBefore(LocalDate.now())
+                || item.getEndDate().isBefore(LocalDate.now())
+                || item.getEndDate().isBefore(item.getStartDate())) {
+            throw new AppException(InventoryErrorCode.INVALID_INVENTORY_ACTION);
+        }
+    }
+
+    private int resolveQuantity(InitializeInventoryRequest request) {
+        if (request == null) {
+            return 0;
+        }
+
+        Integer quantity = request.getQuantity() != null ? request.getQuantity() : request.getTotalQuantity();
+        return quantity == null ? 0 : quantity;
+    }
+
+    private String normalizeCategory(String category) {
+        if (category == null || category.isBlank()) {
+            return "STAY";
+        }
+
+        return category.trim();
     }
 }

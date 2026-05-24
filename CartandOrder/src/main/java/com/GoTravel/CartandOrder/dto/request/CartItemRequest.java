@@ -1,5 +1,7 @@
 package com.GoTravel.CartandOrder.dto.request;
 
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -26,9 +28,11 @@ public class CartItemRequest {
     private String thumbnailUrl;
     
     @NotNull(message = "Ngày bắt đầu không được để trống")
+    @FutureOrPresent(message = "Ngày bắt đầu không được ở quá khứ")
     private LocalDate startDate;
     
     @NotNull(message = "Ngày kết thúc không được để trống")
+    @FutureOrPresent(message = "Ngày kết thúc không được ở quá khứ")
     private LocalDate endDate;
     
     private String timeSlot;
@@ -38,4 +42,13 @@ public class CartItemRequest {
     private Integer quantity;
     
     private BigDecimal unitPrice;
+
+    @AssertTrue(message = "Ngày kết thúc phải sau hoặc bằng ngày bắt đầu")
+    public boolean isDateRangeValid() {
+        if (startDate == null || endDate == null) {
+            return true;
+        }
+
+        return !endDate.isBefore(startDate);
+    }
 }

@@ -268,6 +268,7 @@ public class OrderService {
     }
 
     private CartItemRequest buildTrustedCartItemRequest(CartItemRequest request) {
+        validateCartItemRequest(request);
         CatalogListingResponse listing = getActiveListing(request.getListingId());
 
         return CartItemRequest.builder()
@@ -281,6 +282,20 @@ public class OrderService {
                 .quantity(request.getQuantity())
                 .unitPrice(listing.getBasePrice())
                 .build();
+    }
+
+    private void validateCartItemRequest(CartItemRequest request) {
+        if (request == null
+                || request.getListingId() == null
+                || request.getStartDate() == null
+                || request.getEndDate() == null
+                || request.getQuantity() == null
+                || request.getQuantity() < 1
+                || request.getStartDate().isBefore(java.time.LocalDate.now())
+                || request.getEndDate().isBefore(java.time.LocalDate.now())
+                || request.getEndDate().isBefore(request.getStartDate())) {
+            throw new AppException(OrderErrorCode.INVALID_CART_ITEM_REQUEST);
+        }
     }
 
     private CatalogListingResponse getActiveListing(UUID listingId) {

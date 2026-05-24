@@ -5,6 +5,7 @@ import com.Gostay.BookingandInventory.dto.request.InitializeInventoryRequest;
 import com.Gostay.BookingandInventory.dto.response.ApiResponse;
 import com.Gostay.BookingandInventory.dto.response.BatchLockResponse;
 import com.Gostay.BookingandInventory.service.InventoryInternalService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -35,13 +36,13 @@ public class InventoryInternalController {
     private final InventoryInternalService inventoryInternalService;
 
     @PostMapping("/initialize")
-    public ResponseEntity<ApiResponse<Void>> initializeInventory(@RequestBody InitializeInventoryRequest request) {
+    public ResponseEntity<ApiResponse<Void>> initializeInventory(@RequestBody @Valid InitializeInventoryRequest request) {
         inventoryInternalService.initializeInventory(request);
         return ResponseEntity.ok(ApiResponse.created("Khởi tạo kho thành công"));
     }
 
     @PostMapping("/locks")
-    public ResponseEntity<ApiResponse<BatchLockResponse>> batchLock(@RequestBody BatchLockRequest request) {
+    public ResponseEntity<ApiResponse<BatchLockResponse>> batchLock(@RequestBody @Valid BatchLockRequest request) {
         BatchLockResponse response = inventoryInternalService.batchLock(request);
         return ResponseEntity.ok(ApiResponse.success("Khóa giữ chỗ thành công", response));
     }

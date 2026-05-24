@@ -1,5 +1,6 @@
 package com.GoTravel.CartandOrder.dto.request;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,6 +15,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class BookNowRequest {
     @NotNull(message = "Thông tin item không được để trống")
+    @Valid
     private CartItemRequest item;
     
     private String fullName;
