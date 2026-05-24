@@ -30,7 +30,6 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/internal/inventory")
 @RequiredArgsConstructor
-@PreAuthorize("isAuthenticated()") // Hoặc hasRole('INTERNAL') nếu bạn có setup role này
 public class InventoryInternalController {
 
     private final InventoryInternalService inventoryInternalService;
