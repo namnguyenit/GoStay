@@ -31,6 +31,7 @@ import {
 import { isTab, useApp } from "../hooks/useApp";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import AuthService from "@/services/auth.service";
 
 export default function MainLayoutClient({
   children,
@@ -42,6 +43,17 @@ export default function MainLayoutClient({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const pathName = usePathname();
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    setCurrentUser(AuthService.getCurrentUser());
+  }, [pathName]); // Cập nhật user info khi đổi route (ví dụ sau khi login xong)
+
+  const handleLogout = () => {
+    AuthService.logout();
+    setCurrentUser(null);
+    router.push("/log-in");
+  };
 
   useEffect(() => {
     const segment = pathName.split("/")[1];
@@ -126,52 +138,56 @@ export default function MainLayoutClient({
           </TabsList>
         </Tabs>
         <div className="row pos-center-y right-10 hidden gap-3 sm:flex">
-          <div>
-            <p className="text-sm font-medium text-white text-shadow-gray-400 text-shadow-md">
-              Le Duc Long
-            </p>
-            <p
-              className={clsx(
-                "text-xs transition-colors duration-700",
-                scrolled || tab
-                  ? "text-app-primary-fg"
-                  : "text-muted-foreground",
-              )}
-            >
-              Admin
-            </p>
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <Avatar>
-                  <AvatarImage src="https://github.com/shadcn.png" />
-                  <AvatarFallback>LL</AvatarFallback>
-                </Avatar>
+          {currentUser ? (
+            <>
+              <div>
+                <p className="text-sm font-medium text-white text-shadow-gray-400 text-shadow-md">
+                  {currentUser.lastName} {currentUser.firstName}
+                </p>
+                <p
+                  className={clsx(
+                    "text-xs transition-colors duration-700",
+                    scrolled || tab
+                      ? "text-app-primary-fg"
+                      : "text-muted-foreground",
+                  )}
+                >
+                  {AuthService.getUserRoles().join(", ")}
+                </p>
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-full">
+                    <Avatar>
+                      <AvatarImage src={currentUser.avatarUrl || "https://github.com/shadcn.png"} />
+                      <AvatarFallback>{currentUser.firstName?.[0] || "U"}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem>
+                    <UserIcon />
+                    Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <SettingsIcon />
+                    Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem variant="destructive" onClick={handleLogout}>
+                    <LogOutIcon />
+                    Log out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          ) : (
+            <Link href="/log-in">
+              <Button variant="secondary" className="font-semibold shadow-md">
+                <LogIn className="mr-2 h-4 w-4" /> Đăng nhập
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem>
-                <UserIcon />
-                Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <SettingsIcon />
-                Settings
-              </DropdownMenuItem>
-              <Link href="/log-in">
-                <DropdownMenuItem>
-                  <LogIn />
-                  Log In
-                </DropdownMenuItem>
-              </Link>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem variant="destructive">
-                <LogOutIcon />
-                Log out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            </Link>
+          )}
         </div>
       </div>
       {tab && <div className="h-[70]"></div>}

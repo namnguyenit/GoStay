@@ -3,13 +3,27 @@ import { ExperienceService, PlaceService, ServiceService } from "@/services";
 import HomeProvider from "@/screens/home/providers/home.provider";
 
 export default async function Page() {
-  const experiencesRes = await ExperienceService.getAll();
+  let experiencesRes, placesRes, servicesRes;
+
+  try {
+    experiencesRes = await ExperienceService.getAll();
+  } catch (error) {
+    console.error("Failed to fetch experiences:", error);
+  }
   const experiences = experiencesRes?.data;
 
-  const placesRes = await PlaceService.getAll();
+  try {
+    placesRes = await PlaceService.getAll();
+  } catch (error) {
+    console.error("Failed to fetch places:", error);
+  }
   const places = placesRes?.data;
 
-  const servicesRes = await ServiceService.getAll();
+  try {
+    servicesRes = await ServiceService.getAll();
+  } catch (error) {
+    console.error("Failed to fetch services:", error);
+  }
   const services = servicesRes?.data;
 
   return (

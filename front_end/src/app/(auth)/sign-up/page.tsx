@@ -4,10 +4,56 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
+import { useRouter } from "next/navigation";
+import AuthService from "@/services/auth.service";
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // States cho form
+  const [username, setUsername] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    if (password !== confirmPassword) {
+      setError("Mật khẩu xác nhận không khớp.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await AuthService.register({
+        username,
+        password,
+        email,
+        fullName,
+        phoneNumber
+      });
+      // Đăng ký thành công, chuyển hướng sang trang đăng nhập
+      router.push("/log-in");
+    } catch (err: any) {
+      const errorMessages: Record<string, string> = {
+        USER_ALREADY_EXISTS: "Tên đăng nhập đã tồn tại. Vui lòng chọn tên khác.",
+        EMAIL_ALREADY_EXISTS: "Email đã được sử dụng. Vui lòng dùng email khác.",
+        VALIDATION_ERROR: "Thông tin không hợp lệ. Vui lòng kiểm tra lại.",
+      };
+      const msg = errorMessages[err?.code] || err?.message || "Đăng ký thất bại. Vui lòng thử lại.";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="flex min-h-[100dvh] font-sans text-[#222222] bg-white">
@@ -36,23 +82,43 @@ export default function RegisterPage() {
           <h2 className="mb-1 text-2xl font-bold tracking-tight">Tạo tài khoản mới</h2>
           <p className="mb-5 text-sm text-[#717171]">Mọi tiện ích du lịch chỉ cách bạn vài thao tác đơn giản.</p>
           
-          <form className="space-y-3">
+          <form className="space-y-3" onSubmit={handleRegister}>
             <div className="space-y-3">
-              {/* Họ và tên */}
-              <div>
-                <div className="relative">
-                  <input
-                    id="fullname"
-                    type="text"
-                    className="peer w-full rounded-lg border border-[#B0B0B0] bg-white px-3 pb-1 pt-5 text-sm outline-none transition disabled:cursor-not-allowed disabled:opacity-70 focus:border-[#222222] focus:ring-1 focus:ring-[#222222]"
-                    placeholder=" "
-                  />
-                  <label
-                    htmlFor="fullname"
-                    className="pointer-events-none absolute left-3 top-1.5 z-10 origin-[0] transform text-[11px] text-[#717171] duration-150 peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-focus:top-1.5 peer-focus:text-[11px]"
-                  >
-                    Họ và tên
-                  </label>
+              <div className="flex gap-2">
+                {/* Username */}
+                <div className="flex-1">
+                  <div className="relative">
+                    <input
+                      id="username"
+                      type="text"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      required
+                      className="peer w-full rounded-lg border border-[#B0B0B0] bg-white px-3 pb-1 pt-5 text-sm outline-none transition focus:border-[#222222] focus:ring-1 focus:ring-[#222222]"
+                      placeholder=" "
+                    />
+                    <label htmlFor="username" className="pointer-events-none absolute left-3 top-1.5 z-10 origin-[0] transform text-[11px] text-[#717171] duration-150 peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-focus:top-1.5 peer-focus:text-[11px]">
+                      Tên đăng nhập (Username)
+                    </label>
+                  </div>
+                </div>
+
+                {/* Họ và tên */}
+                <div className="flex-1">
+                  <div className="relative">
+                    <input
+                      id="fullName"
+                      type="text"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      required
+                      className="peer w-full rounded-lg border border-[#B0B0B0] bg-white px-3 pb-1 pt-5 text-sm outline-none transition focus:border-[#222222] focus:ring-1 focus:ring-[#222222]"
+                      placeholder=" "
+                    />
+                    <label htmlFor="fullName" className="pointer-events-none absolute left-3 top-1.5 z-10 origin-[0] transform text-[11px] text-[#717171] duration-150 peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-focus:top-1.5 peer-focus:text-[11px]">
+                      Họ và Tên
+                    </label>
+                  </div>
                 </div>
               </div>
 
@@ -62,14 +128,32 @@ export default function RegisterPage() {
                   <input
                     id="email"
                     type="email"
-                    className="peer w-full rounded-lg border border-[#B0B0B0] bg-white px-3 pb-1 pt-5 text-sm outline-none transition disabled:cursor-not-allowed disabled:opacity-70 focus:border-[#222222] focus:ring-1 focus:ring-[#222222]"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="peer w-full rounded-lg border border-[#B0B0B0] bg-white px-3 pb-1 pt-5 text-sm outline-none transition focus:border-[#222222] focus:ring-1 focus:ring-[#222222]"
                     placeholder=" "
                   />
-                  <label
-                    htmlFor="email"
-                    className="pointer-events-none absolute left-3 top-1.5 z-10 origin-[0] transform text-[11px] text-[#717171] duration-150 peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-focus:top-1.5 peer-focus:text-[11px]"
-                  >
+                  <label htmlFor="email" className="pointer-events-none absolute left-3 top-1.5 z-10 origin-[0] transform text-[11px] text-[#717171] duration-150 peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-focus:top-1.5 peer-focus:text-[11px]">
                     Email
+                  </label>
+                </div>
+              </div>
+
+              {/* Số điện thoại */}
+              <div>
+                <div className="relative">
+                  <input
+                    id="phoneNumber"
+                    type="tel"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    required
+                    className="peer w-full rounded-lg border border-[#B0B0B0] bg-white px-3 pb-1 pt-5 text-sm outline-none transition focus:border-[#222222] focus:ring-1 focus:ring-[#222222]"
+                    placeholder=" "
+                  />
+                  <label htmlFor="phoneNumber" className="pointer-events-none absolute left-3 top-1.5 z-10 origin-[0] transform text-[11px] text-[#717171] duration-150 peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-focus:top-1.5 peer-focus:text-[11px]">
+                    Số điện thoại
                   </label>
                 </div>
               </div>
@@ -80,20 +164,16 @@ export default function RegisterPage() {
                   <input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    className="peer w-full rounded-lg border border-[#B0B0B0] bg-white px-3 pb-1 pt-5 pr-10 text-sm outline-none transition disabled:cursor-not-allowed disabled:opacity-70 focus:border-[#222222] focus:ring-1 focus:ring-[#222222]"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="peer w-full rounded-lg border border-[#B0B0B0] bg-white px-3 pb-1 pt-5 pr-10 text-sm outline-none transition focus:border-[#222222] focus:ring-1 focus:ring-[#222222]"
                     placeholder=" "
                   />
-                  <label
-                    htmlFor="password"
-                    className="pointer-events-none absolute left-3 top-1.5 z-10 origin-[0] transform text-[11px] text-[#717171] duration-150 peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-focus:top-1.5 peer-focus:text-[11px]"
-                  >
+                  <label htmlFor="password" className="pointer-events-none absolute left-3 top-1.5 z-10 origin-[0] transform text-[11px] text-[#717171] duration-150 peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-focus:top-1.5 peer-focus:text-[11px]">
                     Mật khẩu
                   </label>
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#717171] hover:text-[#222222] focus:outline-none"
-                  >
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#717171] hover:text-[#222222] focus:outline-none">
                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
                 </div>
@@ -105,32 +185,30 @@ export default function RegisterPage() {
                   <input
                     id="confirm_password"
                     type={showConfirmPassword ? "text" : "password"}
-                    className="peer w-full rounded-lg border border-[#B0B0B0] bg-white px-3 pb-1 pt-5 pr-10 text-sm outline-none transition disabled:cursor-not-allowed disabled:opacity-70 focus:border-[#222222] focus:ring-1 focus:ring-[#222222]"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    className="peer w-full rounded-lg border border-[#B0B0B0] bg-white px-3 pb-1 pt-5 pr-10 text-sm outline-none transition focus:border-[#222222] focus:ring-1 focus:ring-[#222222]"
                     placeholder=" "
                   />
-                  <label
-                    htmlFor="confirm_password"
-                    className="pointer-events-none absolute left-3 top-1.5 z-10 origin-[0] transform text-[11px] text-[#717171] duration-150 peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-focus:top-1.5 peer-focus:text-[11px]"
-                  >
+                  <label htmlFor="confirm_password" className="pointer-events-none absolute left-3 top-1.5 z-10 origin-[0] transform text-[11px] text-[#717171] duration-150 peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-focus:top-1.5 peer-focus:text-[11px]">
                     Xác nhận mật khẩu
                   </label>
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#717171] hover:text-[#222222] focus:outline-none"
-                  >
+                  <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#717171] hover:text-[#222222] focus:outline-none">
                     {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
                 </div>
               </div>
             </div>
 
+            {error && <p className="text-sm text-red-500">{error}</p>}
+
             <p className="text-[11px] leading-relaxed text-[#717171]">
               Bằng cách chọn Đồng ý và tiếp tục, tôi đồng ý với các <Link href="#" className="font-semibold text-[#222] underline">Điều khoản</Link> của GoStay.
             </p>
 
-            <Button className="mt-2 h-11 w-full rounded-lg bg-[#FF5A5F] text-sm font-semibold text-white transition-colors hover:bg-[#E35054] active:scale-[0.98]">
-              Đăng ký tài khoản
+            <Button disabled={loading} type="submit" className="mt-2 h-11 w-full rounded-lg bg-[#FF5A5F] text-sm font-semibold text-white transition-colors hover:bg-[#E35054] active:scale-[0.98]">
+              {loading ? "Đang xử lý..." : "Đăng ký tài khoản"}
             </Button>
           </form>
 

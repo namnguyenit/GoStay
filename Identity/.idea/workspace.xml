@@ -5,8 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d2d4dc8d-e433-4093-a36d-060757ca3890" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front_end/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/../front_end/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front_end/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../front_end/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front_end/src/app/(auth)/log-in/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../front_end/src/app/(auth)/log-in/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front_end/src/app/(auth)/sign-up/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../front_end/src/app/(auth)/sign-up/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front_end/src/features/app/components/MainLayoutClient.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../front_end/src/features/app/components/MainLayoutClient.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front_end/src/shared/api/api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../front_end/src/shared/api/api.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
