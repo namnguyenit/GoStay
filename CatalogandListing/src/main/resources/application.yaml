@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: CatalogandListing
+  config:
+    import:
+      - optional:classpath:database.yaml
+      - optional:classpath:jwt.yaml
+server:
+  port: 8082

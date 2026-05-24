@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: PaymentandWallet
+  config:
+    import:
+      - optional:classpath:database.yaml
+      - optional:classpath:jwt.yaml
+      - optional:classpath:sepay.yaml
+server:
+  port: 8085
