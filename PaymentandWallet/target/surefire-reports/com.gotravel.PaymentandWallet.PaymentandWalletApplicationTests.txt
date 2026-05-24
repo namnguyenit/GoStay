@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.gotravel.PaymentandWallet.PaymentandWalletApplicationTests
--------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.231 s -- in com.gotravel.PaymentandWallet.PaymentandWalletApplicationTests

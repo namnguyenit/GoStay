@@ -1,5 +1,0 @@
-sepay:
-  bank-account: "SBSEPAYJD3ZNUS6AFBP"   # Tài khoản ảo (VA) từ SePay Test Mode
-  bank-name: "BIDV"                       # Ngân hàng trong Test Mode
-  api-token: ""       # Lấy từ Dashboard → API Access → Tạo token
-  webhook-secret: ""                      # Để trống nếu chọn "Không xác thực"

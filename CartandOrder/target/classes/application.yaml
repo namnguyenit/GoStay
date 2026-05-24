@@ -1,9 +1,0 @@
-spring:
-  application:
-    name: CartandOrder
-  config:
-    import:
-      - optional:classpath:database.yaml
-      - optional:classpath:jwt.yaml
-server:
-  port: 8084
