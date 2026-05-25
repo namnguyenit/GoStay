@@ -37,7 +37,7 @@ export function LandmarksScreen() {
           onClick={() => setTab("suggestions")}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px ${
             tab === "suggestions"
-              ? "border-red-500 text-red-600"
+              ? "border-[#20a8d8] text-[#20a8d8]"
               : "border-transparent text-gray-500 hover:text-gray-700"
           }`}
         >
@@ -47,7 +47,7 @@ export function LandmarksScreen() {
           onClick={() => setTab("create")}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px ${
             tab === "create"
-              ? "border-red-500 text-red-600"
+              ? "border-[#20a8d8] text-[#20a8d8]"
               : "border-transparent text-gray-500 hover:text-gray-700"
           }`}
         >
@@ -57,7 +57,7 @@ export function LandmarksScreen() {
           onClick={() => setTab("showlandmarks")}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px ${
             tab === "showlandmarks"
-              ? "border-red-500 text-red-600"
+              ? "border-[#20a8d8] text-[#20a8d8]"
               : "border-transparent text-gray-500 hover:text-gray-700"
           }`}
         >

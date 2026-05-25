@@ -26,7 +26,7 @@ export function ListingsScreen() {
           onClick={() => setStatusFilter("")}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px ${
             statusFilter === ""
-              ? "border-red-500 text-red-600"
+              ? "border-[#20a8d8] text-[#20a8d8]"
               : "border-transparent text-gray-500 hover:text-gray-700"
           }`}
         >
@@ -36,7 +36,7 @@ export function ListingsScreen() {
           onClick={() => setStatusFilter("ACTIVE")}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px ${
             statusFilter === "ACTIVE"
-              ? "border-red-500 text-red-600"
+              ? "border-[#20a8d8] text-[#20a8d8]"
               : "border-transparent text-gray-500 hover:text-gray-700"
           }`}
         >
@@ -46,7 +46,7 @@ export function ListingsScreen() {
           onClick={() => setStatusFilter("HIDDEN")}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px ${
             statusFilter === "HIDDEN"
-              ? "border-red-500 text-red-600"
+              ? "border-[#20a8d8] text-[#20a8d8]"
               : "border-transparent text-gray-500 hover:text-gray-700"
           }`}
         >
@@ -56,7 +56,7 @@ export function ListingsScreen() {
           onClick={() => setStatusFilter("DELETED")}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px ${
             statusFilter === "DELETED"
-              ? "border-red-500 text-red-600"
+              ? "border-[#20a8d8] text-[#20a8d8]"
               : "border-transparent text-gray-500 hover:text-gray-700"
           }`}
         >
