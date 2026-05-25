@@ -146,6 +146,13 @@ export function ListingsScreen() {
                         Chi tiết
                       </button>
 
+                      <a
+                        href={`/admin/inventory?listingId=${item.id}`}
+                        className="text-xs px-2 py-1 rounded bg-purple-50 text-purple-600 hover:bg-purple-100 font-medium"
+                      >
+                        Tồn kho
+                      </a>
+
                       {item.status === "HIDDEN" && (
                         <button
                           onClick={() => handleUpdateStatus(item.id, "ACTIVE")}

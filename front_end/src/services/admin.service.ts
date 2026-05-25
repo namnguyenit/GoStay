@@ -58,6 +58,36 @@ const AdminService = {
   },
 
   // ==========================================
+  // ENTERPRISES (Identity Admin)
+  // ==========================================
+  getPendingEnterprises: async (page = 0, size = 20) => {
+    // GET /api/v1/admin/enterprises → Enterprise PENDING
+    return await Api.get(`/v1/admin/enterprises?page=${page}&size=${size}`);
+  },
+
+  getAllEnterprises: async (page = 0, size = 20) => {
+    // GET /api/v1/admin/enterprises/all → Tất cả Enterprises
+    return await Api.get(`/v1/admin/enterprises/all?page=${page}&size=${size}`);
+  },
+
+  getApprovedEnterprises: async (page = 0, size = 20) => {
+    // GET /api/v1/admin/enterprises/approved → Danh sách Enterprise APPROVED
+    return await Api.get(`/v1/admin/enterprises/approved?page=${page}&size=${size}`);
+  },
+
+  approveEnterprise: async (accountId: string, approved: boolean) => {
+    // PUT /api/v1/admin/enterprises/{accountId}/approval
+    return await Api.put(`/v1/admin/enterprises/${accountId}/approval?type=ENTERPRISE`, { 
+      status: approved ? "APPROVED" : "REJECTED" 
+    });
+  },
+
+  completeEnterpriseUpgrade: async (accountId: string) => {
+    // POST /api/v1/admin/enterprises/{accountId}/success
+    return await Api.post(`/v1/admin/enterprises/${accountId}/success`, {});
+  },
+
+  // ==========================================
   // LANDMARKS (Catalog Admin)
   // ==========================================
   getLandmarkSuggestions: async (status?: string, page = 0, size = 20) => {
@@ -115,6 +145,11 @@ const AdminService = {
   // ==========================================
   // INVENTORY (Booking Admin)
   // ==========================================
+  getInventoryAvailability: async (listingId: string, startDate: string, endDate: string) => {
+    // GET /api/v1/public/inventory/listings/{listingId}/availability
+    return await Api.get(`/v1/public/inventory/listings/${listingId}/availability?startDate=${startDate}&endDate=${endDate}`);
+  },
+
   forceUpdateInventory: async (listingId: string, data: any) => {
     // PUT /api/v1/admin/inventory/listings/{listingId}/force-update
     return await Api.put(`/v1/admin/inventory/listings/${listingId}/force-update`, data);

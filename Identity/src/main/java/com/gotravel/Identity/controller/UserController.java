@@ -58,6 +58,23 @@ public class UserController {
         return ApiRequest.success(SuccessCode.GET_ALL_HOSTS_SUCCESS, userService.getAllHosts(page, size));
     }
 
+    @GetMapping("/enterprises")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiRequest<PageResponse<UserResponse>> getAllEnterprisePending(
+            @RequestParam(defaultValue = "PENDING") String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ApiRequest.success(SuccessCode.GET_HOSTS_SUCCESS, userService.getEnterprisesByStatus(page, size, status));
+    }
+
+    @GetMapping("/enterprises/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiRequest<PageResponse<UserResponse>> getAllEnterprises(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ApiRequest.success(SuccessCode.GET_ALL_HOSTS_SUCCESS, userService.getAllEnterprises(page, size));
+    }
+
 
     @GetMapping("/hosts/{accountId}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -166,6 +183,13 @@ public class UserController {
     public ApiRequest<UserResponse> successUpgradeToHost(@PathVariable String id) {
         Boolean check = userService.successUpgradeToHost(id);
         return ApiRequest.success(SuccessCode.UPGRADE_TO_HOST_SUCCESS, null, check);
+    }
+
+    @PostMapping("/{id}/successupgradetoenterprise")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ApiRequest<UserResponse> successUpgradeToEnterprise(@PathVariable String id) {
+        Boolean check = userService.successUpgradeToEnterprise(id);
+        return ApiRequest.success(SuccessCode.UPGRADE_TO_ENTERPRISE_SUCCESS, null, check);
     }
 
     @PostMapping("/me/upgradetoenterprise")

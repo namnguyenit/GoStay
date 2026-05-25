@@ -44,6 +44,7 @@ public class UserService {
     final UserMapper userMapper;
     final RoleRepository roleRepository;
     final HostProfileRepository hostProfileRepository;
+    final com.gotravel.Identity.repository.EnterpriseProfileRepository enterpriseProfileRepository;
     final PasswordEncoder passwordEncoder;
     /**
      * hàm sẽ set role mặc định là USER khi tạo tài khoản và setProvider Local
@@ -329,6 +330,30 @@ public class UserService {
                 .build();
     }
 
+    public PageResponse<UserResponse> getEnterprisesByStatus(int page, int size, String status) {
+        Pageable pageable = PageRequest.of(page, size);
+        Approval_status approvalStatus = Approval_status.valueOf(status.toUpperCase());
+
+        Page<EnterpriseProfile> entPage = enterpriseProfileRepository.findAllByApprovalStatus(approvalStatus, pageable);
+
+        return PageResponse.<UserResponse>builder()
+                .content(entPage.getContent().stream().map(ep -> userMapper.userToUserResponse(ep.getUser())).toList())
+                .totalPages(entPage.getTotalPages())
+                .totalElements(entPage.getTotalElements())
+                .build();
+    }
+
+    public PageResponse<UserResponse> getAllEnterprises(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<EnterpriseProfile> entPage = enterpriseProfileRepository.findAll(pageable);
+
+        return PageResponse.<UserResponse>builder()
+                .content(entPage.getContent().stream().map(ep -> userMapper.userToUserResponse(ep.getUser())).toList())
+                .totalPages(entPage.getTotalPages())
+                .totalElements(entPage.getTotalElements())
+                .build();
+    }
+
     @Transactional
     public Boolean approvalHostStatus(String userId,String type, ApprovalRequest request) {
         User user = findUserById(userId);
@@ -369,6 +394,17 @@ public class UserService {
     public boolean successUpgradeToHost(String userId){
         User user = findUserById(userId);
         Role role = roleRepository.findById("HOST")
+                .orElseThrow(() -> new AppException(UserErrorCode.ROLE_NOT_FOUND));
+
+        user.getRoles().add(role);
+        userRepository.save(user);
+        return true;
+    }
+
+    @Transactional
+    public boolean successUpgradeToEnterprise(String userId){
+        User user = findUserById(userId);
+        Role role = roleRepository.findById("ENTERPRISE")
                 .orElseThrow(() -> new AppException(UserErrorCode.ROLE_NOT_FOUND));
 
         user.getRoles().add(role);

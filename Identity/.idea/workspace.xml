@@ -5,34 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d2d4dc8d-e433-4093-a36d-060757ca3890" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/../front_end/src/screens/admin/inventory/InventoryScreen.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../front_end/src/screens/admin/inventory/hook/useAdminInventory.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../BookingandInventory/src/main/resources/application.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/../BookingandInventory/src/main/resources/application.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../CartandOrder/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../CartandOrder/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../CartandOrder/src/main/resources/application.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/../CartandOrder/src/main/resources/application.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../CatalogandListing/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../CatalogandListing/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../CatalogandListing/src/main/java/com/Listing/CatalogandListing/controller/CatalogAdminController.java" beforeDir="false" afterPath="$PROJECT_DIR$/../CatalogandListing/src/main/java/com/Listing/CatalogandListing/controller/CatalogAdminController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../CatalogandListing/src/main/java/com/Listing/CatalogandListing/repository/LandmarkRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/../CatalogandListing/src/main/java/com/Listing/CatalogandListing/repository/LandmarkRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../CatalogandListing/src/main/java/com/Listing/CatalogandListing/repository/ListingRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/../CatalogandListing/src/main/java/com/Listing/CatalogandListing/repository/ListingRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../CatalogandListing/src/main/java/com/Listing/CatalogandListing/service/LandmarkService.java" beforeDir="false" afterPath="$PROJECT_DIR$/../CatalogandListing/src/main/java/com/Listing/CatalogandListing/service/LandmarkService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../CatalogandListing/src/main/java/com/Listing/CatalogandListing/service/ListingService.java" beforeDir="false" afterPath="$PROJECT_DIR$/../CatalogandListing/src/main/java/com/Listing/CatalogandListing/service/ListingService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../CatalogandListing/src/main/resources/application.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/../CatalogandListing/src/main/resources/application.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/controller/UserController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/dto/response/UserResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/dto/response/UserResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/repository/UserRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/service/UserService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application-prod.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application-prod.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../PaymentandWallet/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../PaymentandWallet/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../PaymentandWallet/src/main/resources/application.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/../PaymentandWallet/src/main/resources/application.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../front_end/src/app/admin/inventory/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../front_end/src/app/admin/inventory/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../front_end/src/app/admin/landmarks/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../front_end/src/app/admin/landmarks/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../front_end/src/app/admin/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../front_end/src/app/admin/layout.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../front_end/src/app/admin/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../front_end/src/app/admin/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../front_end/src/app/admin/payouts/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../front_end/src/app/admin/payouts/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../front_end/src/app/admin/users/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../front_end/src/app/admin/users/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../front_end/src/app/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../front_end/src/app/layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front_end/src/screens/admin/inventory/InventoryScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../front_end/src/screens/admin/inventory/InventoryScreen.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front_end/src/screens/admin/inventory/hook/useAdminInventory.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../front_end/src/screens/admin/inventory/hook/useAdminInventory.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../front_end/src/services/admin.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../front_end/src/services/admin.service.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />

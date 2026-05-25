@@ -10,6 +10,8 @@ const NAV_ITEMS = [
   { href: "/admin/users", label: "👥 Quản lý Users" },
   { href: "/admin/hosts", label: "🏠 Xét duyệt Host" },
   { href: "/admin/approved-hosts", label: "✅ Hosts Đã Duyệt" },
+  { href: "/admin/enterprises", label: "💼 Xét duyệt Enterprise" },
+  { href: "/admin/approved-enterprises", label: "🏢 DN Đã Duyệt" },
   { href: "/admin/landmarks", label: "📍 Địa danh" },
   { href: "/admin/listings", label: "🏨 Quản lý Dịch vụ" },
   { href: "/admin/inventory", label: "📦 Tồn kho" },

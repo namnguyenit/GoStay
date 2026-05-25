@@ -145,6 +145,16 @@ export const identityRoutes = [
             url = url.replace(/^\/api\/v1\/admin\/hosts\/([^\/]+)\/success$/, '/api/users/$1/successupgradetohost'); // POST Complete upgrade
             url = url.replace(/^\/api\/v1\/admin\/hosts\/([^\/]+)$/, '/api/users/hosts/$1'); // GET Host Detail
 
+            // --- Quản lý Enterprises ---
+            if (url === '/api/v1/admin/enterprises/approved') {
+                return `/api/users/enterprises?status=APPROVED${parts[1] ? '&' + parts[1] : ''}`;
+            }
+
+            url = url.replace(/^\/api\/v1\/admin\/enterprises\/?$/, '/api/users/enterprises'); // GET Enterprise Pending
+            url = url.replace(/^\/api\/v1\/admin\/enterprises\/all$/, '/api/users/enterprises/all'); // GET All Enterprises
+            url = url.replace(/^\/api\/v1\/admin\/enterprises\/([^\/]+)\/approval$/, '/api/users/$1/approvalstatus'); // PUT Approve/Reject
+            url = url.replace(/^\/api\/v1\/admin\/enterprises\/([^\/]+)\/success$/, '/api/users/$1/successupgradetoenterprise'); // POST Complete upgrade
+
             return url + query;
         }
     }
