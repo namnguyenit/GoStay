@@ -37,9 +37,8 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     public ApiRequest<PageResponse<UserResponse>> getAllUser(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "ACTIVE") String status) {
-        return ApiRequest.success(SuccessCode.GET_USERS_SUCCESS, userService.getAllUsers(page, size, status));
+            @RequestParam(defaultValue = "10") int size) {
+        return ApiRequest.success(SuccessCode.GET_USERS_SUCCESS, userService.getAllUsers(page, size));
     }
 
     @GetMapping("/hosts")

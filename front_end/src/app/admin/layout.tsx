@@ -9,7 +9,9 @@ const NAV_ITEMS = [
   { href: "/admin", label: "📊 Tổng quan", exact: true },
   { href: "/admin/users", label: "👥 Quản lý Users" },
   { href: "/admin/hosts", label: "🏠 Xét duyệt Host" },
+  { href: "/admin/approved-hosts", label: "✅ Hosts Đã Duyệt" },
   { href: "/admin/landmarks", label: "📍 Địa danh" },
+  { href: "/admin/listings", label: "🏨 Quản lý Dịch vụ" },
   { href: "/admin/inventory", label: "📦 Tồn kho" },
   { href: "/admin/payouts", label: "💰 Payout Hosts" },
 ];

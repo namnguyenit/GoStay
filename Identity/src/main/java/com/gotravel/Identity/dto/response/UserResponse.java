@@ -15,6 +15,7 @@ public class UserResponse {
     String username;
     String email;
     Boolean isActive;
+    Boolean isDeleted;
     Provider provider;
     Set<String> roles;
     String avatarUrl;

@@ -101,4 +101,35 @@ public class ListingService {
         listing.setStatus(ListingStatus.DELETED);
         listingRepository.save(listing);
     }
+
+    public PaginationResponse<ListingDetailResponse> getAllListings(String status, int page, int size) {
+        Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
+        Page<Listing> listingPage;
+        if (status != null && !status.isBlank()) {
+            ListingStatus enumStatus = ListingStatus.valueOf(status.toUpperCase());
+            listingPage = listingRepository.findByStatus(enumStatus, pageable);
+        } else {
+            listingPage = listingRepository.findAll(pageable);
+        }
+
+        java.util.List<ListingDetailResponse> dtoList = listingPage.getContent()
+                .stream()
+                .map(listingMapper::toDetailResponse)
+                .collect(java.util.stream.Collectors.toList());
+
+        return PaginationResponse.<ListingDetailResponse>builder()
+                .content(dtoList)
+                .totalPages(listingPage.getTotalPages())
+                .totalElements(listingPage.getTotalElements())
+                .build();
+    }
+
+    public void changeListingStatus(UUID listingId, ListingStatus status) {
+        Listing listing = listingRepository.findById(listingId)
+                .orElseThrow(() -> new com.Listing.CatalogandListing.exception.AppException(
+                        com.Listing.CatalogandListing.exception.ListingErrorCode.LISTING_NOT_FOUND));
+
+        listing.setStatus(status);
+        listingRepository.save(listing);
+    }
 }

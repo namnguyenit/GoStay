@@ -26,7 +26,7 @@ export const setupProxy = (app) => {
         app.use(route.url, middlewares, createProxyMiddleware({
             target: route.target,
             changeOrigin: true,
-            pathRewrite: route.pathRewrite,
+            pathRewrite: route.pathRewrite || ((path, req) => req.originalUrl),
             onError: (err, req, res) => {
                 console.error(`[Proxy Error] Chết kết nối tới ${route.target}${req.url} - Lý do: ${err.message}`);
                 if (!res.headersSent){

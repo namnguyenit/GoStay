@@ -98,11 +98,9 @@ public class UserService {
      * lấy cả người dùng bị ban hay bị xoá
      * @return list người dùng
      */
-    public PageResponse<UserResponse> getAllUsers(int page, int size, String status) {
+    public PageResponse<UserResponse> getAllUsers(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        boolean isDeleted = !"BANNED".equalsIgnoreCase(status);
-
-        Page<User> userPage = userRepository.findAllByIsActive(isDeleted, pageable);
+        Page<User> userPage = userRepository.findAllByRoles_Name("USER",pageable);
 
         return PageResponse.<UserResponse>builder()
                 .content(userPage.getContent().stream().map(userMapper::userToUserResponse).toList())
@@ -535,6 +533,7 @@ public class UserService {
 
         return user;
     }
+
 
     public UserStatusResponese checkUserStatus(String userId) {
         User user = userRepository.findById(userId)

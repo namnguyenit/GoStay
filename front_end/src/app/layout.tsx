@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Merriweather } from "next/font/google";
+import { Inter } from "next/font/google";
 import "@/styles/globals.css";
 import { AppProvider } from "../features/app/providers/app.provider";
 
@@ -11,9 +11,8 @@ export const metadata: Metadata = {
   },
 };
 
-const fontSans = Merriweather({
+const fontSans = Inter({
   variable: "--font-sans",
-  weight: "variable",
   subsets: ["latin"],
 });
 

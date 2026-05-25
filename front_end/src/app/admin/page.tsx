@@ -29,7 +29,7 @@ export default function AdminDashboardPage() {
           AdminService.getUsers(0, 5),
           AdminService.getPendingHosts(0, 1),
           AdminService.getAllHosts(0, 1),
-          AdminService.getLandmarkSuggestions(0, 1),
+          AdminService.getLandmarkSuggestions("PENDING", 0, 1),
         ]);
 
         if (usersRes.status === "fulfilled" && usersRes.value?.data) {

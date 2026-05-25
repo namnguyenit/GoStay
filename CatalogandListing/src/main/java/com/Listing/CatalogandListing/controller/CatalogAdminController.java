@@ -20,6 +20,7 @@ import java.util.UUID;
 public class CatalogAdminController {
 
     final LandmarkService landmarkService;
+    final com.Listing.CatalogandListing.service.ListingService listingService;
 
     /**
      * 3.4.1. Xem danh sách Đề xuất Địa danh (Landmark Suggestions)
@@ -56,6 +57,19 @@ public class CatalogAdminController {
             @RequestBody @Valid UpdateSuggestionStatusRequest request) {
         landmarkService.updateSuggestionStatus(suggestionId, request);
         return ResponseEntity.ok(ApiResponse.success("Xử lý đề xuất địa danh thành công."));
+    }
+
+    /**
+     * GET /api/v1/catalog/admin/landmarks
+     * Lấy danh sách địa danh chính thức có phân trang và lọc trạng thái
+     */
+    @GetMapping("/landmarks")
+    public ResponseEntity<ApiResponse<PaginationResponse<com.Listing.CatalogandListing.entity.Landmark>>> getLandmarks(
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        PaginationResponse<com.Listing.CatalogandListing.entity.Landmark> response = landmarkService.getLandmarks(status, page, size);
+        return ResponseEntity.ok(ApiResponse.success("Lấy danh sách địa danh thành công.", response));
     }
 
     /**
@@ -104,5 +118,30 @@ public class CatalogAdminController {
             @RequestBody @Valid UpdateLandmarkStatusRequest request) {
         landmarkService.changeLandmarkStatus(landmarkId, request);
         return ResponseEntity.ok(ApiResponse.success("Đổi trạng thái địa danh thành công."));
+    }
+
+    /**
+     * GET /api/v1/catalog/admin/listings
+     * Quản lý - Xem tất cả các Listing chính thức của GoStay
+     */
+    @GetMapping("/listings")
+    public ResponseEntity<ApiResponse<PaginationResponse<com.Listing.CatalogandListing.dto.response.ListingDetailResponse>>> getListings(
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        PaginationResponse<com.Listing.CatalogandListing.dto.response.ListingDetailResponse> response = listingService.getAllListings(status, page, size);
+        return ResponseEntity.ok(ApiResponse.success("Lấy danh sách dịch vụ thành công.", response));
+    }
+
+    /**
+     * PATCH /api/v1/catalog/admin/listings/{listingId}/status
+     * Quản lý - Phê duyệt hoặc thay đổi trạng thái hoạt động của Listing
+     */
+    @PatchMapping("/listings/{listingId}/status")
+    public ResponseEntity<ApiResponse<Void>> changeListingStatus(
+            @PathVariable UUID listingId,
+            @RequestParam String status) {
+        listingService.changeListingStatus(listingId, com.Listing.CatalogandListing.enums.ListingStatus.valueOf(status.toUpperCase()));
+        return ResponseEntity.ok(ApiResponse.success("Đổi trạng thái dịch vụ thành công."));
     }
 }

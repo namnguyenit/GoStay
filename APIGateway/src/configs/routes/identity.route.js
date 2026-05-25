@@ -135,6 +135,10 @@ export const identityRoutes = [
             url = url.replace(/^\/api\/v1\/admin\/accounts\/([^\/]+)\/status$/, '/api/users/accounts/$1/status'); // PUT ban/unban
 
             // --- Quản lý Hosts ---
+            if (url === '/api/v1/admin/hosts/approved') {
+                return `/api/users/hosts?status=APPROVED${parts[1] ? '&' + parts[1] : ''}`;
+            }
+
             url = url.replace(/^\/api\/v1\/admin\/hosts\/?$/, '/api/users/hosts'); // GET Host Pending
             url = url.replace(/^\/api\/v1\/admin\/hosts\/all$/, '/api/users/hosts/all'); // GET All Hosts
             url = url.replace(/^\/api\/v1\/admin\/hosts\/([^\/]+)\/approval$/, '/api/users/$1/approvalstatus'); // PUT Approve/Reject

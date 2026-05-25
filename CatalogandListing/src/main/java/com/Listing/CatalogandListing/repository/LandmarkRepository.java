@@ -13,4 +13,5 @@ public interface LandmarkRepository extends JpaRepository<Landmark, UUID> {
     List<Landmark> findByProvince(String province);
     List<Landmark> findByIsFeaturedTrue();
     List<Landmark> findByStatus(LandmarkStatus status);
+    org.springframework.data.domain.Page<Landmark> findByStatus(LandmarkStatus status, org.springframework.data.domain.Pageable pageable);
 }

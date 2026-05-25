@@ -104,4 +104,21 @@ public class LandmarkService {
         landmark.setStatus(request.getStatus());
         landmarkRepository.save(landmark);
     }
+
+    public PaginationResponse<Landmark> getLandmarks(String status, int page, int size) {
+        Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
+        Page<Landmark> landmarkPage;
+        if (status != null && !status.isBlank()) {
+            com.Listing.CatalogandListing.enums.LandmarkStatus enumStatus = com.Listing.CatalogandListing.enums.LandmarkStatus.valueOf(status.toUpperCase());
+            landmarkPage = landmarkRepository.findByStatus(enumStatus, pageable);
+        } else {
+            landmarkPage = landmarkRepository.findAll(pageable);
+        }
+
+        return PaginationResponse.<Landmark>builder()
+                .content(landmarkPage.getContent())
+                .totalPages(landmarkPage.getTotalPages())
+                .totalElements(landmarkPage.getTotalElements())
+                .build();
+    }
 }

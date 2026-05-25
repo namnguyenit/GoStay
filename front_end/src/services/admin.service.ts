@@ -18,8 +18,8 @@ const AdminService = {
   },
 
   upgradeRole: async (id: string, role: string) => {
-    // POST /api/v1/users/{id}/upgraderole
-    return await Api.post(`/v1/users/${id}/upgraderole?role=${role}`, null);
+    // POST /api/v1/admin/users/{id}/role
+    return await Api.post(`/v1/admin/users/${id}/role?role=${role}`, null);
   },
 
   // ==========================================
@@ -35,6 +35,11 @@ const AdminService = {
     return await Api.get(`/v1/admin/hosts/all?page=${page}&size=${size}`);
   },
 
+  getApprovedHosts: async (page = 0, size = 20) => {
+    // GET /api/v1/admin/hosts/approved → Danh sách Host APPROVED
+    return await Api.get(`/v1/admin/hosts/approved?page=${page}&size=${size}`);
+  },
+
   getHostDetail: async (accountId: string) => {
     // GET /api/v1/admin/hosts/{accountId}
     return await Api.get(`/v1/admin/hosts/${accountId}`);
@@ -42,7 +47,9 @@ const AdminService = {
 
   approveHost: async (accountId: string, approved: boolean) => {
     // PUT /api/v1/admin/hosts/{accountId}/approval
-    return await Api.put(`/v1/admin/hosts/${accountId}/approval`, { approved });
+    return await Api.put(`/v1/admin/hosts/${accountId}/approval?type=HOST`, { 
+      status: approved ? "APPROVED" : "REJECTED" 
+    });
   },
 
   completeHostUpgrade: async (accountId: string) => {
@@ -53,14 +60,21 @@ const AdminService = {
   // ==========================================
   // LANDMARKS (Catalog Admin)
   // ==========================================
-  getLandmarkSuggestions: async (page = 0, size = 20) => {
+  getLandmarkSuggestions: async (status?: string, page = 0, size = 20) => {
     // GET /api/v1/catalog/admin/landmark-suggestions
-    return await Api.get(`/v1/catalog/admin/landmark-suggestions?page=${page}&size=${size}`);
+    const statusQuery = status ? `&status=${status}` : "";
+    return await Api.get(`/v1/catalog/admin/landmark-suggestions?page=${page}&size=${size}${statusQuery}`);
   },
 
   updateLandmarkSuggestionStatus: async (id: string, status: string) => {
     // PUT /api/v1/catalog/admin/landmark-suggestions/{id}/status
     return await Api.put(`/v1/catalog/admin/landmark-suggestions/${id}/status`, { status });
+  },
+
+  getLandmarks: async (status?: string, page = 0, size = 20) => {
+    // GET /api/v1/catalog/admin/landmarks
+    const statusQuery = status ? `&status=${status}` : "";
+    return await Api.get(`/v1/catalog/admin/landmarks?page=${page}&size=${size}${statusQuery}`);
   },
 
   createLandmark: async (data: {
@@ -82,6 +96,20 @@ const AdminService = {
   changeLandmarkStatus: async (landmarkId: string, status: string) => {
     // PATCH /api/v1/catalog/admin/landmarks/{landmarkId}/status
     return await Api.patch(`/v1/catalog/admin/landmarks/${landmarkId}/status`, { status });
+  },
+
+  // ==========================================
+  // LISTINGS (Catalog Admin)
+  // ==========================================
+  getListings: async (status?: string, page = 0, size = 20) => {
+    // GET /api/v1/catalog/admin/listings
+    const statusQuery = status ? `&status=${status}` : "";
+    return await Api.get(`/v1/catalog/admin/listings?page=${page}&size=${size}${statusQuery}`);
+  },
+
+  changeListingStatus: async (listingId: string, status: string) => {
+    // PATCH /api/v1/catalog/admin/listings/{listingId}/status
+    return await Api.patch(`/v1/catalog/admin/listings/${listingId}/status?status=${status}`, {});
   },
 
   // ==========================================

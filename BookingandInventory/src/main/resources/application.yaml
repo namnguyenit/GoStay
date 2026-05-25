@@ -9,4 +9,4 @@ server:
   port: 8083
 internal:
   service:
-    token: ${INTERNAL_SERVICE_TOKEN:}
+    token: ${INTERNAL_SERVICE_TOKEN:gostay-internal-secret-token-12345}
