@@ -16,7 +16,7 @@ const PlaceServices = {
     // Map
     const mapper = mapPlaces(parsed.data);
 
-    console.log(mapper);
+    // console.log(mapper);
     return mapper;
   },
 };
