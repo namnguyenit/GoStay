@@ -8,7 +8,10 @@ const request = async (endpoint: string, options: RequestInit = {}) => {
   const headers = new Headers(options.headers || {});
   
   headers.set("Content-Type", "application/json");
-  if (token) {
+  
+  // Không gửi token Authorization đối với các API public như login, register
+  const isPublicEndpoint = endpoint.startsWith("/v1/auth/") || endpoint.includes(".well-known");
+  if (token && !isPublicEndpoint) {
     headers.set("Authorization", `Bearer ${token}`);
   }
 
@@ -20,7 +23,31 @@ const request = async (endpoint: string, options: RequestInit = {}) => {
   const contentType = res.headers.get("content-type");
   if (!contentType || !contentType.includes("application/json")) {
     const text = await res.text();
-    throw new Error(`API response is not JSON. Status: ${res.status}. Body: ${text.slice(0, 150)}`);
+    
+    // Xử lý lỗi từ Security Filter hoặc Gateway trả về không có body JSON
+    if (res.status === 401) {
+      throw {
+        success: false,
+        status: 401,
+        code: "UNAUTHENTICATED",
+        message: "Phiên đăng nhập không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại."
+      };
+    }
+    if (res.status === 403) {
+      throw {
+        success: false,
+        status: 403,
+        code: "FORBIDDEN",
+        message: "Bạn không có quyền truy cập chức năng này."
+      };
+    }
+    
+    throw {
+      success: false,
+      status: res.status,
+      code: "API_ERROR",
+      message: text || `API response is not JSON. Status: ${res.status}`
+    };
   }
 
   const json = await res.json();

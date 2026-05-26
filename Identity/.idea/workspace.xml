@@ -4,11 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d2d4dc8d-e433-4093-a36d-060757ca3890" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/../front_end/src/screens/admin/inventory/InventoryScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../front_end/src/screens/admin/inventory/InventoryScreen.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../front_end/src/screens/admin/inventory/hook/useAdminInventory.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../front_end/src/screens/admin/inventory/hook/useAdminInventory.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../front_end/src/services/admin.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../front_end/src/services/admin.service.ts" afterDir="false" />
-    </list>
+    <list default="true" id="d2d4dc8d-e433-4093-a36d-060757ca3890" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
