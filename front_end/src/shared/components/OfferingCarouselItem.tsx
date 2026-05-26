@@ -5,7 +5,7 @@ import { Star } from "lucide-react";
 
 type Offering =
   | {
-      id: string;
+      id?: string;
       name?: string;
       description?: string;
       image?: string;

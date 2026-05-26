@@ -1,9 +1,9 @@
 "use client";
 
 import { createContext, ReactNode } from "react";
-import { Experiences } from "@/features/experience";
-import { Places } from "@/features/place";
-import { Services } from "@/features/service";
+import type { Experiences } from "@/modules/experience";
+import type { Places } from "@/modules/place";
+import type { Services } from "@/modules/service";
 import { useHome, UseHome } from "../hooks/useHome";
 
 type HomeProviderProp = {

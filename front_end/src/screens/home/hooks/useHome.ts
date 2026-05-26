@@ -1,9 +1,9 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { type Experiences } from "@/features/experience";
-import { type Places } from "@/features/place";
-import { type Services } from "@/features/service";
+import type { Experiences } from "@/modules/experience";
+import type { Places } from "@/modules/place";
+import type { Services } from "@/modules/service";
 
 export const useHome = (
   initExperiences: Experiences,

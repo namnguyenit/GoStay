@@ -1,3 +1,3 @@
-export { default as ExperienceService } from "./experience.service";
-export { default as PlaceService } from "./place.service";
-export { default as ServiceService } from "./service.service";
+export { default as ExperienceServices } from "./experience";
+export { default as PlaceServices } from "./place";
+export { default as ServiceServices } from "./service";
