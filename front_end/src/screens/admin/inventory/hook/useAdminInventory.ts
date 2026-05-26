@@ -11,6 +11,8 @@ export function useAdminInventory() {
   const [forceUpdateData, setForceUpdateData] = useState({
     status: "",
     reason: "",
+    startDate: new Date().toISOString().split("T")[0],
+    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
   });
   const [loading, setLoading] = useState(false);
   const [actionResult, setActionResult] = useState<{ type: "success" | "error"; message: string } | null>(null);
@@ -77,18 +79,63 @@ export function useAdminInventory() {
 
   const handleForceUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!listingId || !forceUpdateData.status) {
-      alert("Vui lòng chọn hoặc nhập Listing ID và chọn trạng thái.");
+    if (!listingId || !forceUpdateData.status || !forceUpdateData.startDate || !forceUpdateData.endDate) {
+      alert("Vui lòng chọn Listing ID, chọn trạng thái và khoảng thời gian can thiệp.");
       return;
     }
     setLoading(true);
     setActionResult(null);
     try {
       await AdminService.forceUpdateInventory(listingId, forceUpdateData);
-      setActionResult({ type: "success", message: `Phong tỏa / Can thiệp trạng thái dịch vụ thành công.` });
+      setActionResult({ type: "success", message: `Thực thi cập nhật cưỡng chế trạng thái kho thành công.` });
       fetchAvailability();
     } catch (err: any) {
       setActionResult({ type: "error", message: err?.message || "Có lỗi xảy ra khi can thiệp." });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const [selectedDateDetail, setSelectedDateDetail] = useState<any | null>(null);
+
+  const handleQuickForceUpdate = async (dateStr: string, newStatus: string) => {
+    if (!listingId) return;
+    setLoading(true);
+    setActionResult(null);
+    try {
+      await AdminService.forceUpdateInventory(listingId, {
+        status: newStatus,
+        reason: `Can thiệp khẩn cấp ngày ${dateStr}`,
+        startDate: dateStr,
+        endDate: dateStr,
+      });
+      setActionResult({ type: "success", message: `Can thiệp trạng thái ngày ${dateStr} thành công.` });
+      await fetchAvailability();
+      
+      // Cập nhật state modal cục bộ để đồng bộ giao diện
+      setSelectedDateDetail((prev: any) => prev ? { ...prev, status: newStatus === "BLOCKED" ? "BLOCKED" : "AVAILABLE" } : null);
+    } catch (err: any) {
+      setActionResult({ type: "error", message: err?.message || "Có lỗi xảy ra khi can thiệp." });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleQuickRangeUnlock = async (startStr: string, endStr: string) => {
+    if (!listingId) return;
+    setLoading(true);
+    setActionResult(null);
+    try {
+      await AdminService.forceUpdateInventory(listingId, {
+        status: "AVAILABLE",
+        reason: `Mở khóa nhanh khoảng ngày từ ${startStr} đến ${endStr}`,
+        startDate: startStr,
+        endDate: endStr,
+      });
+      setActionResult({ type: "success", message: `Mở khóa khoảng ngày từ ${startStr} đến ${endStr} thành công.` });
+      await fetchAvailability();
+    } catch (err: any) {
+      setActionResult({ type: "error", message: err?.message || "Có lỗi xảy ra khi mở khóa." });
     } finally {
       setLoading(false);
     }
@@ -125,6 +172,10 @@ export function useAdminInventory() {
     actionResult,
     handleForceUpdate,
     handleSync,
+    selectedDateDetail,
+    setSelectedDateDetail,
+    handleQuickForceUpdate,
+    handleQuickRangeUnlock,
     refreshAvailability: fetchAvailability,
   };
 }

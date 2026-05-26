@@ -136,6 +136,10 @@ public class InventoryInternalService {
                         item.getListingId(), current, timeSlot)
                         .orElseThrow(() -> new AppException(InventoryErrorCode.INVENTORY_CALENDAR_NOT_FOUND));
                 
+                if (calendar.getStatus() == InventoryCalendarStatus.BLOCKED) {
+                    throw new AppException(InventoryErrorCode.INVENTORY_BLOCKED);
+                }
+                
                 if (calendar.getAvailableQuantity() < item.getQuantity()) {
                     throw new AppException(InventoryErrorCode.OVERBOOKING_DETECTED);
                 }

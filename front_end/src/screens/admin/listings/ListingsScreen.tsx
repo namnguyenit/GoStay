@@ -266,16 +266,35 @@ export function ListingsScreen() {
                 </div>
               )}
 
+               {/* Bộ sưu tập ảnh */}
+               {selectedListing.attributes?.galleryUrls && selectedListing.attributes.galleryUrls.length > 0 && (
+                <div>
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Bộ sưu tập ảnh</h4>
+                  <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
+                    {selectedListing.attributes.galleryUrls.map((url: string, i: number) => (
+                      <img
+                        key={i}
+                        src={url}
+                        alt={`gallery-${i}`}
+                        className="w-32 h-20 object-cover rounded-lg border border-gray-100 flex-shrink-0"
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {selectedListing.attributes && (
                 <div>
                   <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Tiện ích đi kèm</h4>
                   <div className="grid grid-cols-2 gap-2 text-sm">
-                    {Object.entries(selectedListing.attributes).map(([key, val]) => (
-                      <div key={key} className="flex justify-between p-2 bg-gray-50 rounded border border-gray-100">
-                        <span className="text-gray-500 font-medium capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
-                        <span className="text-gray-800 font-semibold">{val?.toString() === "true" ? "Có" : val?.toString() === "false" ? "Không" : val?.toString()}</span>
-                      </div>
-                    ))}
+                    {Object.entries(selectedListing.attributes)
+                      .filter(([key]) => key !== "galleryUrls" && key !== "categoryType")
+                      .map(([key, val]) => (
+                        <div key={key} className="flex justify-between p-2 bg-gray-50 rounded border border-gray-100">
+                          <span className="text-gray-500 font-medium capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
+                          <span className="text-gray-800 font-semibold">{val?.toString() === "true" ? "Có" : val?.toString() === "false" ? "Không" : val?.toString()}</span>
+                        </div>
+                      ))}
                   </div>
                 </div>
               )}

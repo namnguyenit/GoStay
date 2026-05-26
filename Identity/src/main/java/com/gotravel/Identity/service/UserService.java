@@ -77,6 +77,7 @@ public class UserService {
                 .user(user)
                 .fullName(userRequest.getFullName())
                 .phoneNumber(userRequest.getPhoneNumber())
+                .dateOfBirth(userRequest.getDateOfBirth())
                 .build();
         user.setUserProfile(userProfile);
         // lưu user

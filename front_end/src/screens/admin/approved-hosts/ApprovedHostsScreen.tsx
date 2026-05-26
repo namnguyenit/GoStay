@@ -37,8 +37,8 @@ export function ApprovedHostsScreen() {
                 <tr key={user.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 font-medium text-gray-800">{user.username}</td>
                   <td className="px-4 py-3 text-gray-500 text-xs">{user.email}</td>
-                  <td className="px-4 py-3 text-gray-500 text-xs">{user.hostProfile?.fullName || "—"}</td>
-                  <td className="px-4 py-3 text-gray-500 text-xs">{user.hostProfile?.phoneNumber || "—"}</td>
+                  <td className="px-4 py-3 text-gray-500 text-xs">{user.userProfile?.fullName || "—"}</td>
+                  <td className="px-4 py-3 text-gray-500 text-xs">{user.userProfile?.phoneNumber || "—"}</td>
                   <td className="px-4 py-3">
                     <button
                       onClick={() => setDetailModal({ open: true, user })}
@@ -86,27 +86,12 @@ export function ApprovedHostsScreen() {
                 <div>
                   <h4 className="font-semibold text-gray-800 mb-3 pb-2 border-b">Hồ sơ Host</h4>
                   <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div><span className="text-gray-500">Họ tên:</span> <span className="font-medium">{detailModal.user.hostProfile.fullName || "—"}</span></div>
-                    <div><span className="text-gray-500">SĐT:</span> <span className="font-medium">{detailModal.user.hostProfile.phoneNumber || "—"}</span></div>
-                    <div><span className="text-gray-500">Mã số thuế:</span> <span className="font-medium">{detailModal.user.hostProfile.taxCode || "—"}</span></div>
+                    <div><span className="text-gray-500">Họ tên:</span> <span className="font-medium">{detailModal.user.userProfile?.fullName || "—"}</span></div>
+                    <div><span className="text-gray-500">SĐT:</span> <span className="font-medium">{detailModal.user.userProfile?.phoneNumber || "—"}</span></div>
+                    <div><span className="text-gray-500">Số CCCD:</span> <span className="font-medium">{detailModal.user.hostProfile.cccdNumber || "—"}</span></div>
+                    <div><span className="text-gray-500">Số tài khoản:</span> <span className="font-medium">{detailModal.user.hostProfile.bankAccount || "—"}</span></div>
+                    <div className="col-span-2"><span className="text-gray-500">Ngân hàng:</span> <span className="font-medium">{detailModal.user.hostProfile.bankName || "—"}</span></div>
                   </div>
-                  
-                  {(detailModal.user.hostProfile.frontImageUrl || detailModal.user.hostProfile.backImageUrl) && (
-                    <div className="mt-4 grid grid-cols-2 gap-4">
-                      {detailModal.user.hostProfile.frontImageUrl && (
-                        <div>
-                          <p className="text-xs text-gray-500 mb-1">Mặt trước CCCD</p>
-                          <img src={detailModal.user.hostProfile.frontImageUrl} alt="CCCD Front" className="w-full h-32 object-cover rounded-lg border" />
-                        </div>
-                      )}
-                      {detailModal.user.hostProfile.backImageUrl && (
-                        <div>
-                          <p className="text-xs text-gray-500 mb-1">Mặt sau CCCD</p>
-                          <img src={detailModal.user.hostProfile.backImageUrl} alt="CCCD Back" className="w-full h-32 object-cover rounded-lg border" />
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
               )}
             </div>

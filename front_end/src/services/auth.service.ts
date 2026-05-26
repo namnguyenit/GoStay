@@ -24,7 +24,7 @@ const AuthService = {
     return res;
   },
 
-  register: async (data: { username: string; password: string; email: string; fullName: string; phoneNumber?: string }) => {
+  register: async (data: { username: string; password: string; email: string; fullName: string; phoneNumber: string; dateOfBirth: string }) => {
     const res = await Api.post("/v1/auth/register", data);
     return res;
   },

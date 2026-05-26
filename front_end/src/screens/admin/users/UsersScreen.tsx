@@ -185,8 +185,6 @@ export function UsersScreen() {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div><span className="text-gray-500">Họ tên:</span> <span className="font-medium">{detailModal.user.userProfile?.fullName || "—"}</span></div>
                   <div><span className="text-gray-500">SĐT:</span> <span className="font-medium">{detailModal.user.userProfile?.phoneNumber || "—"}</span></div>
-                  <div><span className="text-gray-500">Địa chỉ:</span> <span className="font-medium">{detailModal.user.userProfile?.address || "—"}</span></div>
-                  <div><span className="text-gray-500">Giới tính:</span> <span className="font-medium">{detailModal.user.userProfile?.gender || "—"}</span></div>
                   <div><span className="text-gray-500">Ngày sinh:</span> <span className="font-medium">{detailModal.user.userProfile?.dateOfBirth || "—"}</span></div>
                 </div>
               </div>
@@ -196,32 +194,12 @@ export function UsersScreen() {
                 <div>
                   <h4 className="font-semibold text-gray-800 mb-3 pb-2 border-b">Hồ sơ Host</h4>
                   <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div><span className="text-gray-500">Họ tên:</span> <span className="font-medium">{detailModal.user.hostProfile.fullName || "—"}</span></div>
-                    <div><span className="text-gray-500">SĐT:</span> <span className="font-medium">{detailModal.user.hostProfile.phoneNumber || "—"}</span></div>
-                    <div><span className="text-gray-500">Mã số thuế:</span> <span className="font-medium">{detailModal.user.hostProfile.taxCode || "—"}</span></div>
-                    <div>
-                      <span className="text-gray-500">Trạng thái duyệt:</span> 
-                      <span className={`ml-2 px-2 py-0.5 rounded text-xs ${detailModal.user.hostProfile.approvalStatus === 'APPROVED' ? 'bg-green-100 text-green-700' : detailModal.user.hostProfile.approvalStatus === 'PENDING' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
-                        {detailModal.user.hostProfile.approvalStatus}
-                      </span>
-                    </div>
+                    <div><span className="text-gray-500">Họ tên:</span> <span className="font-medium">{detailModal.user.userProfile?.fullName || "—"}</span></div>
+                    <div><span className="text-gray-500">SĐT:</span> <span className="font-medium">{detailModal.user.userProfile?.phoneNumber || "—"}</span></div>
+                    <div><span className="text-gray-500">Số CCCD:</span> <span className="font-medium">{detailModal.user.hostProfile.cccdNumber || "—"}</span></div>
+                    <div><span className="text-gray-500">Số tài khoản:</span> <span className="font-medium">{detailModal.user.hostProfile.bankAccount || "—"}</span></div>
+                    <div className="col-span-2"><span className="text-gray-500">Ngân hàng:</span> <span className="font-medium">{detailModal.user.hostProfile.bankName || "—"}</span></div>
                   </div>
-                  {(detailModal.user.hostProfile.frontImageUrl || detailModal.user.hostProfile.backImageUrl) && (
-                    <div className="mt-4 grid grid-cols-2 gap-4">
-                      {detailModal.user.hostProfile.frontImageUrl && (
-                        <div>
-                          <p className="text-xs text-gray-500 mb-1">Mặt trước CCCD</p>
-                          <img src={detailModal.user.hostProfile.frontImageUrl} alt="CCCD Front" className="w-full h-32 object-cover rounded-lg border" />
-                        </div>
-                      )}
-                      {detailModal.user.hostProfile.backImageUrl && (
-                        <div>
-                          <p className="text-xs text-gray-500 mb-1">Mặt sau CCCD</p>
-                          <img src={detailModal.user.hostProfile.backImageUrl} alt="CCCD Back" className="w-full h-32 object-cover rounded-lg border" />
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
               )}
 
@@ -231,21 +209,10 @@ export function UsersScreen() {
                   <h4 className="font-semibold text-gray-800 mb-3 pb-2 border-b">Hồ sơ Doanh nghiệp</h4>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div><span className="text-gray-500">Tên công ty:</span> <span className="font-medium">{detailModal.user.enterpriseProfile.companyName || "—"}</span></div>
+                    <div><span className="text-gray-500">Người đại diện:</span> <span className="font-medium">{detailModal.user.enterpriseProfile.representativeName || "—"}</span></div>
                     <div><span className="text-gray-500">Mã số thuế DN:</span> <span className="font-medium">{detailModal.user.enterpriseProfile.taxCode || "—"}</span></div>
                     <div className="col-span-2"><span className="text-gray-500">Địa chỉ công ty:</span> <span className="font-medium">{detailModal.user.enterpriseProfile.companyAddress || "—"}</span></div>
-                    <div>
-                      <span className="text-gray-500">Trạng thái duyệt:</span> 
-                      <span className={`ml-2 px-2 py-0.5 rounded text-xs ${detailModal.user.enterpriseProfile.approvalStatus === 'APPROVED' ? 'bg-green-100 text-green-700' : detailModal.user.enterpriseProfile.approvalStatus === 'PENDING' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
-                        {detailModal.user.enterpriseProfile.approvalStatus}
-                      </span>
-                    </div>
                   </div>
-                  {detailModal.user.enterpriseProfile.businessLicenseUrl && (
-                    <div className="mt-4">
-                      <p className="text-xs text-gray-500 mb-1">Giấy phép ĐKKD</p>
-                      <img src={detailModal.user.enterpriseProfile.businessLicenseUrl} alt="License" className="max-w-xs h-32 object-cover rounded-lg border" />
-                    </div>
-                  )}
                 </div>
               )}
             </div>

@@ -12,6 +12,8 @@ public enum InventoryErrorCode implements ErrorCode {
     OVERBOOKING_DETECTED(409, "OVERBOOKING_DETECTED", "Rất tiếc, dịch vụ này không còn đủ chỗ.", HttpStatus.CONFLICT),
     INVALID_INVENTORY_ACTION(400, "INVALID_INVENTORY_ACTION", "Invalid inventory action requested",
             HttpStatus.BAD_REQUEST),
+    INVENTORY_BLOCKED(400, "INVENTORY_BLOCKED", "Dịch vụ đã bị phong tỏa trong khoảng thời gian này.",
+            HttpStatus.BAD_REQUEST),
     UNAUTHORIZED_ACCESS(403, "UNAUTHORIZED_ACCESS", "You do not have permission to perform this action",
             HttpStatus.FORBIDDEN);
 

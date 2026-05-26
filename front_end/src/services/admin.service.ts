@@ -146,8 +146,8 @@ const AdminService = {
   // INVENTORY (Booking Admin)
   // ==========================================
   getInventoryAvailability: async (listingId: string, startDate: string, endDate: string) => {
-    // GET /api/v1/public/inventory/listings/{listingId}/availability
-    return await Api.get(`/v1/public/inventory/listings/${listingId}/availability?startDate=${startDate}&endDate=${endDate}`);
+    // GET /api/v1/admin/inventory/listings/{listingId}/availability
+    return await Api.get(`/v1/admin/inventory/listings/${listingId}/availability?startDate=${startDate}&endDate=${endDate}`);
   },
 
   forceUpdateInventory: async (listingId: string, data: any) => {

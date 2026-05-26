@@ -17,6 +17,7 @@ export default function RegisterPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
@@ -26,8 +27,29 @@ export default function RegisterPage() {
     e.preventDefault();
     setError("");
 
+    if (username.trim().length < 3) {
+      setError("Tên đăng nhập phải từ 3 ký tự trở lên.");
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("Mật khẩu phải từ 8 ký tự trở lên.");
+      return;
+    }
+
     if (password !== confirmPassword) {
       setError("Mật khẩu xác nhận không khớp.");
+      return;
+    }
+
+    const phoneRegex = /^[0-9]{10,11}$/;
+    if (!phoneRegex.test(phoneNumber)) {
+      setError("Số điện thoại phải từ 10 đến 11 chữ số.");
+      return;
+    }
+
+    if (!dateOfBirth) {
+      setError("Vui lòng chọn ngày sinh.");
       return;
     }
 
@@ -38,7 +60,8 @@ export default function RegisterPage() {
         password,
         email,
         fullName,
-        phoneNumber
+        phoneNumber,
+        dateOfBirth
       });
       // Đăng ký thành công, chuyển hướng sang trang đăng nhập
       router.push("/log-in");
@@ -48,8 +71,15 @@ export default function RegisterPage() {
         EMAIL_ALREADY_EXISTS: "Email đã được sử dụng. Vui lòng dùng email khác.",
         VALIDATION_ERROR: "Thông tin không hợp lệ. Vui lòng kiểm tra lại.",
       };
-      const msg = errorMessages[err?.code] || err?.message || "Đăng ký thất bại. Vui lòng thử lại.";
-      setError(msg);
+      // Trích xuất thông tin lỗi từ API Validation (ví dụ: "phoneNumber: ...")
+      let msg = errorMessages[err?.code] || err?.message;
+      if (err?.message && err.message.includes(";")) {
+        // Gộp các lỗi validate từ backend đẹp hơn
+        msg = err.message.split(";").map((s: string) => s.split(": ").pop()).join(". ");
+      } else if (err?.message && err.message.includes(":")) {
+        msg = err.message.split(": ").pop();
+      }
+      setError(msg || "Đăng ký thất bại. Vui lòng thử lại.");
     } finally {
       setLoading(false);
     }
@@ -140,21 +170,41 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {/* Số điện thoại */}
-              <div>
-                <div className="relative">
-                  <input
-                    id="phoneNumber"
-                    type="tel"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    required
-                    className="peer w-full rounded-lg border border-[#B0B0B0] bg-white px-3 pb-1 pt-5 text-sm outline-none transition focus:border-[#222222] focus:ring-1 focus:ring-[#222222]"
-                    placeholder=" "
-                  />
-                  <label htmlFor="phoneNumber" className="pointer-events-none absolute left-3 top-1.5 z-10 origin-[0] transform text-[11px] text-[#717171] duration-150 peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-focus:top-1.5 peer-focus:text-[11px]">
-                    Số điện thoại
-                  </label>
+              <div className="flex gap-2">
+                {/* Số điện thoại */}
+                <div className="flex-1">
+                  <div className="relative">
+                    <input
+                      id="phoneNumber"
+                      type="tel"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      required
+                      className="peer w-full rounded-lg border border-[#B0B0B0] bg-white px-3 pb-1 pt-5 text-sm outline-none transition focus:border-[#222222] focus:ring-1 focus:ring-[#222222]"
+                      placeholder=" "
+                    />
+                    <label htmlFor="phoneNumber" className="pointer-events-none absolute left-3 top-1.5 z-10 origin-[0] transform text-[11px] text-[#717171] duration-150 peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-focus:top-1.5 peer-focus:text-[11px]">
+                      Số điện thoại
+                    </label>
+                  </div>
+                </div>
+
+                {/* Ngày sinh */}
+                <div className="flex-1">
+                  <div className="relative">
+                    <input
+                      id="dateOfBirth"
+                      type="date"
+                      value={dateOfBirth}
+                      onChange={(e) => setDateOfBirth(e.target.value)}
+                      required
+                      className="peer w-full rounded-lg border border-[#B0B0B0] bg-white px-3 pb-1 pt-5 text-sm outline-none transition focus:border-[#222222] focus:ring-1 focus:ring-[#222222]"
+                      placeholder=" "
+                    />
+                    <label htmlFor="dateOfBirth" className="pointer-events-none absolute left-3 top-1.5 z-10 origin-[0] transform text-[11px] text-[#717171] duration-150 peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-focus:top-1.5 peer-focus:text-[11px]">
+                      Ngày sinh
+                    </label>
+                  </div>
                 </div>
               </div>
 

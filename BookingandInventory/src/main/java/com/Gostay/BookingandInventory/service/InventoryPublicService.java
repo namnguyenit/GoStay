@@ -2,6 +2,7 @@ package com.Gostay.BookingandInventory.service;
 
 import com.Gostay.BookingandInventory.dto.response.CalendarResponse;
 import com.Gostay.BookingandInventory.entity.InventoryCalendar;
+import com.Gostay.BookingandInventory.enums.InventoryCalendarStatus;
 import com.Gostay.BookingandInventory.mapper.InventoryMapper;
 import com.Gostay.BookingandInventory.repository.InventoryCalendarRepository;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +41,7 @@ public class InventoryPublicService {
         List<InventoryCalendar> calendars = inventoryCalendarRepository.findByListingIdAndDateBetween(listingId, startDate, endDate);
         
         return calendars.stream()
-                .filter(c -> c.getAvailableQuantity() != null && c.getAvailableQuantity() > 0)
+                .filter(c -> c.getAvailableQuantity() != null && c.getAvailableQuantity() > 0 && c.getStatus() != InventoryCalendarStatus.BLOCKED)
                 .map(inventoryMapper::toCalendarResponse)
                 .collect(Collectors.toList());
     }
