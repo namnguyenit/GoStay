@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: PaymentandWallet
+  config:
+    import:
+      - optional:classpath:database.yaml
+      - optional:classpath:jwt.yaml
+      - optional:classpath:sepay.yaml
+server:
+  port: 8085
+internal:
+  service:
+    token: ${INTERNAL_SERVICE_TOKEN:gostay-internal-secret-token-12345}

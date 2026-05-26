@@ -1,0 +1,68 @@
+# Node modules
+node_modules/
+CatalogandListing/
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Build / dist
+dist/
+build/
+out/
+
+# Coverage
+coverage/
+
+# Dependency directories
+jspm_packages/
+
+# Optional npm cache
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# IDE - WebStorm / IntelliJ
+.idea/
+*.iml
+
+# VSCode
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temp files
+tmp/
+temp/
+
+# Mac system
+.AppleDouble
+.LSOverride
+
+# Windows system
+ehthumbs.db
+Desktop.ini
+
+# Docker
+docker-compose.override.yml
+
+# Misc
+*.tgz
+*.bak
+*.swp

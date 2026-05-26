@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: CatalogandListing
+  config:
+    import:
+      - optional:classpath:database.yaml
+      - optional:classpath:jwt.yaml
+server:
+  port: 8082
+internal:
+  service:
+    token: ${INTERNAL_SERVICE_TOKEN:gostay-internal-secret-token-12345}

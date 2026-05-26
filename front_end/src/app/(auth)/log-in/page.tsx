@@ -4,9 +4,46 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
+import { useRouter } from "next/navigation";
+import AuthService from "@/services/auth.service";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      await AuthService.login({ username, password });
+      
+      const roles = AuthService.getUserRoles();
+      if (roles.includes("ROLE_ADMIN")) {
+        router.push("/admin");
+      } else if (roles.includes("ROLE_HOST")) {
+        router.push("/host");
+      } else {
+        router.push("/");
+      }
+    } catch (err: any) {
+      const errorMessages: Record<string, string> = {
+        USER_NOT_FOUND: "Tài khoản không tồn tại. Vui lòng kiểm tra lại tên đăng nhập.",
+        UNAUTHENTICATED: "Mật khẩu không chính xác. Vui lòng thử lại.",
+        BANNED_USER: "Tài khoản của bạn đã bị khóa.",
+        DELETE_USER: "Tài khoản này đã bị xóa.",
+      };
+      const msg = errorMessages[err?.code] || err?.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="flex min-h-[100dvh] font-sans text-[#222222] bg-white">
@@ -35,22 +72,25 @@ export default function LoginPage() {
           <h2 className="mb-1 text-2xl font-bold tracking-tight">Chào mừng bạn trở lại</h2>
           <p className="mb-6 text-sm text-[#717171]">Vui lòng điền thông tin để đăng nhập vào tài khoản của bạn.</p>
           
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleLogin}>
             <div className="space-y-3">
-              {/* Email Input */}
+              {/* Username Input */}
               <div>
                 <div className="relative">
                   <input
-                    id="email"
-                    type="email"
+                    id="username"
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
                     className="peer w-full rounded-lg border border-[#B0B0B0] bg-white px-3 pb-1 pt-5 text-sm outline-none transition disabled:cursor-not-allowed disabled:opacity-70 focus:border-[#222222] focus:ring-1 focus:ring-[#222222]"
                     placeholder=" "
                   />
                   <label
-                    htmlFor="email"
+                    htmlFor="username"
                     className="pointer-events-none absolute left-3 top-1.5 z-10 origin-[0] transform text-[11px] text-[#717171] duration-150 peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-focus:top-1.5 peer-focus:text-[11px]"
                   >
-                    Email
+                    Tên đăng nhập
                   </label>
                 </div>
               </div>
@@ -61,6 +101,9 @@ export default function LoginPage() {
                   <input
                     id="password"
                     type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
                     className="peer w-full rounded-lg border border-[#B0B0B0] bg-white px-3 pb-1 pt-5 pr-10 text-sm outline-none transition disabled:cursor-not-allowed disabled:opacity-70 focus:border-[#222222] focus:ring-1 focus:ring-[#222222]"
                     placeholder=" "
                   />
@@ -81,14 +124,16 @@ export default function LoginPage() {
               </div>
             </div>
 
+            {error && <p className="text-sm text-red-500">{error}</p>}
+
             <div className="flex justify-between text-xs">
               <Link href="#" className="font-semibold underline transition-colors hover:text-[#717171]">
                 Quên mật khẩu?
               </Link>
             </div>
 
-            <Button className="mt-2 h-11 w-full rounded-lg bg-[#FF5A5F] text-sm font-semibold text-white transition-colors hover:bg-[#E35054] active:scale-[0.98]">
-              Đăng nhập
+            <Button disabled={loading} type="submit" className="mt-2 h-11 w-full rounded-lg bg-[#FF5A5F] text-sm font-semibold text-white transition-colors hover:bg-[#E35054] active:scale-[0.98]">
+              {loading ? "Đang xử lý..." : "Đăng nhập"}
             </Button>
           </form>
 
@@ -99,7 +144,7 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-3">
-            <button className="flex h-11 w-full items-center justify-between rounded-lg border border-[#222222] bg-white px-4 text-sm font-semibold transition-colors hover:bg-[#F7F7F7] active:scale-[0.98]">
+            <button type="button" className="flex h-11 w-full items-center justify-between rounded-lg border border-[#222222] bg-white px-4 text-sm font-semibold transition-colors hover:bg-[#F7F7F7] active:scale-[0.98]">
               <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
@@ -110,7 +155,7 @@ export default function LoginPage() {
               <div className="w-5"></div>
             </button>
 
-            <button className="flex h-11 w-full items-center justify-between rounded-lg border border-[#222222] bg-white px-4 text-sm font-semibold transition-colors hover:bg-[#F7F7F7] active:scale-[0.98]">
+            <button type="button" className="flex h-11 w-full items-center justify-between rounded-lg border border-[#222222] bg-white px-4 text-sm font-semibold transition-colors hover:bg-[#F7F7F7] active:scale-[0.98]">
               <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true" fill="#1877F2">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
               </svg>
