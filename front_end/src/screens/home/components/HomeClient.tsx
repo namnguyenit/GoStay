@@ -99,14 +99,83 @@ export default function HomeClient() {
         </div>
       </div>
       <div className="h-18" />
-      <CarouselSection title="Dịch vụ">
-        {services?.map((e, index) => (
+      {/* 4 place famous place */}
+      <div className="px-4 text-title">Top 4 địa danh nổi tiếng</div>
+      <div className="h-10" />
+      <CarouselSection title="Khách sạn ưa chuộng">
+        {places?.map((e, index) => (
           <OfferingCarouselItem key={e?.id} item={e} onSelect={console.log} />
         ))}
       </CarouselSection>
       <div className="h-10" />
       <CarouselSection title="Khách sạn ưa chuộng">
         {places?.map((e, index) => (
+          <OfferingCarouselItem key={e?.id} item={e} onSelect={console.log} />
+        ))}
+      </CarouselSection>
+      <div className="h-10" />
+      <CarouselSection title="Khách sạn ưa chuộng">
+        {places?.map((e, index) => (
+          <OfferingCarouselItem key={e?.id} item={e} onSelect={console.log} />
+        ))}
+      </CarouselSection>
+      <div className="h-10" />
+      <CarouselSection title="Khách sạn ưa chuộng">
+        {places?.map((e, index) => (
+          <OfferingCarouselItem key={e?.id} item={e} onSelect={console.log} />
+        ))}
+      </CarouselSection>
+      <div className="h-10" />
+      {/* 
+        4 service
+      */}
+      <div className="px-4 text-title">Top 3 địa điểm có khách sạn ưa chuộng</div>
+      <CarouselSection title="Dịch vụ">
+        {services?.map((e, index) => (
+          <OfferingCarouselItem key={e?.id} item={e} onSelect={console.log} />
+        ))}
+      </CarouselSection>
+      <div className="h-10"></div>
+      <CarouselSection title="Dịch vụ">
+        {services?.map((e, index) => (
+          <OfferingCarouselItem key={e?.id} item={e} onSelect={console.log} />
+        ))}
+      </CarouselSection>
+      <div className="h-10"></div>
+      <CarouselSection title="Dịch vụ">
+        {services?.map((e, index) => (
+          <OfferingCarouselItem key={e?.id} item={e} onSelect={console.log} />
+        ))}
+      </CarouselSection>
+      <div className="h-10" />
+      <div className="px-4 text-title">Top 3 các trải nghiệm ưa chuộng </div>
+      <CarouselSection title="Trải nghiệm">
+        {experiences?.map((e, index) => (
+          <OfferingCarouselItem key={e?.id} item={e} onSelect={console.log} />
+        ))}
+      </CarouselSection>
+      <div className="h-10" />
+      <CarouselSection title="Trải nghiệm">
+        {experiences?.map((e, index) => (
+          <OfferingCarouselItem key={e?.id} item={e} onSelect={console.log} />
+        ))}
+      </CarouselSection>
+      <div className="h-10" />
+      <CarouselSection title="Trải nghiệm">
+        {experiences?.map((e, index) => (
+          <OfferingCarouselItem key={e?.id} item={e} onSelect={console.log} />
+        ))}
+      </CarouselSection>
+      <div className="h-10" />
+      <div className="px-4 text-title">Top 3 các dịch vụ ưa chuộng</div>
+      <CarouselSection title="Trải nghiệm">
+        {experiences?.map((e, index) => (
+          <OfferingCarouselItem key={e?.id} item={e} onSelect={console.log} />
+        ))}
+      </CarouselSection>
+      <div className="h-10" />
+      <CarouselSection title="Trải nghiệm">
+        {experiences?.map((e, index) => (
           <OfferingCarouselItem key={e?.id} item={e} onSelect={console.log} />
         ))}
       </CarouselSection>
