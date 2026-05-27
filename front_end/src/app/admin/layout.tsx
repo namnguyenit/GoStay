@@ -40,7 +40,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         return;
       }
       const roles = AuthService.getUserRoles();
-      if (!roles.includes("ROLE_ADMIN")) {
+      if (!roles.includes("ADMIN")) {
         alert("Bạn không có quyền truy cập trang quản trị.");
         router.push("/");
         return;
