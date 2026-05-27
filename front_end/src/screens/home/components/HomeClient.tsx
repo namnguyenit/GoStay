@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import { CarouselSection, SearchInfoSection } from "@/shared/components";
 import { OfferingCarouselItem } from "@/shared/components";
 
 export default function HomeClient() {
+  const router = useRouter();
   const { imageIndex, clock, setClock, experiences, places, services, landmarks } =
     useSafeContext(HomeContext);
 
@@ -162,7 +164,15 @@ export default function HomeClient() {
                   {experiences?.[imageIndex]?.rating}
                 </div>
                 <div className="h-[20]" />
-                <Button className="text-title bg-app-primary hover:bg-app-accent w-[200]">
+                <Button 
+                  className="text-title bg-app-primary hover:bg-app-accent w-[200]"
+                  onClick={() => {
+                    const activeExp = experiences?.[imageIndex];
+                    if (activeExp?.id) {
+                      router.push(`/experience/${activeExp.id}/detail`);
+                    }
+                  }}
+                >
                   Xem chi tiết
                 </Button>
               </div>
@@ -187,7 +197,13 @@ export default function HomeClient() {
             <div key={carousel.id}>
               <CarouselSection title={`Khách sạn tại ${carousel.name}`}>
                 {carousel.list.map((e: any) => (
-                  <OfferingCarouselItem key={e?.id} item={e} onSelect={console.log} />
+                  <OfferingCarouselItem
+                    key={e?.id}
+                    item={e}
+                    onSelect={(item) => {
+                      if (item?.id) router.push(`/place/${item.id}/detail`);
+                    }}
+                  />
                 ))}
               </CarouselSection>
               <div className="h-10" />
@@ -205,7 +221,13 @@ export default function HomeClient() {
             <div key={group.name}>
               <CarouselSection title={`Khách sạn tại ${group.name}`}>
                 {group.list.map((e: any) => (
-                  <OfferingCarouselItem key={e?.id} item={e} onSelect={console.log} />
+                  <OfferingCarouselItem
+                    key={e?.id}
+                    item={e}
+                    onSelect={(item) => {
+                      if (item?.id) router.push(`/place/${item.id}/detail`);
+                    }}
+                  />
                 ))}
               </CarouselSection>
               <div className="h-10" />
@@ -223,7 +245,13 @@ export default function HomeClient() {
             <div key={group.name}>
               <CarouselSection title={`Trải nghiệm tại ${group.name}`}>
                 {group.list.map((e: any) => (
-                  <OfferingCarouselItem key={e?.id} item={e} onSelect={console.log} />
+                  <OfferingCarouselItem
+                    key={e?.id}
+                    item={e}
+                    onSelect={(item) => {
+                      if (item?.id) router.push(`/experience/${item.id}/detail`);
+                    }}
+                  />
                 ))}
               </CarouselSection>
               <div className="h-10" />
@@ -241,7 +269,13 @@ export default function HomeClient() {
             <div key={group.name}>
               <CarouselSection title={`Dịch vụ tại ${group.name}`}>
                 {group.list.map((e: any) => (
-                  <OfferingCarouselItem key={e?.id} item={e} onSelect={console.log} />
+                  <OfferingCarouselItem
+                    key={e?.id}
+                    item={e}
+                    onSelect={(item) => {
+                      if (item?.id) router.push(`/service/${item.id}/detail`);
+                    }}
+                  />
                 ))}
               </CarouselSection>
               <div className="h-10" />

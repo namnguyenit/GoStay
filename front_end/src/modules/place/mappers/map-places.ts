@@ -9,6 +9,7 @@ export const mapPlaces = (
   const mapper = data?.map(
     (e): Place => ({
       ...e,
+      name: e?.title,
       image: e?.img,
     }),
   );

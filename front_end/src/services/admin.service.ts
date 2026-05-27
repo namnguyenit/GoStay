@@ -113,6 +113,7 @@ const AdminService = {
     latitude: number;
     longitude: number;
     address?: string;
+    province?: string;
   }) => {
     // POST /api/v1/catalog/admin/landmarks
     return await Api.post(`/v1/catalog/admin/landmarks`, data);
