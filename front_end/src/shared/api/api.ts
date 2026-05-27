@@ -13,7 +13,7 @@ const request = async (endpoint: string, options: RequestInit = {}) => {
   }
   
   // Không gửi token Authorization đối với các API public như login, register
-  const isPublicEndpoint = endpoint.startsWith("/v1/auth/") || endpoint.includes(".well-known");
+  const isPublicEndpoint = (endpoint.startsWith("/v1/auth/") && !endpoint.includes("refresh-roles")) || endpoint.includes(".well-known");
   if (token && !isPublicEndpoint) {
     headers.set("Authorization", `Bearer ${token}`);
   }

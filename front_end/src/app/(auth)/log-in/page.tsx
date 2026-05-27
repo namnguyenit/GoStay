@@ -24,9 +24,9 @@ export default function LoginPage() {
       await AuthService.login({ username, password });
       
       const roles = AuthService.getUserRoles();
-      if (roles.includes("ROLE_ADMIN")) {
+      if (roles.includes("ADMIN")) {
         router.push("/admin");
-      } else if (roles.includes("ROLE_HOST")) {
+      } else if (roles.includes("HOST")) {
         router.push("/host");
       } else {
         router.push("/");

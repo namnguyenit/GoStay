@@ -137,7 +137,11 @@ export default function SettingsPage() {
     }
     // Refresh roles từ DB trước khi fetch data — đảm bảo settings hiển thị đúng
     // dù admin vừa nâng quyền mà user chưa logout
-    AuthService.refreshRoles().then(() => fetchData());
+    if (AuthService.isAuthenticated()) {
+      AuthService.refreshRoles().then(() => fetchData());
+    } else {
+      fetchData();
+    }
   }, [searchParams]);
 
   // Show banner alert helper
