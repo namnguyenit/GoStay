@@ -165,11 +165,11 @@ export default function MainLayoutClient({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push("/settings?tab=profile")}>
                     <UserIcon />
                     Profile
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push("/settings?tab=settings")}>
                     <SettingsIcon />
                     Settings
                   </DropdownMenuItem>

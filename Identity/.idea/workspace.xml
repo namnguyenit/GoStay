@@ -4,19 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d2d4dc8d-e433-4093-a36d-060757ca3890" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/dto/request/UserRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/dto/request/UserRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/mapper/UserMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/mapper/UserMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/gotravel/Identity/service/UserService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../front_end/src/app/(auth)/sign-up/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../front_end/src/app/(auth)/sign-up/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../front_end/src/screens/admin/approved-hosts/ApprovedHostsScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../front_end/src/screens/admin/approved-hosts/ApprovedHostsScreen.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../front_end/src/screens/admin/inventory/InventoryScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../front_end/src/screens/admin/inventory/InventoryScreen.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../front_end/src/screens/admin/inventory/hook/useAdminInventory.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../front_end/src/screens/admin/inventory/hook/useAdminInventory.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../front_end/src/screens/admin/listings/ListingsScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../front_end/src/screens/admin/listings/ListingsScreen.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../front_end/src/screens/admin/users/UsersScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../front_end/src/screens/admin/users/UsersScreen.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../front_end/src/services/auth.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../front_end/src/services/auth.service.ts" afterDir="false" />
-    </list>
+    <list default="true" id="d2d4dc8d-e433-4093-a36d-060757ca3890" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />

@@ -7,7 +7,10 @@ const request = async (endpoint: string, options: RequestInit = {}) => {
   const token = getToken();
   const headers = new Headers(options.headers || {});
   
-  headers.set("Content-Type", "application/json");
+  const isFormData = options.body instanceof FormData;
+  if (!isFormData) {
+    headers.set("Content-Type", "application/json");
+  }
   
   // Không gửi token Authorization đối với các API public như login, register
   const isPublicEndpoint = endpoint.startsWith("/v1/auth/") || endpoint.includes(".well-known");
@@ -66,17 +69,33 @@ const Api = {
       throw error;
     }
   },
-  post: async (endpoint: string, body: any) => {
+  post: async (endpoint: string, body: any, options: RequestInit = {}) => {
     try {
-      return await request(endpoint, { method: "POST", body: JSON.stringify(body) });
+      const isFormData = body instanceof FormData;
+      return await request(endpoint, {
+        method: "POST",
+        body: isFormData ? body : JSON.stringify(body),
+        ...options,
+        headers: {
+          ...options.headers,
+        }
+      });
     } catch (error: any) {
       console.error(`POST API:`, error);
       throw error;
     }
   },
-  put: async (endpoint: string, body: any) => {
+  put: async (endpoint: string, body: any, options: RequestInit = {}) => {
     try {
-      return await request(endpoint, { method: "PUT", body: JSON.stringify(body) });
+      const isFormData = body instanceof FormData;
+      return await request(endpoint, {
+        method: "PUT",
+        body: isFormData ? body : JSON.stringify(body),
+        ...options,
+        headers: {
+          ...options.headers,
+        }
+      });
     } catch (error: any) {
       console.error(`PUT API:`, error);
       throw error;
@@ -90,9 +109,17 @@ const Api = {
       throw error;
     }
   },
-  patch: async (endpoint: string, body: any) => {
+  patch: async (endpoint: string, body: any, options: RequestInit = {}) => {
     try {
-      return await request(endpoint, { method: "PATCH", body: JSON.stringify(body) });
+      const isFormData = body instanceof FormData;
+      return await request(endpoint, {
+        method: "PATCH",
+        body: isFormData ? body : JSON.stringify(body),
+        ...options,
+        headers: {
+          ...options.headers,
+        }
+      });
     } catch (error: any) {
       console.error(`PATCH API:`, error);
       throw error;
