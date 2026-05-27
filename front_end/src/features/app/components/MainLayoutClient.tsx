@@ -45,6 +45,10 @@ export default function MainLayoutClient({
   const pathName = usePathname();
   const [currentUser, setCurrentUser] = useState<any>(null);
 
+  const roles = currentUser ? AuthService.getUserRoles() : [];
+  const isHost = roles.includes("HOST");
+  const isEnterprise = roles.includes("ENTERPRISE");
+
   useEffect(() => {
     setCurrentUser(AuthService.getCurrentUser());
   }, [pathName]); // Cập nhật user info khi đổi route (ví dụ sau khi login xong)
@@ -140,6 +144,24 @@ export default function MainLayoutClient({
         <div className="row pos-center-y right-10 hidden gap-3 sm:flex">
           {currentUser ? (
             <>
+              {isHost && (
+                <Link href="/host">
+                  <Button 
+                    className="bg-app-accent hover:bg-app-accent/80 text-[#7c3aed] font-semibold text-xs rounded-xl shadow-md h-9 px-4 cursor-pointer mr-1"
+                  >
+                    Kênh Chủ Nhà
+                  </Button>
+                </Link>
+              )}
+              {isEnterprise && (
+                <Link href="/enterprise">
+                  <Button 
+                    className="bg-app-accent hover:bg-app-accent/80 text-[#7c3aed] font-semibold text-xs rounded-xl shadow-md h-9 px-4 cursor-pointer mr-1"
+                  >
+                    Kênh Doanh Nghiệp
+                  </Button>
+                </Link>
+              )}
               <div>
                 <p className="text-sm font-medium text-white text-shadow-gray-400 text-shadow-md">
                   {currentUser.lastName} {currentUser.firstName}

@@ -14,4 +14,5 @@ public class EnterpriseProfileResponse {
     String companyAddress;
     String representativeName;
     String avatarUrl;
+    String approvalStatus;
 }

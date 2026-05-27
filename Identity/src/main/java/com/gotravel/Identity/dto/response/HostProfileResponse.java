@@ -13,4 +13,5 @@ public class HostProfileResponse {
     String bankAccount;
     String bankName;
     String avatarUrl;
+    String approvalStatus;
 }

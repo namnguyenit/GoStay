@@ -277,6 +277,12 @@ export default function SettingsPage() {
   const hasHost = userRoles.includes("HOST");
   const hasEnterprise = userRoles.includes("ENTERPRISE");
 
+  const hostApproval = currentUser?.hostProfile?.approvalStatus;
+  const enterpriseApproval = currentUser?.enterpriseProfile?.approvalStatus;
+
+  const isHostPending = hostApproval === "PENDING";
+  const isEnterprisePending = enterpriseApproval === "PENDING";
+
   return (
     <div className="min-h-screen bg-[#0a0a14] text-gray-100 py-12 px-4 sm:px-6 lg:px-8 animate-smooth-appear">
       <div className="max-w-4xl mx-auto">
@@ -534,194 +540,241 @@ export default function SettingsPage() {
                   </div>
                 )}
 
-                {/* Case 3: Regular USER - Show both options */}
+                {/* Case 3: Regular USER - Show both options or Pending states */}
                 {!hasHost && !hasEnterprise && (
                   <div className="space-y-8">
-                    
-                    {/* HOST application form */}
-                    <div className="bg-white/[0.02] border border-white/5 rounded-xl p-5 sm:p-6 space-y-4">
-                      <div className="flex items-center gap-3 pb-3 border-b border-white/5">
-                        <User className="h-5 w-5 text-app-primary" />
-                        <div>
-                          <h4 className="text-sm font-semibold text-white">Đăng ký Đối tác cá nhân (HOST)</h4>
-                          <p className="text-[11px] text-gray-400">Kinh doanh bất động sản, phòng nghỉ dưới tư cách cá nhân.</p>
+                    {/* Show Pending Host Notification */}
+                    {isHostPending && (
+                      <div className="bg-yellow-950/30 border border-yellow-500/20 rounded-xl p-5 flex flex-col gap-3">
+                        <div className="flex items-center gap-3">
+                          <AlertCircle className="h-6 w-6 text-yellow-400" />
+                          <div>
+                            <h4 className="text-sm font-semibold text-white">Yêu cầu nâng cấp HOST đang chờ phê duyệt</h4>
+                            <p className="text-xs text-gray-400 mt-0.5">Chúng tôi đang xác minh thông tin giấy tờ tùy thân của bạn. Vui lòng quay lại sau.</p>
+                          </div>
                         </div>
                       </div>
+                    )}
 
-                      <form onSubmit={handleApplyHost} className="space-y-4">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Show Pending Enterprise Notification */}
+                    {isEnterprisePending && (
+                      <div className="bg-yellow-950/30 border border-yellow-500/20 rounded-xl p-5 flex flex-col gap-3">
+                        <div className="flex items-center gap-3">
+                          <Building2 className="h-6 w-6 text-yellow-400" />
                           <div>
-                            <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-2">Họ tên trên CCCD</label>
-                            <input 
-                              type="text" 
-                              required 
-                              placeholder="NGUYEN VAN A"
-                              value={hostForm.fullName} 
-                              onChange={e => setHostForm({...hostForm, fullName: e.target.value})}
-                              className="w-full bg-[#16162a] border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-app-primary transition-all"
-                            />
+                            <h4 className="text-sm font-semibold text-white">Yêu cầu nâng cấp DOANH NGHIỆP đang chờ phê duyệt</h4>
+                            <p className="text-xs text-gray-400 mt-0.5">Hồ sơ pháp lý doanh nghiệp của bạn đang được kiểm duyệt.</p>
                           </div>
-                          <div>
-                            <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-2">Số điện thoại liên hệ</label>
-                            <input 
-                              type="text" 
-                              required 
-                              placeholder="09XXXXXXXX"
-                              value={hostForm.phoneNumber} 
-                              onChange={e => setHostForm({...hostForm, phoneNumber: e.target.value})}
-                              className="w-full bg-[#16162a] border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-app-primary transition-all"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                          <div>
-                            <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-2">Số CCCD / Hộ chiếu</label>
-                            <input 
-                              type="text" 
-                              required 
-                              placeholder="037XXXXXXXXX"
-                              value={hostForm.cccdNumber} 
-                              onChange={e => setHostForm({...hostForm, cccdNumber: e.target.value})}
-                              className="w-full bg-[#16162a] border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-app-primary transition-all"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-2">Tên ngân hàng thụ hưởng</label>
-                            <input 
-                              type="text" 
-                              required 
-                              placeholder="Vietcombank, MB..."
-                              value={hostForm.bankName} 
-                              onChange={e => setHostForm({...hostForm, bankName: e.target.value})}
-                              className="w-full bg-[#16162a] border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-app-primary transition-all"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-2">Số tài khoản ngân hàng</label>
-                            <input 
-                              type="text" 
-                              required 
-                              placeholder="102XXXXXXXX"
-                              value={hostForm.bankAccount} 
-                              onChange={e => setHostForm({...hostForm, bankAccount: e.target.value})}
-                              className="w-full bg-[#16162a] border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-app-primary transition-all"
-                            />
-                          </div>
-                        </div>
-
-                        {/* File Upload fields */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div className="bg-[#16162a]/50 p-4 rounded-xl border border-white/5 flex flex-col items-center justify-center text-center">
-                            <Upload className="h-5 w-5 text-gray-500 mb-2" />
-                            <label className="block text-xs font-semibold text-gray-300 cursor-pointer">
-                              {frontImage ? frontImage.name : "Tải ảnh CCCD mặt trước"}
-                              <input 
-                                type="file" 
-                                className="hidden" 
-                                accept="image/*" 
-                                onChange={e => setFrontImage(e.target.files?.[0] || null)} 
-                              />
-                            </label>
-                          </div>
-                          <div className="bg-[#16162a]/50 p-4 rounded-xl border border-white/5 flex flex-col items-center justify-center text-center">
-                            <Upload className="h-5 w-5 text-gray-500 mb-2" />
-                            <label className="block text-xs font-semibold text-gray-300 cursor-pointer">
-                              {backImage ? backImage.name : "Tải ảnh CCCD mặt sau"}
-                              <input 
-                                type="file" 
-                                className="hidden" 
-                                accept="image/*" 
-                                onChange={e => setBackImage(e.target.files?.[0] || null)} 
-                              />
-                            </label>
-                          </div>
-                        </div>
-
-                        <div className="flex justify-end pt-2">
-                          <Button 
-                            type="submit" 
-                            className="bg-app-primary hover:bg-app-primary/90 text-xs px-5 py-2 h-auto"
-                            disabled={submitting}
-                          >
-                            Gửi yêu cầu HOST
-                          </Button>
-                        </div>
-                      </form>
-                    </div>
-
-                    {/* ENTERPRISE application form */}
-                    <div className="bg-white/[0.02] border border-white/5 rounded-xl p-5 sm:p-6 space-y-4">
-                      <div className="flex items-center gap-3 pb-3 border-b border-white/5">
-                        <Building2 className="h-5 w-5 text-app-primary" />
-                        <div>
-                          <h4 className="text-sm font-semibold text-white">Đăng ký Đối tác doanh nghiệp (ENTERPRISE)</h4>
-                          <p className="text-[11px] text-gray-400">Kinh doanh phòng nghỉ, các gói trải nghiệm dưới tư cách pháp nhân công ty.</p>
                         </div>
                       </div>
+                    )}
 
-                      <form onSubmit={handleApplyEnterprise} className="space-y-4">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-2">Tên công ty doanh nghiệp</label>
-                            <input 
-                              type="text" 
-                              required 
-                              placeholder="CÔNG TY TNHH GOSTAY VIỆT NAM"
-                              value={entForm.companyName} 
-                              onChange={e => setEntForm({...entForm, companyName: e.target.value})}
-                              className="w-full bg-[#16162a] border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-app-primary transition-all"
-                            />
+                    {!isHostPending && !isEnterprisePending && (
+                      <>
+                        {/* HOST application form */}
+                        <div className="bg-white/[0.02] border border-white/5 rounded-xl p-5 sm:p-6 space-y-4">
+                          <div className="flex items-center gap-3 pb-3 border-b border-white/5">
+                            <User className="h-5 w-5 text-app-primary" />
+                            <div>
+                              <h4 className="text-sm font-semibold text-white">Đăng ký Đối tác cá nhân (HOST)</h4>
+                              <p className="text-[11px] text-gray-400">Kinh doanh bất động sản, phòng nghỉ dưới tư cách cá nhân.</p>
+                            </div>
                           </div>
-                          <div>
-                            <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-2">Người đại diện pháp luật</label>
-                            <input 
-                              type="text" 
-                              required 
-                              placeholder="NGUYEN VAN A"
-                              value={entForm.representativeName} 
-                              onChange={e => setEntForm({...entForm, representativeName: e.target.value})}
-                              className="w-full bg-[#16162a] border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-app-primary transition-all"
-                            />
-                          </div>
+
+                          {hostApproval === "REJECTED" && (
+                            <div className="bg-red-950/20 border border-red-500/20 rounded-lg p-3 flex gap-2">
+                              <AlertCircle className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+                              <p className="text-xs text-red-200">
+                                Yêu cầu nâng cấp HOST trước đây của bạn đã bị từ chối. Vui lòng gửi lại hồ sơ chính xác.
+                              </p>
+                            </div>
+                          )}
+
+                          <form onSubmit={handleApplyHost} className="space-y-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-2">Họ tên trên CCCD</label>
+                                <input 
+                                  type="text" 
+                                  required 
+                                  placeholder="NGUYEN VAN A"
+                                  value={hostForm.fullName} 
+                                  onChange={e => setHostForm({...hostForm, fullName: e.target.value})}
+                                  className="w-full bg-[#16162a] border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-app-primary transition-all"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-2">Số điện thoại liên hệ</label>
+                                <input 
+                                  type="text" 
+                                  required 
+                                  placeholder="09XXXXXXXX"
+                                  value={hostForm.phoneNumber} 
+                                  onChange={e => setHostForm({...hostForm, phoneNumber: e.target.value})}
+                                  className="w-full bg-[#16162a] border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-app-primary transition-all"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                              <div>
+                                <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-2">Số CCCD / Hộ chiếu</label>
+                                <input 
+                                  type="text" 
+                                  required 
+                                  placeholder="037XXXXXXXXX"
+                                  value={hostForm.cccdNumber} 
+                                  onChange={e => setHostForm({...hostForm, cccdNumber: e.target.value})}
+                                  className="w-full bg-[#16162a] border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-app-primary transition-all"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-2">Tên ngân hàng thụ hưởng</label>
+                                <input 
+                                  type="text" 
+                                  required 
+                                  placeholder="Vietcombank, MB..."
+                                  value={hostForm.bankName} 
+                                  onChange={e => setHostForm({...hostForm, bankName: e.target.value})}
+                                  className="w-full bg-[#16162a] border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-app-primary transition-all"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-2">Số tài khoản ngân hàng</label>
+                                <input 
+                                  type="text" 
+                                  required 
+                                  placeholder="102XXXXXXXX"
+                                  value={hostForm.bankAccount} 
+                                  onChange={e => setHostForm({...hostForm, bankAccount: e.target.value})}
+                                  className="w-full bg-[#16162a] border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-app-primary transition-all"
+                                />
+                              </div>
+                            </div>
+
+                            {/* File Upload fields */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div className="bg-[#16162a]/50 p-4 rounded-xl border border-white/5 flex flex-col items-center justify-center text-center">
+                                <Upload className="h-5 w-5 text-gray-500 mb-2" />
+                                <label className="block text-xs font-semibold text-gray-300 cursor-pointer">
+                                  {frontImage ? frontImage.name : "Tải ảnh CCCD mặt trước"}
+                                  <input 
+                                    type="file" 
+                                    className="hidden" 
+                                    accept="image/*" 
+                                    onChange={e => setFrontImage(e.target.files?.[0] || null)} 
+                                  />
+                                </label>
+                              </div>
+                              <div className="bg-[#16162a]/50 p-4 rounded-xl border border-white/5 flex flex-col items-center justify-center text-center">
+                                <Upload className="h-5 w-5 text-gray-500 mb-2" />
+                                <label className="block text-xs font-semibold text-gray-300 cursor-pointer">
+                                  {backImage ? backImage.name : "Tải ảnh CCCD mặt sau"}
+                                  <input 
+                                    type="file" 
+                                    className="hidden" 
+                                    accept="image/*" 
+                                    onChange={e => setBackImage(e.target.files?.[0] || null)} 
+                                  />
+                                </label>
+                              </div>
+                            </div>
+
+                            <div className="flex justify-end pt-2">
+                              <Button 
+                                type="submit" 
+                                className="bg-app-primary hover:bg-app-primary/90 text-xs px-5 py-2 h-auto"
+                                disabled={submitting}
+                              >
+                                Gửi yêu cầu HOST
+                              </Button>
+                            </div>
+                          </form>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                          <div className="sm:col-span-1">
-                            <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-2">Mã số thuế Doanh nghiệp</label>
-                            <input 
-                              type="text" 
-                              required 
-                              placeholder="MST-XXXXXXXX"
-                              value={entForm.taxCode} 
-                              onChange={e => setEntForm({...entForm, taxCode: e.target.value})}
-                              className="w-full bg-[#16162a] border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-app-primary transition-all"
-                            />
+                        {/* ENTERPRISE application form */}
+                        <div className="bg-white/[0.02] border border-white/5 rounded-xl p-5 sm:p-6 space-y-4">
+                          <div className="flex items-center gap-3 pb-3 border-b border-white/5">
+                            <Building2 className="h-5 w-5 text-app-primary" />
+                            <div>
+                              <h4 className="text-sm font-semibold text-white">Đăng ký Đối tác doanh nghiệp (ENTERPRISE)</h4>
+                              <p className="text-[11px] text-gray-400">Kinh doanh phòng nghỉ, các gói trải nghiệm dưới tư cách pháp nhân công ty.</p>
+                            </div>
                           </div>
-                          <div className="sm:col-span-2">
-                            <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-2">Địa chỉ trụ sở chính</label>
-                            <input 
-                              type="text" 
-                              required 
-                              placeholder="Số 1, Đường Trần Hưng Đạo, Hà Nội"
-                              value={entForm.companyAddress} 
-                              onChange={e => setEntForm({...entForm, companyAddress: e.target.value})}
-                              className="w-full bg-[#16162a] border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-app-primary transition-all"
-                            />
-                          </div>
-                        </div>
 
-                        <div className="flex justify-end pt-2">
-                          <Button 
-                            type="submit" 
-                            className="bg-app-primary hover:bg-app-primary/90 text-xs px-5 py-2 h-auto"
-                            disabled={submitting}
-                          >
-                            Gửi yêu cầu ENTERPRISE
-                          </Button>
+                          {enterpriseApproval === "REJECTED" && (
+                            <div className="bg-red-950/20 border border-red-500/20 rounded-lg p-3 flex gap-2">
+                              <AlertCircle className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+                              <p className="text-xs text-red-200">
+                                Yêu cầu nâng cấp DOANH NGHIỆP trước đây của bạn đã bị từ chối. Vui lòng gửi lại hồ sơ chính xác.
+                              </p>
+                            </div>
+                          )}
+
+                          <form onSubmit={handleApplyEnterprise} className="space-y-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-2">Tên công ty doanh nghiệp</label>
+                                <input 
+                                  type="text" 
+                                  required 
+                                  placeholder="CÔNG TY TNHH GOSTAY VIỆT NAM"
+                                  value={entForm.companyName} 
+                                  onChange={e => setEntForm({...entForm, companyName: e.target.value})}
+                                  className="w-full bg-[#16162a] border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-app-primary transition-all"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-2">Người đại diện pháp luật</label>
+                                <input 
+                                  type="text" 
+                                  required 
+                                  placeholder="NGUYEN VAN A"
+                                  value={entForm.representativeName} 
+                                  onChange={e => setEntForm({...entForm, representativeName: e.target.value})}
+                                  className="w-full bg-[#16162a] border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-app-primary transition-all"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                              <div className="sm:col-span-1">
+                                <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-2">Mã số thuế Doanh nghiệp</label>
+                                <input 
+                                  type="text" 
+                                  required 
+                                  placeholder="MST-XXXXXXXX"
+                                  value={entForm.taxCode} 
+                                  onChange={e => setEntForm({...entForm, taxCode: e.target.value})}
+                                  className="w-full bg-[#16162a] border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-app-primary transition-all"
+                                />
+                              </div>
+                              <div className="sm:col-span-2">
+                                <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-2">Địa chỉ trụ sở chính</label>
+                                <input 
+                                  type="text" 
+                                  required 
+                                  placeholder="Số 1, Đường Trần Hưng Đạo, Hà Nội"
+                                  value={entForm.companyAddress} 
+                                  onChange={e => setEntForm({...entForm, companyAddress: e.target.value})}
+                                  className="w-full bg-[#16162a] border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-app-primary transition-all"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="flex justify-end pt-2">
+                              <Button 
+                                type="submit" 
+                                className="bg-app-primary hover:bg-app-primary/90 text-xs px-5 py-2 h-auto"
+                                disabled={submitting}
+                              >
+                                Gửi yêu cầu ENTERPRISE
+                              </Button>
+                            </div>
+                          </form>
                         </div>
-                      </form>
-                    </div>
+                      </>
+                    )}
 
                   </div>
                 )}
