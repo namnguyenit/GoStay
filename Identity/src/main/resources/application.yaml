@@ -17,7 +17,7 @@ spring:
 media:
   service:
     url: http://localhost:5001/api/v1/media/upload
-    token: ${MEDIA_INTERNAL_SERVICE_TOKEN:}
+    token: ${MEDIA_INTERNAL_SERVICE_TOKEN:gostay-internal-secret-token-12345}
 internal:
   service:
     token: ${INTERNAL_SERVICE_TOKEN:gostay-internal-secret-token-12345}

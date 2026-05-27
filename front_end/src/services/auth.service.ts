@@ -55,7 +55,11 @@ const AuthService = {
   getUserRoles: () => {
     const tokenData: any = AuthService.getTokenData();
     if (!tokenData || !tokenData.scope) return [];
-    return tokenData.scope.split(" ");
+    // JWT scope có dạng "ROLE_USER ROLE_HOST" — strip prefix ROLE_ để dùng nhất quán
+    return tokenData.scope
+      .split(" ")
+      .map((r: string) => r.replace(/^ROLE_/, ""))
+      .filter(Boolean);
   },
 
   isAuthenticated: () => {

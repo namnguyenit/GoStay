@@ -25,20 +25,12 @@ const UserService = {
   uploadAvatar: async (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
-    return await Api.post("/v1/me/avatar", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    return await Api.post("/v1/me/avatar", formData);
   },
 
   // Apply to become a HOST (multipart)
   upgradeToHost: async (formData: FormData) => {
-    return await Api.post("/v1/me/upgrade-host", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    return await Api.post("/v1/me/upgrade-host", formData);
   },
 
   // Apply to become an ENTERPRISE

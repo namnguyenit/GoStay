@@ -14,16 +14,21 @@ public interface UserMapper {
     User userRequestToUser(UserRequest userRequest);
 
     @Mapping(target = "avatarUrl", source = "userProfile.avatarUrl")
+    @Mapping(target = "hostProfile", expression = "java(user.getHostProfile() != null ? toHostProfileResponse(user.getHostProfile()) : null)")
+    @Mapping(target = "enterpriseProfile", expression = "java(user.getEnterpriseProfile() != null ? toEnterpriseProfileResponse(user.getEnterpriseProfile()) : null)")
     UserResponse userToUserResponse(User user);
 
     UserProfileResponse toUserProfileResponse(UserProfile userProfile);
 
     void updateUserProfileFromRequest(UserProfileRequest dto, @MappingTarget UserProfile profile);
 
+    @Mapping(target = "approvalStatus", expression = "java(hostProfile.getApprovalStatus() != null ? hostProfile.getApprovalStatus().toString() : null)")
+    @Mapping(target = "avatarUrl", source = "avatar_url")
     HostProfileResponse toHostProfileResponse(HostProfile hostProfile);
 
     void updateHostProfileFromRequest(HostProfileRequest dto, @MappingTarget HostProfile profile);
 
+    @Mapping(target = "approvalStatus", expression = "java(enterpriseProfile.getApprovalStatus() != null ? enterpriseProfile.getApprovalStatus().toString() : null)")
     EnterpriseProfileResponse toEnterpriseProfileResponse(EnterpriseProfile enterpriseProfile);
 
     void updateEnterpriseProfileFromRequest(EnterpriseProfileRequest dto, @MappingTarget EnterpriseProfile profile);
