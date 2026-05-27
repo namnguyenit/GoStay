@@ -19,7 +19,8 @@ export function UsersScreen() {
     setDetailModal,
     handleToggleBan,
     handleDelete,
-    handleUpgradeRole, } = useAdminUser();
+    handleUpgradeRole,
+    handleRevokeRole, } = useAdminUser();
 
   return (
     <div>
@@ -73,14 +74,27 @@ export function UsersScreen() {
                   <td className="px-4 py-3 text-gray-500 text-xs">{user.email}</td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-1">
-                      {(user.roles ?? []).map((r: any) => (
-                        <span
-                          key={r.name ?? r}
-                          className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full"
-                        >
-                          {r.name ?? r}
-                        </span>
-                      ))}
+                      {(user.roles ?? []).map((r: any) => {
+                        const name = r.name ?? r;
+                        const isUser = name.toUpperCase() === "USER";
+                        return (
+                          <span
+                            key={name}
+                            className="inline-flex items-center gap-1 text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full"
+                          >
+                            {name}
+                            {!isUser && (
+                              <button
+                                onClick={() => handleRevokeRole(user, name)}
+                                className="hover:bg-blue-200 text-blue-900 rounded-full w-3 h-3 inline-flex items-center justify-center font-bold text-[8px] transition-colors cursor-pointer"
+                                title={`Gỡ bỏ role ${name}`}
+                              >
+                                ✕
+                              </button>
+                            )}
+                          </span>
+                        );
+                      })}
                     </div>
                   </td>
                   <td className="px-4 py-3">

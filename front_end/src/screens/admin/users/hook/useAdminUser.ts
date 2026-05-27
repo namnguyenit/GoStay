@@ -83,6 +83,20 @@ export function useAdminUser() {
     }
   };
 
+  const handleRevokeRole = async (user: any, role: string) => {
+    if (role.toUpperCase() === "USER") {
+      alert("Không thể gỡ bỏ role USER của người dùng!");
+      return;
+    }
+    if (!confirm(`Bạn có chắc chắn muốn gỡ bỏ role ${role} của tài khoản "${user.username}"?`)) return;
+    try {
+      await AdminService.revokeRole(user.id, role);
+      fetchUsers();
+    } catch (err: any) {
+      alert("Có lỗi khi gỡ bỏ role.");
+    }
+  };
+
   return {
     users: filtered,
     loading,
@@ -97,5 +111,6 @@ export function useAdminUser() {
     handleToggleBan,
     handleDelete,
     handleUpgradeRole,
+    handleRevokeRole,
   }
 }

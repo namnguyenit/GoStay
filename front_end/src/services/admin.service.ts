@@ -22,6 +22,11 @@ const AdminService = {
     return await Api.post(`/v1/admin/users/${id}/role?role=${role}`, null);
   },
 
+  revokeRole: async (id: string, role: string) => {
+    // POST /api/v1/admin/users/{id}/revokerole
+    return await Api.post(`/v1/admin/users/${id}/revokerole?role=${role}`, null);
+  },
+
   // ==========================================
   // HOSTS (Identity Admin)
   // ==========================================

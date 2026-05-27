@@ -170,6 +170,17 @@ public class UserService {
     @Transactional
     public void upgradeToRole(String userId, String roleName) {
         User user = findUserById(userId);
+
+        boolean hasHost = user.getRoles().stream().anyMatch(r -> r.getName().equalsIgnoreCase("HOST"));
+        boolean hasEnterprise = user.getRoles().stream().anyMatch(r -> r.getName().equalsIgnoreCase("ENTERPRISE"));
+
+        if (roleName.equalsIgnoreCase("HOST") && hasEnterprise) {
+            throw new AppException(UserErrorCode.MUTUALLY_EXCLUSIVE_ROLES);
+        }
+        if (roleName.equalsIgnoreCase("ENTERPRISE") && hasHost) {
+            throw new AppException(UserErrorCode.MUTUALLY_EXCLUSIVE_ROLES);
+        }
+
         Role role = roleRepository.findById(roleName.toUpperCase())
                 .orElseThrow(() -> new AppException(UserErrorCode.ROLE_NOT_FOUND));
 
@@ -190,6 +201,29 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional
+    public void revokeRole(String userId, String roleName) {
+        if (roleName.equalsIgnoreCase("USER")) {
+            throw new AppException(UserErrorCode.CANNOT_REMOVE_USER_ROLE);
+        }
+        User user = findUserById(userId);
+        Role role = roleRepository.findById(roleName.toUpperCase())
+                .orElseThrow(() -> new AppException(UserErrorCode.ROLE_NOT_FOUND));
+
+        if (user.getRoles().remove(role)) {
+            if (roleName.equalsIgnoreCase("HOST")) {
+                if (user.getHostProfile() != null) {
+                    user.getHostProfile().setApprovalStatus(Approval_status.REJECTED);
+                }
+            } else if (roleName.equalsIgnoreCase("ENTERPRISE")) {
+                if (user.getEnterpriseProfile() != null) {
+                    user.getEnterpriseProfile().setApprovalStatus(Approval_status.REJECTED);
+                }
+            }
+            userRepository.save(user);
+        }
+    }
+
     /**
      * @Logic upgrade từ người dùng lên Host
      * @param userId
@@ -207,6 +241,11 @@ public class UserService {
                 .anyMatch(role -> role.getName().equals("HOST"));
         if(check){
             throw new AppException(UserErrorCode.ROLE_USER_ALREADY_EXISTS);
+        }
+        boolean hasEnterprise = user.getRoles().stream()
+                .anyMatch(role -> role.getName().equals("ENTERPRISE"));
+        if(hasEnterprise){
+            throw new AppException(UserErrorCode.MUTUALLY_EXCLUSIVE_ROLES);
         }
         if(user.getHostProfile() != null){
             HostProfile hostProfile = user.getHostProfile();
@@ -249,6 +288,11 @@ public class UserService {
                 .anyMatch(role -> role.getName().equals("HOST"));
         if(check){
             throw new AppException(UserErrorCode.ROLE_USER_ALREADY_EXISTS);
+        }
+        boolean hasEnterprise = user.getRoles().stream()
+                .anyMatch(role -> role.getName().equals("ENTERPRISE"));
+        if(hasEnterprise){
+            throw new AppException(UserErrorCode.MUTUALLY_EXCLUSIVE_ROLES);
         }
         HostProfile existingProfile = user.getHostProfile();
         if(existingProfile == null){
@@ -394,6 +438,11 @@ public class UserService {
     @Transactional
     public boolean successUpgradeToHost(String userId){
         User user = findUserById(userId);
+        boolean hasEnterprise = user.getRoles().stream()
+                .anyMatch(r -> r.getName().equals("ENTERPRISE"));
+        if (hasEnterprise) {
+            throw new AppException(UserErrorCode.MUTUALLY_EXCLUSIVE_ROLES);
+        }
         Role role = roleRepository.findById("HOST")
                 .orElseThrow(() -> new AppException(UserErrorCode.ROLE_NOT_FOUND));
 
@@ -405,6 +454,11 @@ public class UserService {
     @Transactional
     public boolean successUpgradeToEnterprise(String userId){
         User user = findUserById(userId);
+        boolean hasHost = user.getRoles().stream()
+                .anyMatch(r -> r.getName().equals("HOST"));
+        if (hasHost) {
+            throw new AppException(UserErrorCode.MUTUALLY_EXCLUSIVE_ROLES);
+        }
         Role role = roleRepository.findById("ENTERPRISE")
                 .orElseThrow(() -> new AppException(UserErrorCode.ROLE_NOT_FOUND));
 
@@ -426,6 +480,11 @@ public class UserService {
                 .anyMatch(role -> role.getName().equals("ENTERPRISE"));
         if(check){
             throw new AppException(UserErrorCode.ROLE_USER_ALREADY_EXISTS);
+        }
+        boolean hasHost = user.getRoles().stream()
+                .anyMatch(role -> role.getName().equals("HOST"));
+        if(hasHost){
+            throw new AppException(UserErrorCode.MUTUALLY_EXCLUSIVE_ROLES);
         }
 
 

@@ -132,6 +132,7 @@ export const identityRoutes = [
             url = url.replace(/^\/api\/v1\/admin\/users\/?$/, '/api/users'); // GET All Users
             url = url.replace(/^\/api\/v1\/admin\/users\/([^\/]+)$/, '/api/users/admin/$1'); // DELETE, PATCH user
             url = url.replace(/^\/api\/v1\/admin\/users\/([^\/]+)\/role$/, '/api/users/$1/upgraderole'); // POST upgrade role
+            url = url.replace(/^\/api\/v1\/admin\/users\/([^\/]+)\/revokerole$/, '/api/users/$1/revokerole'); // POST revoke role
             url = url.replace(/^\/api\/v1\/admin\/accounts\/([^\/]+)\/status$/, '/api/users/accounts/$1/status'); // PUT ban/unban
 
             // --- Quản lý Hosts ---

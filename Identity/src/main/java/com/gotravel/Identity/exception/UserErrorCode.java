@@ -14,7 +14,9 @@ public enum UserErrorCode implements ErrorCode {
     BANED_USER(400, "BANNED_USER", "banned account", HttpStatus.BAD_REQUEST),
     DELETE_USER(400, "DELETE_USER", "deleted account", HttpStatus.BAD_REQUEST),
     POFILE_USER_AWAITING_EXISTS(409, "POFILE_USER_AWAITING_EXISTS", "User profile awaiting approval", HttpStatus.BAD_REQUEST),
-    UPLOAD_IMAGE_FAILED(500, "UPLOAD_IMAGE_FAILED", "Failed to upload image", HttpStatus.INTERNAL_SERVER_ERROR);
+    UPLOAD_IMAGE_FAILED(500, "UPLOAD_IMAGE_FAILED", "Failed to upload image", HttpStatus.INTERNAL_SERVER_ERROR),
+    CANNOT_REMOVE_USER_ROLE(400, "CANNOT_REMOVE_USER_ROLE", "Cannot remove USER role from a user", HttpStatus.BAD_REQUEST),
+    MUTUALLY_EXCLUSIVE_ROLES(400, "MUTUALLY_EXCLUSIVE_ROLES", "A user cannot be both a HOST and an ENTERPRISE", HttpStatus.BAD_REQUEST);
 
     private final boolean success = false;
     private final int status;

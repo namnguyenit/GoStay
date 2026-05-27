@@ -154,6 +154,13 @@ public class UserController {
         return ApiRequest.success(SuccessCode.ROLE_UPGRADED_SUCCESS, role);
     }
 
+    @PostMapping("/{id}/revokerole")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiRequest<String> revokeRole(@PathVariable String id, @RequestParam String role) {
+        userService.revokeRole(id, role);
+        return ApiRequest.success(SuccessCode.ROLE_REVOKED_SUCCESS, role);
+    }
+
     @PostMapping(value = "/me/upgradetohost", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('USER')")
     public ApiRequest<ApprovalStatusResponse> upgradeToHost(
