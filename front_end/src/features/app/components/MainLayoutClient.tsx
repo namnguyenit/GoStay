@@ -59,6 +59,26 @@ export default function MainLayoutClient({
     router.push("/log-in");
   };
 
+  // Tự động refresh roles khi user quay lại tab (detect admin đã nâng quyền)
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === "visible") {
+        const rolesChanged = await AuthService.refreshRoles();
+        if (rolesChanged) {
+          // Cập nhật lại state để re-render header ngay lập tức
+          setCurrentUser({ ...AuthService.getCurrentUser() });
+        }
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [currentUser?.id]);
+
   useEffect(() => {
     const segment = pathName.split("/")[1];
     if (isTab(segment)) {

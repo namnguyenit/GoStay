@@ -1,5 +1,6 @@
 package com.gotravel.Identity.controller;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,4 +29,17 @@ public class AuthenticationController {
         var result = authenticationService.authenticate(request);
         return ApiRequest.success(SuccessCode.LOGIN_SUCCESS, result);
     }
+
+    /**
+     * Refresh token: cấp JWT mới với roles mới nhất từ DB mà không cần đăng nhập lại.
+     * Người dùng phải đang có JWT hợp lệ (Bearer token).
+     * Hữu ích khi admin nâng quyền user — user tự refresh mà không cần logout.
+     */
+    @PostMapping("/refresh-roles")
+    public ApiRequest<AuthenticationResponse> refreshRoles() {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        var result = authenticationService.refreshRoles(userId);
+        return ApiRequest.success(SuccessCode.LOGIN_SUCCESS, result);
+    }
 }
+

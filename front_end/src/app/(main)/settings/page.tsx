@@ -135,7 +135,9 @@ export default function SettingsPage() {
     if (tabParam === "profile" || tabParam === "upgrade" || tabParam === "settings") {
       setActiveTab(tabParam);
     }
-    fetchData();
+    // Refresh roles từ DB trước khi fetch data — đảm bảo settings hiển thị đúng
+    // dù admin vừa nâng quyền mà user chưa logout
+    AuthService.refreshRoles().then(() => fetchData());
   }, [searchParams]);
 
   // Show banner alert helper

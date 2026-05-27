@@ -62,7 +62,18 @@ export const identityRoutes = [
     },
 
     // ==========================================
-    // 2. NHÓM AUTH (Đăng nhập, Đăng ký)
+    // 2a. REFRESH ROLES (Auth - Yêu cầu JWT hợp lệ)
+    // Route này phải trước /api/v1/auth để sorting theo URL length ưu tiên đúng
+    // ==========================================
+    {
+        url: '/api/v1/auth/refresh-roles',
+        target: (process.env.IDENTITY_SERVICE_URL || "http://localhost:8080"),
+        auth: true,
+        pathRewrite: () => '/api/auth/refresh-roles'
+    },
+
+    // ==========================================
+    // 2b. NHÓM AUTH (Đăng nhập, Đăng ký - Không Auth)
     // ==========================================
     {
         url: '/api/v1/auth',
@@ -77,6 +88,7 @@ export const identityRoutes = [
             // Phiên dịch URL từ Frontend sang Backend
             if (url === '/api/v1/auth/login') return '/api/auth/login' + query;
             if (url === '/api/v1/auth/register') return '/api/users' + query; // Nối vào @PostMapping("/api/users")
+            if (url === '/api/v1/auth/refresh-roles') return '/api/auth/refresh-roles' + query;
 
             return path;
         }

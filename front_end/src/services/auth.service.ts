@@ -34,6 +34,33 @@ const AuthService = {
     localStorage.removeItem("user_info");
   },
 
+  /**
+   * Lấy JWT mới với roles mới nhất từ DB (không cần đăng nhập lại).
+   * Dùng khi admin nâng quyền user — frontend tự detect và refresh tự động.
+   * @returns true nếu roles đã thay đổi (cần re-render), false nếu không đổi
+   */
+  refreshRoles: async (): Promise<boolean> => {
+    try {
+      const currentRoles = AuthService.getUserRoles().sort().join(",");
+      const res = await Api.post("/v1/auth/refresh-roles", {});
+      if (res?.data?.token) {
+        // Cập nhật token mới vào cookie
+        Cookies.set("access_token", res.data.token, { expires: 7 });
+        // Lấy user info mới từ API
+        try {
+          const profileInfo = await Api.get("/v1/me");
+          if (profileInfo?.data) {
+            localStorage.setItem("user_info", JSON.stringify(profileInfo.data));
+          }
+        } catch (_) {}
+        // So sánh roles cũ và mới
+        const newRoles = AuthService.getUserRoles().sort().join(",");
+        return currentRoles !== newRoles;
+      }
+    } catch (_) {}
+    return false;
+  },
+
   getCurrentUser: () => {
     if (typeof window !== "undefined") {
       const user = localStorage.getItem("user_info");

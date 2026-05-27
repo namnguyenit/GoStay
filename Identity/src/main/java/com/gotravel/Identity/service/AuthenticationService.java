@@ -66,6 +66,28 @@ public class AuthenticationService {
                 .build();
     }
 
+    /**
+     * Cấp JWT mới với roles mới nhất từ DB, dùng khi admin đã nâng quyền user.
+     * Không cần password — chỉ cần userId (lấy từ JWT hiện tại đã xác thực).
+     */
+    public AuthenticationResponse refreshRoles(String userId) {
+        var user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
+
+        if (Boolean.TRUE.equals(user.getIsDeleted())) {
+            throw new AppException(UserErrorCode.DELETE_USER);
+        }
+
+        if (Boolean.FALSE.equals(user.getIsActive())) {
+            throw new AppException(UserErrorCode.BANED_USER);
+        }
+
+        var token = generateToken(user);
+        return AuthenticationResponse.builder()
+                .token(token)
+                .build();
+    }
+
     // BƯỚC 3: SỬA HÀM TẠO TOKEN ĐỂ DÙNG PRIVATE KEY KÝ VÀO.
     private String generateToken(User user) {
         // Chuyển sang thuật toán RSA256, phải gắn kèm keyID để người phân loại (ở ngoài ai thích lấy thì gọi key này)
