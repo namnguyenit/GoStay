@@ -1,6 +1,9 @@
 import HomeClient from "@/screens/home/components/HomeClient";
 import { ExperienceServices, PlaceServices, ServiceServices } from "@/services";
 import HomeProvider from "@/screens/home/providers/home.provider";
+import type { Experiences } from "@/modules/experience";
+import type { Places } from "@/modules/place";
+import type { Services } from "@/modules/service";
 
 const fallbackExperiences = [
   {
@@ -100,9 +103,9 @@ const fallbackLandmarks = [
 ];
 
 export default async function Page() {
-  let experiences = fallbackExperiences;
-  let places = fallbackPlaces;
-  let services = fallbackServices;
+  let experiences: Experiences = fallbackExperiences;
+  let places: Places = fallbackPlaces;
+  let services: Services = fallbackServices;
   let landmarks = fallbackLandmarks;
 
   try {
