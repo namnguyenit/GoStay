@@ -21,4 +21,8 @@ public interface ListingRepository extends JpaRepository<Listing, UUID> {
     List<Listing> findByProvince(String province);
     List<Listing> findByStatus(ListingStatus status);
     Page<Listing> findByStatus(ListingStatus status, Pageable pageable);
+    
+    Page<Listing> findByStatusAndCategory(ListingStatus status, ListingCategory category, Pageable pageable);
+    Page<Listing> findByStatusAndProvince(ListingStatus status, String province, Pageable pageable);
+    Page<Listing> findByStatusAndCategoryAndProvince(ListingStatus status, ListingCategory category, String province, Pageable pageable);
 }

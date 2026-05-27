@@ -9,6 +9,7 @@ export const useHome = (
   initExperiences: Experiences,
   initPlace: Places,
   initServices: Services,
+  initLandmarks: any[] = [],
 ) => {
   const [imageIndex, setImageIndex] = useState<number>(0);
   const clock = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -16,8 +17,8 @@ export const useHome = (
     initExperiences,
   );
   const [places, setPlaces] = useState<Places | null>(initPlace);
-
   const [services, setServices] = useState<Services | undefined>(initServices);
+  const [landmarks, setLandmarks] = useState<any[]>(initLandmarks);
 
   const setClock = (time?: number) => {
     clearInterval(clock.current ?? undefined);
@@ -43,6 +44,8 @@ export const useHome = (
     places,
     services,
     setServices,
+    landmarks,
+    setLandmarks,
   };
 };
 

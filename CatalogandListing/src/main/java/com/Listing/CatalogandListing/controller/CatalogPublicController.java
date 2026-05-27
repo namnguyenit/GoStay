@@ -4,13 +4,15 @@ import com.Listing.CatalogandListing.dto.response.ApiResponse;
 import com.Listing.CatalogandListing.dto.response.ListingDetailResponse;
 import com.Listing.CatalogandListing.dto.response.PaginationResponse;
 import com.Listing.CatalogandListing.dto.response.ReviewItemResponse;
+import com.Listing.CatalogandListing.entity.Landmark;
 import com.Listing.CatalogandListing.service.ListingService;
 import com.Listing.CatalogandListing.service.ReviewService;
+import com.Listing.CatalogandListing.service.LandmarkService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -19,6 +21,31 @@ import java.util.UUID;
 public class CatalogPublicController {
     final ListingService listingService;
     final ReviewService reviewService;
+    final LandmarkService landmarkService;
+
+    /**
+     * Tìm kiếm và hiển thị danh sách Dịch vụ công khai (sắp xếp theo averageRating giảm dần)
+     * Lộ trình: GET /api/v1/catalog/listings
+     */
+    @GetMapping
+    public ResponseEntity<ApiResponse<PaginationResponse<ListingDetailResponse>>> searchListings(
+            @RequestParam(required = false) com.Listing.CatalogandListing.enums.ListingCategory category,
+            @RequestParam(required = false) String province,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        PaginationResponse<ListingDetailResponse> response = listingService.searchListings(category, province, page, size);
+        return ResponseEntity.ok(ApiResponse.success("Tìm kiếm danh sách dịch vụ thành công.", response));
+    }
+
+    /**
+     * Lấy danh sách Địa danh nổi tiếng công khai (Landmarks)
+     * Lộ trình: GET /api/v1/catalog/listings/landmarks
+     */
+    @GetMapping("/landmarks")
+    public ResponseEntity<ApiResponse<List<Landmark>>> getPublicLandmarks() {
+        List<Landmark> data = landmarkService.getPublicLandmarks();
+        return ResponseEntity.ok(ApiResponse.success("Lấy danh sách địa danh nổi tiếng thành công.", data));
+    }
 
     /**
      * 3.1.1. Xem chi tiết một Dịch vụ (Listing Detail)

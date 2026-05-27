@@ -92,34 +92,43 @@ const fallbackServices = [
   }
 ];
 
+const fallbackLandmarks = [
+  { id: "lm-1", name: "Vịnh Hạ Long", province: "Quảng Ninh" },
+  { id: "lm-2", name: "Sa Pa", province: "Lào Cai" },
+  { id: "lm-3", name: "Đà Nẵng", province: "Đà Nẵng" },
+  { id: "lm-4", name: "Phú Quốc", province: "Kiên Giang" }
+];
+
 export default async function Page() {
   let experiences = fallbackExperiences;
   let places = fallbackPlaces;
   let services = fallbackServices;
+  let landmarks = fallbackLandmarks;
+
+  try {
+    const data = await PlaceServices.getLandmarks();
+    landmarks = data || [];
+  } catch (err) {
+    console.warn("Could not load landmarks from API, using fallback landmarks.");
+  }
 
   try {
     const data = await ExperienceServices.getAll();
-    if (data && data.length > 0) {
-      experiences = data;
-    }
+    experiences = data || [];
   } catch (err) {
     console.warn("Could not load experiences from API, using premium fallback mock data.");
   }
 
   try {
     const data = await PlaceServices.getAll();
-    if (data && data.length > 0) {
-      places = data;
-    }
+    places = data || [];
   } catch (err) {
     console.warn("Could not load places from API, using premium fallback mock data.");
   }
 
   try {
     const data = await ServiceServices.getAll();
-    if (data && data.length > 0) {
-      services = data;
-    }
+    services = data || [];
   } catch (err) {
     console.warn("Could not load services from API, using premium fallback mock data.");
   }
@@ -129,6 +138,7 @@ export default async function Page() {
       initExperiences={experiences}
       initPlace={places}
       initServices={services}
+      initLandmarks={landmarks}
     >
       <HomeClient />
     </HomeProvider>

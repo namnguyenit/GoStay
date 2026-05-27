@@ -5,10 +5,22 @@ import { mapPlaces } from "@/modules/place/mappers/map-places";
 
 const PlaceServices = {
   getAll: async () => {
-    // Call API
     const res = await Api.get(endpoint.place.getAll);
     // Parse DTO
-    const parsed = getAllPlacesResponseDtoSchema.safeParse(res);
+    let adaptedRes = res;
+    if (res && res.data && res.data.content && Array.isArray(res.data.content)) {
+      adaptedRes = {
+        ...res,
+        data: res.data.content.map((item: any) => ({
+          id: item.id,
+          title: item.title,
+          price: item.basePrice ? Number(item.basePrice) : undefined,
+          rating: item.averageRating ? Number(item.averageRating) : undefined,
+          img: item.thumbnailUrl,
+        }))
+      };
+    }
+    const parsed = getAllPlacesResponseDtoSchema.safeParse(adaptedRes);
     if (!parsed.success) {
       console.error(parsed.error);
       return undefined;
@@ -19,6 +31,15 @@ const PlaceServices = {
     console.log(mapper);
     return mapper;
   },
+  getLandmarks: async () => {
+    try {
+      const res = await Api.get(endpoint.place.getLandmarks);
+      return res?.data ?? [];
+    } catch (err) {
+      console.error("Failed to fetch landmarks:", err);
+      return [];
+    }
+  }
 };
 
 export default PlaceServices;

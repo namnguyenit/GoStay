@@ -11,6 +11,7 @@ type HomeProviderProp = {
   initExperiences: Experiences;
   initPlace: Places;
   initServices: Services;
+  initLandmarks?: any[];
 };
 
 export const HomeContext = createContext<UseHome | null>(null);
@@ -20,8 +21,9 @@ export default function HomeProvider({
   initExperiences,
   initPlace,
   initServices,
+  initLandmarks = [],
 }: HomeProviderProp) {
-  const home = useHome(initExperiences, initPlace, initServices);
+  const home = useHome(initExperiences, initPlace, initServices, initLandmarks);
 
   return <HomeContext.Provider value={home}>{children}</HomeContext.Provider>;
 }

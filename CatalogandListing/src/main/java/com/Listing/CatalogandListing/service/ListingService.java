@@ -124,6 +124,31 @@ public class ListingService {
                 .build();
     }
 
+    public PaginationResponse<ListingDetailResponse> searchListings(com.Listing.CatalogandListing.enums.ListingCategory category, String province, int page, int size) {
+        Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "averageRating"));
+        Page<Listing> listingPage;
+        if (category != null && province != null && !province.isBlank()) {
+            listingPage = listingRepository.findByStatusAndCategoryAndProvince(ListingStatus.ACTIVE, category, province, pageable);
+        } else if (category != null) {
+            listingPage = listingRepository.findByStatusAndCategory(ListingStatus.ACTIVE, category, pageable);
+        } else if (province != null && !province.isBlank()) {
+            listingPage = listingRepository.findByStatusAndProvince(ListingStatus.ACTIVE, province, pageable);
+        } else {
+            listingPage = listingRepository.findByStatus(ListingStatus.ACTIVE, pageable);
+        }
+
+        java.util.List<ListingDetailResponse> dtoList = listingPage.getContent()
+                .stream()
+                .map(listingMapper::toDetailResponse)
+                .collect(java.util.stream.Collectors.toList());
+
+        return PaginationResponse.<ListingDetailResponse>builder()
+                .content(dtoList)
+                .totalPages(listingPage.getTotalPages())
+                .totalElements(listingPage.getTotalElements())
+                .build();
+    }
+
     public void changeListingStatus(UUID listingId, ListingStatus status) {
         Listing listing = listingRepository.findById(listingId)
                 .orElseThrow(() -> new com.Listing.CatalogandListing.exception.AppException(

@@ -5,10 +5,22 @@ import { mapService } from "@/modules/service";
 
 const ServiceServices = {
   getAll: async () => {
-    // Call API
     const res = await Api.get(endpoint.service.getAll);
     // Parse DTO
-    const parsed = getAllServicesResponseDtoSchema.safeParse(res);
+    let adaptedRes = res;
+    if (res && res.data && res.data.content && Array.isArray(res.data.content)) {
+      adaptedRes = {
+        ...res,
+        data: res.data.content.map((item: any) => ({
+          id: item.id,
+          title: item.title,
+          price: item.basePrice ? Number(item.basePrice) : undefined,
+          rating: item.averageRating ? Number(item.averageRating) : undefined,
+          img: item.thumbnailUrl,
+        }))
+      };
+    }
+    const parsed = getAllServicesResponseDtoSchema.safeParse(adaptedRes);
     if (!parsed.success) {
       console.error(parsed.error);
       return undefined;

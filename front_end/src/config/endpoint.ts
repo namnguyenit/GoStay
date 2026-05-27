@@ -1,12 +1,13 @@
 export const endpoint = {
   experience: {
-    getAll: "/experience",
-    getById: (id: string) => `/experience/${id}`,
+    getAll: "/v1/catalog/listings?category=EXP",
+    getById: (id: string) => `/v1/catalog/listings/${id}`,
   },
   place: {
-    getAll: "/place",
+    getAll: "/v1/catalog/listings?category=STAY",
+    getLandmarks: "/v1/catalog/listings/landmarks",
   },
   service: {
-    getAll: "/service",
+    getAll: "/v1/catalog/listings?category=SVC",
   },
 };
