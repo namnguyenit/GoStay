@@ -13,26 +13,41 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 import { Search } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import type { DateRange } from "react-day-picker";
+import type { Filter } from "@/modules/filter";
 
 type FieldState = "place" | "date" | "service";
-type SearchInfo =
-  | {
-      place?: string;
-      date?: DateRange;
-      service?: string;
-    }
-  | undefined;
+
+export type Type = "place" | "exp" | "service";
+type DisplayType = "Nơi cư chú" | "Trải nghiệm" | "Dịch vụ";
+
+type PlaceOptions = {
+  id: string;
+  name: string;
+}[];
+
+const placeOptions: PlaceOptions = [
+  {
+    id: "0",
+    name: "Hà Nội",
+  },
+  {
+    id: "1",
+    name: "Lào Cai",
+  },
+];
 
 export default function SearchInfoSection({
   onClickSearch,
+  filter,
 }: {
-  onClickSearch?: (value: SearchInfo) => void;
+  onClickSearch?: (value: Filter) => void;
+  filter: Filter;
 }) {
-  const [searchInfo, setSearchInfo] = useState<SearchInfo>();
+  const [searchInfo, setSearchInfo] = useState<Filter>(filter);
   const [hover, setHover] = useState<FieldState>();
   const [searchButtonHover, setSearchButtonHover] = useState(false);
   const [open, setOpen] = useState<FieldState>();
@@ -48,6 +63,8 @@ export default function SearchInfoSection({
   //   useEffect(() => {
   //     console.log(searchInfo);
   //   }, [searchInfo]);
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   return (
     <div className="bg-app-bg center-y shadow-app-secondary h-[70] w-full rounded-full shadow">
@@ -59,9 +76,10 @@ export default function SearchInfoSection({
         onOpenChange={(e) => {
           setOpen(e ? "place" : undefined);
         }}
-        onValueChange={(value) =>
-          setSearchInfo({ ...searchInfo, place: value })
-        }
+        onValueChange={(value) => {
+          const place = placeOptions.find((e) => e.id == value)?.name;
+          setSearchInfo({ ...searchInfo, place });
+        }}
       >
         <SelectTrigger
           className="hover:bg-app-muted col ba h-full! w-1/3 items-start justify-evenly gap-0 rounded-full border-none p-0 pr-4 pl-6 whitespace-normal focus-visible:ring-0 [&>svg]:hidden"
@@ -86,12 +104,12 @@ export default function SearchInfoSection({
         </SelectTrigger>
         <SelectContent side="bottom" sideOffset={4} position="popper">
           <SelectGroup>
-            <SelectLabel>Fruits</SelectLabel>
-            <SelectItem value="apple">Apple</SelectItem>
-            <SelectItem value="banana">Banana</SelectItem>
-            <SelectItem value="blueberry">Blueberry</SelectItem>
-            <SelectItem value="grapes">Grapes</SelectItem>
-            <SelectItem value="pineapple">Pineapple</SelectItem>
+            <SelectLabel>Địa điểm</SelectLabel>
+            {placeOptions.map((e) => (
+              <SelectItem key={e.id} value={e.id}>
+                {e.name}
+              </SelectItem>
+            ))}
           </SelectGroup>
         </SelectContent>
       </Select>
@@ -119,15 +137,15 @@ export default function SearchInfoSection({
             }}
           >
             <span className="text-xs">Thời gian</span>
-            {searchInfo?.date?.from ? (
-              searchInfo?.date.to ? (
+            {searchInfo?.date?.from && isValid(searchInfo?.date?.from) ? (
+              searchInfo?.date?.to && isValid(searchInfo?.date?.to) ? (
                 <span className="line-clamp-1 text-sm">
-                  {format(searchInfo?.date.from, "dd/MM/yyyy")} -{" "}
-                  {format(searchInfo?.date.to, "dd/MM/yyyy")}
+                  {format(searchInfo.date.from, "dd/MM/yyyy")} -{" "}
+                  {format(searchInfo.date.to, "dd/MM/yyyy")}
                 </span>
               ) : (
                 <span className="line-clamp-1 text-sm">
-                  {format(searchInfo?.date.from, "dd/MM/yyyy")}
+                  {format(searchInfo.date.from, "dd/MM/yyyy")}
                 </span>
               )
             ) : (
@@ -165,8 +183,9 @@ export default function SearchInfoSection({
             "bg-transparent",
         )}
       />
-      {/* Chọn dịch vụ */}
+      {/* Chọn Loại hình */}
       <Select
+        // defaultValue={"place"}
         open={open == "service" ? true : false}
         onOpenChange={(e) => {
           if (searchButtonHover) {
@@ -174,9 +193,7 @@ export default function SearchInfoSection({
           }
           setOpen(e ? "service" : undefined);
         }}
-        onValueChange={(value) =>
-          setSearchInfo({ ...searchInfo, service: value })
-        }
+        onValueChange={(value) => setSearchInfo({ ...searchInfo, type: value })}
       >
         <SelectTrigger
           className={cn(
@@ -191,13 +208,26 @@ export default function SearchInfoSection({
           }}
         >
           <div className="flex h-full flex-1 flex-col items-start justify-evenly">
-            <div className="text-app-fg line-clamp-1 text-xs">Dịch vụ</div>
+            <div className="text-app-fg line-clamp-1 text-xs">Loại hình</div>
             <div className="">
-              {searchInfo?.service ? (
-                <div className="line-clamp-1 text-sm">{searchInfo.service}</div>
+              {searchInfo?.type ? (
+                <div className="line-clamp-1 text-sm">
+                  {((): DisplayType => {
+                    switch (searchInfo.type as Type) {
+                      case "place":
+                        return "Nơi cư chú";
+                      case "exp":
+                        return "Trải nghiệm";
+                      case "service":
+                        return "Dịch vụ";
+                      default:
+                        return "Nơi cư chú";
+                    }
+                  })()}
+                </div>
               ) : (
                 <div className="text-app-muted-fg line-clamp-1 w-full text-xs">
-                  Lựa chọn dịch vụ
+                  Chọn loại hình
                 </div>
               )}
             </div>
@@ -234,12 +264,10 @@ export default function SearchInfoSection({
         </SelectTrigger>
         <SelectContent side="bottom" sideOffset={4} position="popper">
           <SelectGroup>
-            <SelectLabel>Fruits</SelectLabel>
-            <SelectItem value="apple">Apple</SelectItem>
-            <SelectItem value="banana">Banana</SelectItem>
-            <SelectItem value="blueberry">Blueberry</SelectItem>
-            <SelectItem value="grapes">Grapes</SelectItem>
-            <SelectItem value="pineapple">Pineapple</SelectItem>
+            <SelectLabel>Loại hình</SelectLabel>
+            <SelectItem value="place">Nơi cư trú</SelectItem>
+            <SelectItem value="exp">Trải nghiệm</SelectItem>
+            <SelectItem value="service">Dịch vụ</SelectItem>
           </SelectGroup>
         </SelectContent>
       </Select>

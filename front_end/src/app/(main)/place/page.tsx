@@ -1,3 +1,10 @@
+import PlaceClient from "@/screens/place/components/PlaceClient";
+
 export default function Page() {
-  return <div className="">Place</div>;
+  return (
+    <div className="">
+      <div>Place</div>
+      <PlaceClient />
+    </div>
+  );
 }

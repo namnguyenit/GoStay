@@ -10,11 +10,17 @@ import { useSafeContext } from "@/shared/hooks";
 import { HomeContext } from "../providers/home.provider";
 import { CarouselSection, SearchInfoSection } from "@/shared/components";
 import { OfferingCarouselItem } from "@/shared/components";
+import { AppContext } from "@/features/app/providers/app.provider";
+
+import type { Type } from "@/shared/components/SearchInfoSection";
+import { FilterService } from "@/services/filter";
 
 export default function HomeClient() {
   const router = useRouter();
   const { imageIndex, clock, setClock, experiences, places, services } =
     useSafeContext(HomeContext);
+
+  const { filter } = useSafeContext(AppContext);
 
   useEffect(() => {
     setClock(6000);
@@ -85,7 +91,7 @@ export default function HomeClient() {
                   {experiences?.[imageIndex]?.rating}
                 </div>
                 <div className="h-[20]" />
-                <Button 
+                <Button
                   className="text-title bg-app-primary hover:bg-app-accent w-[200]"
                   onClick={() => {
                     const activeExp = experiences?.[imageIndex];
@@ -105,42 +111,62 @@ export default function HomeClient() {
         </div>
         {/* Search Info */}
         <div className="pos-center-x bottom-[-30] w-6/10">
-          <SearchInfoSection onClickSearch={console.log} />
+          <SearchInfoSection
+            onClickSearch={(value) => {
+              const params = FilterService.set(value);
+
+              router.push(
+                (() => {
+                  switch (value?.type as Type) {
+                    case "place":
+                      return `/place/?${params.toString()}`;
+                    case "exp":
+                      return `/experience/?${params.toString()}`;
+                    case "service":
+                      return `/service/?${params.toString()}`;
+                    default:
+                      return "";
+                  }
+                })(),
+              );
+            }}
+            filter={filter}
+          />
         </div>
       </div>
       <div className="h-18" />
       <CarouselSection title="Dịch vụ">
         {services?.map((e, index) => (
-          <OfferingCarouselItem 
-            key={e?.id} 
-            item={e} 
+          <OfferingCarouselItem
+            key={e?.id}
+            item={e}
             onSelect={(item) => {
               if (item?.id) router.push(`/service/${item.id}/detail`);
-            }} 
+            }}
           />
         ))}
       </CarouselSection>
       <div className="h-10" />
       <CarouselSection title="Khách sạn ưa chuộng">
         {places?.map((e, index) => (
-          <OfferingCarouselItem 
-            key={e?.id} 
-            item={e} 
+          <OfferingCarouselItem
+            key={e?.id}
+            item={e}
             onSelect={(item) => {
               if (item?.id) router.push(`/place/${item.id}/detail`);
-            }} 
+            }}
           />
         ))}
       </CarouselSection>
       <div className="h-10" />
       <CarouselSection title="Trải nghiệm">
         {experiences?.map((e, index) => (
-          <OfferingCarouselItem 
-            key={e?.id} 
-            item={e} 
+          <OfferingCarouselItem
+            key={e?.id}
+            item={e}
             onSelect={(item) => {
               if (item?.id) router.push(`/experience/${item.id}/detail`);
-            }} 
+            }}
           />
         ))}
       </CarouselSection>

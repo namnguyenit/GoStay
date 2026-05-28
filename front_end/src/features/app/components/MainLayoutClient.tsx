@@ -159,8 +159,15 @@ export default function MainLayoutClient({
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="rounded-full">
                     <Avatar>
-                      <AvatarImage src={currentUser.avatarUrl || "https://github.com/shadcn.png"} />
-                      <AvatarFallback>{currentUser.firstName?.[0] || "U"}</AvatarFallback>
+                      <AvatarImage
+                        src={
+                          currentUser.avatarUrl ||
+                          "https://github.com/shadcn.png"
+                        }
+                      />
+                      <AvatarFallback>
+                        {currentUser.firstName?.[0] || "U"}
+                      </AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
@@ -174,7 +181,10 @@ export default function MainLayoutClient({
                     Settings
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem variant="destructive" onClick={handleLogout}>
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={handleLogout}
+                  >
                     <LogOutIcon />
                     Log out
                   </DropdownMenuItem>
