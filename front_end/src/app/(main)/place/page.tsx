@@ -1,10 +1,17 @@
-import PlaceClient from "@/screens/place/components/PlaceClient";
+import { Suspense } from "react";
+import { PlaceServices } from "@/services";
+import CategoryGridClient from "@/shared/components/CategoryGridClient";
 
-export default function Page() {
+export default async function Page() {
+  const places = await PlaceServices.getAll();
+
   return (
-    <div className="">
-      <div>Place</div>
-      <PlaceClient />
-    </div>
+    <Suspense fallback={<div className="p-8 text-center text-app-muted-fg">Đang tải danh sách nơi cư trú...</div>}>
+      <CategoryGridClient
+        items={places || []}
+        categoryType="place"
+        categoryLabel="Nơi cư trú"
+      />
+    </Suspense>
   );
 }

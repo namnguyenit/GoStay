@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { format, isValid } from "date-fns";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { Filter } from "@/modules/filter";
@@ -52,6 +52,11 @@ export default function SearchInfoSection({
   const [searchButtonHover, setSearchButtonHover] = useState(false);
   const [open, setOpen] = useState<FieldState>();
   const searchButton = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setSearchInfo(filter);
+  }, [filter]);
+
   useEffect(() => {
     const el = searchButton.current;
     if (!el) return;
@@ -77,6 +82,10 @@ export default function SearchInfoSection({
           setOpen(e ? "place" : undefined);
         }}
         onValueChange={(value) => {
+          if (value === "all") {
+            setSearchInfo({ ...searchInfo, place: "" });
+            return;
+          }
           const place = placeOptions.find((e) => e.id == value)?.name;
           setSearchInfo({ ...searchInfo, place });
         }}
@@ -90,14 +99,28 @@ export default function SearchInfoSection({
             setHover(undefined);
           }}
         >
-          <div className="text-app-fg text-xs">Địa điểm</div>
+          <div className="text-app-fg text-xs font-semibold">Địa điểm</div>
 
-          <div className="">
+          <div className="flex items-center gap-1.5 max-w-full">
             {searchInfo?.place ? (
-              <span className="line-clamp-1 text-sm">{searchInfo.place}</span>
+              <>
+                <span className="line-clamp-1 text-sm font-medium">{searchInfo.place}</span>
+                <span
+                  role="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    setSearchInfo({ ...searchInfo, place: "" });
+                  }}
+                  className="hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 rounded-full p-0.5 transition-colors flex-shrink-0 cursor-pointer"
+                  title="Xóa địa điểm"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </span>
+              </>
             ) : (
               <span className="text-app-muted-fg line-clamp-1 text-xs">
-                Lựa chọn địa điểm
+                Tất cả địa điểm
               </span>
             )}
           </div>
@@ -105,6 +128,7 @@ export default function SearchInfoSection({
         <SelectContent side="bottom" sideOffset={4} position="popper">
           <SelectGroup>
             <SelectLabel>Địa điểm</SelectLabel>
+            <SelectItem value="all">Tất cả địa điểm</SelectItem>
             {placeOptions.map((e) => (
               <SelectItem key={e.id} value={e.id}>
                 {e.name}
@@ -193,7 +217,7 @@ export default function SearchInfoSection({
           }
           setOpen(e ? "service" : undefined);
         }}
-        onValueChange={(value) => setSearchInfo({ ...searchInfo, type: value })}
+        onValueChange={(value) => setSearchInfo({ ...searchInfo, type: value === "all" ? "" : value })}
       >
         <SelectTrigger
           className={cn(
@@ -207,27 +231,32 @@ export default function SearchInfoSection({
             setHover(undefined);
           }}
         >
-          <div className="flex h-full flex-1 flex-col items-start justify-evenly">
-            <div className="text-app-fg line-clamp-1 text-xs">Loại hình</div>
-            <div className="">
-              {searchInfo?.type ? (
-                <div className="line-clamp-1 text-sm">
-                  {((): DisplayType => {
-                    switch (searchInfo.type as Type) {
-                      case "place":
-                        return "Nơi cư chú";
-                      case "exp":
-                        return "Trải nghiệm";
-                      case "service":
-                        return "Dịch vụ";
-                      default:
-                        return "Nơi cư chú";
-                    }
-                  })()}
-                </div>
+          <div className="flex h-full flex-1 flex-col items-start justify-evenly min-w-0">
+            <div className="text-app-fg line-clamp-1 text-xs font-semibold">Loại hình</div>
+            <div className="flex items-center gap-1.5 max-w-full">
+              {searchInfo?.type && searchInfo.type !== "all" ? (
+                <>
+                  <span className="line-clamp-1 text-sm font-medium">
+                    {searchInfo.type === "place" && "Nơi cư trú"}
+                    {searchInfo.type === "exp" && "Trải nghiệm"}
+                    {searchInfo.type === "service" && "Dịch vụ"}
+                  </span>
+                  <span
+                    role="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      setSearchInfo({ ...searchInfo, type: "" });
+                    }}
+                    className="hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 rounded-full p-0.5 transition-colors flex-shrink-0 cursor-pointer"
+                    title="Xóa loại hình"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </span>
+                </>
               ) : (
                 <div className="text-app-muted-fg line-clamp-1 w-full text-xs">
-                  Chọn loại hình
+                  Tất cả loại hình
                 </div>
               )}
             </div>
@@ -265,6 +294,7 @@ export default function SearchInfoSection({
         <SelectContent side="bottom" sideOffset={4} position="popper">
           <SelectGroup>
             <SelectLabel>Loại hình</SelectLabel>
+            <SelectItem value="all">Tất cả loại hình</SelectItem>
             <SelectItem value="place">Nơi cư trú</SelectItem>
             <SelectItem value="exp">Trải nghiệm</SelectItem>
             <SelectItem value="service">Dịch vụ</SelectItem>

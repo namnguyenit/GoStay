@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -12,7 +12,6 @@ import { CarouselSection, SearchInfoSection } from "@/shared/components";
 import { OfferingCarouselItem } from "@/shared/components";
 import { AppContext } from "@/features/app/providers/app.provider";
 
-import type { Type } from "@/shared/components/SearchInfoSection";
 import { FilterService } from "@/services/filter";
 
 export default function HomeClient() {
@@ -111,27 +110,15 @@ export default function HomeClient() {
         </div>
         {/* Search Info */}
         <div className="pos-center-x bottom-[-30] w-6/10">
-          <SearchInfoSection
-            onClickSearch={(value) => {
-              const params = FilterService.set(value);
-
-              router.push(
-                (() => {
-                  switch (value?.type as Type) {
-                    case "place":
-                      return `/place/?${params.toString()}`;
-                    case "exp":
-                      return `/experience/?${params.toString()}`;
-                    case "service":
-                      return `/service/?${params.toString()}`;
-                    default:
-                      return "";
-                  }
-                })(),
-              );
-            }}
-            filter={filter}
-          />
+          <Suspense fallback={<div className="h-[70] w-full rounded-full bg-white dark:bg-zinc-900 border animate-pulse" />}>
+            <SearchInfoSection
+              onClickSearch={(value) => {
+                const params = FilterService.set(value);
+                router.push(`/search?${params.toString()}`);
+              }}
+              filter={filter}
+            />
+          </Suspense>
         </div>
       </div>
       <div className="h-18" />
