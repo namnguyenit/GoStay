@@ -236,7 +236,7 @@ export default function SettingsPage() {
     try {
       const formData = new FormData();
       formData.append("fullName", hostForm.fullName);
-      formData.append("phoneNumber", hostForm.phoneNumber);
+      formData.append("phone", hostForm.phoneNumber);
       formData.append("cccdNumber", hostForm.cccdNumber);
       formData.append("bankAccount", hostForm.bankAccount);
       formData.append("bankName", hostForm.bankName);

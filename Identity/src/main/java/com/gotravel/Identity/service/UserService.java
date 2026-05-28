@@ -249,14 +249,14 @@ public class UserService {
         }
         if(user.getHostProfile() != null){
             HostProfile hostProfile = user.getHostProfile();
-            String appprovalstatus = String.valueOf(hostProfile.getApprovalStatus());
-            if(!appprovalstatus.equals("APPROVED")){
+            if(hostProfile.getApprovalStatus() == Approval_status.PENDING){
                 throw new AppException(UserErrorCode.POFILE_USER_AWAITING_EXISTS);
             }
-
-        }
-
-        if (user.getHostProfile() == null) {
+            if(hostProfile.getApprovalStatus() == Approval_status.APPROVED){
+                throw new AppException(UserErrorCode.ROLE_USER_ALREADY_EXISTS);
+            }
+            // If REJECTED, proceed to update
+        } else {
             HostProfile hostProfile = HostProfile.builder()
                     .user(user)
                     .approvalStatus(Approval_status.PENDING)
@@ -265,9 +265,12 @@ public class UserService {
         }
 
         userMapper.updateHostProfileFromRequest(hostProfileRequest, user.getHostProfile());
-        List<String> documentUrls = uploadSecureDocuments(userId, frontImage, backImage);
-        user.getHostProfile().setFrontImageUrl(documentUrls.get(0));
-        user.getHostProfile().setBackImageUrl(documentUrls.get(1));
+        if (frontImage != null && !frontImage.isEmpty() && backImage != null && !backImage.isEmpty()) {
+            List<String> documentUrls = uploadSecureDocuments(userId, frontImage, backImage);
+            user.getHostProfile().setFrontImageUrl(documentUrls.get(0));
+            user.getHostProfile().setBackImageUrl(documentUrls.get(1));
+        }
+        user.getHostProfile().setApprovalStatus(Approval_status.PENDING);
         userRepository.save(user);
         return ApprovalStatusResponse
                 .builder()
@@ -490,13 +493,13 @@ public class UserService {
 
         if(user.getEnterpriseProfile() != null){
             EnterpriseProfile enterpriseProfile = user.getEnterpriseProfile();
-            String appprovalstatus = String.valueOf(enterpriseProfile.getApprovalStatus());
-            if(appprovalstatus.equals("APPROVED")){
+            if(enterpriseProfile.getApprovalStatus() == Approval_status.PENDING){
                 throw new AppException(UserErrorCode.POFILE_USER_AWAITING_EXISTS);
             }
-        }
-
-        if (user.getEnterpriseProfile() == null) {
+            if(enterpriseProfile.getApprovalStatus() == Approval_status.APPROVED){
+                throw new AppException(UserErrorCode.ROLE_USER_ALREADY_EXISTS);
+            }
+        } else {
             EnterpriseProfile enterpriseProfile = EnterpriseProfile.builder()
                     .user(user)
                     .approvalStatus(Approval_status.PENDING)
@@ -505,6 +508,7 @@ public class UserService {
         }
 
         userMapper.updateEnterpriseProfileFromRequest(enterpriseProfileRequest, user.getEnterpriseProfile());
+        user.getEnterpriseProfile().setApprovalStatus(Approval_status.PENDING);
         userRepository.save(user);
         return userMapper.userToUserResponse(user);
     }
