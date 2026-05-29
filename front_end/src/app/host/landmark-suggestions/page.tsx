@@ -3,6 +3,8 @@ import { useState, useRef } from "react";
 import HostService from "@/services/host.service";
 import { MapPin, Send, Upload, X, Image as ImageIcon } from "lucide-react";
 import Image from "next/image";
+import { PROVINCES } from "@/shared/constants/provinces";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function HostLandmarkSuggestPage() {
   const [form, setForm] = useState({
@@ -154,14 +156,24 @@ export default function HostLandmarkSuggestPage() {
                 <label className="text-xs font-bold text-gray-600 uppercase tracking-wider">
                   Tỉnh/Thành phố <span className="text-red-600">*</span>
                 </label>
-                <input
-                  type="text"
+                <Select 
+                  value={form.suggestedProvince} 
+                  onValueChange={(val) => setForm({ ...form, suggestedProvince: val })}
                   required
-                  value={form.suggestedProvince}
-                  onChange={(e) => setForm({ ...form, suggestedProvince: e.target.value })}
-                  placeholder="Ví dụ: Lâm Đồng"
-                  className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-app-primary focus:ring-1 focus:ring-app-primary transition-all"
-                />
+                >
+                  <SelectTrigger className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 h-[46px] text-sm text-gray-900 focus:ring-1 focus:ring-app-primary">
+                    <SelectValue placeholder="-- Chọn tỉnh/thành phố --" />
+                  </SelectTrigger>
+                  <SelectContent position="popper" className="max-h-[300px]">
+                    <SelectGroup>
+                      {PROVINCES.map((province) => (
+                        <SelectItem key={province} value={province} className="text-sm">
+                          {province}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

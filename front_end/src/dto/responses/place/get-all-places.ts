@@ -14,6 +14,7 @@ export const getAllPlacesResponseDtoSchema = z
             price: z.number().optional(),
             rating: z.number().optional(),
             img: z.string().optional(),
+            address: z.string().optional(),
           })
           .optional()
           .catch(undefined),

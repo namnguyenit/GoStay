@@ -61,6 +61,8 @@ export default function HomeClient() {
     return Object.entries(groups)
       .map(([name, list]) => {
         const maxRating = Math.max(...list.map(x => x.rating || 0));
+        // Sort items by rating descending
+        list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
         return { name, list, maxRating };
       })
       .sort((a, b) => b.maxRating - a.maxRating)
@@ -82,6 +84,7 @@ export default function HomeClient() {
     return Object.entries(groups)
       .map(([name, list]) => {
         const maxRating = Math.max(...list.map(x => x.rating || 0));
+        list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
         return { name, list, maxRating };
       })
       .sort((a, b) => b.maxRating - a.maxRating)
@@ -103,6 +106,7 @@ export default function HomeClient() {
     return Object.entries(groups)
       .map(([name, list]) => {
         const maxRating = Math.max(...list.map(x => x.rating || 0));
+        list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
         return { name, list, maxRating };
       })
       .sort((a, b) => b.maxRating - a.maxRating)

@@ -17,6 +17,7 @@ const ServiceServices = {
           price: item.basePrice ? Number(item.basePrice) : undefined,
           rating: item.averageRating ? Number(item.averageRating) : undefined,
           img: item.thumbnailUrl,
+          address: item.province,
         }))
       };
     }

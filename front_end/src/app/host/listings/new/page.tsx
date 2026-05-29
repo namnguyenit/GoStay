@@ -6,6 +6,8 @@ import { ArrowLeft, ArrowRight, Save, Plus, Trash, Upload, X, Image as ImageIcon
 import { useRef } from "react";
 import HostService from "@/services/host.service";
 import AuthService from "@/services/auth.service";
+import { PROVINCES } from "@/shared/constants/provinces";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function NewListing() {
   const router = useRouter();
@@ -436,14 +438,18 @@ export default function NewListing() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-2xs font-bold text-gray-600 uppercase mb-1">Tỉnh/Thành phố *</label>
-                <input 
-                  type="text" 
-                  placeholder="Ví dụ: Hà Nội" 
-                  value={province} 
-                  onChange={(e) => setProvince(e.target.value)}
-                  required
-                  className="w-full bg-white border border-gray-300 shadow-sm rounded-xl px-4 py-2.5 text-xs text-gray-900 focus:outline-none focus:border-app-primary"
-                />
+                <Select value={province} onValueChange={setProvince} required>
+                  <SelectTrigger className="w-full bg-white border border-gray-300 shadow-sm rounded-xl px-4 py-2.5 h-[42px] text-xs text-gray-900 focus:ring-1 focus:ring-app-primary">
+                    <SelectValue placeholder="-- Chọn tỉnh/thành phố --" />
+                  </SelectTrigger>
+                  <SelectContent position="popper" className="max-h-[300px]">
+                    <SelectGroup>
+                      {PROVINCES.map(p => (
+                        <SelectItem key={p} value={p} className="text-xs">{p}</SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div>

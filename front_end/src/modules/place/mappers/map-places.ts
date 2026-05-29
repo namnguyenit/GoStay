@@ -11,6 +11,7 @@ export const mapPlaces = (
       ...e,
       name: e?.title,
       image: e?.img,
+      address: e?.address,
     }),
   );
 
