@@ -38,7 +38,7 @@ export const verifyMediaJWT = (req, res, next) => {
         return next(throwError("UNAUTHORIZED"));
     }
 
-    jwt.verify(token, getKey, { algorithms: ["RS256"], issuer: "com.gotravel" }, (err, decoded) => {
+    jwt.verify(token, getKey, { algorithms: ["RS256"], issuer: "com.gotravel.identity" }, (err, decoded) => {
         if (err || !decoded?.sub) {
             return next(throwError("UNAUTHORIZED"));
         }

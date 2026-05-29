@@ -39,6 +39,13 @@ public class LandmarkSuggestion {
     @Column(name = "reference_image_url", length = 255)
     private String referenceImageUrl;
 
+    @Column(name = "thumbnail_url", length = 255)
+    private String thumbnailUrl;
+
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
+    @Column(name = "gallery_urls", columnDefinition = "jsonb")
+    private java.util.List<String> galleryUrls;
+
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private SuggestionStatus status;

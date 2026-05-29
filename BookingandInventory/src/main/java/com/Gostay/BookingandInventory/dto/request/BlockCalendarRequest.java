@@ -15,5 +15,6 @@ public class BlockCalendarRequest {
     private LocalDate startDate;
     private LocalDate endDate;
     private String timeSlot;
-    private String action; // e.g. "BLOCK"
+    private String action; // e.g. "BLOCK", "UNBLOCK", "UPDATE_QUANTITY"
+    private Integer availableQuantity;
 }

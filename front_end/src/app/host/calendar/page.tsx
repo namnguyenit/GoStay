@@ -20,6 +20,21 @@ function CalendarComponent() {
   const [loadingCalendar, setLoadingCalendar] = useState(false);
   const [submittingBlock, setSubmittingBlock] = useState<string | null>(null);
 
+  // Edit Inventory Capacity States
+  const [selectedDay, setSelectedDay] = useState<any | null>(null);
+  const [quantityInput, setQuantityInput] = useState<string>("");
+  const [submittingQuantity, setSubmittingQuantity] = useState(false);
+
+  // Tab & Initial Configuration States
+  const [activeTab, setActiveTab] = useState<"calendar" | "config">("calendar");
+  const [defaultQuantity, setDefaultQuantity] = useState<number>(2);
+  const [slotsList, setSlotsList] = useState<Array<{ slot: string }>>([
+    { slot: "08:00 - 10:00" },
+    { slot: "14:00 - 16:00" }
+  ]);
+  const [newSlot, setNewSlot] = useState<string>("");
+  const [initializing, setInitializing] = useState(false);
+
   const currentMonth = currentDate.getMonth() + 1; // 1-indexed
   const currentYear = currentDate.getFullYear();
 
@@ -86,6 +101,53 @@ function CalendarComponent() {
     fetchCalendarAndStats();
   }, [selectedListingId, currentDate]);
 
+  const selectedListing = listings.find((l) => l.id === selectedListingId);
+  const category = selectedListing?.category || "STAY";
+
+  // Slots Helpers
+  const addSlot = () => {
+    if (newSlot.trim() && !slotsList.some((s) => s.slot === newSlot.trim())) {
+      setSlotsList([...slotsList, { slot: newSlot.trim() }]);
+      setNewSlot("");
+    }
+  };
+  const removeSlot = (index: number) => {
+    setSlotsList(slotsList.filter((_, i) => i !== index));
+  };
+
+  // Initialize Inventory Config
+  const handleInitialize = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedListingId) return;
+
+    try {
+      setInitializing(true);
+      const isAlreadyInitialized = calendarData && calendarData.length > 0;
+      const configPayload = {
+        category: category,
+        quantity: defaultQuantity,
+        totalQuantity: defaultQuantity,
+        timeSlots: category !== "STAY" ? slotsList.map((s) => s.slot) : []
+      };
+
+      if (isAlreadyInitialized) {
+        await HostService.updateInventoryConfig(selectedListingId, configPayload);
+        alert("Cập nhật cấu hình tồn kho thành công!");
+      } else {
+        await HostService.initializeInventory(selectedListingId, configPayload);
+        alert("Khởi tạo cấu hình tồn kho thành công! Hệ thống đã tự động sinh lịch 90 ngày.");
+      }
+      
+      setActiveTab("calendar");
+      fetchCalendarAndStats();
+    } catch (err: any) {
+      console.error("Initialize inventory failed:", err);
+      alert(`Khởi tạo thất bại: ${err?.message || "Lỗi không xác định"}`);
+    } finally {
+      setInitializing(false);
+    }
+  };
+
   // Month navigation
   const prevMonth = () => {
     setCurrentDate(new Date(currentYear, currentMonth - 2, 1));
@@ -94,15 +156,17 @@ function CalendarComponent() {
     setCurrentDate(new Date(currentYear, currentMonth, 1));
   };
 
+  // Day Click handler
+  const handleDayClick = (item: any) => {
+    if (!selectedListingId) return;
+    router.push(`/host/calendar/${selectedListingId}/${item.dateStr}`);
+  };
+
   // Block/unblock date
-  const handleToggleDay = async (dateStr: string, currentStatus: string) => {
+  const handleToggleBlock = async (dateStr: string, currentStatus: string) => {
     if (!selectedListingId) return;
     const action = currentStatus === "BLOCKED" ? "UNBLOCK" : "BLOCK";
     const actionLabel = action === "BLOCK" ? "Khóa ngày" : "Mở ngày";
-    
-    if (!window.confirm(`Bạn có chắc chắn muốn ${actionLabel.toLowerCase()} ${dateStr} không?`)) {
-      return;
-    }
 
     try {
       setSubmittingBlock(dateStr);
@@ -119,6 +183,33 @@ function CalendarComponent() {
       alert(`Thao tác thất bại: ${err?.message || "Lỗi không xác định"}`);
     } finally {
       setSubmittingBlock(null);
+    }
+  };
+
+  // Save specific available quantity
+  const handleSaveQuantity = async (dateStr: string, quantity: number) => {
+    if (!selectedListingId) return;
+    if (isNaN(quantity) || quantity < 0) {
+      alert("Vui lòng nhập số lượng hợp lệ!");
+      return;
+    }
+
+    try {
+      setSubmittingQuantity(true);
+      await HostService.blockCalendar(selectedListingId, {
+        startDate: dateStr,
+        endDate: dateStr,
+        timeSlot: "ALL_DAY",
+        action: "UPDATE_QUANTITY",
+        availableQuantity: quantity
+      });
+      alert(`Đã cập nhật số chỗ trống ngày ${dateStr} thành ${quantity}!`);
+      fetchCalendarAndStats();
+    } catch (err: any) {
+      console.error("Failed to update quantity", err);
+      alert(`Thao tác thất bại: ${err?.message || "Lỗi không xác định"}`);
+    } finally {
+      setSubmittingQuantity(false);
     }
   };
 
@@ -159,15 +250,15 @@ function CalendarComponent() {
       {/* Title & Dropdown Listing selection */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-lg font-bold text-white">Lịch & Tồn kho</h2>
-          <p className="text-xs text-gray-400">Đóng mở ngày nhận phòng cho từng dịch vụ của bạn.</p>
+          <h2 className="text-lg font-bold text-gray-900">Lịch & Tồn kho</h2>
+          <p className="text-xs text-gray-600">Đóng mở ngày nhận phòng cho từng dịch vụ của bạn.</p>
         </div>
 
         {/* Dropdown Select Listing */}
         <div className="w-full sm:w-64">
-          <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Chọn dịch vụ chỗ nghỉ</label>
+          <label className="block text-[10px] font-bold text-gray-600 uppercase mb-1">Chọn dịch vụ chỗ nghỉ</label>
           {loadingListings ? (
-            <div className="h-10 bg-white/5 border border-white/10 rounded-xl animate-pulse" />
+            <div className="h-10 bg-gray-100 border border-gray-300 rounded-xl animate-pulse" />
           ) : (
             <select
               value={selectedListingId}
@@ -175,10 +266,10 @@ function CalendarComponent() {
                 setSelectedListingId(e.target.value);
                 router.replace(`/host/calendar?listingId=${e.target.value}`);
               }}
-              className="w-full bg-[#0d0d18] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-app-primary"
+              className="w-full bg-white border border-gray-300 rounded-xl px-3 py-2 text-xs text-gray-900 focus:outline-none focus:border-app-primary"
             >
               {listings.map((l) => (
-                <option key={l.id} value={l.id} className="bg-[#0d0d18]">
+                <option key={l.id} value={l.id} className="bg-white">
                   {l.category === "STAY" ? "🏨 " : "🧗 "}{l.title}
                 </option>
               ))}
@@ -187,16 +278,147 @@ function CalendarComponent() {
         </div>
       </div>
 
+      {/* Tab Switcher */}
+      {selectedListingId && (
+        <div className="flex gap-4 border-b border-gray-200 pb-0.5">
+          <button
+            onClick={() => setActiveTab("calendar")}
+            className={`pb-2.5 text-xs font-bold transition-all relative ${
+              activeTab === "calendar"
+                ? "text-app-primary border-b-2 border-app-primary"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            Xem lịch trạng thái
+          </button>
+          <button
+            onClick={() => setActiveTab("config")}
+            className={`pb-2.5 text-xs font-bold transition-all relative ${
+              activeTab === "config"
+                ? "text-app-primary border-b-2 border-app-primary"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            Cấu hình kho (Thiết lập ban đầu)
+          </button>
+        </div>
+      )}
+
       {/* Main Grid: Occupancy rate & Calendar view */}
       {selectedListingId ? (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        activeTab === "config" ? (
+          /* CONFIG INVENTORY VIEW */
+          <form onSubmit={handleInitialize} className="bg-white border border-gray-200 rounded-2xl p-6 max-w-xl space-y-6">
+            <div>
+              <h3 className="text-sm font-bold text-gray-900 mb-1">
+                Thiết lập tồn kho cho: <span className="text-app-primary">{selectedListing?.title}</span>
+              </h3>
+              <p className="text-2xs text-gray-600 uppercase tracking-wider">
+                Loại hình: {category === "STAY" ? "Lưu trú (STAY)" : category === "EXP" ? "Trải nghiệm (EXP)" : "Dịch vụ (SVC)"}
+              </p>
+            </div>
+
+            {category === "STAY" ? (
+              /* STAY CAPACITY SETUP */
+              <div className="space-y-2">
+                <label className="block text-2xs font-bold text-gray-600 uppercase">
+                  Số phòng / Căn hộ khả dụng mặc định mỗi ngày
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={defaultQuantity}
+                  onChange={(e) => setDefaultQuantity(Number(e.target.value))}
+                  required
+                  className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-xs text-gray-900 focus:outline-none focus:border-app-primary"
+                  placeholder="Ví dụ: 2"
+                />
+                <p className="text-[10px] text-gray-500 leading-normal">
+                  * Thiết lập này xác định số lượng phòng tối đa của chỗ lưu trú này có thể nhận đặt trực tuyến mỗi ngày.
+                </p>
+              </div>
+            ) : (
+              /* EXP/SVC SLOTS SETUP */
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="block text-2xs font-bold text-gray-600 uppercase">
+                    Số chỗ phục vụ tối đa của mỗi khung giờ
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={defaultQuantity}
+                    onChange={(e) => setDefaultQuantity(Number(e.target.value))}
+                    required
+                    className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-xs text-gray-900 focus:outline-none focus:border-app-primary"
+                    placeholder="Ví dụ: 5"
+                  />
+                </div>
+
+                <div className="space-y-3 pt-2">
+                  <div className="flex justify-between items-center border-b border-gray-200 pb-1">
+                    <span className="text-2xs font-bold text-gray-600 uppercase">Khung giờ hoạt động</span>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Ví dụ: 08:00 - 10:00"
+                      value={newSlot}
+                      onChange={(e) => setNewSlot(e.target.value)}
+                      className="flex-grow bg-white border border-gray-300 rounded-xl px-3 py-2 text-xs text-gray-900 focus:outline-none focus:border-app-primary"
+                    />
+                    <button
+                      type="button"
+                      onClick={addSlot}
+                      className="bg-gray-100 hover:bg-white/10 border border-gray-300 text-gray-900 px-4 py-2 rounded-xl text-xs font-bold"
+                    >
+                      Thêm giờ
+                    </button>
+                  </div>
+
+                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                    {slotsList.length === 0 ? (
+                      <p className="text-[10px] text-gray-500 text-center py-2">Chưa cấu hình khung giờ nào. Vui lòng thêm giờ hoạt động!</p>
+                    ) : (
+                      slotsList.map((item, index) => (
+                        <div key={index} className="flex items-center justify-between p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-2xs">
+                          <span className="text-gray-900 font-semibold">{item.slot}</span>
+                          <button
+                            type="button"
+                            onClick={() => removeSlot(index)}
+                            className="text-red-600 hover:text-red-600 font-bold px-1"
+                          >
+                            Xóa
+                          </button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="border-t border-gray-200 pt-4">
+              <button
+                type="submit"
+                disabled={initializing || (category !== "STAY" && slotsList.length === 0)}
+                className="bg-app-primary hover:bg-app-primary/95 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-app-primary/20 disabled:opacity-50 transition-all"
+              >
+                {initializing ? "Đang xử lý khởi tạo..." : "Khởi tạo tồn kho & Mở lịch 90 ngày"}
+              </button>
+            </div>
+          </form>
+        ) : (
+          /* CALENDAR RENDER VIEW */
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           {/* Calendar Controller & Grid */}
-          <div className="lg:col-span-2 bg-[#0d0d18] border border-white/5 rounded-2xl p-6 space-y-6">
+          <div className="lg:col-span-2 bg-white border border-gray-200 rounded-2xl p-6 space-y-6">
             
             {/* Calendar Month Header Controller */}
-            <div className="flex items-center justify-between pb-3 border-b border-white/5">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-200">
+              <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
                 <CalendarIcon className="w-4 h-4 text-app-primary" />
                 {monthNames[currentMonth - 1]} năm {currentYear}
               </h3>
@@ -204,13 +426,13 @@ function CalendarComponent() {
               <div className="flex items-center gap-1">
                 <button 
                   onClick={prevMonth}
-                  className="p-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white"
+                  className="p-1.5 bg-gray-100 hover:bg-white/10 border border-gray-300 rounded-lg text-gray-900"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
                 <button 
                   onClick={nextMonth}
-                  className="p-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white"
+                  className="p-1.5 bg-gray-100 hover:bg-white/10 border border-gray-300 rounded-lg text-gray-900"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
@@ -219,9 +441,15 @@ function CalendarComponent() {
 
             {/* Calendar Loading State */}
             {loadingCalendar ? (
-              <div className="h-64 flex flex-col items-center justify-center gap-3">
-                <div className="w-8 h-8 border-4 border-app-primary border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-gray-400 text-xs">Đang tải lịch trạng thái phòng...</p>
+              <div className="space-y-4 w-full">
+                <div className="grid grid-cols-7 gap-2">
+                  {[1,2,3,4,5,6,7].map(i => <div key={i} className="h-4 bg-gray-200 animate-shimmer rounded"></div>)}
+                </div>
+                <div className="grid grid-cols-7 gap-2">
+                  {Array.from({length: 35}).map((_, i) => (
+                    <div key={i} className="aspect-square bg-gray-100 border border-gray-200 animate-shimmer rounded-xl"></div>
+                  ))}
+                </div>
               </div>
             ) : (
               <div className="space-y-4">
@@ -238,48 +466,75 @@ function CalendarComponent() {
                 </div>
 
                 {/* Days Grid */}
-                <div className="grid grid-cols-7 gap-2">
-                  {daysGrid.map((item, index) => {
-                    if (item.isPadding) {
-                      return <div key={`pad-${index}`} className="aspect-square bg-transparent" />;
-                    }
+                {calendarData.length === 0 ? (
+                  /* UN-INITIALIZED INVENTORY BANNER */
+                  <div className="p-8 border border-dashed border-gray-300 rounded-2xl text-center space-y-3">
+                    <p className="text-xs text-gray-600">
+                      Chỗ nghỉ/Dịch vụ này chưa được thiết lập tồn kho và lịch bán phòng.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("config")}
+                      className="bg-app-primary hover:bg-app-primary/95 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all"
+                    >
+                      Thiết lập cấu hình kho ngay
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-7 gap-2">
+                    {daysGrid.map((item, index) => {
+                      if (item.isPadding) {
+                        return <div key={`pad-${index}`} className="aspect-square bg-transparent" />;
+                      }
 
-                    const isBlocked = item.status === "BLOCKED";
-                    const isUpdating = submittingBlock === item.dateStr;
+                      const isBlocked = item.status === "BLOCKED";
+                      const isUpdating = submittingBlock === item.dateStr;
+                      const info = item.info;
 
-                    return (
-                      <button
-                        key={item.dateStr}
-                        type="button"
-                        onClick={() => handleToggleDay(item.dateStr, item.status)}
-                        disabled={isUpdating}
-                        className={`aspect-square rounded-xl border p-2 flex flex-col justify-between items-start transition-all relative group ${
-                          isBlocked 
-                            ? "bg-red-950/20 border-red-500/20 hover:border-red-500 text-red-400"
-                            : "bg-emerald-950/10 border-emerald-500/10 hover:border-emerald-500 text-emerald-400"
-                        } disabled:opacity-50`}
-                      >
-                        <span className="text-[10px] font-bold text-white">{item.day}</span>
-                        
-                        <div className="w-full flex justify-between items-center mt-auto">
-                          <span className="text-[8px] uppercase font-bold tracking-tight">
-                            {isBlocked ? "Khóa" : "Mở"}
-                          </span>
-                          {isBlocked ? (
-                            <Lock className="w-2.5 h-2.5 text-red-500" />
-                          ) : (
-                            <Unlock className="w-2.5 h-2.5 text-emerald-500" />
+                      return (
+                        <button
+                          key={item.dateStr}
+                          type="button"
+                          onClick={() => handleDayClick(item)}
+                          disabled={isUpdating}
+                          className={`aspect-square rounded-xl border p-2 flex flex-col justify-between items-start transition-all relative group ${
+                            isBlocked 
+                              ? "bg-red-50/20 border-red-200 hover:border-red-500 text-red-600"
+                              : "bg-emerald-50 border-emerald-200 hover:border-emerald-500 text-emerald-600"
+                          } disabled:opacity-50`}
+                        >
+                          <span className="text-[10px] font-bold text-gray-900">{item.day}</span>
+                          
+                          {/* Occupancy Indicator */}
+                          {info && (
+                            <div className="text-[8px] font-semibold text-gray-700 mt-0.5 leading-tight">
+                              Còn: <span className={info.availableQuantity > 0 ? "text-emerald-600" : "text-gray-500"}>{info.availableQuantity}</span>/{info.totalQuantity}
+                              {info.confirmedQuantity > 0 && (
+                                <span className="text-app-accent block text-[7px] mt-0.5 font-bold">Đặt: {info.confirmedQuantity}</span>
+                              )}
+                            </div>
                           )}
-                        </div>
+                          
+                          <div className="w-full flex justify-between items-center mt-auto pt-1">
+                            <span className="text-[8px] uppercase font-bold tracking-tight">
+                              {isBlocked ? "Khóa" : "Mở"}
+                            </span>
+                            {isBlocked ? (
+                              <Lock className="w-2.5 h-2.5 text-red-600" />
+                            ) : (
+                              <Unlock className="w-2.5 h-2.5 text-emerald-600" />
+                            )}
+                          </div>
 
-                        {/* Hover Overlay Tooltip */}
-                        <div className="absolute inset-0 bg-black/60 rounded-xl opacity-0 group-hover:opacity-100 flex items-center justify-center text-[9px] font-bold text-white transition-opacity">
-                          {isBlocked ? "Click để MỞ" : "Click để KHÓA"}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
+                          {/* Hover Overlay Tooltip */}
+                          <div className="absolute inset-0 bg-gray-900/5 backdrop-blur-[1px] rounded-xl opacity-0 group-hover:opacity-100 flex items-center justify-center text-[10px] font-bold text-gray-800 transition-opacity">
+                            Click để thiết lập
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
 
               </div>
             )}
@@ -289,8 +544,8 @@ function CalendarComponent() {
           <div className="space-y-6">
             
             {/* Occupancy stats Card */}
-            <div className="bg-[#0d0d18] border border-white/5 rounded-2xl p-6 space-y-4">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2 pb-3 border-b border-white/5">
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4">
+              <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2 pb-3 border-b border-gray-200">
                 <Percent className="w-4 h-4 text-app-primary" /> Thống kê lấp đầy
               </h3>
 
@@ -301,25 +556,25 @@ function CalendarComponent() {
               ) : occupancyRate ? (
                 <div className="space-y-4 text-xs">
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Công suất (Occupancy Rate):</span>
+                    <span className="text-gray-600">Công suất (Occupancy Rate):</span>
                     <strong className="text-app-accent text-sm font-bold">{occupancyRate.occupancyRate}%</strong>
                   </div>
 
-                  <div className="w-full bg-white/5 rounded-full h-2 overflow-hidden">
+                  <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
                     <div 
                       className="bg-app-accent h-2 rounded-full transition-all duration-500"
                       style={{ width: `${Math.min(100, occupancyRate.occupancyRate)}%` }}
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 pt-2 text-[10px] text-gray-400">
-                    <div className="bg-black/25 border border-white/5 p-2 rounded-xl">
+                  <div className="grid grid-cols-2 gap-2 pt-2 text-[10px] text-gray-600">
+                    <div className="bg-white border border-gray-200 p-2 rounded-xl">
                       <p>Khả năng phục vụ</p>
-                      <strong className="text-white text-xs">{occupancyRate.totalCapacityInMonth} lượt</strong>
+                      <strong className="text-gray-900 text-xs">{occupancyRate.totalCapacityInMonth} lượt</strong>
                     </div>
-                    <div className="bg-black/25 border border-white/5 p-2 rounded-xl">
+                    <div className="bg-white border border-gray-200 p-2 rounded-xl">
                       <p>Đã chốt (Confirmed)</p>
-                      <strong className="text-white text-xs">{occupancyRate.soldCapacity} lượt</strong>
+                      <strong className="text-gray-900 text-xs">{occupancyRate.soldCapacity} lượt</strong>
                     </div>
                   </div>
                 </div>
@@ -329,29 +584,31 @@ function CalendarComponent() {
             </div>
 
             {/* Legend Card */}
-            <div className="bg-[#0d0d18] border border-white/5 rounded-2xl p-6 space-y-3">
-              <h3 className="text-xs font-bold text-white pb-2 border-b border-white/5">Chú giải trạng thái</h3>
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-3">
+              <h3 className="text-xs font-bold text-gray-900 pb-2 border-b border-gray-200">Chú giải trạng thái</h3>
               
               <div className="space-y-2 text-[10px]">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-emerald-950/40 border border-emerald-500/20 rounded" />
-                  <span className="text-gray-300"><strong>AVAILABLE (Trống):</strong> Ngày phòng trống, khách hàng có thể đặt phòng trực tuyến.</span>
+                  <div className="w-3 h-3 bg-emerald-100 border border-emerald-200 rounded" />
+                  <span className="text-gray-700"><strong>AVAILABLE (Trống):</strong> Ngày phòng trống, khách hàng có thể đặt phòng trực tuyến.</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-red-950/40 border border-red-500/20 rounded" />
-                  <span className="text-gray-300"><strong>BLOCKED (Khóa):</strong> Chủ nhà đã khóa ngày (sửa chữa, bận...). Khách không thể đặt.</span>
+                  <div className="w-3 h-3 bg-red-50/40 border border-red-200 rounded" />
+                  <span className="text-gray-700"><strong>BLOCKED (Khóa):</strong> Chủ nhà đã khóa ngày (sửa chữa, bận...). Khách không thể đặt.</span>
                 </div>
               </div>
             </div>
 
           </div>
-
         </div>
+        )
       ) : (
-        <div className="text-center py-12 bg-[#0d0d18] border border-white/5 rounded-2xl">
+        <div className="text-center py-12 bg-white border border-gray-200 rounded-2xl">
           <p className="text-xs text-gray-500">Bạn chưa có chỗ nghỉ nào để quản lý lịch.</p>
         </div>
       )}
+
+
 
     </div>
   );
@@ -363,7 +620,7 @@ export default function HostCalendar() {
       <div className="flex-grow flex items-center justify-center min-h-[300px]">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-4 border-app-primary border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-gray-400 text-xs">Đang tải cấu phần lịch...</p>
+          <p className="text-gray-600 text-xs">Đang tải cấu phần lịch...</p>
         </div>
       </div>
     }>

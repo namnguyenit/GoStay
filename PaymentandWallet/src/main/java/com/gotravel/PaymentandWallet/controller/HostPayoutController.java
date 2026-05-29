@@ -36,4 +36,10 @@ public class HostPayoutController {
         hostPayoutService.markAsPaid(payoutId);
         return ResponseEntity.ok(ApiResponse.success("Đã đánh dấu đã thanh toán cho Host"));
     }
+
+    @PostMapping("/withdraw")
+    public ResponseEntity<ApiResponse<Void>> requestWithdrawal(@RequestHeader("X-User-Id") UUID hostId) {
+        hostPayoutService.requestWithdrawal(hostId);
+        return ResponseEntity.ok(ApiResponse.success("Đã gửi yêu cầu rút tiền thành công"));
+    }
 }

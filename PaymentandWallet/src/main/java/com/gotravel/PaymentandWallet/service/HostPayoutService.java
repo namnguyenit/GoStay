@@ -38,9 +38,6 @@ public class HostPayoutService {
                 .map(paymentMapper::toHostPayoutResponse);
     }
 
-    /**
-     * Admin đánh dấu đã chuyển tiền cho Host.
-     */
     @Transactional
     public void markAsPaid(UUID payoutId) {
         HostPayout payout = hostPayoutRepository.findById(payoutId)
@@ -51,5 +48,27 @@ public class HostPayoutService {
         hostPayoutRepository.save(payout);
 
         log.info("Payout {} marked as PAID. Host {} receives {}", payoutId, payout.getHostId(), payout.getHostAmount());
+    }
+
+    /**
+     * Host yêu cầu rút tiền cho tất cả các khoản thu nhập đang PENDING.
+     */
+    @Transactional
+    public void requestWithdrawal(UUID hostId) {
+        java.util.List<HostPayout> pendingPayouts = hostPayoutRepository.findByHostIdOrderByCreatedAtDesc(hostId, Pageable.unpaged())
+            .stream()
+            .filter(p -> p.getStatus() == PayoutStatus.PENDING)
+            .toList();
+
+        if (pendingPayouts.isEmpty()) {
+            throw new AppException(PaymentErrorCode.PAYMENT_FAILED); // Handle properly, just a generic error for now
+        }
+
+        for (HostPayout payout : pendingPayouts) {
+            payout.setStatus(PayoutStatus.REQUESTED);
+            hostPayoutRepository.save(payout);
+        }
+        
+        log.info("Host {} requested withdrawal for {} payouts", hostId, pendingPayouts.size());
     }
 }

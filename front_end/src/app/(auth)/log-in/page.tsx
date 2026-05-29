@@ -26,8 +26,6 @@ export default function LoginPage() {
       const roles = AuthService.getUserRoles();
       if (roles.includes("ADMIN")) {
         router.push("/admin");
-      } else if (roles.includes("HOST")) {
-        router.push("/host");
       } else {
         router.push("/");
       }

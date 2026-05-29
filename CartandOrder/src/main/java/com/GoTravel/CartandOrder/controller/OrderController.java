@@ -51,6 +51,14 @@ public class OrderController {
         return ResponseEntity.ok(ApiResponse.success(orderService.getUserOrders(userId, pageable)));
     }
 
+    @GetMapping("/host")
+    @PreAuthorize("hasRole('HOST') or hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Page<OrderResponse>>> getHostOrders(
+            @RequestHeader("X-User-Id") UUID hostId,
+            Pageable pageable) {
+        return ResponseEntity.ok(ApiResponse.success(orderService.getHostOrders(hostId, pageable)));
+    }
+
     @PutMapping("/{orderId}/cancel")
     public ResponseEntity<ApiResponse<Void>> cancelOrder(
             @RequestHeader("X-User-Id") UUID userId,

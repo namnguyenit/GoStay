@@ -1,11 +1,13 @@
 package com.Gostay.BookingandInventory.controller;
 
 import com.Gostay.BookingandInventory.dto.request.BlockCalendarRequest;
+import com.Gostay.BookingandInventory.dto.request.InitializeInventoryRequest;
 import com.Gostay.BookingandInventory.dto.response.ApiResponse;
 import com.Gostay.BookingandInventory.dto.response.CalendarResponse;
 import com.Gostay.BookingandInventory.dto.response.LockResponse;
 import com.Gostay.BookingandInventory.dto.response.OccupancyRateResponse;
 import com.Gostay.BookingandInventory.service.InventoryHostService;
+import com.Gostay.BookingandInventory.service.InventoryInternalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +39,7 @@ import java.util.UUID;
 public class InventoryHostController {
 
     private final InventoryHostService inventoryHostService;
+    private final InventoryInternalService inventoryInternalService;
 
     @GetMapping("/listings/{listingId}/calendars")
     public ResponseEntity<ApiResponse<List<CalendarResponse>>> getCalendars(
@@ -67,5 +70,23 @@ public class InventoryHostController {
             @PathVariable UUID listingId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return ResponseEntity.ok(ApiResponse.success(inventoryHostService.getLocks(listingId, date)));
+    }
+
+    @PostMapping("/listings/{listingId}/initialize")
+    public ResponseEntity<ApiResponse<Void>> initializeInventory(
+            @PathVariable UUID listingId,
+            @RequestBody InitializeInventoryRequest request) {
+        request.setListingId(listingId);
+        inventoryInternalService.initializeInventory(request);
+        return ResponseEntity.ok(ApiResponse.success("Khởi tạo cấu hình tồn kho thành công"));
+    }
+
+    @PutMapping("/listings/{listingId}/inventory-config")
+    public ResponseEntity<ApiResponse<Void>> updateInventoryConfig(
+            @PathVariable UUID listingId,
+            @RequestBody InitializeInventoryRequest request) {
+        request.setListingId(listingId);
+        inventoryInternalService.updateInventoryConfig(request);
+        return ResponseEntity.ok(ApiResponse.success("Cập nhật cấu hình tồn kho thành công"));
     }
 }

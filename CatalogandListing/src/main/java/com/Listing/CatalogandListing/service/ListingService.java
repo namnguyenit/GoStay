@@ -62,6 +62,8 @@ public class ListingService {
         listing = listingRepository.save(listing);
 
         // Call Inventory Service to automatically create calendar
+        // Commented out: Let the host initialize and configure inventory manually from the host portal
+        /*
         try {
             InitializeInventoryRequest initReq = InitializeInventoryRequest.builder()
                 .listingId(listing.getId())
@@ -72,6 +74,7 @@ public class ListingService {
         } catch (Exception e) {
             log.error("Failed to initialize inventory for listing {}", listing.getId(), e);
         }
+        */
     }
 
     public void updateListing(UUID listingId, String userId, SaveListingRequest request) {

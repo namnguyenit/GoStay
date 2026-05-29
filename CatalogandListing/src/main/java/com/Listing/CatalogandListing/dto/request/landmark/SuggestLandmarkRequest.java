@@ -27,4 +27,7 @@ public class SuggestLandmarkRequest {
     private Double suggestedLongitude;
 
     private String referenceImageUrl;
+
+    private String thumbnailUrl;
+    private java.util.List<String> galleryUrls;
 }

@@ -203,6 +203,12 @@ public class OrderService {
                 .map(orderMapper::toOrderResponse);
     }
 
+    @Transactional(readOnly = true)
+    public Page<OrderResponse> getHostOrders(UUID hostId, Pageable pageable) {
+        return orderRepository.findByHostIdOrderByCreatedAtDesc(hostId, pageable)
+                .map(orderMapper::toOrderResponse);
+    }
+
     @Transactional
     public void cancelOrder(UUID userId, UUID orderId) {
         Order order = orderRepository.findById(orderId)

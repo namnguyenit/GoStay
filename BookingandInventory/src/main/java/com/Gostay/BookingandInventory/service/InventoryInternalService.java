@@ -87,6 +87,37 @@ public class InventoryInternalService {
         // Sinh lịch 90 ngày
         generateCalendars(config, LocalDate.now(), LocalDate.now().plusDays(90));
     }
+
+    @Transactional
+    public void updateInventoryConfig(InitializeInventoryRequest request) {
+        validateInitializeInventoryRequest(request);
+        log.info("Updating inventory config for listing {}", request.getListingId());
+        
+        InventoryConfig config = configRepository.findByListingId(request.getListingId())
+            .orElseThrow(() -> new AppException(InventoryErrorCode.INVALID_INVENTORY_ACTION)); // Or config not found
+            
+        InventoryConfig.ScheduleConfig scheduleConfig = new InventoryConfig.ScheduleConfig();
+        String category = normalizeCategory(request.getCategory());
+        int quantity = resolveQuantity(request);
+        if ("STAY".equalsIgnoreCase(category)) {
+            scheduleConfig.setDefaultQuantity(quantity);
+            scheduleConfig.setTimeSlots(new ArrayList<>());
+        } else {
+            List<InventoryConfig.TimeSlotConfig> slots = new ArrayList<>();
+            if (request.getTimeSlots() != null) {
+                for (String s : request.getTimeSlots()) {
+                    slots.add(new InventoryConfig.TimeSlotConfig(s, quantity));
+                }
+            }
+            scheduleConfig.setDefaultQuantity(quantity);
+            scheduleConfig.setTimeSlots(slots);
+        }
+        
+        config.setCategory(category);
+        config.setScheduleConfig(scheduleConfig);
+        
+        configRepository.save(config);
+    }
     
     private void generateCalendars(InventoryConfig config, LocalDate startDate, LocalDate endDate) {
         List<InventoryCalendar> calendars = new ArrayList<>();

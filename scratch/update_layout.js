@@ -1,4 +1,8 @@
-"use client";
+const fs = require('fs');
+
+const oldLayout = fs.readFileSync('/Users/nhannt/Desktop/desktop/project/GoStay/front_end/src/app/host/layout.tsx', 'utf-8');
+
+const newLayout = `"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -72,7 +76,7 @@ export default function HostLayout({ children }: { children: React.ReactNode }) 
         
         {/* Left: Logo */}
         <div className="flex items-center gap-3 w-1/4">
-          <div className="p-2 bg-app-primary/10 rounded-xl border border-app-primary/30">
+          <div className="p-2 bg-app-primary/10 rounded-xl border border-app-primary/20">
             <Building className="h-6 w-6 text-app-primary" />
           </div>
           <div className="hidden md:block">
@@ -82,20 +86,20 @@ export default function HostLayout({ children }: { children: React.ReactNode }) 
         </div>
 
         {/* Center: Navigation Links (Desktop) */}
-        <nav className="hidden lg:flex items-center justify-center gap-6 h-full w-2/4">
+        <nav className="hidden lg:flex items-center justify-center gap-2 w-2/4">
           {navLinks.map((link) => {
             const isActive = link.match ? pathname.startsWith(link.match) : pathname === link.href;
             return (
               <Link 
                 key={link.href}
                 href={link.href} 
-                className={`flex items-center gap-2 h-full border-b-2 text-sm font-medium transition-colors ${
+                className={\`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all \${
                   isActive 
-                    ? "border-app-primary text-app-primary" 
-                    : "border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-300"
-                }`}
+                    ? "bg-gray-100 text-gray-900 shadow-sm" 
+                    : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
+                }\`}
               >
-                <link.icon className="h-4 w-4" />
+                <link.icon className={\`h-4 w-4 \${isActive ? "text-app-primary" : ""}\`} />
                 {link.name}
               </Link>
             );
@@ -137,13 +141,13 @@ export default function HostLayout({ children }: { children: React.ReactNode }) 
                 key={link.href}
                 href={link.href} 
                 onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                className={\`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all \${
                   isActive 
                     ? "bg-gray-100 text-gray-900" 
                     : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
-                }`}
+                }\`}
               >
-                <link.icon className={`h-5 w-5 ${isActive ? "text-app-primary" : ""}`} />
+                <link.icon className={\`h-5 w-5 \${isActive ? "text-app-primary" : ""}\`} />
                 {link.name}
               </Link>
             );
@@ -159,3 +163,7 @@ export default function HostLayout({ children }: { children: React.ReactNode }) 
     </div>
   );
 }
+`;
+
+fs.writeFileSync('/Users/nhannt/Desktop/desktop/project/GoStay/front_end/src/app/host/layout.tsx', newLayout);
+console.log("Layout updated.");

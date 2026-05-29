@@ -61,7 +61,13 @@ public class InventoryHostService {
         List<InventoryCalendar> calendars = calendarRepository.findByListingIdAndDateBetweenAndTimeSlot(listingId, request.getStartDate(), request.getEndDate(), timeSlot);
         
         for (InventoryCalendar calendar : calendars) {
-            calendar.setStatus("BLOCK".equalsIgnoreCase(request.getAction()) ? InventoryCalendarStatus.BLOCKED : InventoryCalendarStatus.AVAILABLE);
+            if ("UPDATE_QUANTITY".equalsIgnoreCase(request.getAction())) {
+                if (request.getAvailableQuantity() != null) {
+                    calendar.setAvailableQuantity(request.getAvailableQuantity());
+                }
+            } else {
+                calendar.setStatus("BLOCK".equalsIgnoreCase(request.getAction()) ? InventoryCalendarStatus.BLOCKED : InventoryCalendarStatus.AVAILABLE);
+            }
             calendarRepository.save(calendar);
         }
     }

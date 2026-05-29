@@ -58,7 +58,7 @@ public class Listing {
     @Column(length = 100)
     private String province;
 
-    @Column(name = "base_price", precision = 10, scale = 2)
+    @Column(name = "base_price", precision = 18, scale = 2)
     private BigDecimal basePrice;
 
     @Enumerated(EnumType.STRING)

@@ -106,6 +106,7 @@ export function LandmarksScreen() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Ảnh</th>
                   <th className="text-left px-4 py-3 font-semibold text-gray-600">Tên</th>
                   <th className="text-left px-4 py-3 font-semibold text-gray-600">Mô tả</th>
                   <th className="text-left px-4 py-3 font-semibold text-gray-600">Tọa độ</th>
@@ -118,20 +119,27 @@ export function LandmarksScreen() {
                 {loading ? (
                   Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i}>
-                      <td colSpan={6} className="px-4 py-3">
+                      <td colSpan={7} className="px-4 py-3">
                         <div className="h-4 bg-gray-100 animate-pulse rounded" />
                       </td>
                     </tr>
                   ))
                 ) : suggestions.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-gray-400">
+                    <td colSpan={7} className="px-4 py-8 text-center text-gray-400">
                       Không có đề xuất nào.
                     </td>
                   </tr>
                 ) : (
                   suggestions.map((item) => (
                     <tr key={item.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3">
+                        {item.thumbnailUrl ? (
+                          <img src={item.thumbnailUrl} alt="Thumb" className="w-12 h-12 rounded object-cover" />
+                        ) : (
+                          <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center text-xs text-gray-400">N/A</div>
+                        )}
+                      </td>
                       <td className="px-4 py-3 font-medium text-gray-800">{item.name}</td>
                       <td className="px-4 py-3 text-gray-500 text-xs max-w-xs truncate">
                         {item.description}
