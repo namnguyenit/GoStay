@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import AdminService from "@/services/admin.service";
+import HostService from "@/services/host.service";
 
 type Tab = "suggestions" | "create" | "showlandmarks";
 type StatusTab = "PENDING" | "RESOLVED" | "REJECTED";
@@ -17,6 +18,12 @@ export function useAdminLandmark() {
     longitude: "",
     province: "",
   });
+  
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+  const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
+  const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
+
   const [submitting, setSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
 
@@ -90,15 +97,34 @@ export function useAdminLandmark() {
     }
     setSubmitting(true);
     try {
+      let uploadedThumbnailUrl = "";
+      let uploadedGalleryUrls: string[] = [];
+
+      if (thumbnailFile) {
+        const thumbRes: any = await HostService.uploadSingleMedia(thumbnailFile, "landmarks");
+        uploadedThumbnailUrl = thumbRes?.data?.url || "";
+      }
+
+      if (galleryFiles.length > 0) {
+        const galleryRes: any = await HostService.uploadBulkMedia(galleryFiles, "landmarks");
+        uploadedGalleryUrls = galleryRes?.data?.url || [];
+      }
+
       await AdminService.createLandmark({
         name: form.name,
         description: form.description,
         latitude: parseFloat(form.latitude),
         longitude: parseFloat(form.longitude),
         province: form.province,
+        thumbnailUrl: uploadedThumbnailUrl,
+        galleryUrls: uploadedGalleryUrls
       });
       setSuccessMsg(`Đã tạo địa danh "${form.name}" thành công!`);
       setForm({ name: "", description: "", latitude: "", longitude: "", province: "" });
+      setThumbnailFile(null);
+      setThumbnailPreview(null);
+      setGalleryFiles([]);
+      setGalleryPreviews([]);
     } catch (err) {
       alert("Có lỗi khi tạo địa danh.");
     } finally {
@@ -181,6 +207,10 @@ export function useAdminLandmark() {
     setEditingLandmark,
     handleUpdateLandmarkStatus,
     handleStartEdit,
-    handleSaveEdit
+    handleSaveEdit,
+    thumbnailFile, setThumbnailFile,
+    thumbnailPreview, setThumbnailPreview,
+    galleryFiles, setGalleryFiles,
+    galleryPreviews, setGalleryPreviews
   };
 }

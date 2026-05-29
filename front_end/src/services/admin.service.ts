@@ -119,6 +119,8 @@ const AdminService = {
     longitude: number;
     address?: string;
     province?: string;
+    thumbnailUrl?: string;
+    galleryUrls?: string[];
   }) => {
     // POST /api/v1/catalog/admin/landmarks
     return await Api.post(`/v1/catalog/admin/landmarks`, data);
