@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Carousel, CarouselContent } from "@/components/ui/carousel";
 import { ChevronLeft, ChevronRight, MoveRight, Star } from "lucide-react";

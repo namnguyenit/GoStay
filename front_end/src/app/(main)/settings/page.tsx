@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { 
   User, 
@@ -20,7 +20,7 @@ import { UserServices } from "@/services";
 import AuthService from "@/services/auth.service";
 import { Button } from "@/components/ui/button";
 
-export default function SettingsPage() {
+function SettingsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -839,3 +839,12 @@ export default function SettingsPage() {
     </div>
   );
 }
+
+export default function SettingsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#0a0a14] flex items-center justify-center text-white">Đang tải...</div>}>
+      <SettingsContent />
+    </Suspense>
+  );
+}
+
