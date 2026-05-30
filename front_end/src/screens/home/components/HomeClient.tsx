@@ -122,7 +122,7 @@ export default function HomeClient() {
           <div className="size-full scale-115 bg-black">
             <AnimatePresence mode="wait">
               <motion.div
-                key={experiences?.[imageIndex]?.id}
+                key={landmarks?.[imageIndex]?.id}
                 initial={{ opacity: 0, x: "5%" }}
                 animate={{ opacity: [0, 1, 1], x: 0 }}
                 exit={{ opacity: 0 }}
@@ -130,7 +130,7 @@ export default function HomeClient() {
                 className="size-full"
               >
                 <img
-                  src={experiences?.[imageIndex]?.image ?? undefined}
+                  src={landmarks?.[imageIndex]?.thumbnailUrl ?? undefined}
                   alt=""
                   className="size-full object-cover"
                 />
@@ -147,7 +147,7 @@ export default function HomeClient() {
           {/* INFO */}
           <div className="pos-center-y">
             <motion.div
-              key={experiences?.[imageIndex]?.id}
+              key={landmarks?.[imageIndex]?.id}
               initial={{ opacity: 0, x: "-100%" }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0 }}
@@ -156,24 +156,19 @@ export default function HomeClient() {
             >
               <div>
                 <div className="text-header text-white">
-                  {experiences?.[imageIndex]?.name}
+                  {landmarks?.[imageIndex]?.name}
                 </div>
-                <div className="text-content text-white">
-                  {experiences?.[imageIndex]?.price}
-                </div>
-                <div className="text-content text-white">
-                  {experiences?.[imageIndex]?.address}
-                </div>
-                <div className="text-content text-white">
-                  {experiences?.[imageIndex]?.rating}
-                </div>
+                <div className="text-content text-white mt-2 max-w-2xl line-clamp-2">{landmarks?.[imageIndex]?.description}</div>
+                <div className="text-content text-white mt-1 font-medium">{landmarks?.[imageIndex]?.province}</div>
+                
                 <div className="h-[20]" />
                 <Button 
                   className="text-title bg-app-primary hover:bg-app-accent w-[200]"
                   onClick={() => {
-                    const activeExp = experiences?.[imageIndex];
-                    if (activeExp?.id) {
-                      router.push(`/experience/${activeExp.id}/detail`);
+                    const activeLandmark = landmarks?.[imageIndex];
+                    if (activeLandmark?.id) {
+                      // navigate to landmark detail later if needed
+                      // router.push(`/landmark/${activeLandmark.id}/detail`);
                     }
                   }}
                 >
