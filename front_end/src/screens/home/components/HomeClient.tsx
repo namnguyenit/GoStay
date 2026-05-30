@@ -30,6 +30,89 @@ export default function HomeClient() {
 
   const itemRef = useRef<HTMLDivElement>(null);
 
+  // 1. Top 4 địa danh nổi tiếng (Lấy danh sách landmark có khách sạn)
+  const getPlacesForLandmark = (landmark: any) => {
+    if (!places) return [];
+    return places.filter((p: any) => 
+      p.address?.toLowerCase().includes(landmark.province?.toLowerCase()) ||
+      p.address?.toLowerCase().includes(landmark.name?.toLowerCase())
+    );
+  };
+  const landmarkCarousels = (landmarks ?? [])
+    .map((landmark: any) => ({
+      ...landmark,
+      list: getPlacesForLandmark(landmark)
+    }))
+    .filter((c: any) => c.list.length > 0)
+    .slice(0, 4);
+
+  // 2. Top 3 địa điểm có khách sạn ưa chuộng
+  const groupPlacesByProvince = (placesList: any[]) => {
+    if (!placesList) return [];
+    const groups: Record<string, any[]> = {};
+    placesList.forEach(p => {
+      const parts = p.address?.split(",") || [];
+      const province = (parts[parts.length - 1] || p.address || "Việt Nam").trim();
+      if (!groups[province]) groups[province] = [];
+      groups[province].push(p);
+    });
+    
+    return Object.entries(groups)
+      .map(([name, list]) => {
+        const maxRating = Math.max(...list.map(x => x.rating || 0));
+        // Sort items by rating descending
+        list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        return { name, list, maxRating };
+      })
+      .sort((a, b) => b.maxRating - a.maxRating)
+      .slice(0, 3);
+  };
+  const topProvinces = groupPlacesByProvince(places ?? []);
+
+  // 3. Top 3 các trải nghiệm ưa chuộng
+  const groupExperiencesByProvince = (expList: any[]) => {
+    if (!expList) return [];
+    const groups: Record<string, any[]> = {};
+    expList.forEach(e => {
+      const parts = e.address?.split(",") || [];
+      const province = (parts[parts.length - 1] || e.address || "Việt Nam").trim();
+      if (!groups[province]) groups[province] = [];
+      groups[province].push(e);
+    });
+    
+    return Object.entries(groups)
+      .map(([name, list]) => {
+        const maxRating = Math.max(...list.map(x => x.rating || 0));
+        list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        return { name, list, maxRating };
+      })
+      .sort((a, b) => b.maxRating - a.maxRating)
+      .slice(0, 3);
+  };
+  const topExpGroups = groupExperiencesByProvince(experiences ?? []);
+
+  // 4. Top 3 các dịch vụ ưa chuộng
+  const groupServicesByProvince = (svcList: any[]) => {
+    if (!svcList) return [];
+    const groups: Record<string, any[]> = {};
+    svcList.forEach(s => {
+      const parts = s.address?.split(",") || [];
+      const province = (parts[parts.length - 1] || s.address || "Việt Nam").trim();
+      if (!groups[province]) groups[province] = [];
+      groups[province].push(s);
+    });
+    
+    return Object.entries(groups)
+      .map(([name, list]) => {
+        const maxRating = Math.max(...list.map(x => x.rating || 0));
+        list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        return { name, list, maxRating };
+      })
+      .sort((a, b) => b.maxRating - a.maxRating)
+      .slice(0, 3);
+  };
+  const topSvcGroups = groupServicesByProvince(services ?? []);
+
   return (
     <>
       <div className="center relative size-full">
@@ -109,43 +192,77 @@ export default function HomeClient() {
         </div>
       </div>
       <div className="h-18" />
-      {/* Carousels — layout mới từ frontend (gọn hơn) */}
-      <CarouselSection title="Dịch vụ">
-        {services?.map((e) => (
-          <OfferingCarouselItem
-            key={e?.id}
-            item={e}
-            onSelect={(item) => {
-              if (item?.id) router.push(`/service/${item.id}/detail`);
-            }}
-          />
-        ))}
-      </CarouselSection>
-      <div className="h-10" />
-      <CarouselSection title="Khách sạn ưa chuộng">
-        {places?.map((e) => (
-          <OfferingCarouselItem
-            key={e?.id}
-            item={e}
-            onSelect={(item) => {
-              if (item?.id) router.push(`/place/${item.id}/detail`);
-            }}
-          />
-        ))}
-      </CarouselSection>
-      <div className="h-10" />
-      <CarouselSection title="Trải nghiệm">
-        {experiences?.map((e) => (
-          <OfferingCarouselItem
-            key={e?.id}
-            item={e}
-            onSelect={(item) => {
-              if (item?.id) router.push(`/experience/${item.id}/detail`);
-            }}
-          />
-        ))}
-      </CarouselSection>
-      <div className="h-10" />
+      {/* Top 3 locations with popular hotels */}
+      {topProvinces.length > 0 && (
+        <>
+          <div className="px-4 text-title">Top 3 địa điểm có khách sạn ưa chuộng</div>
+          <div className="h-10" />
+          {topProvinces.map((group) => (
+            <div key={group.name}>
+              <CarouselSection title={`Khách sạn tại ${group.name}`}>
+                {group.list.map((e: any) => (
+                  <OfferingCarouselItem
+                    key={e?.id}
+                    item={e}
+                    onSelect={(item) => {
+                      if (item?.id) router.push(`/place/${item.id}/detail`);
+                    }}
+                  />
+                ))}
+              </CarouselSection>
+              <div className="h-10" />
+            </div>
+          ))}
+        </>
+      )}
+
+      {/* Top 3 popular experiences */}
+      {topExpGroups.length > 0 && (
+        <>
+          <div className="px-4 text-title">Top 3 các trải nghiệm ưa chuộng</div>
+          <div className="h-10" />
+          {topExpGroups.map((group) => (
+            <div key={group.name}>
+              <CarouselSection title={`Trải nghiệm tại ${group.name}`}>
+                {group.list.map((e: any) => (
+                  <OfferingCarouselItem
+                    key={e?.id}
+                    item={e}
+                    onSelect={(item) => {
+                      if (item?.id) router.push(`/experience/${item.id}/detail`);
+                    }}
+                  />
+                ))}
+              </CarouselSection>
+              <div className="h-10" />
+            </div>
+          ))}
+        </>
+      )}
+
+      {/* Top 3 popular services */}
+      {topSvcGroups.length > 0 && (
+        <>
+          <div className="px-4 text-title">Top 3 các dịch vụ ưa chuộng</div>
+          <div className="h-10" />
+          {topSvcGroups.map((group) => (
+            <div key={group.name}>
+              <CarouselSection title={`Dịch vụ tại ${group.name}`}>
+                {group.list.map((e: any) => (
+                  <OfferingCarouselItem
+                    key={e?.id}
+                    item={e}
+                    onSelect={(item) => {
+                      if (item?.id) router.push(`/service/${item.id}/detail`);
+                    }}
+                  />
+                ))}
+              </CarouselSection>
+              <div className="h-10" />
+            </div>
+          ))}
+        </>
+      )}
     </>
   );
 }
