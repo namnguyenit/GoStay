@@ -205,9 +205,34 @@ export default function NewListing() {
   const handleSubmit = async () => {
     if (step !== 3) return;
 
-    if (!title || !basePrice || !province) {
-      alert("Vui lòng điền đầy đủ các trường bắt buộc!");
+    if (!title || !basePrice || !province || !latitude || !longitude) {
+      alert("Vui lòng điền đầy đủ các trường bắt buộc (Tên, Giá, Địa điểm, Tọa độ)!");
       return;
+    }
+
+    if (category === "STAY") {
+      if (!roomSizeSqM || !maxGuests || !bedrooms || !bathrooms || beds.length === 0) {
+        alert("Vui lòng nhập đầy đủ chi tiết diện tích, số khách, phòng ngủ, phòng tắm và cấu hình giường cho Nơi lưu trú!");
+        return;
+      }
+      if (!checkInTime || !checkOutTime) {
+        alert("Vui lòng nhập giờ nhận phòng và trả phòng!");
+        return;
+      }
+    } else if (category === "EXP") {
+      if (!expDuration || !expGroupSizeMin || !expGroupSizeMax || !expMeetingPoint || !expMeetingLat || !expMeetingLng) {
+        alert("Vui lòng nhập đầy đủ thời lượng, quy mô nhóm và thông tin điểm hẹn cho Trải nghiệm!");
+        return;
+      }
+      if (Number(expGroupSizeMax) < Number(expGroupSizeMin)) {
+        alert("Quy mô nhóm tối đa phải lớn hơn hoặc bằng tối thiểu!");
+        return;
+      }
+    } else if (category === "SVC") {
+      if (!svcDuration) {
+        alert("Vui lòng nhập thời lượng cho Dịch vụ!");
+        return;
+      }
     }
 
     setLoading(true);
