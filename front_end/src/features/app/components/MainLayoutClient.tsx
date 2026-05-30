@@ -20,6 +20,7 @@ import {
   PartyPopper,
   SettingsIcon,
   UserIcon,
+  Compass,
 } from "lucide-react";
 import {
   CSSProperties,
@@ -32,6 +33,7 @@ import { isTab, useApp } from "../hooks/useApp";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import AuthService from "@/services/auth.service";
+import { Footer } from "@/shared/components";
 
 export default function MainLayoutClient({
   children,
@@ -45,6 +47,7 @@ export default function MainLayoutClient({
   const pathName = usePathname();
   const [currentUser, setCurrentUser] = useState<any>(null);
 
+  // Giữ lại logic isHost / isEnterprise từ TestSystem
   const roles = currentUser ? AuthService.getUserRoles() : [];
   const isHost = roles.includes("HOST");
   const isEnterprise = roles.includes("ENTERPRISE");
@@ -59,7 +62,7 @@ export default function MainLayoutClient({
     router.push("/log-in");
   };
 
-  // Tự động refresh roles khi user quay lại tab (detect admin đã nâng quyền)
+  // Giữ lại logic tự động refresh roles khi user quay lại tab (detect admin đã nâng quyền)
   useEffect(() => {
     if (!currentUser) return;
 
@@ -67,7 +70,6 @@ export default function MainLayoutClient({
       if (document.visibilityState === "visible") {
         const rolesChanged = await AuthService.refreshRoles();
         if (rolesChanged) {
-          // Cập nhật lại state để re-render header ngay lập tức
           setCurrentUser({ ...AuthService.getCurrentUser() });
         }
       }
@@ -83,6 +85,8 @@ export default function MainLayoutClient({
     const segment = pathName.split("/")[1];
     if (isTab(segment)) {
       setTab(segment);
+    } else {
+      setTab(undefined);
     }
   }, [pathName]);
 
@@ -95,15 +99,18 @@ export default function MainLayoutClient({
           setScrolled(false);
       }}
     >
-      {/* MAIN NAVIGATION */}
+      {/* MAIN NAVIGATION — UI mới từ frontend */}
       <div
         className={clsx(
-          "center fixed z-10 h-[70] transition-colors duration-700",
-          scrolled || tab ? "bg-app-primary" : "bg-transparent",
+          "fixed z-50 flex w-full items-center justify-between px-6 md:px-10 transition-all duration-500",
+          scrolled || tab || pathName.startsWith("/search")
+            ? "h-[64px] bg-gradient-to-r from-violet-700 via-app-primary to-purple-700 shadow-lg shadow-violet-900/20 backdrop-blur-md"
+            : "h-[70px] bg-transparent",
         )}
       >
+        {/* Left: Logo */}
         <div
-          className="pos-center-y text-header left-10 hidden text-white sm:block"
+          className="flex items-center gap-2.5 cursor-pointer select-none group"
           onClick={() => {
             startTransition(() => {
               setTab(undefined);
@@ -111,11 +118,26 @@ export default function MainLayoutClient({
             });
           }}
         >
-          Logo
+          <div className={clsx(
+            "flex h-9 w-9 items-center justify-center rounded-xl border transition-all duration-300 shadow-md group-hover:scale-105",
+            scrolled || tab || pathName.startsWith("/search")
+              ? "bg-white/20 border-white/25 group-hover:bg-white/30"
+              : "bg-white/10 border-white/15 backdrop-blur-sm group-hover:bg-white/20"
+          )}>
+            <Compass className="h-5 w-5 text-white transition-transform duration-700 group-hover:rotate-180" />
+          </div>
+          <div className="hidden sm:flex flex-col justify-center leading-none">
+            <span className="text-lg font-black tracking-wider text-white flex items-center">
+              Go<span className="text-violet-200 font-extrabold">Travel</span>
+            </span>
+            <span className="text-[7px] font-bold tracking-[0.2em] text-white/40 uppercase mt-0.5">
+              Khám phá Việt Nam
+            </span>
+          </div>
         </div>
 
+        {/* Center: Navigation Tabs */}
         <Tabs
-          // defaultValue="1"
           value={tab ?? ""}
           onValueChange={(value) => {
             startTransition(() => {
@@ -126,48 +148,59 @@ export default function MainLayoutClient({
           <TabsList
             variant="line"
             style={{ "--foreground": "white" } as CSSProperties}
+            className="gap-0.5"
           >
             <TabsTrigger
               value="place"
-              className="data-[state=active]:text-white"
+              className="data-[state=active]:text-white after:hidden"
             >
-              <div className="center-y hover:text-app-accent text-white text-shadow-gray-400 text-shadow-md hover:text-shadow-none">
-                <Home />
-                <div className="w-2" />
-                Nơi cư trú
+              <div className={clsx(
+                "flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-medium transition-all duration-300",
+                "text-white/80 hover:text-white hover:bg-white/10",
+                tab === "place" && "bg-white/15 text-white"
+              )}>
+                <Home className="h-4 w-4" />
+                <span className="hidden md:inline">Nơi cư trú</span>
               </div>
             </TabsTrigger>
-            <div className="w-1" />
             <TabsTrigger
               value="experience"
-              className="data-[state=active]:text-white"
+              className="data-[state=active]:text-white after:hidden"
             >
-              <div className="center-y hover:text-app-accent text-white text-shadow-gray-400 text-shadow-md hover:text-shadow-none">
-                <PartyPopper />
-                <div className="w-2" />
-                Trải nghiệm
+              <div className={clsx(
+                "flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-medium transition-all duration-300",
+                "text-white/80 hover:text-white hover:bg-white/10",
+                tab === "experience" && "bg-white/15 text-white"
+              )}>
+                <PartyPopper className="h-4 w-4" />
+                <span className="hidden md:inline">Trải nghiệm</span>
               </div>
             </TabsTrigger>
-            <div className="w-1" />
             <TabsTrigger
               value="service"
-              className="data-[state=active]:text-white"
+              className="data-[state=active]:text-white after:hidden"
             >
-              <div className="center-y hover:text-app-accent text-white text-shadow-gray-400 text-shadow-md hover:text-shadow-none">
-                <ConciergeBell />
-                <div className="w-2" />
-                Dịch vụ
+              <div className={clsx(
+                "flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-medium transition-all duration-300",
+                "text-white/80 hover:text-white hover:bg-white/10",
+                tab === "service" && "bg-white/15 text-white"
+              )}>
+                <ConciergeBell className="h-4 w-4" />
+                <span className="hidden md:inline">Dịch vụ</span>
               </div>
             </TabsTrigger>
           </TabsList>
         </Tabs>
-        <div className="row pos-center-y right-10 hidden gap-3 sm:flex">
+
+        {/* Right: User Section */}
+        <div className="hidden sm:flex items-center gap-3">
           {currentUser ? (
             <>
+              {/* Giữ lại nút Kênh Chủ Nhà / Kênh Doanh Nghiệp từ TestSystem */}
               {isHost && (
                 <Link href="/host">
-                  <Button 
-                    className="bg-app-accent hover:bg-app-accent/80 text-[#7c3aed] font-semibold text-xs rounded-xl shadow-md h-9 px-4 cursor-pointer mr-1"
+                  <Button
+                    className="bg-white/15 hover:bg-white/25 text-white border border-white/20 rounded-full px-4 py-1.5 text-xs font-semibold transition-all duration-300 backdrop-blur-sm cursor-pointer"
                   >
                     Kênh Chủ Nhà
                   </Button>
@@ -175,23 +208,23 @@ export default function MainLayoutClient({
               )}
               {isEnterprise && (
                 <Link href="/enterprise">
-                  <Button 
-                    className="bg-app-accent hover:bg-app-accent/80 text-[#7c3aed] font-semibold text-xs rounded-xl shadow-md h-9 px-4 cursor-pointer mr-1"
+                  <Button
+                    className="bg-white/15 hover:bg-white/25 text-white border border-white/20 rounded-full px-4 py-1.5 text-xs font-semibold transition-all duration-300 backdrop-blur-sm cursor-pointer"
                   >
                     Kênh Doanh Nghiệp
                   </Button>
                 </Link>
               )}
-              <div>
-                <p className="text-sm font-medium text-white text-shadow-gray-400 text-shadow-md">
+              <div className="text-right">
+                <p className="text-sm font-semibold text-white leading-tight">
                   {currentUser.lastName} {currentUser.firstName}
                 </p>
                 <p
                   className={clsx(
-                    "text-xs transition-colors duration-700",
+                    "text-[10px] font-medium leading-tight transition-colors duration-500",
                     scrolled || tab
-                      ? "text-app-primary-fg"
-                      : "text-muted-foreground",
+                      ? "text-violet-200/70"
+                      : "text-white/50",
                   )}
                 >
                   {AuthService.getUserRoles().join(", ")}
@@ -199,14 +232,26 @@ export default function MainLayoutClient({
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="rounded-full">
-                    <Avatar>
-                      <AvatarImage src={currentUser.avatarUrl || "https://github.com/shadcn.png"} />
-                      <AvatarFallback>{currentUser.firstName?.[0] || "U"}</AvatarFallback>
-                    </Avatar>
+                  <Button variant="ghost" size="icon" className="rounded-full relative">
+                    <div className="rounded-full p-[2px] bg-gradient-to-br from-violet-300 via-white/50 to-purple-400">
+                      <Avatar className="h-8 w-8 border-2 border-transparent">
+                        <AvatarImage
+                          src={
+                            currentUser.avatarUrl ||
+                            "https://github.com/shadcn.png"
+                          }
+                        />
+                        <AvatarFallback className="bg-violet-600 text-white text-xs font-bold">
+                          {currentUser.firstName?.[0] || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                    </div>
+                    {/* Online indicator */}
+                    <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-400 border-2 border-violet-700" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                {/* Giữ lại onClick navigation từ TestSystem */}
+                <DropdownMenuContent align="end" className="w-44">
                   <DropdownMenuItem onClick={() => router.push("/settings?tab=profile")}>
                     <UserIcon />
                     Profile
@@ -216,7 +261,10 @@ export default function MainLayoutClient({
                     Settings
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem variant="destructive" onClick={handleLogout}>
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={handleLogout}
+                  >
                     <LogOutIcon />
                     Log out
                   </DropdownMenuItem>
@@ -225,14 +273,22 @@ export default function MainLayoutClient({
             </>
           ) : (
             <Link href="/log-in">
-              <Button variant="secondary" className="font-semibold shadow-md">
+              <Button className="bg-white/15 hover:bg-white/25 text-white border border-white/20 rounded-full px-5 py-2 text-sm font-semibold transition-all duration-300 backdrop-blur-sm shadow-md hover:shadow-lg cursor-pointer">
                 <LogIn className="mr-2 h-4 w-4" /> Đăng nhập
               </Button>
             </Link>
           )}
         </div>
+
+        {/* Bottom gradient line */}
+        <div className={clsx(
+          "absolute bottom-0 left-0 right-0 h-[1px] transition-opacity duration-500",
+          scrolled || tab || pathName.startsWith("/search")
+            ? "opacity-100 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+            : "opacity-0"
+        )} />
       </div>
-      {tab && <div className="h-[70]"></div>}
+      {tab && <div className="h-[70px]"></div>}
       {isPending && (
         <div className="center size-full">
           <div className="text-app-primary/50 row gap-1">
@@ -241,7 +297,12 @@ export default function MainLayoutClient({
           </div>
         </div>
       )}
-      {!isPending && children}
+      {!isPending && (
+        <>
+          {children}
+          <Footer />
+        </>
+      )}
     </main>
   );
 }

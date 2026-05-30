@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -10,11 +10,16 @@ import { useSafeContext } from "@/shared/hooks";
 import { HomeContext } from "../providers/home.provider";
 import { CarouselSection, SearchInfoSection } from "@/shared/components";
 import { OfferingCarouselItem } from "@/shared/components";
+import { AppContext } from "@/features/app/providers/app.provider";
+import { FilterService } from "@/services/filter";
 
 export default function HomeClient() {
   const router = useRouter();
+  // Giữ landmarks từ TestSystem cho background
   const { imageIndex, clock, setClock, experiences, places, services, landmarks } =
     useSafeContext(HomeContext);
+
+  const { filter } = useSafeContext(AppContext);
 
   useEffect(() => {
     setClock(6000);
@@ -24,100 +29,11 @@ export default function HomeClient() {
   }, []);
 
   const itemRef = useRef<HTMLDivElement>(null);
-  // useEffect(() => {
-  //   itemRef.current?.scrollIntoView({
-  //     behavior: "smooth",
-  //     block: "center", // hoặc "center"
-  //   });
-  // }, []);
-
-  // 1. Top 4 địa danh nổi tiếng (Lấy danh sách landmark có khách sạn)
-  const getPlacesForLandmark = (landmark: any) => {
-    if (!places) return [];
-    return places.filter((p: any) => 
-      p.address?.toLowerCase().includes(landmark.province?.toLowerCase()) ||
-      p.address?.toLowerCase().includes(landmark.name?.toLowerCase())
-    );
-  };
-  const landmarkCarousels = (landmarks ?? [])
-    .map((landmark: any) => ({
-      ...landmark,
-      list: getPlacesForLandmark(landmark)
-    }))
-    .filter((c: any) => c.list.length > 0)
-    .slice(0, 4);
-
-  // 2. Top 3 địa điểm có khách sạn ưa chuộng
-  const groupPlacesByProvince = (placesList: any[]) => {
-    if (!placesList) return [];
-    const groups: Record<string, any[]> = {};
-    placesList.forEach(p => {
-      const parts = p.address?.split(",") || [];
-      const province = (parts[parts.length - 1] || p.address || "Việt Nam").trim();
-      if (!groups[province]) groups[province] = [];
-      groups[province].push(p);
-    });
-    
-    return Object.entries(groups)
-      .map(([name, list]) => {
-        const maxRating = Math.max(...list.map(x => x.rating || 0));
-        // Sort items by rating descending
-        list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-        return { name, list, maxRating };
-      })
-      .sort((a, b) => b.maxRating - a.maxRating)
-      .slice(0, 3);
-  };
-  const topProvinces = groupPlacesByProvince(places ?? []);
-
-  // 3. Top 3 các trải nghiệm ưa chuộng
-  const groupExperiencesByProvince = (expList: any[]) => {
-    if (!expList) return [];
-    const groups: Record<string, any[]> = {};
-    expList.forEach(e => {
-      const parts = e.address?.split(",") || [];
-      const province = (parts[parts.length - 1] || e.address || "Việt Nam").trim();
-      if (!groups[province]) groups[province] = [];
-      groups[province].push(e);
-    });
-    
-    return Object.entries(groups)
-      .map(([name, list]) => {
-        const maxRating = Math.max(...list.map(x => x.rating || 0));
-        list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-        return { name, list, maxRating };
-      })
-      .sort((a, b) => b.maxRating - a.maxRating)
-      .slice(0, 3);
-  };
-  const topExpGroups = groupExperiencesByProvince(experiences ?? []);
-
-  // 4. Top 3 các dịch vụ ưa chuộng
-  const groupServicesByProvince = (svcList: any[]) => {
-    if (!svcList) return [];
-    const groups: Record<string, any[]> = {};
-    svcList.forEach(s => {
-      const parts = s.address?.split(",") || [];
-      const province = (parts[parts.length - 1] || s.address || "Việt Nam").trim();
-      if (!groups[province]) groups[province] = [];
-      groups[province].push(s);
-    });
-    
-    return Object.entries(groups)
-      .map(([name, list]) => {
-        const maxRating = Math.max(...list.map(x => x.rating || 0));
-        list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-        return { name, list, maxRating };
-      })
-      .sort((a, b) => b.maxRating - a.maxRating)
-      .slice(0, 3);
-  };
-  const topSvcGroups = groupServicesByProvince(services ?? []);
 
   return (
     <>
       <div className="center relative size-full">
-        {/* BG */}
+        {/* BG — giữ landmarks làm background như TestSystem */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="size-full scale-115 bg-black">
             <AnimatePresence mode="wait">
@@ -144,7 +60,7 @@ export default function HomeClient() {
         </div>
         {/* FG */}
         <div className="relative h-full w-18/19">
-          {/* INFO */}
+          {/* INFO — giữ thông tin landmark từ TestSystem */}
           <div className="pos-center-y">
             <motion.div
               key={landmarks?.[imageIndex]?.id}
@@ -160,9 +76,8 @@ export default function HomeClient() {
                 </div>
                 <div className="text-content text-white mt-2 max-w-2xl line-clamp-2">{landmarks?.[imageIndex]?.description}</div>
                 <div className="text-content text-white mt-1 font-medium">{landmarks?.[imageIndex]?.province}</div>
-                
                 <div className="h-[20]" />
-                <Button 
+                <Button
                   className="text-title bg-app-primary hover:bg-app-accent w-[200]"
                   onClick={() => {
                     const activeLandmark = landmarks?.[imageIndex];
@@ -180,107 +95,57 @@ export default function HomeClient() {
             <ImageNavigation />
           </div>
         </div>
-        {/* Search Info */}
+        {/* Search Info — cải tiến từ frontend với FilterService */}
         <div className="pos-center-x bottom-[-30] w-6/10">
-          <SearchInfoSection onClickSearch={console.log} />
+          <Suspense fallback={<div className="h-[70] w-full rounded-full bg-white dark:bg-zinc-900 border animate-pulse" />}>
+            <SearchInfoSection
+              onClickSearch={(value) => {
+                const params = FilterService.set(value);
+                router.push(`/search?${params.toString()}`);
+              }}
+              filter={filter}
+            />
+          </Suspense>
         </div>
       </div>
       <div className="h-18" />
-      {/* 4 famous places */}
-      {landmarkCarousels.length > 0 && (
-        <>
-          <div className="px-4 text-title">Top 4 địa danh nổi tiếng</div>
-          <div className="h-10" />
-          {landmarkCarousels.map((carousel) => (
-            <div key={carousel.id}>
-              <CarouselSection title={`Khách sạn tại ${carousel.name}`}>
-                {carousel.list.map((e: any) => (
-                  <OfferingCarouselItem
-                    key={e?.id}
-                    item={e}
-                    onSelect={(item) => {
-                      if (item?.id) router.push(`/place/${item.id}/detail`);
-                    }}
-                  />
-                ))}
-              </CarouselSection>
-              <div className="h-10" />
-            </div>
-          ))}
-        </>
-      )}
-
-      {/* Top 3 locations with popular hotels */}
-      {topProvinces.length > 0 && (
-        <>
-          <div className="px-4 text-title">Top 3 địa điểm có khách sạn ưa chuộng</div>
-          <div className="h-10" />
-          {topProvinces.map((group) => (
-            <div key={group.name}>
-              <CarouselSection title={`Khách sạn tại ${group.name}`}>
-                {group.list.map((e: any) => (
-                  <OfferingCarouselItem
-                    key={e?.id}
-                    item={e}
-                    onSelect={(item) => {
-                      if (item?.id) router.push(`/place/${item.id}/detail`);
-                    }}
-                  />
-                ))}
-              </CarouselSection>
-              <div className="h-10" />
-            </div>
-          ))}
-        </>
-      )}
-
-      {/* Top 3 popular experiences */}
-      {topExpGroups.length > 0 && (
-        <>
-          <div className="px-4 text-title">Top 3 các trải nghiệm ưa chuộng</div>
-          <div className="h-10" />
-          {topExpGroups.map((group) => (
-            <div key={group.name}>
-              <CarouselSection title={`Trải nghiệm tại ${group.name}`}>
-                {group.list.map((e: any) => (
-                  <OfferingCarouselItem
-                    key={e?.id}
-                    item={e}
-                    onSelect={(item) => {
-                      if (item?.id) router.push(`/experience/${item.id}/detail`);
-                    }}
-                  />
-                ))}
-              </CarouselSection>
-              <div className="h-10" />
-            </div>
-          ))}
-        </>
-      )}
-
-      {/* Top 3 popular services */}
-      {topSvcGroups.length > 0 && (
-        <>
-          <div className="px-4 text-title">Top 3 các dịch vụ ưa chuộng</div>
-          <div className="h-10" />
-          {topSvcGroups.map((group) => (
-            <div key={group.name}>
-              <CarouselSection title={`Dịch vụ tại ${group.name}`}>
-                {group.list.map((e: any) => (
-                  <OfferingCarouselItem
-                    key={e?.id}
-                    item={e}
-                    onSelect={(item) => {
-                      if (item?.id) router.push(`/service/${item.id}/detail`);
-                    }}
-                  />
-                ))}
-              </CarouselSection>
-              <div className="h-10" />
-            </div>
-          ))}
-        </>
-      )}
+      {/* Carousels — layout mới từ frontend (gọn hơn) */}
+      <CarouselSection title="Dịch vụ">
+        {services?.map((e) => (
+          <OfferingCarouselItem
+            key={e?.id}
+            item={e}
+            onSelect={(item) => {
+              if (item?.id) router.push(`/service/${item.id}/detail`);
+            }}
+          />
+        ))}
+      </CarouselSection>
+      <div className="h-10" />
+      <CarouselSection title="Khách sạn ưa chuộng">
+        {places?.map((e) => (
+          <OfferingCarouselItem
+            key={e?.id}
+            item={e}
+            onSelect={(item) => {
+              if (item?.id) router.push(`/place/${item.id}/detail`);
+            }}
+          />
+        ))}
+      </CarouselSection>
+      <div className="h-10" />
+      <CarouselSection title="Trải nghiệm">
+        {experiences?.map((e) => (
+          <OfferingCarouselItem
+            key={e?.id}
+            item={e}
+            onSelect={(item) => {
+              if (item?.id) router.push(`/experience/${item.id}/detail`);
+            }}
+          />
+        ))}
+      </CarouselSection>
+      <div className="h-10" />
     </>
   );
 }

@@ -5,16 +5,19 @@ import type { Experiences } from "@/modules/experience";
 import type { Places } from "@/modules/place";
 import type { Services } from "@/modules/service";
 import { useHome, UseHome } from "../hooks/useHome";
+import type { Filter } from "@/modules/filter";
+import { FilterService } from "@/services/filter";
 
 type HomeProviderProp = {
   children: ReactNode;
   initExperiences: Experiences;
   initPlace: Places;
   initServices: Services;
+  // Giữ lại initLandmarks từ TestSystem
   initLandmarks?: any[];
 };
 
-export const HomeContext = createContext<UseHome | null>(null);
+export const HomeContext = createContext<UseHome | undefined>(undefined);
 
 export default function HomeProvider({
   children,

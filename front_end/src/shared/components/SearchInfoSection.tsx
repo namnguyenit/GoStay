@@ -13,30 +13,50 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { Search } from "lucide-react";
+import { format, isValid } from "date-fns";
+import { Search, X } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import type { DateRange } from "react-day-picker";
+import type { Filter } from "@/modules/filter";
 
 type FieldState = "place" | "date" | "service";
-type SearchInfo =
-  | {
-      place?: string;
-      date?: DateRange;
-      service?: string;
-    }
-  | undefined;
+
+export type Type = "place" | "exp" | "service";
+type DisplayType = "Nơi cư chú" | "Trải nghiệm" | "Dịch vụ";
+
+type PlaceOptions = {
+  id: string;
+  name: string;
+}[];
+
+const placeOptions: PlaceOptions = [
+  {
+    id: "0",
+    name: "Hà Nội",
+  },
+  {
+    id: "1",
+    name: "Lào Cai",
+  },
+];
 
 export default function SearchInfoSection({
   onClickSearch,
+  filter,
 }: {
-  onClickSearch?: (value: SearchInfo) => void;
+  onClickSearch?: (value: Filter) => void;
+  filter: Filter;
 }) {
-  const [searchInfo, setSearchInfo] = useState<SearchInfo>();
+  const [searchInfo, setSearchInfo] = useState<Filter>(filter);
   const [hover, setHover] = useState<FieldState>();
   const [searchButtonHover, setSearchButtonHover] = useState(false);
   const [open, setOpen] = useState<FieldState>();
   const searchButton = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setSearchInfo(filter);
+  }, [filter]);
+
   useEffect(() => {
     const el = searchButton.current;
     if (!el) return;
@@ -48,6 +68,8 @@ export default function SearchInfoSection({
   //   useEffect(() => {
   //     console.log(searchInfo);
   //   }, [searchInfo]);
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   return (
     <div className="bg-app-bg center-y shadow-app-secondary h-[70] w-full rounded-full shadow">
@@ -59,9 +81,14 @@ export default function SearchInfoSection({
         onOpenChange={(e) => {
           setOpen(e ? "place" : undefined);
         }}
-        onValueChange={(value) =>
-          setSearchInfo({ ...searchInfo, place: value })
-        }
+        onValueChange={(value) => {
+          if (value === "all") {
+            setSearchInfo({ ...searchInfo, place: "" });
+            return;
+          }
+          const place = placeOptions.find((e) => e.id == value)?.name;
+          setSearchInfo({ ...searchInfo, place });
+        }}
       >
         <SelectTrigger
           className="hover:bg-app-muted col ba h-full! w-1/3 items-start justify-evenly gap-0 rounded-full border-none p-0 pr-4 pl-6 whitespace-normal focus-visible:ring-0 [&>svg]:hidden"
@@ -72,26 +99,41 @@ export default function SearchInfoSection({
             setHover(undefined);
           }}
         >
-          <div className="text-app-fg text-xs">Địa điểm</div>
+          <div className="text-app-fg text-xs font-semibold">Địa điểm</div>
 
-          <div className="">
+          <div className="flex items-center gap-1.5 max-w-full">
             {searchInfo?.place ? (
-              <span className="line-clamp-1 text-sm">{searchInfo.place}</span>
+              <>
+                <span className="line-clamp-1 text-sm font-medium">{searchInfo.place}</span>
+                <span
+                  role="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    setSearchInfo({ ...searchInfo, place: "" });
+                  }}
+                  className="hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 rounded-full p-0.5 transition-colors flex-shrink-0 cursor-pointer"
+                  title="Xóa địa điểm"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </span>
+              </>
             ) : (
               <span className="text-app-muted-fg line-clamp-1 text-xs">
-                Lựa chọn địa điểm
+                Tất cả địa điểm
               </span>
             )}
           </div>
         </SelectTrigger>
         <SelectContent side="bottom" sideOffset={4} position="popper">
           <SelectGroup>
-            <SelectLabel>Fruits</SelectLabel>
-            <SelectItem value="apple">Apple</SelectItem>
-            <SelectItem value="banana">Banana</SelectItem>
-            <SelectItem value="blueberry">Blueberry</SelectItem>
-            <SelectItem value="grapes">Grapes</SelectItem>
-            <SelectItem value="pineapple">Pineapple</SelectItem>
+            <SelectLabel>Địa điểm</SelectLabel>
+            <SelectItem value="all">Tất cả địa điểm</SelectItem>
+            {placeOptions.map((e) => (
+              <SelectItem key={e.id} value={e.id}>
+                {e.name}
+              </SelectItem>
+            ))}
           </SelectGroup>
         </SelectContent>
       </Select>
@@ -119,15 +161,15 @@ export default function SearchInfoSection({
             }}
           >
             <span className="text-xs">Thời gian</span>
-            {searchInfo?.date?.from ? (
-              searchInfo?.date.to ? (
+            {searchInfo?.date?.from && isValid(searchInfo?.date?.from) ? (
+              searchInfo?.date?.to && isValid(searchInfo?.date?.to) ? (
                 <span className="line-clamp-1 text-sm">
-                  {format(searchInfo?.date.from, "dd/MM/yyyy")} -{" "}
-                  {format(searchInfo?.date.to, "dd/MM/yyyy")}
+                  {format(searchInfo.date.from, "dd/MM/yyyy")} -{" "}
+                  {format(searchInfo.date.to, "dd/MM/yyyy")}
                 </span>
               ) : (
                 <span className="line-clamp-1 text-sm">
-                  {format(searchInfo?.date.from, "dd/MM/yyyy")}
+                  {format(searchInfo.date.from, "dd/MM/yyyy")}
                 </span>
               )
             ) : (
@@ -165,8 +207,9 @@ export default function SearchInfoSection({
             "bg-transparent",
         )}
       />
-      {/* Chọn dịch vụ */}
+      {/* Chọn Loại hình */}
       <Select
+        // defaultValue={"place"}
         open={open == "service" ? true : false}
         onOpenChange={(e) => {
           if (searchButtonHover) {
@@ -174,9 +217,7 @@ export default function SearchInfoSection({
           }
           setOpen(e ? "service" : undefined);
         }}
-        onValueChange={(value) =>
-          setSearchInfo({ ...searchInfo, service: value })
-        }
+        onValueChange={(value) => setSearchInfo({ ...searchInfo, type: value === "all" ? "" : value })}
       >
         <SelectTrigger
           className={cn(
@@ -190,14 +231,32 @@ export default function SearchInfoSection({
             setHover(undefined);
           }}
         >
-          <div className="flex h-full flex-1 flex-col items-start justify-evenly">
-            <div className="text-app-fg line-clamp-1 text-xs">Dịch vụ</div>
-            <div className="">
-              {searchInfo?.service ? (
-                <div className="line-clamp-1 text-sm">{searchInfo.service}</div>
+          <div className="flex h-full flex-1 flex-col items-start justify-evenly min-w-0">
+            <div className="text-app-fg line-clamp-1 text-xs font-semibold">Loại hình</div>
+            <div className="flex items-center gap-1.5 max-w-full">
+              {searchInfo?.type && searchInfo.type !== "all" ? (
+                <>
+                  <span className="line-clamp-1 text-sm font-medium">
+                    {searchInfo.type === "place" && "Nơi cư trú"}
+                    {searchInfo.type === "exp" && "Trải nghiệm"}
+                    {searchInfo.type === "service" && "Dịch vụ"}
+                  </span>
+                  <span
+                    role="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      setSearchInfo({ ...searchInfo, type: "" });
+                    }}
+                    className="hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 rounded-full p-0.5 transition-colors flex-shrink-0 cursor-pointer"
+                    title="Xóa loại hình"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </span>
+                </>
               ) : (
                 <div className="text-app-muted-fg line-clamp-1 w-full text-xs">
-                  Lựa chọn dịch vụ
+                  Tất cả loại hình
                 </div>
               )}
             </div>
@@ -234,12 +293,11 @@ export default function SearchInfoSection({
         </SelectTrigger>
         <SelectContent side="bottom" sideOffset={4} position="popper">
           <SelectGroup>
-            <SelectLabel>Fruits</SelectLabel>
-            <SelectItem value="apple">Apple</SelectItem>
-            <SelectItem value="banana">Banana</SelectItem>
-            <SelectItem value="blueberry">Blueberry</SelectItem>
-            <SelectItem value="grapes">Grapes</SelectItem>
-            <SelectItem value="pineapple">Pineapple</SelectItem>
+            <SelectLabel>Loại hình</SelectLabel>
+            <SelectItem value="all">Tất cả loại hình</SelectItem>
+            <SelectItem value="place">Nơi cư trú</SelectItem>
+            <SelectItem value="exp">Trải nghiệm</SelectItem>
+            <SelectItem value="service">Dịch vụ</SelectItem>
           </SelectGroup>
         </SelectContent>
       </Select>
