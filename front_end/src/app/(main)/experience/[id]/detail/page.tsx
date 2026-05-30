@@ -10,12 +10,14 @@ interface PageProps {
 export default async function Page({ params }: PageProps) {
   const { id } = await params;
   const experiences = await ExperienceServices.getAll();
+  const detailData = await ExperienceServices.getById(id);
 
   return (
     <CategoryDetailScreen
       items={experiences}
       activeId={id}
       categoryType="experience"
+      detailData={detailData}
     />
   );
 }

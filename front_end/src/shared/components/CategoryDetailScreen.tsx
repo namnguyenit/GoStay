@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Star, Globe, Heart, Share2, MapPin, Calendar, Check } from "lucide-react";
+import { Star, Globe, Heart, Share2, MapPin, Calendar, Check, Users, Home, Clock, Info, CheckCircle2, XCircle, ChevronRight, Languages, Sparkles } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,12 +27,14 @@ interface CategoryDetailScreenProps {
   items: CategoryItem[] | undefined;
   activeId: string;
   categoryType: "place" | "experience" | "service";
+  detailData?: any;
 }
 
 export default function CategoryDetailScreen({
   items = [],
   activeId,
   categoryType,
+  detailData,
 }: CategoryDetailScreenProps) {
   const router = useRouter();
 
@@ -150,13 +152,6 @@ export default function CategoryDetailScreen({
                     alt={selectedItem.name}
                     className="size-full object-cover transition-transform duration-700 group-hover:scale-103"
                   />
-                  {/* Host Avatar Overlapping at the bottom border */}
-                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2">
-                    <Avatar className="h-20 w-20 border-4 border-white dark:border-zinc-950 shadow-lg scale-110">
-                      <AvatarImage src={host.avatar} alt={host.name} className="object-cover" />
-                      <AvatarFallback>{host.name[0]}</AvatarFallback>
-                    </Avatar>
-                  </div>
                 </div>
 
                 {/* Info Text block */}
@@ -165,33 +160,206 @@ export default function CategoryDetailScreen({
                     {selectedItem.name}
                   </h1>
 
-                  {/* Auto-translation banner */}
-                  <div className="inline-flex items-center gap-1.5 bg-zinc-50 dark:bg-zinc-900 border px-3 py-1.5 rounded-full mt-4 text-xs text-app-muted-fg">
-                    <Globe className="h-3.5 w-3.5 text-zinc-400" />
-                    <span>Được dịch tự động</span>
-                  </div>
+                  
 
                   {/* Meta details */}
                   <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-2 gap-y-1 text-sm text-app-fg mt-4 font-medium">
-                    <div className="flex items-center text-amber-500">
-                      <Star className="h-4 w-4 fill-amber-500 mr-1" />
-                      <span>{(selectedItem.rating ?? 5.0).toFixed(1)}</span>
-                    </div>
-                    <span className="text-zinc-300">•</span>
-                    <span className="underline text-app-muted-fg">3 đánh giá</span>
-                    <span className="text-zinc-300">•</span>
-                    <span className="text-app-muted-fg">Đầu bếp tại {host.location}</span>
-                    <span className="text-zinc-300">•</span>
-                    <span className="text-app-muted-fg font-normal">Được cung cấp tại chỗ ở của bạn</span>
+                    {(selectedItem.rating || detailData?.averageRating) ? (
+                      <>
+                        <div className="flex items-center text-amber-500">
+                          <Star className="h-4 w-4 fill-amber-500 mr-1" />
+                          <span>{(selectedItem.rating || detailData?.averageRating).toFixed(1)}</span>
+                        </div>
+                        <span className="text-zinc-300">•</span>
+                      </>
+                    ) : null}
+                    
+                    {detailData?.totalReviews !== undefined ? (
+                      <>
+                        <span className="underline text-app-muted-fg">{detailData.totalReviews} đánh giá</span>
+                        <span className="text-zinc-300">•</span>
+                      </>
+                    ) : null}
+                    
+                    {(detailData?.province || selectedItem.address) && (
+                      <span className="text-app-muted-fg">
+                        Tại {detailData?.province || selectedItem.address}
+                      </span>
+                    )}
                   </div>
+
 
                   {/* Divider */}
                   <div className="h-px bg-zinc-100 dark:bg-zinc-800 my-6" />
 
                   {/* Description */}
-                  <div className="text-sm md:text-base text-zinc-600 dark:text-zinc-300 leading-relaxed font-normal space-y-4">
-                    <p className="whitespace-pre-line">{selectedItem.description || "Chưa có mô tả chi tiết cho mục này. Trải nghiệm dịch vụ cao cấp và tận hưởng không gian tuyệt vời."}</p>
-                  </div>
+                  {selectedItem.description && (
+                    <div className="text-sm md:text-base text-zinc-600 dark:text-zinc-300 leading-relaxed font-normal space-y-4">
+                      <p className="whitespace-pre-line">{selectedItem.description}</p>
+                    </div>
+                  )}
+
+                  {/* Dynamic Attributes based on Category */}
+                  {detailData?.attributes && (
+                    <div className="mt-8 space-y-8">
+                      {categoryType === "place" && detailData.attributes.stayDetail && (
+                        <div>
+                          <h3 className="text-lg font-bold text-app-fg mb-4 flex items-center gap-2"><Home className="w-5 h-5" /> Tiện nghi chỗ ở</h3>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                            <div className="bg-zinc-50 dark:bg-zinc-900 p-3 rounded-xl border border-zinc-100 dark:border-zinc-800 flex flex-col items-center justify-center text-center">
+                              <Users className="w-5 h-5 text-app-primary mb-1" />
+                              <span className="text-xs text-app-muted-fg">Tối đa</span>
+                              <span className="font-semibold text-sm">{detailData.attributes.stayDetail.maxGuests || 2} khách</span>
+                            </div>
+                            <div className="bg-zinc-50 dark:bg-zinc-900 p-3 rounded-xl border border-zinc-100 dark:border-zinc-800 flex flex-col items-center justify-center text-center">
+                              <Home className="w-5 h-5 text-app-primary mb-1" />
+                              <span className="text-xs text-app-muted-fg">Phòng ngủ</span>
+                              <span className="font-semibold text-sm">{detailData.attributes.stayDetail.bedrooms || 1} phòng</span>
+                            </div>
+                            <div className="bg-zinc-50 dark:bg-zinc-900 p-3 rounded-xl border border-zinc-100 dark:border-zinc-800 flex flex-col items-center justify-center text-center">
+                              <Info className="w-5 h-5 text-app-primary mb-1" />
+                              <span className="text-xs text-app-muted-fg">Giường</span>
+                              <span className="font-semibold text-sm">{detailData.attributes.stayDetail.beds?.reduce((acc: number, bed: any) => acc + (bed.quantity || 0), 0) || 1} giường</span>
+                            </div>
+                            <div className="bg-zinc-50 dark:bg-zinc-900 p-3 rounded-xl border border-zinc-100 dark:border-zinc-800 flex flex-col items-center justify-center text-center">
+                              <CheckCircle2 className="w-5 h-5 text-app-primary mb-1" />
+                              <span className="text-xs text-app-muted-fg">Phòng tắm</span>
+                              <span className="font-semibold text-sm">{detailData.attributes.stayDetail.bathrooms || 1} phòng</span>
+                            </div>
+                          </div>
+                          
+                          {detailData.attributes.amenities && detailData.attributes.amenities.length > 0 && (
+                            <div className="mb-6">
+                              <h4 className="font-semibold text-app-fg mb-3">Tiện ích cung cấp</h4>
+                              <div className="grid grid-cols-2 md:grid-cols-3 gap-y-3 gap-x-4">
+                                {detailData.attributes.amenities.map((amenity: string, idx: number) => (
+                                  <div key={idx} className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                                    <Check className="w-4 h-4 text-green-500" />
+                                    {amenity}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {detailData.attributes.policies && (
+                            <div className="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800">
+                              <h4 className="font-semibold text-app-fg mb-3">Chính sách chỗ ở</h4>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                                <div className="flex items-center gap-2">
+                                  <Clock className="w-4 h-4 text-app-muted-fg" /> Nhận phòng: <span className="font-medium">{detailData.attributes.policies.checkInTime || "14:00"}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Clock className="w-4 h-4 text-app-muted-fg" /> Trả phòng: <span className="font-medium">{detailData.attributes.policies.checkOutTime || "12:00"}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  {detailData.attributes.policies.allowPets ? <CheckCircle2 className="w-4 h-4 text-green-500" /> : <XCircle className="w-4 h-4 text-red-500" />} Cho phép thú cưng
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  {detailData.attributes.policies.partyAllowed ? <CheckCircle2 className="w-4 h-4 text-green-500" /> : <XCircle className="w-4 h-4 text-red-500" />} Tổ chức tiệc
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {categoryType === "experience" && detailData.attributes.expDetail && (
+                        <div>
+                          <h3 className="text-lg font-bold text-app-fg mb-4 flex items-center gap-2"><Sparkles className="w-5 h-5 text-amber-500" /> Thông tin trải nghiệm</h3>
+                          <div className="flex flex-wrap gap-3 mb-6">
+                            <div className="bg-zinc-50 dark:bg-zinc-900 px-4 py-2 rounded-full border border-zinc-100 dark:border-zinc-800 flex items-center gap-2">
+                              <Clock className="w-4 h-4 text-app-primary" />
+                              <span className="text-sm font-medium">{detailData.attributes.expDetail.durationMinutes} phút</span>
+                            </div>
+                            <div className="bg-zinc-50 dark:bg-zinc-900 px-4 py-2 rounded-full border border-zinc-100 dark:border-zinc-800 flex items-center gap-2">
+                              <Users className="w-4 h-4 text-app-primary" />
+                              <span className="text-sm font-medium">Nhóm {detailData.attributes.expDetail.groupSize?.min} - {detailData.attributes.expDetail.groupSize?.max} người</span>
+                            </div>
+                            {detailData.attributes.expDetail.languages && detailData.attributes.expDetail.languages.length > 0 && (
+                              <div className="bg-zinc-50 dark:bg-zinc-900 px-4 py-2 rounded-full border border-zinc-100 dark:border-zinc-800 flex items-center gap-2">
+                                <Languages className="w-4 h-4 text-app-primary" />
+                                <span className="text-sm font-medium">{detailData.attributes.expDetail.languages.join(", ")}</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {detailData.attributes.itinerary && detailData.attributes.itinerary.length > 0 && (
+                            <div className="mb-6">
+                              <h4 className="font-semibold text-app-fg mb-4">Lịch trình</h4>
+                              <div className="space-y-4 pl-2 border-l-2 border-zinc-100 dark:border-zinc-800 ml-2">
+                                {detailData.attributes.itinerary.map((item: any, idx: number) => (
+                                  <div key={idx} className="relative pl-6">
+                                    <div className="absolute w-3 h-3 bg-app-primary rounded-full -left-[27px] top-1.5 border-2 border-white dark:border-zinc-950" />
+                                    <div className="font-semibold text-sm text-app-fg">{item.time}</div>
+                                    <div className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">{item.activity}</div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            {detailData.attributes.inclusions && detailData.attributes.inclusions.length > 0 && (
+                              <div>
+                                <h4 className="font-semibold text-app-fg mb-3 text-sm">Bao gồm</h4>
+                                <ul className="space-y-2">
+                                  {detailData.attributes.inclusions.map((inc: string, idx: number) => (
+                                    <li key={idx} className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                                      <Check className="w-4 h-4 text-green-500 mt-0.5 shrink-0" /> {inc}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            {detailData.attributes.exclusions && detailData.attributes.exclusions.length > 0 && (
+                              <div>
+                                <h4 className="font-semibold text-app-fg mb-3 text-sm">Không bao gồm</h4>
+                                <ul className="space-y-2">
+                                  {detailData.attributes.exclusions.map((exc: string, idx: number) => (
+                                    <li key={idx} className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                                      <XCircle className="w-4 h-4 text-red-400 mt-0.5 shrink-0" /> {exc}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {categoryType === "service" && detailData.attributes.serviceDetail && (
+                        <div>
+                          <h3 className="text-lg font-bold text-app-fg mb-4 flex items-center gap-2"><Info className="w-5 h-5 text-app-primary" /> Thông tin dịch vụ</h3>
+                          <div className="bg-zinc-50 dark:bg-zinc-900/50 p-5 rounded-2xl border border-zinc-100 dark:border-zinc-800 mb-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 text-sm">
+                              {detailData.attributes.serviceDetail.cuisineType && (
+                                <div className="flex flex-col gap-1">
+                                  <span className="text-app-muted-fg text-xs uppercase font-semibold tracking-wider">Loại hình ẩm thực</span>
+                                  <span className="font-medium">{detailData.attributes.serviceDetail.cuisineType.join(", ")}</span>
+                                </div>
+                              )}
+                              {detailData.attributes.serviceDetail.specialDietary && detailData.attributes.serviceDetail.specialDietary.length > 0 && (
+                                <div className="flex flex-col gap-1">
+                                  <span className="text-app-muted-fg text-xs uppercase font-semibold tracking-wider">Chế độ ăn đặc biệt</span>
+                                  <span className="font-medium">{detailData.attributes.serviceDetail.specialDietary.join(", ")}</span>
+                                </div>
+                              )}
+                              <div className="flex items-center gap-2">
+                                {detailData.attributes.serviceDetail.includesIngredients ? <CheckCircle2 className="w-5 h-5 text-green-500" /> : <XCircle className="w-5 h-5 text-red-500" />}
+                                <span>Bao gồm nguyên liệu</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                {detailData.attributes.serviceDetail.cleanUpAfter ? <CheckCircle2 className="w-5 h-5 text-green-500" /> : <XCircle className="w-5 h-5 text-red-500" />}
+                                <span>Dọn dẹp sau khi phục vụ</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
 
                   {/* Action card */}
                   <div className="bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-100 dark:border-zinc-850 p-6 rounded-3xl shadow-sm mt-8 flex flex-row items-center justify-between gap-4">
@@ -262,9 +430,7 @@ export default function CategoryDetailScreen({
                             </span>
                           )}
                         </div>
-                        <p className="text-xs sm:text-sm text-app-muted-fg line-clamp-2 mt-0.5 font-normal">
-                          {item.description || "Trải nghiệm sang trọng và đẳng cấp tuyệt vời."}
-                        </p>
+                        {item.description && <p className="text-xs sm:text-sm text-app-muted-fg line-clamp-2 mt-0.5 font-normal">{item.description}</p>}
                       </div>
                       
                       <div className="flex items-center justify-between mt-1">
@@ -276,7 +442,7 @@ export default function CategoryDetailScreen({
                         </div>
                         <div className="flex items-center text-amber-500 text-xs font-semibold gap-0.5">
                           <Star className="h-3.5 w-3.5 fill-amber-500" />
-                          <span>{(item.rating ?? 5.0).toFixed(1)}</span>
+                          <span>{item.rating ? item.rating.toFixed(1) : "Chưa có đánh giá"}</span>
                         </div>
                       </div>
                     </div>

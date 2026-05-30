@@ -31,6 +31,15 @@ const ServiceServices = {
 
     return mapper;
   },
+  getById: async (id: string) => {
+    try {
+      const res = await Api.get(`/v1/catalog/listings/${id}`);
+      return res?.data ?? null;
+    } catch (err) {
+      console.error(`Failed to fetch listing ${id}:`, err);
+      return null;
+    }
+  },
 };
 
 export default ServiceServices;

@@ -33,6 +33,16 @@ const PlaceServices = {
     return mapper;
   },
   
+  getById: async (id: string) => {
+    try {
+      const res = await Api.get(`/v1/catalog/listings/${id}`);
+      return res?.data ?? null;
+    } catch (err) {
+      console.error(`Failed to fetch listing ${id}:`, err);
+      return null;
+    }
+  },
+
   getNearbyListings: async (landmarkId: string, radiusMeters: number = 5000) => {
     try {
       const res = await Api.get(endpoint.place.getNearbyListings.replace('{id}', landmarkId) + '?radius=' + radiusMeters);
