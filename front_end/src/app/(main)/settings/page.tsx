@@ -273,7 +273,7 @@ function SettingsContent() {
       <div className="center h-[80vh]">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-app-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-gray-400">Đang tải cấu hình cài đặt...</p>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">Đang tải cấu hình cài đặt...</p>
         </div>
       </div>
     );
@@ -290,7 +290,7 @@ function SettingsContent() {
   const isEnterprisePending = enterpriseApproval === "PENDING";
 
   return (
-    <div className="min-h-screen bg-[#0a0a14] text-gray-100 py-12 px-4 sm:px-6 lg:px-8 animate-smooth-appear">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 pt-28 pb-12 px-4 sm:px-6 lg:px-8 animate-smooth-appear">
       <div className="max-w-4xl mx-auto">
         
         {/* Banner Notifications */}
@@ -298,8 +298,8 @@ function SettingsContent() {
           <div 
             className={`fixed top-20 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-lg shadow-2xl transition-all duration-300 border ${
               banner.type === "success" 
-                ? "bg-green-950/80 border-green-500 text-green-200" 
-                : "bg-red-950/80 border-red-500 text-red-200"
+                ? "bg-emerald-100 dark:bg-green-950/80 border-emerald-300 dark:border-green-500 text-emerald-800 dark:text-green-200" 
+                : "bg-rose-100 dark:bg-red-950/80 border-red-500 text-rose-800 dark:text-red-200"
             }`}
           >
             {banner.type === "success" ? <CheckCircle className="h-5 w-5 text-green-400" /> : <AlertCircle className="h-5 w-5 text-red-400" />}
@@ -313,8 +313,8 @@ function SettingsContent() {
             <User className="h-8 w-8 text-app-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">Cài đặt Tài khoản</h1>
-            <p className="text-sm text-gray-400 mt-1">Quản lý hồ sơ cá nhân, nâng cấp đối tác và bảo mật tài khoản của bạn.</p>
+            <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-3xl">Cài đặt Tài khoản</h1>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Quản lý hồ sơ cá nhân, nâng cấp đối tác và bảo mật tài khoản của bạn.</p>
           </div>
         </div>
 
@@ -328,7 +328,7 @@ function SettingsContent() {
               className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                 activeTab === "profile" 
                   ? "bg-app-primary text-white shadow-lg shadow-app-primary/20" 
-                  : "text-gray-400 hover:text-white hover:bg-white/5"
+                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:text-zinc-50 hover:bg-zinc-100 dark:bg-white/5"
               }`}
             >
               <User className="h-4 w-4" />
@@ -340,7 +340,7 @@ function SettingsContent() {
               className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                 activeTab === "upgrade" 
                   ? "bg-app-primary text-white shadow-lg shadow-app-primary/20" 
-                  : "text-gray-400 hover:text-white hover:bg-white/5"
+                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:text-zinc-50 hover:bg-zinc-100 dark:bg-white/5"
               }`}
             >
               <Briefcase className="h-4 w-4" />
@@ -352,7 +352,7 @@ function SettingsContent() {
               className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                 activeTab === "settings" 
                   ? "bg-app-primary text-white shadow-lg shadow-app-primary/20" 
-                  : "text-gray-400 hover:text-white hover:bg-white/5"
+                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:text-zinc-50 hover:bg-zinc-100 dark:bg-white/5"
               }`}
             >
               <Key className="h-4 w-4" />
@@ -361,7 +361,7 @@ function SettingsContent() {
           </div>
 
           {/* Main Card Panel */}
-          <div className="md:col-span-3 bg-[#11111f] border border-white/5 rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+          <div className="md:col-span-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
             
             {/* Soft decorative glow */}
             <div className="absolute -top-40 -right-40 w-80 h-80 bg-app-primary/5 rounded-full blur-[100px] pointer-events-none" />
@@ -370,18 +370,18 @@ function SettingsContent() {
             {activeTab === "profile" && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-white">Thông tin cá nhân</h3>
-                  <p className="text-xs text-gray-400 mt-1">Cập nhật ảnh đại diện và hồ sơ liên hệ cơ bản của bạn.</p>
+                  <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Thông tin cá nhân</h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Cập nhật ảnh đại diện và hồ sơ liên hệ cơ bản của bạn.</p>
                 </div>
 
                 {/* Avatar Section */}
-                <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-white/5">
+                <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-zinc-200 dark:border-white/5">
                   <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                     {profile.avatarUrl ? (
                       <img 
                         src={profile.avatarUrl} 
                         alt="avatar" 
-                        className="w-24 h-24 rounded-full object-cover border border-white/10 group-hover:opacity-85 transition-opacity" 
+                        className="w-24 h-24 rounded-full object-cover border border-zinc-200 dark:border-white/10 group-hover:opacity-85 transition-opacity" 
                       />
                     ) : (
                       <div className="w-24 h-24 rounded-full bg-app-primary/10 border border-app-primary/20 flex items-center justify-center text-app-primary text-2xl font-bold group-hover:bg-app-primary/20 transition-all">
@@ -389,7 +389,7 @@ function SettingsContent() {
                       </div>
                     )}
                     <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
-                      <Upload className="h-6 w-6 text-white" />
+                      <Upload className="h-6 w-6 text-zinc-900 dark:text-zinc-50" />
                     </div>
                   </div>
                   <input 
@@ -400,12 +400,12 @@ function SettingsContent() {
                     onChange={handleAvatarChange} 
                   />
                   <div>
-                    <h4 className="text-sm font-semibold text-white">Ảnh đại diện</h4>
-                    <p className="text-xs text-gray-400 mt-1 mb-3">Nhấp vào ảnh để tải lên ảnh mới. Định dạng hỗ trợ: JPG, PNG.</p>
+                    <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Ảnh đại diện</h4>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 mb-3">Nhấp vào ảnh để tải lên ảnh mới. Định dạng hỗ trợ: JPG, PNG.</p>
                     <Button 
                       onClick={() => fileInputRef.current?.click()} 
                       variant="secondary" 
-                      className="text-xs px-3 py-1.5 h-auto bg-white/5 border-white/10 text-white hover:bg-white/10"
+                      className="text-xs px-3 py-1.5 h-auto bg-zinc-100 dark:bg-white/5 border-zinc-200 dark:border-white/10 text-zinc-900 dark:text-zinc-50 hover:bg-white/10"
                       disabled={submitting}
                     >
                       Chọn ảnh
@@ -417,25 +417,25 @@ function SettingsContent() {
                 <form onSubmit={handleSaveProfile} className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Họ và tên</label>
+                      <label className="block text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-2">Họ và tên</label>
                       <input 
                         type="text" 
                         required 
                         value={profileForm.fullName} 
                         onChange={e => setProfileForm({...profileForm, fullName: e.target.value})}
-                        className="w-full bg-[#16162a] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-app-primary transition-all"
+                        className="w-full bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-app-primary transition-all"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Số điện thoại</label>
+                      <label className="block text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-2">Số điện thoại</label>
                       <div className="relative">
-                        <Phone className="absolute left-3.5 top-3 h-4 w-4 text-gray-500" />
+                        <Phone className="absolute left-3.5 top-3 h-4 w-4 text-zinc-400 dark:text-zinc-500" />
                         <input 
                           type="text" 
                           required 
                           value={profileForm.phoneNumber} 
                           onChange={e => setProfileForm({...profileForm, phoneNumber: e.target.value})}
-                          className="w-full bg-[#16162a] border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-app-primary transition-all"
+                          className="w-full bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-app-primary transition-all"
                         />
                       </div>
                     </div>
@@ -443,27 +443,27 @@ function SettingsContent() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Ngày sinh</label>
+                      <label className="block text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-2">Ngày sinh</label>
                       <div className="relative">
-                        <Calendar className="absolute left-3.5 top-3 h-4 w-4 text-gray-500" />
+                        <Calendar className="absolute left-3.5 top-3 h-4 w-4 text-zinc-400 dark:text-zinc-500" />
                         <input 
                           type="text" 
                           placeholder="YYYY-MM-DD" 
                           value={profileForm.dateOfBirth} 
                           onChange={e => setProfileForm({...profileForm, dateOfBirth: e.target.value})}
-                          className="w-full bg-[#16162a] border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-app-primary transition-all"
+                          className="w-full bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-app-primary transition-all"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Địa chỉ Email</label>
+                      <label className="block text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-2">Địa chỉ Email</label>
                       <div className="relative">
-                        <Mail className="absolute left-3.5 top-3 h-4 w-4 text-gray-600" />
+                        <Mail className="absolute left-3.5 top-3 h-4 w-4 text-zinc-500 dark:text-zinc-400" />
                         <input 
                           type="text" 
                           disabled 
                           value={currentUser?.email || "—"}
-                          className="w-full bg-[#16162a]/50 border border-white/5 rounded-xl pl-10 pr-4 py-2.5 text-sm text-gray-500 cursor-not-allowed"
+                          className="w-full bg-zinc-50 dark:bg-zinc-950/50/50 border border-zinc-200 dark:border-white/5 rounded-xl pl-10 pr-4 py-2.5 text-sm text-zinc-400 dark:text-zinc-500 cursor-not-allowed"
                         />
                       </div>
                     </div>
@@ -486,32 +486,32 @@ function SettingsContent() {
             {activeTab === "upgrade" && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-white">Nâng cấp Đối tác</h3>
-                  <p className="text-xs text-gray-400 mt-1">Đăng ký trở thành đối tác cá nhân (HOST) hoặc đối tác doanh nghiệp (ENTERPRISE) để bắt đầu kinh doanh.</p>
+                  <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Nâng cấp Đối tác</h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Đăng ký trở thành đối tác cá nhân (HOST) hoặc đối tác doanh nghiệp (ENTERPRISE) để bắt đầu kinh doanh.</p>
                 </div>
 
                 {/* Case 1: Already a HOST */}
                 {hasHost && (
-                  <div className="bg-emerald-950/30 border border-emerald-500/20 rounded-xl p-5 flex flex-col gap-4">
+                  <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-500/20 rounded-xl p-5 flex flex-col gap-4">
                     <div className="flex items-center gap-3">
-                      <UserCheck className="h-6 w-6 text-emerald-400" />
+                      <UserCheck className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                       <div>
-                        <h4 className="text-sm font-semibold text-white">Bạn đang là HOST của hệ thống</h4>
-                        <p className="text-xs text-gray-400 mt-0.5">Hồ sơ đối tác cá nhân của bạn đã được kiểm duyệt hoạt động.</p>
+                        <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Bạn đang là HOST của hệ thống</h4>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Hồ sơ đối tác cá nhân của bạn đã được kiểm duyệt hoạt động.</p>
                       </div>
                     </div>
                     {hostProfile && (
-                      <div className="grid grid-cols-2 gap-3 text-xs bg-black/20 p-4 rounded-lg border border-white/5 mt-2">
-                        <div><span className="text-gray-400">Họ và tên:</span> <span className="font-semibold text-white">{hostProfile.fullName || "—"}</span></div>
-                        <div><span className="text-gray-400">Số CCCD:</span> <span className="font-semibold text-white">{hostProfile.cccdNumber || "—"}</span></div>
-                        <div><span className="text-gray-400">Ngân hàng:</span> <span className="font-semibold text-white">{hostProfile.bankName || "—"}</span></div>
-                        <div><span className="text-gray-400">Số tài khoản:</span> <span className="font-semibold text-white">{hostProfile.bankAccount || "—"}</span></div>
+                      <div className="grid grid-cols-2 gap-3 text-xs bg-zinc-50 dark:bg-black/20 p-4 rounded-lg border border-zinc-200 dark:border-white/5 mt-2">
+                        <div><span className="text-zinc-500 dark:text-zinc-400">Họ và tên:</span> <span className="font-semibold text-zinc-900 dark:text-zinc-50">{hostProfile.fullName || "—"}</span></div>
+                        <div><span className="text-zinc-500 dark:text-zinc-400">Số CCCD:</span> <span className="font-semibold text-zinc-900 dark:text-zinc-50">{hostProfile.cccdNumber || "—"}</span></div>
+                        <div><span className="text-zinc-500 dark:text-zinc-400">Ngân hàng:</span> <span className="font-semibold text-zinc-900 dark:text-zinc-50">{hostProfile.bankName || "—"}</span></div>
+                        <div><span className="text-zinc-500 dark:text-zinc-400">Số tài khoản:</span> <span className="font-semibold text-zinc-900 dark:text-zinc-50">{hostProfile.bankAccount || "—"}</span></div>
                       </div>
                     )}
                     
-                    <div className="bg-yellow-950/20 border border-yellow-500/10 rounded-lg p-3.5 flex gap-2">
-                      <ShieldAlert className="h-4 w-4 text-yellow-500 shrink-0 mt-0.5" />
-                      <p className="text-[11px] text-yellow-200">
+                    <div className="bg-amber-50 dark:bg-yellow-950/20 border border-amber-200 dark:border-yellow-500/10 rounded-lg p-3.5 flex gap-2">
+                      <ShieldAlert className="h-4 w-4 text-amber-600 dark:text-yellow-500 shrink-0 mt-0.5" />
+                      <p className="text-[11px] text-amber-800 dark:text-yellow-200">
                         <strong>Quy tắc loại trừ:</strong> Do đã là đối tác HOST (Cá nhân), bạn không được phép nâng cấp lên đối tác ENTERPRISE (Doanh nghiệp).
                       </p>
                     </div>
@@ -520,26 +520,26 @@ function SettingsContent() {
 
                 {/* Case 2: Already an ENTERPRISE */}
                 {hasEnterprise && (
-                  <div className="bg-emerald-950/30 border border-emerald-500/20 rounded-xl p-5 flex flex-col gap-4">
+                  <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-500/20 rounded-xl p-5 flex flex-col gap-4">
                     <div className="flex items-center gap-3">
-                      <Building2 className="h-6 w-6 text-emerald-400" />
+                      <Building2 className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                       <div>
-                        <h4 className="text-sm font-semibold text-white">Bạn đang là DOANH NGHIỆP của hệ thống</h4>
-                        <p className="text-xs text-gray-400 mt-0.5">Hồ sơ đối tác pháp nhân doanh nghiệp đã được kiểm duyệt hoạt động.</p>
+                        <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Bạn đang là DOANH NGHIỆP của hệ thống</h4>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Hồ sơ đối tác pháp nhân doanh nghiệp đã được kiểm duyệt hoạt động.</p>
                       </div>
                     </div>
                     {enterpriseProfile && (
-                      <div className="grid grid-cols-2 gap-3 text-xs bg-black/20 p-4 rounded-lg border border-white/5 mt-2">
-                        <div><span className="text-gray-400">Tên doanh nghiệp:</span> <span className="font-semibold text-white">{enterpriseProfile.companyName || "—"}</span></div>
-                        <div><span className="text-gray-400">Mã số thuế:</span> <span className="font-semibold text-white">{enterpriseProfile.taxCode || "—"}</span></div>
-                        <div><span className="text-gray-400">Đại diện pháp luật:</span> <span className="font-semibold text-white">{enterpriseProfile.representativeName || "—"}</span></div>
-                        <div className="col-span-2"><span className="text-gray-400">Địa chỉ trụ sở:</span> <span className="font-semibold text-white">{enterpriseProfile.companyAddress || "—"}</span></div>
+                      <div className="grid grid-cols-2 gap-3 text-xs bg-zinc-50 dark:bg-black/20 p-4 rounded-lg border border-zinc-200 dark:border-white/5 mt-2">
+                        <div><span className="text-zinc-500 dark:text-zinc-400">Tên doanh nghiệp:</span> <span className="font-semibold text-zinc-900 dark:text-zinc-50">{enterpriseProfile.companyName || "—"}</span></div>
+                        <div><span className="text-zinc-500 dark:text-zinc-400">Mã số thuế:</span> <span className="font-semibold text-zinc-900 dark:text-zinc-50">{enterpriseProfile.taxCode || "—"}</span></div>
+                        <div><span className="text-zinc-500 dark:text-zinc-400">Đại diện pháp luật:</span> <span className="font-semibold text-zinc-900 dark:text-zinc-50">{enterpriseProfile.representativeName || "—"}</span></div>
+                        <div className="col-span-2"><span className="text-zinc-500 dark:text-zinc-400">Địa chỉ trụ sở:</span> <span className="font-semibold text-zinc-900 dark:text-zinc-50">{enterpriseProfile.companyAddress || "—"}</span></div>
                       </div>
                     )}
                     
-                    <div className="bg-yellow-950/20 border border-yellow-500/10 rounded-lg p-3.5 flex gap-2">
-                      <ShieldAlert className="h-4 w-4 text-yellow-500 shrink-0 mt-0.5" />
-                      <p className="text-[11px] text-yellow-200">
+                    <div className="bg-amber-50 dark:bg-yellow-950/20 border border-amber-200 dark:border-yellow-500/10 rounded-lg p-3.5 flex gap-2">
+                      <ShieldAlert className="h-4 w-4 text-amber-600 dark:text-yellow-500 shrink-0 mt-0.5" />
+                      <p className="text-[11px] text-amber-800 dark:text-yellow-200">
                         <strong>Quy tắc loại trừ:</strong> Do đã là đối tác ENTERPRISE (Doanh nghiệp), bạn không được phép nâng cấp lên đối tác HOST (Cá nhân).
                       </p>
                     </div>
@@ -551,12 +551,12 @@ function SettingsContent() {
                   <div className="space-y-8">
                     {/* Show Pending Host Notification */}
                     {isHostPending && (
-                      <div className="bg-yellow-950/30 border border-yellow-500/20 rounded-xl p-5 flex flex-col gap-3">
+                      <div className="bg-amber-50 dark:bg-yellow-950/30 border border-amber-200 dark:border-yellow-500/20 rounded-xl p-5 flex flex-col gap-3">
                         <div className="flex items-center gap-3">
-                          <AlertCircle className="h-6 w-6 text-yellow-400" />
+                          <AlertCircle className="h-6 w-6 text-amber-600 dark:text-yellow-400" />
                           <div>
-                            <h4 className="text-sm font-semibold text-white">Yêu cầu nâng cấp HOST đang chờ phê duyệt</h4>
-                            <p className="text-xs text-gray-400 mt-0.5">Chúng tôi đang xác minh thông tin giấy tờ tùy thân của bạn. Vui lòng quay lại sau.</p>
+                            <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Yêu cầu nâng cấp HOST đang chờ phê duyệt</h4>
+                            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Chúng tôi đang xác minh thông tin giấy tờ tùy thân của bạn. Vui lòng quay lại sau.</p>
                           </div>
                         </div>
                       </div>
@@ -564,12 +564,12 @@ function SettingsContent() {
 
                     {/* Show Pending Enterprise Notification */}
                     {isEnterprisePending && (
-                      <div className="bg-yellow-950/30 border border-yellow-500/20 rounded-xl p-5 flex flex-col gap-3">
+                      <div className="bg-amber-50 dark:bg-yellow-950/30 border border-amber-200 dark:border-yellow-500/20 rounded-xl p-5 flex flex-col gap-3">
                         <div className="flex items-center gap-3">
-                          <Building2 className="h-6 w-6 text-yellow-400" />
+                          <Building2 className="h-6 w-6 text-amber-600 dark:text-yellow-400" />
                           <div>
-                            <h4 className="text-sm font-semibold text-white">Yêu cầu nâng cấp DOANH NGHIỆP đang chờ phê duyệt</h4>
-                            <p className="text-xs text-gray-400 mt-0.5">Hồ sơ pháp lý doanh nghiệp của bạn đang được kiểm duyệt.</p>
+                            <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Yêu cầu nâng cấp DOANH NGHIỆP đang chờ phê duyệt</h4>
+                            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Hồ sơ pháp lý doanh nghiệp của bạn đang được kiểm duyệt.</p>
                           </div>
                         </div>
                       </div>
@@ -578,19 +578,19 @@ function SettingsContent() {
                     {!isHostPending && !isEnterprisePending && (
                       <>
                         {/* HOST application form */}
-                        <div className="bg-white/[0.02] border border-white/5 rounded-xl p-5 sm:p-6 space-y-4">
-                          <div className="flex items-center gap-3 pb-3 border-b border-white/5">
+                        <div className="bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200 dark:border-white/5 rounded-xl p-5 sm:p-6 space-y-4">
+                          <div className="flex items-center gap-3 pb-3 border-b border-zinc-200 dark:border-white/5">
                             <User className="h-5 w-5 text-app-primary" />
                             <div>
-                              <h4 className="text-sm font-semibold text-white">Đăng ký Đối tác cá nhân (HOST)</h4>
-                              <p className="text-[11px] text-gray-400">Kinh doanh bất động sản, phòng nghỉ dưới tư cách cá nhân.</p>
+                              <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Đăng ký Đối tác cá nhân (HOST)</h4>
+                              <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Kinh doanh bất động sản, phòng nghỉ dưới tư cách cá nhân.</p>
                             </div>
                           </div>
 
                           {hostApproval === "REJECTED" && (
-                            <div className="bg-red-950/20 border border-red-500/20 rounded-lg p-3 flex gap-2">
-                              <AlertCircle className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
-                              <p className="text-xs text-red-200">
+                            <div className="bg-rose-50 dark:bg-red-950/20 border border-rose-200 dark:border-red-500/20 rounded-lg p-3 flex gap-2">
+                              <AlertCircle className="h-4 w-4 text-rose-600 dark:text-red-500 shrink-0 mt-0.5" />
+                              <p className="text-xs text-rose-800 dark:text-red-200">
                                 Yêu cầu nâng cấp HOST trước đây của bạn đã bị từ chối. Vui lòng gửi lại hồ sơ chính xác.
                               </p>
                             </div>
@@ -599,70 +599,70 @@ function SettingsContent() {
                           <form onSubmit={handleApplyHost} className="space-y-4">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               <div>
-                                <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-2">Họ tên trên CCCD</label>
+                                <label className="block text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-2">Họ tên trên CCCD</label>
                                 <input 
                                   type="text" 
                                   required 
                                   placeholder="NGUYEN VAN A"
                                   value={hostForm.fullName} 
                                   onChange={e => setHostForm({...hostForm, fullName: e.target.value})}
-                                  className="w-full bg-[#16162a] border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-app-primary transition-all"
+                                  className="w-full bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-app-primary transition-all"
                                 />
                               </div>
                               <div>
-                                <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-2">Số điện thoại liên hệ</label>
+                                <label className="block text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-2">Số điện thoại liên hệ</label>
                                 <input 
                                   type="text" 
                                   required 
                                   placeholder="09XXXXXXXX"
                                   value={hostForm.phoneNumber} 
                                   onChange={e => setHostForm({...hostForm, phoneNumber: e.target.value})}
-                                  className="w-full bg-[#16162a] border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-app-primary transition-all"
+                                  className="w-full bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-app-primary transition-all"
                                 />
                               </div>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                               <div>
-                                <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-2">Số CCCD / Hộ chiếu</label>
+                                <label className="block text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-2">Số CCCD / Hộ chiếu</label>
                                 <input 
                                   type="text" 
                                   required 
                                   placeholder="037XXXXXXXXX"
                                   value={hostForm.cccdNumber} 
                                   onChange={e => setHostForm({...hostForm, cccdNumber: e.target.value})}
-                                  className="w-full bg-[#16162a] border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-app-primary transition-all"
+                                  className="w-full bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-app-primary transition-all"
                                 />
                               </div>
                               <div>
-                                <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-2">Tên ngân hàng thụ hưởng</label>
+                                <label className="block text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-2">Tên ngân hàng thụ hưởng</label>
                                 <input 
                                   type="text" 
                                   required 
                                   placeholder="Vietcombank, MB..."
                                   value={hostForm.bankName} 
                                   onChange={e => setHostForm({...hostForm, bankName: e.target.value})}
-                                  className="w-full bg-[#16162a] border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-app-primary transition-all"
+                                  className="w-full bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-app-primary transition-all"
                                 />
                               </div>
                               <div>
-                                <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-2">Số tài khoản ngân hàng</label>
+                                <label className="block text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-2">Số tài khoản ngân hàng</label>
                                 <input 
                                   type="text" 
                                   required 
                                   placeholder="102XXXXXXXX"
                                   value={hostForm.bankAccount} 
                                   onChange={e => setHostForm({...hostForm, bankAccount: e.target.value})}
-                                  className="w-full bg-[#16162a] border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-app-primary transition-all"
+                                  className="w-full bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-app-primary transition-all"
                                 />
                               </div>
                             </div>
 
                             {/* File Upload fields */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                              <div className="bg-[#16162a]/50 p-4 rounded-xl border border-white/5 flex flex-col items-center justify-center text-center">
-                                <Upload className="h-5 w-5 text-gray-500 mb-2" />
-                                <label className="block text-xs font-semibold text-gray-300 cursor-pointer">
+                              <div className="bg-zinc-50 dark:bg-zinc-950/50/50 p-4 rounded-xl border border-zinc-200 dark:border-white/5 flex flex-col items-center justify-center text-center">
+                                <Upload className="h-5 w-5 text-zinc-400 dark:text-zinc-500 mb-2" />
+                                <label className="block text-xs font-semibold text-zinc-600 dark:text-zinc-300 cursor-pointer">
                                   {frontImage ? frontImage.name : "Tải ảnh CCCD mặt trước"}
                                   <input 
                                     type="file" 
@@ -672,9 +672,9 @@ function SettingsContent() {
                                   />
                                 </label>
                               </div>
-                              <div className="bg-[#16162a]/50 p-4 rounded-xl border border-white/5 flex flex-col items-center justify-center text-center">
-                                <Upload className="h-5 w-5 text-gray-500 mb-2" />
-                                <label className="block text-xs font-semibold text-gray-300 cursor-pointer">
+                              <div className="bg-zinc-50 dark:bg-zinc-950/50/50 p-4 rounded-xl border border-zinc-200 dark:border-white/5 flex flex-col items-center justify-center text-center">
+                                <Upload className="h-5 w-5 text-zinc-400 dark:text-zinc-500 mb-2" />
+                                <label className="block text-xs font-semibold text-zinc-600 dark:text-zinc-300 cursor-pointer">
                                   {backImage ? backImage.name : "Tải ảnh CCCD mặt sau"}
                                   <input 
                                     type="file" 
@@ -699,19 +699,19 @@ function SettingsContent() {
                         </div>
 
                         {/* ENTERPRISE application form */}
-                        <div className="bg-white/[0.02] border border-white/5 rounded-xl p-5 sm:p-6 space-y-4">
-                          <div className="flex items-center gap-3 pb-3 border-b border-white/5">
+                        <div className="bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200 dark:border-white/5 rounded-xl p-5 sm:p-6 space-y-4">
+                          <div className="flex items-center gap-3 pb-3 border-b border-zinc-200 dark:border-white/5">
                             <Building2 className="h-5 w-5 text-app-primary" />
                             <div>
-                              <h4 className="text-sm font-semibold text-white">Đăng ký Đối tác doanh nghiệp (ENTERPRISE)</h4>
-                              <p className="text-[11px] text-gray-400">Kinh doanh phòng nghỉ, các gói trải nghiệm dưới tư cách pháp nhân công ty.</p>
+                              <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Đăng ký Đối tác doanh nghiệp (ENTERPRISE)</h4>
+                              <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Kinh doanh phòng nghỉ, các gói trải nghiệm dưới tư cách pháp nhân công ty.</p>
                             </div>
                           </div>
 
                           {enterpriseApproval === "REJECTED" && (
-                            <div className="bg-red-950/20 border border-red-500/20 rounded-lg p-3 flex gap-2">
-                              <AlertCircle className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
-                              <p className="text-xs text-red-200">
+                            <div className="bg-rose-50 dark:bg-red-950/20 border border-rose-200 dark:border-red-500/20 rounded-lg p-3 flex gap-2">
+                              <AlertCircle className="h-4 w-4 text-rose-600 dark:text-red-500 shrink-0 mt-0.5" />
+                              <p className="text-xs text-rose-800 dark:text-red-200">
                                 Yêu cầu nâng cấp DOANH NGHIỆP trước đây của bạn đã bị từ chối. Vui lòng gửi lại hồ sơ chính xác.
                               </p>
                             </div>
@@ -720,50 +720,50 @@ function SettingsContent() {
                           <form onSubmit={handleApplyEnterprise} className="space-y-4">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               <div>
-                                <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-2">Tên công ty doanh nghiệp</label>
+                                <label className="block text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-2">Tên công ty doanh nghiệp</label>
                                 <input 
                                   type="text" 
                                   required 
                                   placeholder="CÔNG TY TNHH GOSTAY VIỆT NAM"
                                   value={entForm.companyName} 
                                   onChange={e => setEntForm({...entForm, companyName: e.target.value})}
-                                  className="w-full bg-[#16162a] border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-app-primary transition-all"
+                                  className="w-full bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-app-primary transition-all"
                                 />
                               </div>
                               <div>
-                                <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-2">Người đại diện pháp luật</label>
+                                <label className="block text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-2">Người đại diện pháp luật</label>
                                 <input 
                                   type="text" 
                                   required 
                                   placeholder="NGUYEN VAN A"
                                   value={entForm.representativeName} 
                                   onChange={e => setEntForm({...entForm, representativeName: e.target.value})}
-                                  className="w-full bg-[#16162a] border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-app-primary transition-all"
+                                  className="w-full bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-app-primary transition-all"
                                 />
                               </div>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                               <div className="sm:col-span-1">
-                                <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-2">Mã số thuế Doanh nghiệp</label>
+                                <label className="block text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-2">Mã số thuế Doanh nghiệp</label>
                                 <input 
                                   type="text" 
                                   required 
                                   placeholder="MST-XXXXXXXX"
                                   value={entForm.taxCode} 
                                   onChange={e => setEntForm({...entForm, taxCode: e.target.value})}
-                                  className="w-full bg-[#16162a] border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-app-primary transition-all"
+                                  className="w-full bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-app-primary transition-all"
                                 />
                               </div>
                               <div className="sm:col-span-2">
-                                <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-2">Địa chỉ trụ sở chính</label>
+                                <label className="block text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-2">Địa chỉ trụ sở chính</label>
                                 <input 
                                   type="text" 
                                   required 
                                   placeholder="Số 1, Đường Trần Hưng Đạo, Hà Nội"
                                   value={entForm.companyAddress} 
                                   onChange={e => setEntForm({...entForm, companyAddress: e.target.value})}
-                                  className="w-full bg-[#16162a] border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-app-primary transition-all"
+                                  className="w-full bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-app-primary transition-all"
                                 />
                               </div>
                             </div>
@@ -791,30 +791,30 @@ function SettingsContent() {
             {activeTab === "settings" && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-white">Bảo mật & Mật khẩu</h3>
-                  <p className="text-xs text-gray-400 mt-1">Đổi mật khẩu tài khoản để tăng tính bảo mật.</p>
+                  <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Bảo mật & Mật khẩu</h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Đổi mật khẩu tài khoản để tăng tính bảo mật.</p>
                 </div>
 
                 <form onSubmit={handleChangePassword} className="space-y-4 max-w-md">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Mật khẩu mới</label>
+                    <label className="block text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-2">Mật khẩu mới</label>
                     <input 
                       type="password" 
                       required 
                       value={passwordForm.newPassword} 
                       onChange={e => setPasswordForm({...passwordForm, newPassword: e.target.value})}
-                      className="w-full bg-[#16162a] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-app-primary transition-all"
+                      className="w-full bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-app-primary transition-all"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Xác nhận mật khẩu mới</label>
+                    <label className="block text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-2">Xác nhận mật khẩu mới</label>
                     <input 
                       type="password" 
                       required 
                       value={passwordForm.confirmPassword} 
                       onChange={e => setPasswordForm({...passwordForm, confirmPassword: e.target.value})}
-                      className="w-full bg-[#16162a] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-app-primary transition-all"
+                      className="w-full bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-app-primary transition-all"
                     />
                   </div>
 
@@ -842,7 +842,7 @@ function SettingsContent() {
 
 export default function SettingsPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#0a0a14] flex items-center justify-center text-white">Đang tải...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center text-zinc-900 dark:text-zinc-50">Đang tải...</div>}>
       <SettingsContent />
     </Suspense>
   );

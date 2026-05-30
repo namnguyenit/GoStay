@@ -103,7 +103,7 @@ export default function MainLayoutClient({
       <div
         className={clsx(
           "fixed z-50 flex w-full items-center justify-between px-6 md:px-10 transition-all duration-500",
-          scrolled || tab || pathName.startsWith("/search")
+          scrolled || tab || pathName.startsWith("/search") || pathName.startsWith("/settings")
             ? "h-[64px] bg-gradient-to-r from-violet-700 via-app-primary to-purple-700 shadow-lg shadow-violet-900/20 backdrop-blur-md"
             : "h-[70px] bg-transparent",
         )}
@@ -120,7 +120,7 @@ export default function MainLayoutClient({
         >
           <div className={clsx(
             "flex h-9 w-9 items-center justify-center rounded-xl border transition-all duration-300 shadow-md group-hover:scale-105",
-            scrolled || tab || pathName.startsWith("/search")
+            scrolled || tab || pathName.startsWith("/search") || pathName.startsWith("/settings")
               ? "bg-white/20 border-white/25 group-hover:bg-white/30"
               : "bg-white/10 border-white/15 backdrop-blur-sm group-hover:bg-white/20"
           )}>
@@ -230,46 +230,40 @@ export default function MainLayoutClient({
                   {AuthService.getUserRoles().join(", ")}
                 </p>
               </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="rounded-full relative">
-                    <div className="rounded-full p-[2px] bg-gradient-to-br from-violet-300 via-white/50 to-purple-400">
-                      <Avatar className="h-8 w-8 border-2 border-transparent">
-                        <AvatarImage
-                          src={
-                            currentUser.avatarUrl ||
-                            "https://github.com/shadcn.png"
-                          }
-                        />
-                        <AvatarFallback className="bg-violet-600 text-white text-xs font-bold">
-                          {currentUser.firstName?.[0] || "U"}
-                        </AvatarFallback>
-                      </Avatar>
-                    </div>
-                    {/* Online indicator */}
-                    <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-400 border-2 border-violet-700" />
-                  </Button>
-                </DropdownMenuTrigger>
-                {/* Giữ lại onClick navigation từ TestSystem */}
-                <DropdownMenuContent align="end" className="w-44">
-                  <DropdownMenuItem onClick={() => router.push("/settings?tab=profile")}>
-                    <UserIcon />
-                    Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => router.push("/settings?tab=settings")}>
-                    <SettingsIcon />
-                    Settings
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    variant="destructive"
-                    onClick={handleLogout}
-                  >
-                    <LogOutIcon />
-                    Log out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="rounded-full relative cursor-pointer"
+                  onClick={() => router.push("/settings")}
+                >
+                  <div className="rounded-full p-[2px] bg-gradient-to-br from-violet-300 via-white/50 to-purple-400 transition-transform hover:scale-105">
+                    <Avatar className="h-8 w-8 border-2 border-transparent">
+                      <AvatarImage
+                        src={
+                          currentUser.avatarUrl ||
+                          "https://github.com/shadcn.png"
+                        }
+                      />
+                      <AvatarFallback className="bg-violet-600 text-white text-xs font-bold">
+                        {currentUser.firstName?.[0] || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                  {/* Online indicator */}
+                  <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-400 border-2 border-violet-700" />
+                </Button>
+
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="rounded-full text-white/70 hover:text-red-400 hover:bg-white/10 transition-colors"
+                  onClick={handleLogout}
+                  title="Đăng xuất"
+                >
+                  <LogOutIcon className="h-4 w-4" />
+                </Button>
+              </div>
             </>
           ) : (
             <Link href="/log-in">
@@ -283,7 +277,7 @@ export default function MainLayoutClient({
         {/* Bottom gradient line */}
         <div className={clsx(
           "absolute bottom-0 left-0 right-0 h-[1px] transition-opacity duration-500",
-          scrolled || tab || pathName.startsWith("/search")
+          scrolled || tab || pathName.startsWith("/search") || pathName.startsWith("/settings")
             ? "opacity-100 bg-gradient-to-r from-transparent via-white/20 to-transparent"
             : "opacity-0"
         )} />
