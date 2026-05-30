@@ -125,7 +125,7 @@ export default function LandmarkDetailPage() {
   return (
     <div className="w-full pb-20">
       {/* Banner */}
-      <div className="relative w-full h-[55vh] min-h-[380px] overflow-hidden bg-black">
+      <div className="relative w-full h-[70vh] min-h-[500px] overflow-hidden bg-black">
         {images.length > 0 ? (
           <AnimatePresence mode="wait">
             <motion.div
@@ -154,7 +154,7 @@ export default function LandmarkDetailPage() {
         {/* Back button */}
         <button
           onClick={() => router.back()}
-          className="absolute top-6 left-6 flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full hover:bg-white/30 transition"
+          className="absolute top-[90px] left-8 flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full hover:bg-white/30 transition z-10"
         >
           <ArrowLeft size={16} />
           <span className="text-sm font-medium">Quay lại</span>

@@ -88,7 +88,7 @@ export default function MainLayoutClient({
 
   return (
     <main
-      className="scrollbar h-screen overflow-x-hidden overflow-y-auto"
+      className="no-scrollbar h-screen overflow-x-hidden overflow-y-auto"
       onScroll={(event) => {
         if ((event.target as HTMLDivElement).scrollTop > 50) setScrolled(true);
         if ((event.target as HTMLDivElement).scrollTop <= 50)
