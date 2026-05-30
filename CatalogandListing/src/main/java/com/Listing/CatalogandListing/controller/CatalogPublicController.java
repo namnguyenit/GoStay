@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.Map;
+import com.Listing.CatalogandListing.entity.Listing;
 
 @RestController
 @RequiredArgsConstructor
@@ -41,6 +43,14 @@ public class CatalogPublicController {
      * Lấy danh sách Địa danh nổi tiếng công khai (Landmarks)
      * Lộ trình: GET /api/v1/catalog/listings/landmarks
      */
+    @GetMapping("/landmarks/{landmarkId}/nearby")
+    public ResponseEntity<ApiResponse<Map<String, List<Listing>>>> getNearbyListings(
+            @PathVariable UUID landmarkId,
+            @RequestParam(defaultValue = "5000") double radius) {
+        Map<String, List<Listing>> nearby = landmarkService.getNearbyListings(landmarkId, radius);
+        return ResponseEntity.ok(ApiResponse.success("Success", nearby));
+    }
+
     @GetMapping("/landmarks")
     public ResponseEntity<ApiResponse<List<Landmark>>> getPublicLandmarks() {
         List<Landmark> data = landmarkService.getPublicLandmarks();

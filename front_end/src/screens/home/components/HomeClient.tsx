@@ -167,8 +167,7 @@ export default function HomeClient() {
                   onClick={() => {
                     const activeLandmark = landmarks?.[imageIndex];
                     if (activeLandmark?.id) {
-                      // navigate to landmark detail later if needed
-                      // router.push(`/landmark/${activeLandmark.id}/detail`);
+                      router.push(`/landmark/${activeLandmark.id}/detail`);
                     }
                   }}
                 >

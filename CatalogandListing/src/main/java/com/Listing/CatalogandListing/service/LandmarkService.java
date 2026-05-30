@@ -14,12 +14,17 @@ import com.Listing.CatalogandListing.mapper.LandmarkMapper;
 import com.Listing.CatalogandListing.mapper.LandmarkSuggestionMapper;
 import com.Listing.CatalogandListing.repository.LandmarkRepository;
 import com.Listing.CatalogandListing.repository.LandmarkSuggestionRepository;
+import com.Listing.CatalogandListing.repository.ListingRepository;
+import com.Listing.CatalogandListing.entity.Listing;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.stream.Collectors;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -30,6 +35,7 @@ public class LandmarkService {
     final LandmarkSuggestionRepository landmarkSuggestionRepository;
     final LandmarkMapper landmarkMapper;
     final LandmarkRepository landmarkRepository;
+    final ListingRepository listingRepository;
 
     public PaginationResponse<LandmarkSuggestion> getLandmarkSuggestions(String status, int page, int size) {
         Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
@@ -120,6 +126,22 @@ public class LandmarkService {
                 .totalPages(landmarkPage.getTotalPages())
                 .totalElements(landmarkPage.getTotalElements())
                 .build();
+     }
+
+     
+     public Map<String, java.util.List<Listing>> getNearbyListings(UUID landmarkId, double radiusMeters) {
+         Landmark landmark = landmarkRepository.findById(landmarkId)
+                 .orElseThrow(() -> new com.Listing.CatalogandListing.exception.AppException(
+                         com.Listing.CatalogandListing.exception.LandmarkErrorCode.LANDMARK_NOT_FOUND));
+
+         if (landmark.getLatitude() == null || landmark.getLongitude() == null) {
+             return new HashMap<>();
+         }
+
+         java.util.List<Listing> nearbyListings = listingRepository.findActiveListingsWithinRadius(
+                 landmark.getLongitude(), landmark.getLatitude(), radiusMeters);
+
+         return nearbyListings.stream().collect(Collectors.groupingBy(l -> l.getCategory().name()));
      }
 
      public java.util.List<Landmark> getPublicLandmarks() {

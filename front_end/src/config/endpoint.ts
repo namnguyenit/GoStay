@@ -6,6 +6,7 @@ export const endpoint = {
   place: {
     getAll: "/v1/catalog/listings?category=STAY",
     getLandmarks: "/v1/catalog/listings/landmarks",
+    getNearbyListings: "/v1/catalog/listings/landmarks/{id}/nearby",
   },
   service: {
     getAll: "/v1/catalog/listings?category=SVC",

@@ -39,6 +39,7 @@ public class Listing {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "complex_id")
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private Complex complex;
 
     @Enumerated(EnumType.STRING)
@@ -69,6 +70,7 @@ public class Listing {
     private Double longitude;
 
     @Column(columnDefinition = "geometry(Point,4326)")
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private Point location;
 
     @Column(name = "thumbnail_url", length = 255)
@@ -89,6 +91,7 @@ public class Listing {
     private ListingStatus status;
 
     @OneToMany(mappedBy = "listing", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<Review> reviews;
 
     @Column(name = "created_at")
