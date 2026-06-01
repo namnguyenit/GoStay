@@ -61,6 +61,18 @@ public class ListingService {
         return listingMapper.toDetailResponse(listing);
     }
 
+    public ListingDetailResponse getPublicDetailListing(UUID id){
+        Listing listing = listingRepository
+                .findById(id)
+                .orElseThrow(() -> new AppException(ListingErrorCode.LISTING_NOT_FOUND));
+
+        if (listing.getStatus() != ListingStatus.ACTIVE) {
+            throw new AppException(ListingErrorCode.LISTING_NOT_FOUND);
+        }
+
+        return listingMapper.toDetailResponse(listing);
+    }
+
     public void createListing(String userId, SaveListingRequest request) {
         validateCategoryAndAttributes(request.getCategory(), request.getSubCategory(), request.getAttributes());
         Listing listing = listingMapper.toEntity(request);

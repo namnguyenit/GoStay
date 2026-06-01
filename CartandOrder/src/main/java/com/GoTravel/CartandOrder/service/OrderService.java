@@ -262,6 +262,11 @@ public class OrderService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public boolean hasPurchasedListing(UUID userId, UUID listingId) {
+        return orderRepository.hasPurchasedListing(userId, listingId, List.of(OrderStatus.COMPLETED, OrderStatus.CONFIRMED));
+    }
+
     private void refreshCartItemsFromCatalog(Cart cart) {
         for (CartItem item : cart.getItems()) {
             CatalogListingResponse listing = getActiveListing(item.getListingId());

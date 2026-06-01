@@ -40,6 +40,7 @@ public class Landmark {
     private Double longitude;
 
     @Column(columnDefinition = "geometry(Point,4326)")
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private Point location;
 
     @Column(name = "radius_meters")

@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatMoney } from "@/shared/utils";
+import ReviewSection from "./ReviewSection";
 
 type CategoryItem =
   | {
@@ -461,6 +462,11 @@ export default function CategoryDetailScreen({
               })}
             </div>
           </div>
+        </div>
+        
+        {/* --- Review Section --- */}
+        <div className="mt-16 w-full">
+          {selectedItem.id && <ReviewSection listingId={selectedItem.id} />}
         </div>
       </div>
     </div>

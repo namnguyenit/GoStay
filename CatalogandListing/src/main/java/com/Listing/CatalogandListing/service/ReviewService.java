@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
@@ -45,8 +46,14 @@ public class ReviewService {
                 .comment(request.getComment())
                 .images(request.getImages())
                 .build();
-
         reviewRepository.save(review);
+
+        // Cập nhật rating tổng của Listing
+        Double avgRating = reviewRepository.getAverageRatingByListingId(listing.getId());
+        Integer totalReviews = reviewRepository.countByListingId(listing.getId());
+        listing.setAverageRating(BigDecimal.valueOf(avgRating));
+        listing.setTotalReviews(totalReviews);
+        listingRepository.save(listing);
     }
 
     @Transactional(readOnly = true)

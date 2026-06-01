@@ -67,7 +67,7 @@ public class CatalogPublicController {
      */
     @GetMapping("/{listingId}")
     public ResponseEntity<ApiResponse<ListingDetailResponse>> getListingDetail(@PathVariable UUID listingId) {
-        ListingDetailResponse listingDetailResponse = listingService.getDetailListing(listingId);
+        ListingDetailResponse listingDetailResponse = listingService.getPublicDetailListing(listingId);
         return ResponseEntity.ok(ApiResponse.success("Lấy thành công chi tiết dịch vụ" , listingDetailResponse));
     }
 

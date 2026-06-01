@@ -30,6 +30,9 @@ const OrderService = {
   cancelOrder: async (orderId: string) => {
     return await Api.put(`/v1/orders/${orderId}/cancel`, {});
   },
+  checkPurchased: async (listingId: string) => {
+    return await Api.get(`/v1/orders/check-purchased/${listingId}`);
+  },
 };
 
 export default OrderService;

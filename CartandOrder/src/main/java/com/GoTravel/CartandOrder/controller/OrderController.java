@@ -66,4 +66,11 @@ public class OrderController {
         orderService.cancelOrder(userId, orderId);
         return ResponseEntity.ok(ApiResponse.success("Đã hủy đơn hàng thành công"));
     }
+
+    @GetMapping("/check-purchased/{listingId}")
+    public ResponseEntity<ApiResponse<Boolean>> checkPurchased(
+            @RequestHeader("X-User-Id") UUID userId,
+            @PathVariable UUID listingId) {
+        return ResponseEntity.ok(ApiResponse.success("Success", orderService.hasPurchasedListing(userId, listingId)));
+    }
 }

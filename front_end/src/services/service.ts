@@ -40,6 +40,12 @@ const ServiceServices = {
       return null;
     }
   },
+  getReviews: async (listingId: string, page = 0, size = 10) => {
+    return await Api.get(`/v1/catalog/listings/${listingId}/reviews?page=${page}&size=${size}`);
+  },
+  submitReview: async (payload: { listingId: string; rating: number; comment: string; images: string[] }) => {
+    return await Api.post("/v1/catalog/reviews", payload);
+  },
 };
 
 export default ServiceServices;
