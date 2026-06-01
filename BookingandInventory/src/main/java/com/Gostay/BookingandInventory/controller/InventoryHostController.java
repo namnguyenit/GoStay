@@ -35,7 +35,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/host/inventory")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('HOST') or hasRole('ADMIN')")
+@PreAuthorize("hasRole('HOST') or hasRole('ENTERPRISE') or hasRole('ADMIN')")
 public class InventoryHostController {
 
     private final InventoryHostService inventoryHostService;

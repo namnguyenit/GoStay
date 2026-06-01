@@ -43,7 +43,7 @@ export default function NewComplexPage() {
       }
 
       await HostService.createComplex(payload);
-      router.push("/host/complexes");
+      router.push("/enterprise/complexes");
     } catch (err: any) {
       console.error(err);
       setError(err.message || "Có lỗi xảy ra khi tạo Khu Tổ Hợp.");
@@ -56,7 +56,7 @@ export default function NewComplexPage() {
     <div className="max-w-4xl mx-auto w-full space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Link href="/host/complexes">
+        <Link href="/enterprise/complexes">
           <button className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-all">
             <ArrowLeft className="h-5 w-5" />
           </button>
@@ -167,7 +167,7 @@ export default function NewComplexPage() {
 
         {/* Submit Actions */}
         <div className="flex items-center justify-end gap-4 pt-4">
-          <Link href="/host/complexes">
+          <Link href="/enterprise/complexes">
             <button type="button" className="px-6 py-3 rounded-full text-sm font-semibold text-gray-600 hover:bg-gray-100 transition-colors">
               Hủy bỏ
             </button>

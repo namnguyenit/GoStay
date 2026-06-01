@@ -14,13 +14,12 @@ import {
   Menu
 } from "lucide-react";
 import AuthService from "@/services/auth.service";
-import { Button } from "@/components/ui/button";
 
-export default function HostLayout({ children }: { children: React.ReactNode }) {
+export default function EnterpriseLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [isAuthorized, setIsAuthorized] = useState(false);
-  const [hostName, setHostName] = useState("");
+  const [enterpriseName, setEnterpriseName] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -30,14 +29,14 @@ export default function HostLayout({ children }: { children: React.ReactNode }) 
         return;
       }
       const roles = AuthService.getUserRoles();
-      if (!roles.includes("HOST")) {
-        alert("Bạn không có quyền truy cập kênh chủ nhà.");
+      if (!roles.includes("ENTERPRISE")) {
+        alert("Bạn không có quyền truy cập kênh doanh nghiệp.");
         router.push("/");
         return;
       }
       const user = AuthService.getCurrentUser();
       if (user) {
-        setHostName(user.lastName || user.fullName || user.username || "Host");
+        setEnterpriseName(user.lastName || user.fullName || user.username || "Enterprise");
       }
       setIsAuthorized(true);
     };
@@ -49,19 +48,20 @@ export default function HostLayout({ children }: { children: React.ReactNode }) 
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-app-primary border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-gray-600 text-sm font-medium">Đang xác thực quyền Chủ nhà...</p>
+          <p className="text-gray-600 text-sm font-medium">Đang xác thực quyền Doanh nghiệp...</p>
         </div>
       </div>
     );
   }
 
   const navLinks = [
-    { name: "Tổng quan", href: "/host", icon: TrendingUp },
-    { name: "Dịch vụ", href: "/host/listings", icon: Home, match: "/host/listings" },
-    { name: "Lịch", href: "/host/calendar", icon: Calendar, match: "/host/calendar" },
-    { name: "Đơn hàng", href: "/host/orders", icon: Calendar, match: "/host/orders" },
-    { name: "Thu nhập", href: "/host/earnings", icon: DollarSign, match: "/host/earnings" },
-    { name: "Đề xuất địa danh", href: "/host/landmark-suggestions", icon: Building, match: "/host/landmark-suggestions" },
+    { name: "Tổng quan", href: "/enterprise", icon: TrendingUp },
+    { name: "Dịch vụ", href: "/enterprise/listings", icon: Home, match: "/enterprise/listings" },
+    { name: "Khu Tổ Hợp", href: "/enterprise/complexes", icon: Building, match: "/enterprise/complexes" },
+    { name: "Lịch", href: "/enterprise/calendar", icon: Calendar, match: "/enterprise/calendar" },
+    { name: "Đơn hàng", href: "/enterprise/orders", icon: Calendar, match: "/enterprise/orders" },
+    { name: "Thu nhập", href: "/enterprise/earnings", icon: DollarSign, match: "/enterprise/earnings" },
+    { name: "Đề xuất địa danh", href: "/enterprise/landmark-suggestions", icon: Building, match: "/enterprise/landmark-suggestions" },
   ];
 
   return (
@@ -76,8 +76,8 @@ export default function HostLayout({ children }: { children: React.ReactNode }) 
             <Building className="h-6 w-6 text-app-primary" />
           </div>
           <div className="hidden md:block">
-            <h2 className="text-sm font-bold text-gray-900 tracking-wide">KÊNH CHỦ NHÀ</h2>
-            <p className="text-[10px] text-gray-500 font-medium">GoStay Host Portal</p>
+            <h2 className="text-sm font-bold text-gray-900 tracking-wide">KÊNH DOANH NGHIỆP</h2>
+            <p className="text-[10px] text-gray-500 font-medium">GoStay Enterprise Portal</p>
           </div>
         </div>
 
@@ -104,7 +104,7 @@ export default function HostLayout({ children }: { children: React.ReactNode }) 
 
         {/* Right: Actions */}
         <div className="flex items-center justify-end gap-4 w-1/4">
-          <Link href="/host/listings/new" className="hidden sm:flex">
+          <Link href="/enterprise/listings/new" className="hidden sm:flex">
             <button className="flex items-center gap-2 bg-white border border-gray-200 hover:border-gray-300 text-gray-800 font-semibold text-xs rounded-full shadow-sm h-10 px-5 transition-all">
               <PlusCircle className="h-4 w-4 text-app-primary" />
               Thêm dịch vụ

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Plus, Building, MapPin, Loader2, ArrowRight } from "lucide-react";
 import HostService from "@/services/host.service";
 
-export default function HostComplexesPage() {
+export default function EnterpriseComplexesPage() {
   const [complexes, setComplexes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -36,7 +36,7 @@ export default function HostComplexesPage() {
             Quản lý các khu tổ hợp lưu trú, nghỉ dưỡng dành riêng cho Doanh Nghiệp.
           </p>
         </div>
-        <Link href="/host/complexes/new">
+        <Link href="/enterprise/complexes/new">
           <button className="flex items-center justify-center gap-2 bg-app-primary hover:bg-app-primary/90 text-white px-5 py-2.5 rounded-full text-sm font-semibold transition-all shadow-sm">
             <Plus className="h-4 w-4" />
             Tạo Khu Tổ Hợp
@@ -58,7 +58,7 @@ export default function HostComplexesPage() {
           <p className="text-gray-500 max-w-md mx-auto mb-8">
             Khu tổ hợp giúp bạn nhóm các dịch vụ lưu trú lại với nhau (ví dụ: một resort có nhiều loại phòng, hoặc một chuỗi homestay).
           </p>
-          <Link href="/host/complexes/new">
+          <Link href="/enterprise/complexes/new">
             <button className="flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white px-6 py-3 rounded-full text-sm font-semibold transition-all shadow-md">
               <Plus className="h-4 w-4" />
               Tạo Khu Tổ Hợp Đầu Tiên

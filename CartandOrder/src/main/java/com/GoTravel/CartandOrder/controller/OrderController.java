@@ -52,7 +52,7 @@ public class OrderController {
     }
 
     @GetMapping("/host")
-    @PreAuthorize("hasRole('HOST') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('HOST') or hasRole('ENTERPRISE') or hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Page<OrderResponse>>> getHostOrders(
             @RequestHeader("X-User-Id") UUID hostId,
             Pageable pageable) {
