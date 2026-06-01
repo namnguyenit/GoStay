@@ -25,6 +25,7 @@ import java.util.UUID;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.stream.Collectors;
+import com.Listing.CatalogandListing.util.GeometryUtil;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -83,6 +84,7 @@ public class LandmarkService {
     public void createLandmark(SaveLandmarkRequest request) {
         Landmark landmark = landmarkMapper.toEntity(request);
         landmark.setStatus(com.Listing.CatalogandListing.enums.LandmarkStatus.ACTIVE);
+        landmark.setLocation(GeometryUtil.createPoint(landmark.getLongitude(), landmark.getLatitude()));
         landmarkRepository.save(landmark);
 
         if (request.getResolvedSuggestionId() != null) {
@@ -99,6 +101,7 @@ public class LandmarkService {
                         com.Listing.CatalogandListing.exception.LandmarkErrorCode.LANDMARK_NOT_FOUND));
 
         landmarkMapper.updateEntityFromRequest(request, landmark);
+        landmark.setLocation(GeometryUtil.createPoint(landmark.getLongitude(), landmark.getLatitude()));
         landmarkRepository.save(landmark);
     }
 

@@ -22,6 +22,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
+import com.Listing.CatalogandListing.util.GeometryUtil;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -79,6 +80,7 @@ public class ListingService {
 
         listing.setHostId(UUID.fromString(userId));
         listing.setStatus(ListingStatus.ACTIVE);
+        listing.setLocation(GeometryUtil.createPoint(listing.getLongitude(), listing.getLatitude()));
         listing = listingRepository.save(listing);
 
         // Call Inventory Service to automatically create calendar
@@ -127,6 +129,7 @@ public class ListingService {
         }
 
         listingMapper.updateEntityFromRequest(request, listing);
+        listing.setLocation(GeometryUtil.createPoint(listing.getLongitude(), listing.getLatitude()));
         listingRepository.save(listing);
     }
 

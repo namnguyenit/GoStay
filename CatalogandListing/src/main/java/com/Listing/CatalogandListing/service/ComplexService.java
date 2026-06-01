@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import com.Listing.CatalogandListing.dto.response.ComplexResponse;
+import com.Listing.CatalogandListing.util.GeometryUtil;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -27,6 +28,7 @@ public class ComplexService {
         Complex complex = complexMapper.toEntity(request);
         complex.setHostId(UUID.fromString(userId));
         complex.setStatus(ComplexStatus.ACTIVE);
+        complex.setLocation(GeometryUtil.createPoint(complex.getLongitude(), complex.getLatitude()));
         complexRepository.save(complex);
     }
 
