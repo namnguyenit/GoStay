@@ -59,6 +59,17 @@ public class CatalogHostController {
     }
 
     /**
+     * Lấy danh sách Khu tổ hợp của Host
+     */
+    @GetMapping("/complexes")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ENTERPRISE')")
+    public ResponseEntity<ApiResponse<java.util.List<com.Listing.CatalogandListing.dto.response.ComplexResponse>>> getMyComplexes() {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        java.util.List<com.Listing.CatalogandListing.dto.response.ComplexResponse> complexes = complexService.getComplexesByHostId(userId);
+        return ResponseEntity.ok(ApiResponse.success("Lấy danh sách khu tổ hợp thành công.", complexes));
+    }
+
+    /**
      * 3.3.3. ĐĂNG DỊCH VỤ MỚI (TẠO LISTING) - API ĐA HÌNH CỐT LÕI
      * Phương thức: POST
      * Auth: Header Authorization: Bearer <token> (Role: HOST)

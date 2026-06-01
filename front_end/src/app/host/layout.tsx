@@ -64,6 +64,11 @@ export default function HostLayout({ children }: { children: React.ReactNode }) 
     { name: "Đề xuất địa danh", href: "/host/landmark-suggestions", icon: Building, match: "/host/landmark-suggestions" },
   ];
 
+  // Chỉ thêm Khu Tổ Hợp nếu người dùng là ENTERPRISE
+  if (AuthService.isAuthenticated() && AuthService.getUserRoles().includes("ENTERPRISE")) {
+    navLinks.splice(2, 0, { name: "Khu Tổ Hợp", href: "/host/complexes", icon: Building, match: "/host/complexes" });
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 flex flex-col font-sans">
       

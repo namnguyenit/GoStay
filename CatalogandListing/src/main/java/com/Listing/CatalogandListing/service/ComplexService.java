@@ -10,7 +10,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import com.Listing.CatalogandListing.dto.response.ComplexResponse;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -25,5 +28,12 @@ public class ComplexService {
         complex.setHostId(UUID.fromString(userId));
         complex.setStatus(ComplexStatus.ACTIVE);
         complexRepository.save(complex);
+    }
+
+    public List<ComplexResponse> getComplexesByHostId(String userId) {
+        return complexRepository.findByHostId(UUID.fromString(userId))
+                .stream()
+                .map(complexMapper::toResponse)
+                .collect(Collectors.toList());
     }
 }

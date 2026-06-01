@@ -90,6 +90,16 @@ const HostService = {
     files.forEach((f) => formData.append("files", f));
     formData.append("folder", folder);
     return await Api.post("/v1/media/upload/bulk", formData);
+  },
+
+  // Get all complexes of current Host (Enterprise only)
+  getMyComplexes: async () => {
+    return await Api.get("/v1/catalog/host/complexes");
+  },
+
+  // Create a new complex (Enterprise only)
+  createComplex: async (data: any) => {
+    return await Api.post("/v1/catalog/host/complexes", data);
   }
 };
 

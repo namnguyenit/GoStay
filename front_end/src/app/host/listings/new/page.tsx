@@ -15,9 +15,17 @@ export default function NewListing() {
   const [loading, setLoading] = useState(false);
   const [canSubmit, setCanSubmit] = useState(false);
   const [roles, setRoles] = useState<string[]>([]);
+  const [myComplexes, setMyComplexes] = useState<any[]>([]);
 
   useEffect(() => {
-    setRoles(AuthService.getUserRoles());
+    const userRoles = AuthService.getUserRoles();
+    setRoles(userRoles);
+    
+    if (userRoles.includes("ENTERPRISE")) {
+      HostService.getMyComplexes().then(res => {
+        if (res.data) setMyComplexes(res.data);
+      }).catch(err => console.error("Lỗi fetch complexes", err));
+    }
   }, []);
 
   // Form State
@@ -339,7 +347,12 @@ export default function NewListing() {
       router.push("/host/listings");
     } catch (err: any) {
       console.error("Create listing failed:", err);
-      alert(`Đăng dịch vụ thất bại: ${err?.message || "Lỗi không xác định"}`);
+      let errMsg = err?.message || "Lỗi không xác định";
+      // Xử lý lỗi khoảng cách (LISTING_OUT_OF_RANGE)
+      if (err?.code === 'LISTING_OUT_OF_RANGE' || errMsg.includes('Khoảng cách')) {
+        errMsg = "Dịch vụ này nằm cách Khu Tổ Hợp quá 3km. Vui lòng kiểm tra lại tọa độ hoặc chọn đúng Khu Tổ Hợp!";
+      }
+      alert(`Đăng dịch vụ thất bại: ${errMsg}`);
     } finally {
       setLoading(false);
     }
@@ -442,16 +455,19 @@ export default function NewListing() {
               )}
             </div>
 
-            {roles.includes("ENTERPRISE_HOST") && (
+            {roles.includes("ENTERPRISE") && (
               <div>
-                <label className="block text-2xs font-bold text-gray-600 uppercase mb-1">Mã Khu Tổ Hợp (Complex ID) - Tuỳ chọn</label>
-                <input 
-                  type="text" 
-                  placeholder="Nhập mã nếu dịch vụ này thuộc một khu tổ hợp lớn..." 
+                <label className="block text-2xs font-bold text-gray-600 uppercase mb-1">Khu Tổ Hợp (Tuỳ chọn)</label>
+                <select 
                   value={complexId} 
                   onChange={(e) => setComplexId(e.target.value)}
                   className="w-full bg-white border border-gray-300 shadow-sm rounded-xl px-4 py-2.5 text-xs text-gray-900 focus:outline-none focus:border-app-primary"
-                />
+                >
+                  <option value="">-- Không thuộc Khu tổ hợp nào --</option>
+                  {myComplexes.map((c: any) => (
+                    <option key={c.id} value={c.id}>{c.name} - {c.province}</option>
+                  ))}
+                </select>
               </div>
             )}
           </div>
