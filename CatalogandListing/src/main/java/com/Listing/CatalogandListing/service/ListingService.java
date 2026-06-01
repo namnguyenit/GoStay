@@ -7,6 +7,8 @@ import com.Listing.CatalogandListing.exception.AppException;
 import com.Listing.CatalogandListing.exception.ListingErrorCode;
 import com.Listing.CatalogandListing.mapper.ListingMapper;
 import com.Listing.CatalogandListing.repository.ListingRepository;
+import com.Listing.CatalogandListing.repository.ComplexRepository;
+import com.Listing.CatalogandListing.entity.Complex;
 import com.Listing.CatalogandListing.dto.response.PaginationResponse;
 import com.Listing.CatalogandListing.dto.response.ListingDetailResponse;
 import org.springframework.data.domain.Page;
@@ -29,6 +31,7 @@ public class ListingService {
 
     ListingMapper listingMapper;
     ListingRepository listingRepository;
+    ComplexRepository complexRepository;
     InventoryClient inventoryClient;
 
     public PaginationResponse<ListingDetailResponse> getListingsByHost(String userId, int page, int size) {
@@ -57,6 +60,23 @@ public class ListingService {
 
     public void createListing(String userId, SaveListingRequest request) {
         Listing listing = listingMapper.toEntity(request);
+        
+        if (request.getComplexId() != null) {
+            Complex complex = complexRepository.findById(request.getComplexId())
+                    .orElseThrow(() -> new AppException(ListingErrorCode.LISTING_NOT_FOUND)); // Or COMPLEX_NOT_FOUND if exists
+            
+            if (complex.getLatitude() != null && complex.getLongitude() != null &&
+                listing.getLatitude() != null && listing.getLongitude() != null) {
+                double distance = calculateDistance(
+                        complex.getLatitude(), complex.getLongitude(),
+                        listing.getLatitude(), listing.getLongitude()
+                );
+                if (distance > 3.0) {
+                    throw new AppException(ListingErrorCode.LISTING_OUT_OF_RANGE);
+                }
+            }
+        }
+
         listing.setHostId(UUID.fromString(userId));
         listing.setStatus(ListingStatus.ACTIVE);
         listing = listingRepository.save(listing);
@@ -85,6 +105,25 @@ public class ListingService {
         if (!listing.getHostId().equals(UUID.fromString(userId))) {
             throw new com.Listing.CatalogandListing.exception.AppException(
                     com.Listing.CatalogandListing.exception.ListingErrorCode.LISTING_ACCESS_DENIED);
+        }
+        
+        if (request.getComplexId() != null) {
+            Complex complex = complexRepository.findById(request.getComplexId())
+                    .orElseThrow(() -> new AppException(ListingErrorCode.LISTING_NOT_FOUND)); // Or COMPLEX_NOT_FOUND if exists
+            
+            Double requestLat = request.getLatitude() != null ? request.getLatitude() : listing.getLatitude();
+            Double requestLng = request.getLongitude() != null ? request.getLongitude() : listing.getLongitude();
+            
+            if (complex.getLatitude() != null && complex.getLongitude() != null &&
+                requestLat != null && requestLng != null) {
+                double distance = calculateDistance(
+                        complex.getLatitude(), complex.getLongitude(),
+                        requestLat, requestLng
+                );
+                if (distance > 3.0) {
+                    throw new AppException(ListingErrorCode.LISTING_OUT_OF_RANGE);
+                }
+            }
         }
 
         listingMapper.updateEntityFromRequest(request, listing);
@@ -159,5 +198,16 @@ public class ListingService {
 
         listing.setStatus(status);
         listingRepository.save(listing);
+    }
+
+    private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+        final int R = 6371; // Bán kính Trái Đất (km)
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
     }
 }

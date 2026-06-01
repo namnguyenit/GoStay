@@ -51,6 +51,7 @@ public class CatalogHostController {
      * @return 201 Created hoặc 403 Forbidden (Nếu không phải ENTERPRISE)
      */
     @PostMapping("/complexes")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ENTERPRISE')")
     public ResponseEntity<ApiResponse<Void>> createComplex(@RequestBody @Valid CreateComplexRequest request) {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         complexService.createComplex(userId, request);

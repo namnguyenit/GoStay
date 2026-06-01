@@ -177,9 +177,7 @@ public class UserService {
         if (roleName.equalsIgnoreCase("HOST") && hasEnterprise) {
             throw new AppException(UserErrorCode.MUTUALLY_EXCLUSIVE_ROLES);
         }
-        if (roleName.equalsIgnoreCase("ENTERPRISE") && hasHost) {
-            throw new AppException(UserErrorCode.MUTUALLY_EXCLUSIVE_ROLES);
-        }
+        // ENTERPRISE is an upgrade from HOST - allowed, HOST will be revoked when Admin approves
 
         Role role = roleRepository.findById(roleName.toUpperCase())
                 .orElseThrow(() -> new AppException(UserErrorCode.ROLE_NOT_FOUND));
@@ -412,6 +410,12 @@ public class UserService {
             }
             Approval_status status = Approval_status.valueOf(request.getStatus().toUpperCase());
             hostProfile.setApprovalStatus(status);
+            // If APPROVED, automatically grant HOST role
+            if (status == Approval_status.APPROVED) {
+                Role hostRole = roleRepository.findById("HOST")
+                        .orElseThrow(() -> new AppException(UserErrorCode.ROLE_NOT_FOUND));
+                user.getRoles().add(hostRole);
+            }
             userRepository.save(user);
         }else if(type.equals(com.gotravel.Identity.enums.Role.ENTERPRISE.toString())){
             EnterpriseProfile enterpriseProfile = user.getEnterpriseProfile();
@@ -420,6 +424,15 @@ public class UserService {
             }
             Approval_status status = Approval_status.valueOf(request.getStatus().toUpperCase());
             enterpriseProfile.setApprovalStatus(status);
+            // If APPROVED, grant ENTERPRISE and revoke HOST
+            if (status == Approval_status.APPROVED) {
+                user.getRoles().removeIf(r -> r.getName().equals("HOST"));
+                Role enterpriseRole = roleRepository.findById("ENTERPRISE")
+                        .orElseThrow(() -> new AppException(UserErrorCode.ROLE_NOT_FOUND));
+                if (user.getRoles().stream().noneMatch(r -> r.getName().equals("ENTERPRISE"))) {
+                    user.getRoles().add(enterpriseRole);
+                }
+            }
             userRepository.save(user);
         }
         return true;
@@ -455,17 +468,23 @@ public class UserService {
     }
 
     @Transactional
-    public boolean successUpgradeToEnterprise(String userId){
+    public boolean successUpgradeToEnterprise(String userId) {
         User user = findUserById(userId);
-        boolean hasHost = user.getRoles().stream()
-                .anyMatch(r -> r.getName().equals("HOST"));
-        if (hasHost) {
-            throw new AppException(UserErrorCode.MUTUALLY_EXCLUSIVE_ROLES);
-        }
+        
+        // Remove HOST role if exists, as ENTERPRISE is a superset/upgrade
+        user.getRoles().removeIf(r -> r.getName().equals("HOST"));
+        
         Role role = roleRepository.findById("ENTERPRISE")
                 .orElseThrow(() -> new AppException(UserErrorCode.ROLE_NOT_FOUND));
 
-        user.getRoles().add(role);
+        if (!user.getRoles().contains(role)) {
+            user.getRoles().add(role);
+        }
+        
+        if (user.getEnterpriseProfile() != null) {
+            user.getEnterpriseProfile().setApprovalStatus(com.gotravel.Identity.enums.Approval_status.APPROVED);
+        }
+        
         userRepository.save(user);
         return true;
     }
@@ -484,11 +503,8 @@ public class UserService {
         if(check){
             throw new AppException(UserErrorCode.ROLE_USER_ALREADY_EXISTS);
         }
-        boolean hasHost = user.getRoles().stream()
-                .anyMatch(role -> role.getName().equals("HOST"));
-        if(hasHost){
-            throw new AppException(UserErrorCode.MUTUALLY_EXCLUSIVE_ROLES);
-        }
+        // HOST users are allowed to apply for ENTERPRISE upgrade
+        // HOST role will be revoked automatically when Admin approves the application
 
 
         if(user.getEnterpriseProfile() != null){
