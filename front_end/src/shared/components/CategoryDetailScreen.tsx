@@ -375,9 +375,19 @@ export default function CategoryDetailScreen({
                     </div>
                     <Button 
                       className="bg-[#e61e4d] hover:bg-[#d90b3e] text-white font-semibold rounded-2xl px-6 py-5 h-auto transition-transform hover:scale-101 active:scale-99 shadow-sm"
-                      onClick={() => alert("Chức năng đặt lịch đang được phát triển.")}
+                      onClick={() => {
+                        if (!selectedItem.id) return;
+                        const params = new URLSearchParams({
+                          id: selectedItem.id,
+                          title: selectedItem.name || "",
+                          price: String(selectedItem.price ?? 0),
+                          image: selectedItem.image || "",
+                          category: categoryType,
+                        });
+                        router.push(`/checkout?${params.toString()}`);
+                      }}
                     >
-                      Hiển thị ngày
+                      Đặt ngay
                     </Button>
                   </div>
                 </div>

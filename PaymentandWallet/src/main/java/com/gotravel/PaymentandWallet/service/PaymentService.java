@@ -44,7 +44,6 @@ public class PaymentService {
     private final PaymentTransactionRepository paymentTransactionRepository;
     private final HostPayoutRepository hostPayoutRepository;
     private final OrderClient orderClient;
-    private final PaymentMapper paymentMapper;
     private final SepayConfig sepayConfig;
 
     private static final BigDecimal COMMISSION_RATE = new BigDecimal("0.05"); // 5% hoa hồng GoStay
@@ -61,7 +60,7 @@ public class PaymentService {
         PaymentRequest existingPayment = paymentRequestRepository.findByOrderIdAndUserId(order.getOrderId(), userId)
                 .orElse(null);
         if (existingPayment != null) {
-            return paymentMapper.toPaymentResponse(existingPayment);
+            return PaymentMapper.INSTANCE.toPaymentResponse(existingPayment);
         }
 
         String paymentCode = generatePaymentCode();
@@ -90,7 +89,7 @@ public class PaymentService {
         paymentRequest = paymentRequestRepository.save(paymentRequest);
         log.info("Created payment request {} for order {}", paymentCode, order.getOrderId());
 
-        return paymentMapper.toPaymentResponse(paymentRequest);
+        return PaymentMapper.INSTANCE.toPaymentResponse(paymentRequest);
     }
 
     /**
@@ -182,27 +181,27 @@ public class PaymentService {
     public PaymentResponse getPaymentById(UUID userId, UUID paymentId) {
         PaymentRequest paymentRequest = paymentRequestRepository.findByIdAndUserId(paymentId, userId)
                 .orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
-        return paymentMapper.toPaymentResponse(paymentRequest);
+        return PaymentMapper.INSTANCE.toPaymentResponse(paymentRequest);
     }
 
     @Transactional(readOnly = true)
     public PaymentResponse getPaymentByOrderId(UUID userId, UUID orderId) {
         PaymentRequest paymentRequest = paymentRequestRepository.findByOrderIdAndUserId(orderId, userId)
                 .orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
-        return paymentMapper.toPaymentResponse(paymentRequest);
+        return PaymentMapper.INSTANCE.toPaymentResponse(paymentRequest);
     }
 
     @Transactional(readOnly = true)
     public Page<PaymentResponse> getPaymentHistory(UUID userId, Pageable pageable) {
         return paymentRequestRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable)
-                .map(paymentMapper::toPaymentResponse);
+                .map(PaymentMapper.INSTANCE::toPaymentResponse);
     }
 
     @Transactional(readOnly = true)
     public PaymentResponse getPaymentStatusByOrderId(UUID orderId) {
         PaymentRequest paymentRequest = paymentRequestRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
-        return paymentMapper.toPaymentResponse(paymentRequest);
+        return PaymentMapper.INSTANCE.toPaymentResponse(paymentRequest);
     }
 
     private OrderPaymentSummaryResponse getTrustedOrderPaymentSummary(UUID userId, UUID orderId) {
@@ -281,6 +280,41 @@ public class PaymentService {
             return LocalDateTime.parse(dateStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         } catch (Exception e) {
             return null;
+        }
+    }
+
+    @Transactional
+    public void mockPaymentSuccess(UUID userId, UUID paymentId) {
+        PaymentRequest paymentRequest = paymentRequestRepository.findByIdAndUserId(paymentId, userId)
+                .orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
+
+        if (paymentRequest.getStatus() == PaymentStatus.COMPLETED) {
+            return;
+        }
+
+        paymentRequest.setStatus(PaymentStatus.COMPLETED);
+        paymentRequest.setPaidAt(LocalDateTime.now());
+        paymentRequestRepository.save(paymentRequest);
+
+        BigDecimal commissionAmount = paymentRequest.getAmount().multiply(COMMISSION_RATE);
+        BigDecimal hostAmount = paymentRequest.getAmount().subtract(commissionAmount);
+
+        HostPayout payout = HostPayout.builder()
+                .paymentRequestId(paymentRequest.getId())
+                .orderId(paymentRequest.getOrderId())
+                .hostId(paymentRequest.getHostId())
+                .totalAmount(paymentRequest.getAmount())
+                .commissionRate(COMMISSION_RATE)
+                .commissionAmount(commissionAmount)
+                .hostAmount(hostAmount)
+                .status(PayoutStatus.PENDING)
+                .build();
+        hostPayoutRepository.save(payout);
+
+        try {
+            orderClient.notifyPaymentSuccess(paymentRequest.getOrderId());
+        } catch (Exception e) {
+            log.error("Failed to notify order service for mock payment success", e);
         }
     }
 }

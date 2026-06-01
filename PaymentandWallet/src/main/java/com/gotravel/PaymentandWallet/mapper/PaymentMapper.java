@@ -6,9 +6,12 @@ import com.gotravel.PaymentandWallet.entity.HostPayout;
 import com.gotravel.PaymentandWallet.entity.PaymentRequest;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.factory.Mappers;
 
-@Mapper(componentModel = "spring")
+@Mapper
 public interface PaymentMapper {
+
+    PaymentMapper INSTANCE = Mappers.getMapper(PaymentMapper.class);
 
     @Mapping(target = "paymentId", source = "id")
     @Mapping(target = "status", expression = "java(paymentRequest.getStatus().name())")

@@ -52,4 +52,12 @@ public class PaymentController {
             Pageable pageable) {
         return ResponseEntity.ok(ApiResponse.success(paymentService.getPaymentHistory(userId, pageable)));
     }
+
+    @PostMapping("/{paymentId}/mock-pay")
+    public ResponseEntity<ApiResponse<Void>> mockPaymentSuccess(
+            @RequestHeader("X-User-Id") UUID userId,
+            @PathVariable UUID paymentId) {
+        paymentService.mockPaymentSuccess(userId, paymentId);
+        return ResponseEntity.ok(ApiResponse.success("Thanh toán mô phỏng thành công"));
+    }
 }

@@ -1,0 +1,56 @@
+--- PaymentandWallet/src/main/java/com/gotravel/PaymentandWallet/service/PaymentService.java
++++ PaymentandWallet/src/main/java/com/gotravel/PaymentandWallet/service/PaymentService.java
+@@ -179,6 +179,32 @@
+         }
+     }
+ 
++    @Transactional
++    public void mockPaymentSuccess(UUID userId, UUID paymentId) {
++        PaymentRequest paymentRequest = paymentRequestRepository.findByIdAndUserId(paymentId, userId)
++                .orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
++
++        if (paymentRequest.getStatus() == PaymentStatus.COMPLETED) {
++            return;
++        }
++
++        paymentRequest.setStatus(PaymentStatus.COMPLETED);
++        paymentRequest.setPaidAt(LocalDateTime.now());
++        paymentRequestRepository.save(paymentRequest);
++
++        BigDecimal commissionAmount = paymentRequest.getAmount().multiply(COMMISSION_RATE);
++        BigDecimal hostAmount = paymentRequest.getAmount().subtract(commissionAmount);
++
++        HostPayout payout = HostPayout.builder()
++                .paymentRequestId(paymentRequest.getId())
++                .orderId(paymentRequest.getOrderId())
++                .hostId(paymentRequest.getHostId())
++                .totalAmount(paymentRequest.getAmount())
++                .commissionRate(COMMISSION_RATE)
++                .commissionAmount(commissionAmount)
++                .hostAmount(hostAmount)
++                .status(PayoutStatus.PENDING)
++                .build();
++        hostPayoutRepository.save(payout);
++
++        try {
++            orderClient.notifyPaymentSuccess(paymentRequest.getOrderId());
++        } catch (Exception e) {
++            log.error("Failed to notify order service for mock payment success", e);
++        }
++    }
++
+--- PaymentandWallet/src/main/java/com/gotravel/PaymentandWallet/controller/PaymentController.java
++++ PaymentandWallet/src/main/java/com/gotravel/PaymentandWallet/controller/PaymentController.java
+@@ -48,4 +48,12 @@
+             Pageable pageable) {
+         return ResponseEntity.ok(ApiResponse.success(paymentService.getPaymentHistory(userId, pageable)));
+     }
++
++    @PostMapping("/{paymentId}/mock-pay")
++    public ResponseEntity<ApiResponse<Void>> mockPaymentSuccess(
++            @RequestHeader("X-User-Id") UUID userId,
++            @PathVariable UUID paymentId) {
++        paymentService.mockPaymentSuccess(userId, paymentId);
++        return ResponseEntity.ok(ApiResponse.success("Thanh toán mô phỏng thành công"));
++    }
+ }

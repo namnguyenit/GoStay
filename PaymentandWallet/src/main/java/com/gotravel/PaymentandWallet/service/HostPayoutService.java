@@ -27,7 +27,6 @@ import java.util.UUID;
 public class HostPayoutService {
 
     private final HostPayoutRepository hostPayoutRepository;
-    private final PaymentMapper paymentMapper;
 
     /**
      * Host xem danh sách các khoản tiền sẽ nhận (phân trang).
@@ -35,7 +34,7 @@ public class HostPayoutService {
     @Transactional(readOnly = true)
     public Page<HostPayoutResponse> getPayoutsByHost(UUID hostId, Pageable pageable) {
         return hostPayoutRepository.findByHostIdOrderByCreatedAtDesc(hostId, pageable)
-                .map(paymentMapper::toHostPayoutResponse);
+                .map(PaymentMapper.INSTANCE::toHostPayoutResponse);
     }
 
     @Transactional
@@ -61,7 +60,7 @@ public class HostPayoutService {
             .toList();
 
         if (pendingPayouts.isEmpty()) {
-            throw new AppException(PaymentErrorCode.PAYMENT_FAILED); // Handle properly, just a generic error for now
+            throw new AppException(PaymentErrorCode.INVALID_ORDER_FOR_PAYMENT);
         }
 
         for (HostPayout payout : pendingPayouts) {

@@ -103,7 +103,7 @@ export default function MainLayoutClient({
       <div
         className={clsx(
           "fixed z-50 flex w-full items-center justify-between px-6 md:px-10 transition-all duration-500",
-          scrolled || tab || pathName.startsWith("/search") || pathName.startsWith("/settings")
+          scrolled || tab || pathName.startsWith("/search") || pathName.startsWith("/settings") || pathName.startsWith("/checkout") || pathName.startsWith("/payment")
             ? "h-[64px] bg-gradient-to-r from-violet-700 via-app-primary to-purple-700 shadow-lg shadow-violet-900/20 backdrop-blur-md"
             : "h-[70px] bg-transparent",
         )}
@@ -120,7 +120,7 @@ export default function MainLayoutClient({
         >
           <div className={clsx(
             "flex h-9 w-9 items-center justify-center rounded-xl border transition-all duration-300 shadow-md group-hover:scale-105",
-            scrolled || tab || pathName.startsWith("/search") || pathName.startsWith("/settings")
+            scrolled || tab || pathName.startsWith("/search") || pathName.startsWith("/settings") || pathName.startsWith("/checkout") || pathName.startsWith("/payment")
               ? "bg-white/20 border-white/25 group-hover:bg-white/30"
               : "bg-white/10 border-white/15 backdrop-blur-sm group-hover:bg-white/20"
           )}>
@@ -277,7 +277,7 @@ export default function MainLayoutClient({
         {/* Bottom gradient line */}
         <div className={clsx(
           "absolute bottom-0 left-0 right-0 h-[1px] transition-opacity duration-500",
-          scrolled || tab || pathName.startsWith("/search") || pathName.startsWith("/settings")
+          scrolled || tab || pathName.startsWith("/search") || pathName.startsWith("/settings") || pathName.startsWith("/checkout") || pathName.startsWith("/payment")
             ? "opacity-100 bg-gradient-to-r from-transparent via-white/20 to-transparent"
             : "opacity-0"
         )} />
