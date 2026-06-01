@@ -11,7 +11,10 @@ public enum ListingErrorCode implements ErrorCode {
     INVALID_LISTING_DATA(400, "Invalid listing data provided", HttpStatus.BAD_REQUEST),
     LISTING_UNAVAILABLE(400, "Listing is currently unavailable", HttpStatus.BAD_REQUEST),
     LISTING_ACCESS_DENIED(403, "You don't have permission to modify this listing", HttpStatus.FORBIDDEN),
-    LISTING_OUT_OF_RANGE(400, "Dịch vụ phải nằm trong bán kính 3km xung quanh Khu tổ hợp", HttpStatus.BAD_REQUEST);
+    LISTING_OUT_OF_RANGE(400, "Dịch vụ phải nằm trong bán kính 3km xung quanh Khu tổ hợp", HttpStatus.BAD_REQUEST),
+    INVALID_CATEGORY_COMBINATION(400, "Category, SubCategory and Attributes combination is invalid", HttpStatus.BAD_REQUEST),
+    COMPLEX_NOT_FOUND(404, "Complex not found", HttpStatus.NOT_FOUND),
+    COMPLEX_ACCESS_DENIED(403, "You don't have permission to modify this complex", HttpStatus.FORBIDDEN);
 
     private final int code;
     private final String message;

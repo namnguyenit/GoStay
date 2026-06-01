@@ -2,7 +2,6 @@
 -- PostgreSQL database dump
 --
 
-\restrict UHSiSbblyfDXihRb9yHLQkKWg3jJFN5nZIhYl8S0KfvKuhflxLopspJzW2aEfhi
 
 -- Dumped from database version 17.9 (Homebrew)
 -- Dumped by pg_dump version 17.9 (Homebrew)
@@ -277,5 +276,4 @@ ALTER TABLE ONLY public.listings
 -- PostgreSQL database dump complete
 --
 
-\unrestrict UHSiSbblyfDXihRb9yHLQkKWg3jJFN5nZIhYl8S0KfvKuhflxLopspJzW2aEfhi
 

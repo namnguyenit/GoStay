@@ -22,6 +22,8 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
+import com.Listing.CatalogandListing.enums.ListingCategory;
+import com.Listing.CatalogandListing.enums.SubCategory;
 import com.Listing.CatalogandListing.util.GeometryUtil;
 
 @Service
@@ -60,11 +62,18 @@ public class ListingService {
     }
 
     public void createListing(String userId, SaveListingRequest request) {
+        validateCategoryAndAttributes(request.getCategory(), request.getSubCategory(), request.getAttributes());
         Listing listing = listingMapper.toEntity(request);
         
         if (request.getComplexId() != null) {
             Complex complex = complexRepository.findById(request.getComplexId())
-                    .orElseThrow(() -> new AppException(ListingErrorCode.LISTING_NOT_FOUND)); // Or COMPLEX_NOT_FOUND if exists
+                    .orElseThrow(() -> new AppException(ListingErrorCode.COMPLEX_NOT_FOUND));
+            
+            if (!complex.getHostId().equals(UUID.fromString(userId))) {
+                throw new AppException(ListingErrorCode.COMPLEX_ACCESS_DENIED);
+            }
+            
+            listing.setComplex(complex);
             
             if (complex.getLatitude() != null && complex.getLongitude() != null &&
                 listing.getLatitude() != null && listing.getLongitude() != null) {
@@ -108,10 +117,17 @@ public class ListingService {
             throw new com.Listing.CatalogandListing.exception.AppException(
                     com.Listing.CatalogandListing.exception.ListingErrorCode.LISTING_ACCESS_DENIED);
         }
+        validateCategoryAndAttributes(request.getCategory(), request.getSubCategory(), request.getAttributes());
         
         if (request.getComplexId() != null) {
             Complex complex = complexRepository.findById(request.getComplexId())
-                    .orElseThrow(() -> new AppException(ListingErrorCode.LISTING_NOT_FOUND)); // Or COMPLEX_NOT_FOUND if exists
+                    .orElseThrow(() -> new AppException(ListingErrorCode.COMPLEX_NOT_FOUND));
+            
+            if (!complex.getHostId().equals(UUID.fromString(userId))) {
+                throw new AppException(ListingErrorCode.COMPLEX_ACCESS_DENIED);
+            }
+            
+            listing.setComplex(complex);
             
             Double requestLat = request.getLatitude() != null ? request.getLatitude() : listing.getLatitude();
             Double requestLng = request.getLongitude() != null ? request.getLongitude() : listing.getLongitude();
@@ -212,5 +228,47 @@ public class ListingService {
                 * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c;
+    }
+
+    private void validateCategoryAndAttributes(ListingCategory category, SubCategory subCategory, com.Listing.CatalogandListing.entity.attributes.BaseListingAttributes attributes) {
+        if (category == null || subCategory == null || attributes == null) {
+            throw new AppException(ListingErrorCode.INVALID_LISTING_DATA);
+        }
+
+        switch (category) {
+            case STAY:
+                if (subCategory != SubCategory.NONE || !(attributes instanceof com.Listing.CatalogandListing.entity.attributes.StayAttributes)) {
+                    throw new AppException(ListingErrorCode.INVALID_CATEGORY_COMBINATION);
+                }
+                break;
+            case EXP:
+                if (subCategory != SubCategory.NONE || !(attributes instanceof com.Listing.CatalogandListing.entity.attributes.ExpAttributes)) {
+                    throw new AppException(ListingErrorCode.INVALID_CATEGORY_COMBINATION);
+                }
+                break;
+            case SVC:
+                if (subCategory == SubCategory.NONE) {
+                    throw new AppException(ListingErrorCode.INVALID_CATEGORY_COMBINATION);
+                }
+                boolean validAttr = false;
+                switch (subCategory) {
+                    case PHOTOGRAPHY: validAttr = attributes instanceof com.Listing.CatalogandListing.entity.attributes.PhotographyAttributes; break;
+                    case CHEF: validAttr = attributes instanceof com.Listing.CatalogandListing.entity.attributes.ChefAttributes; break;
+                    case MASSAGE: validAttr = attributes instanceof com.Listing.CatalogandListing.entity.attributes.MassageAttributes; break;
+                    case PREPARED_MEALS: validAttr = attributes instanceof com.Listing.CatalogandListing.entity.attributes.PreparedMealsAttributes; break;
+                    case TRAINING: validAttr = attributes instanceof com.Listing.CatalogandListing.entity.attributes.TrainingAttributes; break;
+                    case MAKEUP: validAttr = attributes instanceof com.Listing.CatalogandListing.entity.attributes.MakeupAttributes; break;
+                    case HAIR_STYLING: validAttr = attributes instanceof com.Listing.CatalogandListing.entity.attributes.HairStylingAttributes; break;
+                    case SPA: validAttr = attributes instanceof com.Listing.CatalogandListing.entity.attributes.SpaAttributes; break;
+                    case CATERING: validAttr = attributes instanceof com.Listing.CatalogandListing.entity.attributes.CateringAttributes; break;
+                    default: break;
+                }
+                if (!validAttr) {
+                    throw new AppException(ListingErrorCode.INVALID_CATEGORY_COMBINATION);
+                }
+                break;
+            default:
+                throw new AppException(ListingErrorCode.INVALID_CATEGORY_COMBINATION);
+        }
     }
 }
