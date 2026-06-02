@@ -33,11 +33,14 @@ interface CartContextProps {
 
 const CartContext = createContext<CartContextProps | undefined>(undefined);
 
+import { useAuthModal } from "./AuthModalContext";
+
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [items, setItems] = useState<CartItem[]>([]);
   const [cartTotal, setCartTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const { openModal } = useAuthModal();
 
   const fetchCart = async () => {
     if (!AuthService.isAuthenticated()) {
@@ -75,7 +78,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const addToCart = async (payload: { listingId: string; startDate: string; endDate: string; timeSlot?: string; quantity: number }) => {
     if (!AuthService.isAuthenticated()) {
-      window.location.href = "/log-in";
+      openModal("login");
       return;
     }
     await CartService.addItemToCart(payload);

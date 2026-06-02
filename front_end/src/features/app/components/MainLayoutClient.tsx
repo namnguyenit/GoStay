@@ -37,6 +37,7 @@ import AuthService from "@/services/auth.service";
 import { Footer } from "@/shared/components";
 import CartDrawer from "@/shared/components/CartDrawer";
 import { useCart } from "@/shared/context/CartContext";
+import { useAuthModal } from "@/shared/context/AuthModalContext";
 
 export default function MainLayoutClient({
   children,
@@ -50,6 +51,7 @@ export default function MainLayoutClient({
   const pathName = usePathname();
   const [currentUser, setCurrentUser] = useState<any>(null);
   const { itemCount, setIsDrawerOpen } = useCart();
+  const { openModal } = useAuthModal();
 
   // Giữ lại logic isHost / isEnterprise từ TestSystem
   const roles = currentUser ? AuthService.getUserRoles() : [];
@@ -300,11 +302,12 @@ export default function MainLayoutClient({
                   </span>
                 )}
               </Button>
-              <Link href="/log-in">
-                <Button className="bg-white/15 hover:bg-white/25 text-white border border-white/20 rounded-full px-5 py-2 text-sm font-semibold transition-all duration-300 backdrop-blur-sm shadow-md hover:shadow-lg cursor-pointer">
-                  <LogIn className="mr-2 h-4 w-4" /> Đăng nhập
-                </Button>
-              </Link>
+              <Button 
+                onClick={() => openModal("login")}
+                className="bg-white/15 hover:bg-white/25 text-white border border-white/20 rounded-full px-5 py-2 text-sm font-semibold transition-all duration-300 backdrop-blur-sm shadow-md hover:shadow-lg cursor-pointer"
+              >
+                <LogIn className="mr-2 h-4 w-4" /> Đăng nhập
+              </Button>
             </div>
           )}
         </div>

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "@/styles/globals.css";
 import { AppProvider } from "../features/app/providers/app.provider";
+import { AuthModalProvider } from "@/shared/context/AuthModalContext";
+import AuthModal from "@/shared/components/AuthModal";
 
 export const metadata: Metadata = {
   title: "Go Travel",
@@ -23,9 +25,14 @@ export default function RootLayout({
 }>) {
   return (
     <AppProvider>
-      <html lang="vi" className={`${fontSans.variable}`}>
-        <body className="">{children}</body>
-      </html>
+      <AuthModalProvider>
+        <html lang="vi" className={`${fontSans.variable}`}>
+          <body className="">
+            {children}
+            <AuthModal />
+          </body>
+        </html>
+      </AuthModalProvider>
     </AppProvider>
   );
 }
