@@ -138,7 +138,9 @@ export default function HomeClient() {
           </div>
         </div>
         {/* Overlay */}
-        <div className="absolute inset-0">
+        <div className="absolute inset-0 pointer-events-none">
+          {/* Lớp phủ gradient tối phần trên cùng (navbar area) */}
+          <div className="absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-black/70 via-black/20 to-transparent" />
           <div className="blur-bottom size-full" />
         </div>
         {/* FG */}
