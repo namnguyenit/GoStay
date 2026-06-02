@@ -21,6 +21,9 @@ const OrderService = {
   bookNow: async (payload: BookNowPayload) => {
     return await Api.post("/v1/orders/book-now", payload);
   },
+  checkoutCart: async (payload: { itemIds: string[]; customerInfo: { fullName?: string; email?: string; phone?: string; } }) => {
+    return await Api.post("/v1/orders/checkout-cart", payload);
+  },
   getOrder: async (orderId: string) => {
     return await Api.get(`/v1/orders/${orderId}`);
   },

@@ -37,18 +37,32 @@ public class CartService {
 
     @Transactional(readOnly = true)
     public CartResponse getCart(UUID userId) {
-        Cart cart = cartRepository.findByUserId(userId).orElseGet(() -> createEmptyCart(userId));
+        Cart cart = cartRepository.findByUserId(userId).orElse(null);
+        if (cart == null) {
+            return CartResponse.builder()
+                    .userId(userId)
+                    .items(java.util.List.of())
+                    .cartTotal(BigDecimal.ZERO)
+                    .build();
+        }
         return cartMapper.toCartResponse(cart);
     }
 
     private Cart createEmptyCart(UUID userId) {
-        Cart cart = Cart.builder().userId(userId).build();
-        return cartRepository.save(cart);
+        try {
+            Cart cart = Cart.builder().userId(userId).build();
+            return cartRepository.save(cart);
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            return cartRepository.findByUserId(userId).orElseThrow();
+        }
     }
 
     @Transactional
     public CartResponse addItemToCart(UUID userId, CartItemRequest request) {
-        Cart cart = cartRepository.findByUserId(userId).orElseGet(() -> createEmptyCart(userId));
+        Cart cart = cartRepository.findByUserId(userId).orElse(null);
+        if (cart == null) {
+            cart = createEmptyCart(userId);
+        }
         validateCartItemRequest(request);
         CartItemRequest trustedRequest = buildTrustedCartItemRequest(request);
 

@@ -91,7 +91,7 @@ export default function ReviewModal({ listingId, isOpen, onClose, onSuccess }: R
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-white rounded-xl py-3 font-semibold transition-colors disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-black rounded-xl py-3 font-semibold transition-colors disabled:opacity-50"
           >
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Gửi đánh giá'}
           </button>

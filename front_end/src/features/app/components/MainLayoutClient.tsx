@@ -21,6 +21,7 @@ import {
   SettingsIcon,
   UserIcon,
   Compass,
+  ShoppingCart,
 } from "lucide-react";
 import {
   CSSProperties,
@@ -34,6 +35,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import AuthService from "@/services/auth.service";
 import { Footer } from "@/shared/components";
+import CartDrawer from "@/shared/components/CartDrawer";
+import { useCart } from "@/shared/context/CartContext";
 
 export default function MainLayoutClient({
   children,
@@ -46,6 +49,7 @@ export default function MainLayoutClient({
   const [isPending, startTransition] = useTransition();
   const pathName = usePathname();
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const { itemCount, setIsDrawerOpen } = useCart();
 
   // Giữ lại logic isHost / isEnterprise từ TestSystem
   const roles = currentUser ? AuthService.getUserRoles() : [];
@@ -231,6 +235,21 @@ export default function MainLayoutClient({
                 </p>
               </div>
               <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="relative rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                  onClick={() => setIsDrawerOpen(true)}
+                  title="Giỏ hàng"
+                >
+                  <ShoppingCart className="h-5 w-5" />
+                  {itemCount > 0 && (
+                    <span className="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-violet-700">
+                      {itemCount}
+                    </span>
+                  )}
+                </Button>
+
                 <Button 
                   variant="ghost" 
                   size="icon" 
@@ -266,11 +285,27 @@ export default function MainLayoutClient({
               </div>
             </>
           ) : (
-            <Link href="/log-in">
-              <Button className="bg-white/15 hover:bg-white/25 text-white border border-white/20 rounded-full px-5 py-2 text-sm font-semibold transition-all duration-300 backdrop-blur-sm shadow-md hover:shadow-lg cursor-pointer">
-                <LogIn className="mr-2 h-4 w-4" /> Đăng nhập
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="relative rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                onClick={() => setIsDrawerOpen(true)}
+                title="Giỏ hàng"
+              >
+                <ShoppingCart className="h-5 w-5" />
+                {itemCount > 0 && (
+                  <span className="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-violet-700">
+                    {itemCount}
+                  </span>
+                )}
               </Button>
-            </Link>
+              <Link href="/log-in">
+                <Button className="bg-white/15 hover:bg-white/25 text-white border border-white/20 rounded-full px-5 py-2 text-sm font-semibold transition-all duration-300 backdrop-blur-sm shadow-md hover:shadow-lg cursor-pointer">
+                  <LogIn className="mr-2 h-4 w-4" /> Đăng nhập
+                </Button>
+              </Link>
+            </div>
           )}
         </div>
 
@@ -293,6 +328,7 @@ export default function MainLayoutClient({
       )}
       {!isPending && (
         <>
+          <CartDrawer />
           {children}
           <Footer />
         </>

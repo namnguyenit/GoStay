@@ -1,6 +1,7 @@
 package com.GoTravel.CartandOrder.controller;
 
 import com.GoTravel.CartandOrder.dto.request.BookNowRequest;
+import com.GoTravel.CartandOrder.dto.request.CheckoutCartRequest;
 import com.GoTravel.CartandOrder.dto.response.ApiResponse;
 import com.GoTravel.CartandOrder.dto.response.OrderResponse;
 import com.GoTravel.CartandOrder.entity.Order;
@@ -26,8 +27,8 @@ public class OrderController {
     @PostMapping("/checkout-cart")
     public ResponseEntity<ApiResponse<OrderResponse>> checkoutCart(
             @RequestHeader("X-User-Id") UUID userId,
-            @RequestBody Order.CustomerInfo customerInfo) {
-        return ResponseEntity.ok(ApiResponse.success("Checkout thành công, đang chuyển đến thanh toán", orderService.checkoutCart(userId, customerInfo)));
+            @RequestBody @Valid CheckoutCartRequest request) {
+        return ResponseEntity.ok(ApiResponse.success("Checkout thành công, đang chuyển đến thanh toán", orderService.checkoutCart(userId, request)));
     }
 
     @PostMapping("/book-now")

@@ -1,15 +1,17 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Star, Globe, Heart, Share2, MapPin, Calendar, Check, Users, Home, Clock, Info, CheckCircle2, XCircle, ChevronRight, Languages, Sparkles } from "lucide-react";
+import { Star, Globe, Heart, Share2, MapPin, Calendar, Check, Users, Home, Clock, Info, CheckCircle2, XCircle, ChevronRight, Languages, Sparkles, ShoppingCart } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatMoney } from "@/shared/utils";
 import ReviewSection from "./ReviewSection";
+import { useCart } from "@/shared/context/CartContext";
+import AddToCartModal from "./AddToCartModal";
 
 type CategoryItem =
   | {
@@ -38,6 +40,9 @@ export default function CategoryDetailScreen({
   detailData,
 }: CategoryDetailScreenProps) {
   const router = useRouter();
+  const infoRef = useRef<HTMLDivElement>(null);
+  const { addToCart } = useCart();
+  const [isCartModalOpen, setIsCartModalOpen] = useState(false);
 
   // Find the selected item or default to the first one if not found
   const selectedItem = items.find((item) => item?.id === activeId) || items[0];
@@ -374,22 +379,34 @@ export default function CategoryDetailScreen({
                       </div>
                       <span className="text-xs text-green-600 dark:text-green-400 font-medium mt-1">Hủy miễn phí</span>
                     </div>
-                    <Button 
-                      className="bg-[#e61e4d] hover:bg-[#d90b3e] text-white font-semibold rounded-2xl px-6 py-5 h-auto transition-transform hover:scale-101 active:scale-99 shadow-sm"
-                      onClick={() => {
-                        if (!selectedItem.id) return;
-                        const params = new URLSearchParams({
-                          id: selectedItem.id,
-                          title: selectedItem.name || "",
-                          price: String(selectedItem.price ?? 0),
-                          image: selectedItem.image || "",
-                          category: categoryType,
-                        });
-                        router.push(`/checkout?${params.toString()}`);
-                      }}
-                    >
-                      Đặt ngay
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        className="border-[#e61e4d] text-[#e61e4d] hover:bg-[#e61e4d]/10 font-semibold rounded-2xl px-6 py-5 h-auto transition-transform hover:scale-101 active:scale-99 shadow-sm flex items-center gap-2 cursor-pointer"
+                        onClick={() => {
+                          if (!selectedItem.id) return;
+                          setIsCartModalOpen(true);
+                        }}
+                      >
+                        <ShoppingCart className="w-5 h-5" />
+                      </Button>
+                      <Button 
+                        className="bg-[#e61e4d] hover:bg-[#d90b3e] text-white font-semibold rounded-2xl px-8 py-5 h-auto transition-transform hover:scale-101 active:scale-99 shadow-sm"
+                        onClick={() => {
+                          if (!selectedItem.id) return;
+                          const params = new URLSearchParams({
+                            id: selectedItem.id,
+                            title: selectedItem.name || "",
+                            price: String(selectedItem.price ?? 0),
+                            image: selectedItem.image || "",
+                            category: categoryType,
+                          });
+                          router.push(`/checkout?${params.toString()}`);
+                        }}
+                      >
+                        Đặt ngay
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -469,6 +486,20 @@ export default function CategoryDetailScreen({
           {selectedItem.id && <ReviewSection listingId={selectedItem.id} />}
         </div>
       </div>
+
+      <AddToCartModal
+        isOpen={isCartModalOpen}
+        onClose={() => setIsCartModalOpen(false)}
+        itemName={selectedItem.name || ""}
+        categoryType={categoryType}
+        onConfirm={(payload) => {
+          setIsCartModalOpen(false);
+          addToCart({
+            listingId: selectedItem.id!,
+            ...payload
+          });
+        }}
+      />
     </div>
   );
 }

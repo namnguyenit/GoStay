@@ -4,6 +4,7 @@ import com.GoTravel.CartandOrder.client.CatalogClient;
 import com.GoTravel.CartandOrder.client.InventoryClient;
 import com.GoTravel.CartandOrder.dto.request.BatchLockRequest;
 import com.GoTravel.CartandOrder.dto.request.BookNowRequest;
+import com.GoTravel.CartandOrder.dto.request.CheckoutCartRequest;
 import com.GoTravel.CartandOrder.dto.request.CartItemRequest;
 import com.GoTravel.CartandOrder.dto.response.ApiResponse;
 import com.GoTravel.CartandOrder.dto.response.BatchLockResponse;
@@ -44,7 +45,7 @@ public class OrderService {
     private final OrderMapper orderMapper;
 
     @Transactional
-    public OrderResponse checkoutCart(UUID userId, Order.CustomerInfo customerInfo) {
+    public OrderResponse checkoutCart(UUID userId, CheckoutCartRequest request) {
         Cart cart = cartRepository.findByUserId(userId)
                 .orElseThrow(() -> new AppException(OrderErrorCode.CART_NOT_FOUND));
 
@@ -52,13 +53,23 @@ public class OrderService {
             throw new AppException(OrderErrorCode.CART_IS_EMPTY);
         }
 
-        refreshCartItemsFromCatalog(cart);
-        Order order = createOrderFromCart(cart, customerInfo);
+        // Lọc các item được chọn để checkout
+        List<CartItem> selectedItems = cart.getItems().stream()
+                .filter(item -> request.getItemIds().contains(item.getId()))
+                .toList();
+
+        if (selectedItems.isEmpty()) {
+            throw new AppException(OrderErrorCode.CART_IS_EMPTY);
+        }
+
+        refreshSelectedCartItemsFromCatalog(selectedItems);
+        Order order = createOrderFromSelectedCartItems(cart, selectedItems, request.getCustomerInfo());
         order = orderRepository.save(order);
 
         lockInventory(order);
 
-        cart.getItems().clear();
+        // Xoá các item đã checkout khỏi giỏ hàng
+        cart.getItems().removeAll(selectedItems);
         cartRepository.save(cart);
 
         return orderMapper.toOrderResponse(order);
@@ -105,9 +116,9 @@ public class OrderService {
         }
     }
 
-    private Order createOrderFromCart(Cart cart, Order.CustomerInfo customerInfo) {
-        UUID hostId = resolveSingleHostId(cart.getItems());
-        BigDecimal totalAmount = cart.getItems().stream()
+    private Order createOrderFromSelectedCartItems(Cart cart, List<CartItem> selectedItems, Order.CustomerInfo customerInfo) {
+        UUID hostId = resolveSingleHostId(selectedItems);
+        BigDecimal totalAmount = selectedItems.stream()
                 .map(CartItem::getTotalPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
@@ -120,7 +131,7 @@ public class OrderService {
                 .customerInfo(customerInfo)
                 .build();
 
-        List<OrderItem> orderItems = cart.getItems().stream().map(ci -> OrderItem.builder()
+        List<OrderItem> orderItems = selectedItems.stream().map(ci -> OrderItem.builder()
                 .order(order)
                 .listingId(ci.getListingId())
                 .hostId(ci.getHostId())
@@ -267,8 +278,8 @@ public class OrderService {
         return orderRepository.hasPurchasedListing(userId, listingId, List.of(OrderStatus.COMPLETED, OrderStatus.CONFIRMED));
     }
 
-    private void refreshCartItemsFromCatalog(Cart cart) {
-        for (CartItem item : cart.getItems()) {
+    private void refreshSelectedCartItemsFromCatalog(List<CartItem> items) {
+        for (CartItem item : items) {
             CatalogListingResponse listing = getActiveListing(item.getListingId());
             item.setHostId(listing.getHostId());
             item.setListingTitle(listing.getTitle());
