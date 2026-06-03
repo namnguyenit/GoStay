@@ -36,7 +36,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     const checkAuth = () => {
       if (!AuthService.isAuthenticated()) {
-        router.push("/log-in");
+        router.push("/");
         return;
       }
       const roles = AuthService.getUserRoles();
@@ -209,7 +209,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <button
             onClick={() => {
               AuthService.logout();
-              router.push("/log-in");
+              router.push("/");
             }}
             className="text-xs px-2 py-1.5 rounded font-bold border border-red-500/40 text-red-400 hover:bg-red-500 hover:text-white transition-all"
             title="Đăng xuất"

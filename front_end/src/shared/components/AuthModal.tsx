@@ -34,7 +34,12 @@ export default function AuthModal() {
 
   const handleSuccess = () => {
     closeModal();
-    window.location.reload();
+    const roles = AuthService.getUserRoles();
+    if (roles.includes("ADMIN")) {
+      window.location.href = "/admin";
+    } else {
+      window.location.reload();
+    }
   };
 
   const handleLogin = async (e: React.FormEvent) => {

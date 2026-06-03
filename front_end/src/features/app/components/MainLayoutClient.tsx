@@ -65,7 +65,7 @@ export default function MainLayoutClient({
   const handleLogout = () => {
     AuthService.logout();
     setCurrentUser(null);
-    router.push("/log-in");
+    window.location.href = "/";
   };
 
   // Giữ lại logic tự động refresh roles khi user quay lại tab (detect admin đã nâng quyền)

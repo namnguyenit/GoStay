@@ -25,7 +25,7 @@ export default function EnterpriseLayout({ children }: { children: React.ReactNo
   useEffect(() => {
     const checkAuth = () => {
       if (!AuthService.isAuthenticated()) {
-        router.push("/log-in");
+        router.push("/");
         return;
       }
       const roles = AuthService.getUserRoles();

@@ -23,12 +23,32 @@ const request = async (endpoint: string, options: RequestInit = {}) => {
     headers,
   });
 
+  const handleAuthError = (currentToken: string | undefined) => {
+    if (typeof window !== "undefined") {
+      Cookies.remove("access_token");
+      Cookies.remove("refresh_token");
+      Cookies.remove("user_roles");
+      Cookies.remove("user_info");
+      
+      const path = window.location.pathname;
+      if (path.startsWith("/admin") || path.startsWith("/host")) {
+        window.location.href = "/";
+      } else {
+        // Reload page to show Login button if it had a token before
+        if (currentToken) {
+          window.location.reload();
+        }
+      }
+    }
+  };
+
   const contentType = res.headers.get("content-type");
   if (!contentType || !contentType.includes("application/json")) {
     const text = await res.text();
     
     // Xử lý lỗi từ Security Filter hoặc Gateway trả về không có body JSON
     if (res.status === 401) {
+      handleAuthError(token);
       throw {
         success: false,
         status: 401,
@@ -37,6 +57,7 @@ const request = async (endpoint: string, options: RequestInit = {}) => {
       };
     }
     if (res.status === 403) {
+      handleAuthError(token);
       throw {
         success: false,
         status: 403,
@@ -55,6 +76,9 @@ const request = async (endpoint: string, options: RequestInit = {}) => {
 
   const json = await res.json();
   if (!res.ok) {
+    if (res.status === 401 || res.status === 403 || json.code === 'AUTH_INVALID_TOKEN' || json.errorCode === 'AUTH_INVALID_TOKEN') {
+      handleAuthError(token);
+    }
     throw json;
   }
   return json;
