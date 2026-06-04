@@ -90,15 +90,18 @@ export function InventoryScreen() {
   };
 
   return (
-    <div className="space-y-6 max-w-6xl">
-      <h2 className="text-xl font-bold text-gray-900">Quản lý Tồn kho (Inventory)</h2>
+    <div className="space-y-6 max-w-6xl animate-smooth-appear">
+      <div>
+        <h2 className="text-xl font-semibold text-slate-800">Quản lý tồn kho (Inventory)</h2>
+        <p className="text-xs text-slate-400 mt-1">Đồng bộ, khóa ngày khẩn cấp và cập nhật trạng thái kho phòng của các dịch vụ.</p>
+      </div>
 
       {actionResult && (
         <div
-          className={`p-4 rounded-xl text-sm border shadow-sm ${
+          className={`p-3.5 rounded-xl text-xs border flex items-center gap-2 ${
             actionResult.type === "success"
-              ? "bg-green-50 border-green-200 text-green-800"
-              : "bg-red-50 border-red-200 text-red-800"
+              ? "bg-emerald-50/60 border-emerald-100 text-emerald-800"
+              : "bg-red-50/60 border-red-100 text-red-800"
           }`}
         >
           {actionResult.type === "success" ? "✅" : "❌"} {actionResult.message}
@@ -109,21 +112,21 @@ export function InventoryScreen() {
         {/* Selector & Actions */}
         <div className="space-y-6 md:col-span-1">
           {/* Target Listing Card */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <h3 className="font-semibold text-gray-800 mb-4 border-b pb-2">Chọn Dịch vụ</h3>
+          <div className="bg-white rounded-[20px] border border-slate-100 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+            <h3 className="font-semibold text-slate-800 text-xs uppercase tracking-wider mb-4 border-b border-slate-50 pb-2">Chọn Dịch vụ</h3>
 
             {/* Select dropdown from list */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1.5">
                 Danh sách dịch vụ đang hoạt động
               </label>
               {loadingListings ? (
-                <div className="h-10 bg-gray-100 animate-pulse rounded-lg" />
+                <div className="h-8 bg-slate-50 animate-pulse rounded-lg" />
               ) : (
                 <select
                   value={listingId}
                   onChange={(e) => setListingId(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-300 outline-none bg-white text-gray-800"
+                  className="w-full border border-slate-150 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-slate-300 bg-white text-slate-700 font-medium"
                 >
                   <option value="">-- Chọn dịch vụ --</option>
                   {listingsList.map((item) => (
@@ -136,42 +139,42 @@ export function InventoryScreen() {
             </div>
 
             {selectedListingInfo && (
-              <div className="mb-4 p-4 bg-gray-50 rounded-xl border border-gray-150 space-y-3">
-                <div className="flex gap-3 items-center">
+              <div className="mb-4 p-3.5 bg-slate-50/50 rounded-[14px] border border-slate-100 space-y-3 text-xs">
+                <div className="flex gap-2.5 items-center">
                   {selectedListingInfo.thumbnailUrl ? (
                     <img
                       src={selectedListingInfo.thumbnailUrl}
                       alt={selectedListingInfo.title}
-                      className="w-12 h-12 object-cover rounded-lg border border-gray-200"
+                      className="w-10 h-10 object-cover rounded-lg border border-slate-100 bg-white"
                     />
                   ) : (
-                    <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400 text-xs font-semibold">
+                    <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 text-[10px] font-bold">
                       GoStay
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
-                    <h4 className="font-bold text-gray-900 text-xs truncate" title={selectedListingInfo.title}>{selectedListingInfo.title}</h4>
-                    <p className="text-[10px] text-gray-400 font-mono truncate">ID: {selectedListingInfo.id}</p>
+                    <h4 className="font-semibold text-slate-800 text-xs truncate" title={selectedListingInfo.title}>{selectedListingInfo.title}</h4>
+                    <p className="text-[9px] text-slate-400 font-mono truncate">ID: {selectedListingInfo.id}</p>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-[10px] font-semibold">
-                  <div className="text-gray-500">Danh mục: <span className="text-gray-800 block text-xs">{selectedListingInfo.category}</span></div>
-                  <div className="text-gray-500">Vị trí: <span className="text-gray-800 block text-xs">{selectedListingInfo.province}</span></div>
-                  <div className="text-gray-500">Giá cơ bản: <span className="text-gray-800 block text-xs">{selectedListingInfo.basePrice?.toLocaleString()}đ</span></div>
-                  <div className="text-gray-500">Trạng thái: <span className="text-gray-800 block text-xs">{selectedListingInfo.status}</span></div>
+                <div className="grid grid-cols-2 gap-2 text-[9px] font-bold uppercase tracking-wider text-slate-400">
+                  <div>Danh mục: <span className="text-slate-700 block text-xs font-semibold normal-case mt-0.5">{selectedListingInfo.category}</span></div>
+                  <div>Vị trí: <span className="text-slate-700 block text-xs font-semibold normal-case mt-0.5">{selectedListingInfo.province}</span></div>
+                  <div>Giá cơ bản: <span className="text-slate-700 block text-xs font-semibold normal-case mt-0.5">{selectedListingInfo.basePrice?.toLocaleString()}đ</span></div>
+                  <div>Trạng thái: <span className="text-slate-700 block text-xs font-semibold normal-case mt-0.5">{selectedListingInfo.status}</span></div>
                 </div>
               </div>
             )}
 
             <div className="relative flex py-2 items-center">
-              <div className="flex-grow border-t border-gray-200"></div>
-              <span className="flex-shrink mx-4 text-gray-400 text-xs uppercase font-semibold">Hoặc nhập ID thủ công</span>
-              <div className="flex-grow border-t border-gray-200"></div>
+              <div className="flex-grow border-t border-slate-100"></div>
+              <span className="flex-shrink mx-3 text-slate-400 text-[9px] uppercase font-bold tracking-wider">Hoặc nhập ID thủ công</span>
+              <div className="flex-grow border-t border-slate-100"></div>
             </div>
 
             {/* Manual UUID Input */}
             <div className="mb-4 mt-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1.5">
                 Listing ID (UUID)
               </label>
               <input
@@ -179,31 +182,31 @@ export function InventoryScreen() {
                 value={listingId}
                 onChange={(e) => setListingId(e.target.value)}
                 placeholder="Nhập UUID dịch vụ..."
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-300 outline-none text-gray-800"
+                className="w-full border border-slate-150 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-slate-300 text-slate-700 font-medium"
               />
             </div>
 
             <button
               onClick={handleSync}
               disabled={loading || !listingId}
-              className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm"
+              className="w-full px-4 py-2 bg-slate-800 text-white rounded-full text-xs font-semibold hover:bg-slate-900 disabled:opacity-50 transition-colors shadow-sm"
             >
               {loading ? "Đang xử lý..." : "🔄 Đồng bộ tồn kho ngay (Sync)"}
             </button>
           </div>
 
           {/* Force Update Panel */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <h3 className="font-semibold text-gray-800 mb-4 border-b pb-2 text-red-600">Can thiệp khẩn cấp (Force Update)</h3>
-            <form onSubmit={handleForceUpdate} className="space-y-4">
+          <div className="bg-white rounded-[20px] border border-slate-100 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+            <h3 className="font-semibold text-red-650 text-xs uppercase tracking-wider mb-4 border-b border-slate-50 pb-2">Can thiệp khẩn cấp (Force Update)</h3>
+            <form onSubmit={handleForceUpdate} className="space-y-4 text-xs">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1.5">
                   Trạng thái mới <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={forceUpdateData.status}
                   onChange={(e) => setForceUpdateData({ ...forceUpdateData, status: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-300 outline-none bg-white text-gray-800"
+                  className="w-full border border-slate-150 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-slate-300 bg-white text-slate-700 font-medium"
                 >
                   <option value="">-- Chọn trạng thái --</option>
                   <option value="BLOCKED">Phong tỏa / Đóng kho (BLOCKED)</option>
@@ -213,31 +216,31 @@ export function InventoryScreen() {
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-2xs font-semibold text-gray-500 uppercase mb-1">
+                  <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">
                     Từ ngày <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="date"
                     value={forceUpdateData.startDate}
                     onChange={(e) => setForceUpdateData({ ...forceUpdateData, startDate: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:ring-2 focus:ring-red-300 outline-none text-gray-800"
+                    className="w-full border border-slate-150 rounded-xl px-2.5 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-slate-300 text-slate-750 font-medium"
                   />
                 </div>
                 <div>
-                  <label className="block text-2xs font-semibold text-gray-500 uppercase mb-1">
+                  <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">
                     Đến ngày <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="date"
                     value={forceUpdateData.endDate}
                     onChange={(e) => setForceUpdateData({ ...forceUpdateData, endDate: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:ring-2 focus:ring-red-300 outline-none text-gray-800"
+                    className="w-full border border-slate-150 rounded-xl px-2.5 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-slate-300 text-slate-755 font-medium"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1.5">
                   Lý do can thiệp
                 </label>
                 <textarea
@@ -245,14 +248,14 @@ export function InventoryScreen() {
                   onChange={(e) => setForceUpdateData({ ...forceUpdateData, reason: e.target.value })}
                   placeholder="Ghi chú lý do thay đổi..."
                   rows={2}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-300 outline-none resize-none text-gray-800"
+                  className="w-full border border-slate-150 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-slate-300 resize-none text-slate-700 font-medium"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loading || !listingId || !forceUpdateData.status || !forceUpdateData.startDate || !forceUpdateData.endDate}
-                className="w-full px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50 transition-colors shadow-sm"
+                className="w-full px-4 py-2 bg-red-600 text-white rounded-full text-xs font-semibold hover:bg-red-750 disabled:opacity-50 transition-colors shadow-sm"
               >
                 {loading ? "Đang xử lý..." : "⚠️ Thực thi Force Update"}
               </button>
@@ -261,35 +264,35 @@ export function InventoryScreen() {
 
           {/* Blocked Ranges visual list */}
           {listingId && (
-            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm space-y-4">
-              <h3 className="font-semibold text-gray-800 border-b pb-2 flex items-center justify-between">
-                <span className="flex items-center gap-1.5">🔒 Khoảng ngày đang phong tỏa</span>
-                <span className="text-2xs bg-red-100 text-red-700 px-2.5 py-0.5 rounded-full font-bold">
+            <div className="bg-white rounded-[20px] border border-slate-100 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-4">
+              <h3 className="font-semibold text-slate-800 border-b border-slate-50 pb-2 flex items-center justify-between text-xs">
+                <span className="flex items-center gap-1">🔒 Ngày đang phong tỏa</span>
+                <span className="text-[10px] bg-red-50 text-red-750 px-2 py-0.5 rounded-full font-semibold border border-red-100/30">
                   {blockedRanges.length} khoảng
                 </span>
               </h3>
               
               {blockedRanges.length === 0 ? (
-                <div className="text-center py-6 text-xs text-gray-400">
-                  🍃 Không có ngày nào bị khóa trong khoảng 30 ngày tới.
+                <div className="text-center py-6 text-xs text-slate-400">
+                  🍃 Không có ngày nào bị khóa trong 30 ngày tới.
                 </div>
               ) : (
-                <div className="space-y-3 max-h-60 overflow-y-auto pr-1 scrollbar-thin">
+                <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1 scrollbar-thin">
                   {blockedRanges.map((range, idx) => {
                     const startFmt = new Date(range.startDate).toLocaleDateString("vi-VN", { day: '2-digit', month: '2-digit' });
                     const endFmt = new Date(range.endDate).toLocaleDateString("vi-VN", { day: '2-digit', month: '2-digit' });
                     return (
-                      <div key={idx} className="p-3 bg-red-50/50 rounded-xl border border-red-100 flex flex-col justify-between gap-2.5 hover:bg-red-50/80 transition-colors">
+                      <div key={idx} className="p-3 bg-red-50/20 rounded-[14px] border border-red-100/30 flex flex-col justify-between gap-2.5">
                         <div className="flex justify-between items-start">
                           <div>
-                            <span className="font-extrabold text-gray-900 text-xs">
+                            <span className="font-bold text-slate-800 text-xs">
                               📅 {startFmt} - {endFmt}
                             </span>
-                            <span className="text-2xs text-gray-500 block font-medium mt-0.5">
+                            <span className="text-[10px] text-slate-400 block font-medium mt-0.5">
                               Tổng cộng: {range.count} ngày bị đóng
                             </span>
                           </div>
-                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-200 text-red-800 font-extrabold tracking-wider uppercase">
+                          <span className="text-[9px] px-2 py-0.5 rounded bg-red-100 text-red-800 font-bold tracking-wider uppercase">
                             LOCKED
                           </span>
                         </div>
@@ -298,7 +301,7 @@ export function InventoryScreen() {
                           type="button"
                           onClick={() => handleQuickRangeUnlock(range.startDate, range.endDate)}
                           disabled={loading}
-                          className="w-full py-1.5 bg-white border border-red-200 hover:bg-red-100 text-red-700 rounded-lg text-2xs font-extrabold transition-all shadow-sm hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50"
+                          className="w-full py-1.5 bg-white border border-red-200 hover:bg-red-50 text-red-700 rounded-lg text-[10px] font-semibold transition-all shadow-sm"
                         >
                           {loading ? "Đang xử lý..." : "🔓 Mở khóa nhanh khoảng này"}
                         </button>
@@ -313,41 +316,41 @@ export function InventoryScreen() {
 
         {/* Visual 30-day calendar view */}
         <div className="md:col-span-2 space-y-4">
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm min-h-[500px]">
-            <div className="border-b pb-4 mb-4 flex justify-between items-center">
-              <h3 className="font-semibold text-gray-800">Lịch trống & Tồn kho (30 ngày tiếp theo)</h3>
+          <div className="bg-white rounded-[20px] border border-slate-100 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02)] min-h-[500px]">
+            <div className="border-b border-slate-50 pb-3 mb-4 flex justify-between items-center text-xs">
+              <h3 className="font-semibold text-slate-800">Lịch trống & Tồn kho (30 ngày tiếp theo)</h3>
               {listingId && (
-                <span className="text-xs font-mono text-gray-400">Dịch vụ: {listingId}</span>
+                <span className="text-[10px] font-mono text-slate-400">Dịch vụ: {listingId.substring(0, 16)}...</span>
               )}
             </div>
 
             {loadingCalendar ? (
-              <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3">
                 {Array.from({ length: 15 }).map((_, i) => (
-                  <div key={i} className="h-20 bg-gray-100 animate-pulse rounded-lg" />
+                  <div key={i} className="h-16 bg-slate-50 animate-pulse rounded-xl" />
                 ))}
               </div>
             ) : !listingId ? (
-              <div className="flex flex-col items-center justify-center h-80 text-gray-400 text-sm">
+              <div className="flex flex-col items-center justify-center h-80 text-slate-400 text-xs">
                 <span>📍 Hãy chọn một dịch vụ để xem lịch tồn kho</span>
               </div>
             ) : availability.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-80 text-gray-400 text-sm">
+              <div className="flex flex-col items-center justify-center h-80 text-slate-400 text-xs text-center">
                 <span>⚠️ Chưa cấu hình tồn kho hoặc không tìm thấy dữ liệu tồn kho.</span>
-                <span className="text-xs text-gray-400 mt-2">Bấm "Đồng bộ tồn kho ngay" ở bên trái để khởi tạo lịch!</span>
+                <span className="text-[10px] text-slate-400 mt-1">Bấm "Đồng bộ tồn kho ngay" ở bên trái để khởi tạo lịch!</span>
               </div>
             ) : (
               <div className="space-y-4">
                 {/* Visual Legend */}
-                <div className="flex gap-4 text-xs text-gray-500 font-medium">
+                <div className="flex gap-4 text-[10px] text-slate-450 font-semibold uppercase tracking-wider">
                   <div className="flex items-center gap-1.5">
-                    <span className="w-3 h-3 rounded-full bg-green-500"></span> Còn trống nhiều
+                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Còn trống nhiều
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="w-3 h-3 rounded-full bg-amber-500"></span> Còn ít chỗ (&lt;50%)
+                    <span className="w-2 h-2 rounded-full bg-amber-500"></span> Còn ít chỗ (&lt;50%)
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="w-3 h-3 rounded-full bg-red-500"></span> Hết chỗ / Khóa
+                    <span className="w-2 h-2 rounded-full bg-red-500"></span> Hết chỗ / Khóa
                   </div>
                 </div>
 
@@ -362,7 +365,7 @@ export function InventoryScreen() {
                       <div
                         key={index}
                         onClick={() => setSelectedDateDetail(item)}
-                        className={`p-3 rounded-xl border flex flex-col justify-between transition-all hover:shadow-md hover:scale-[1.02] cursor-pointer ${getAvailabilityColor(
+                        className={`p-3 rounded-xl border flex flex-col justify-between transition-all hover:shadow-sm cursor-pointer ${getAvailabilityColor(
                           item.availableQuantity,
                           item.totalQuantity || 5,
                           item.status
@@ -370,29 +373,29 @@ export function InventoryScreen() {
                       >
                         <div className="flex justify-between items-start">
                           <div>
-                            <div className="font-extrabold text-sm text-gray-900">{label.date}</div>
-                            <div className="text-2xs text-gray-400 font-bold tracking-tight">Thứ {label.weekday}</div>
+                            <div className="font-semibold text-slate-800 text-[13px]">{label.date}</div>
+                            <div className="text-[9px] text-slate-400 font-bold uppercase tracking-tight">Thứ {label.weekday}</div>
                           </div>
                           <span
-                            className={`text-2xs px-1 rounded font-bold uppercase tracking-wider ${
+                            className={`text-[8px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ${
                               item.status === "ACTIVE" || item.status === "AVAILABLE"
-                                ? "bg-green-200 text-green-800"
-                                : "bg-red-200 text-red-800"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
                             }`}
                           >
                             {item.status}
                           </span>
                         </div>
 
-                        <div className="mt-3">
-                          <div className="text-2xs text-gray-400 font-bold uppercase mb-1">Sức chứa</div>
-                          <div className="flex justify-between items-baseline text-sm">
-                            <span className="font-extrabold text-gray-900">{item.availableQuantity}</span>
-                            <span className="text-2xs text-gray-400">/ {item.totalQuantity || 5} chỗ</span>
+                        <div className="mt-2.5">
+                          <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Sức chứa</div>
+                          <div className="flex justify-between items-baseline text-xs text-slate-700">
+                            <span className="font-semibold text-slate-800">{item.availableQuantity}</span>
+                            <span className="text-[9px] text-slate-400">/ {item.totalQuantity || 5} chỗ</span>
                           </div>
 
                           {/* Progress bar */}
-                          <div className="w-full bg-gray-200 rounded-full h-1 mt-1 overflow-hidden">
+                          <div className="w-full bg-slate-100 rounded-full h-1 mt-1 overflow-hidden">
                             <div
                               className={`h-full rounded-full ${
                                 isFull
@@ -409,7 +412,7 @@ export function InventoryScreen() {
                         </div>
 
                         {!isAllDay && (
-                          <div className="mt-2 text-2xs font-semibold text-gray-500 border-t pt-1 border-gray-100 truncate" title={item.timeSlot}>
+                          <div className="mt-2 text-[9px] font-semibold text-slate-450 border-t border-slate-100 pt-1 truncate" title={item.timeSlot}>
                             🕒 {item.timeSlot}
                           </div>
                         )}
@@ -425,49 +428,49 @@ export function InventoryScreen() {
 
       {/* Date Details Modal */}
       {selectedDateDetail && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden border border-gray-100">
-            <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
-              <h3 className="font-bold text-gray-900 text-sm">🗓️ Chi tiết ngày: {new Date(selectedDateDetail.date).toLocaleDateString("vi-VN")}</h3>
+        <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div className="bg-white rounded-[20px] shadow-xl border border-slate-100 w-full max-w-xs overflow-hidden animate-scale-up">
+            <div className="px-4 py-3 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
+              <h3 className="font-semibold text-slate-800 text-xs">🗓️ Chi tiết ngày: {new Date(selectedDateDetail.date).toLocaleDateString("vi-VN")}</h3>
               <button
                 onClick={() => setSelectedDateDetail(null)}
-                className="text-gray-400 hover:text-gray-600 font-semibold text-sm"
+                className="w-6 h-6 flex items-center justify-center rounded-full text-slate-400 hover:bg-slate-50 hover:text-slate-650 transition-colors"
               >✕</button>
             </div>
 
             <div className="p-5 space-y-4 text-xs">
-              <div className="grid grid-cols-2 gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
+              <div className="grid grid-cols-2 gap-3 p-3 bg-slate-55/40 rounded-xl border border-slate-100">
                 <div>
-                  <span className="text-gray-400 block text-[10px] uppercase font-bold tracking-wider">Trạng thái</span>
-                  <span className={`inline-block text-[10px] px-1.5 py-0.5 rounded font-extrabold mt-1 ${
+                  <span className="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">Trạng thái</span>
+                  <span className={`inline-block text-[9px] px-1.5 py-0.5 rounded font-bold mt-1 ${
                     selectedDateDetail.status === "ACTIVE" || selectedDateDetail.status === "AVAILABLE"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
+                      ? "bg-green-50 text-green-800 border border-green-100/30"
+                      : "bg-red-50 text-red-800 border border-red-100/30"
                   }`}>
                     {selectedDateDetail.status}
                   </span>
                 </div>
                 <div>
-                  <span className="text-gray-400 block text-[10px] uppercase font-bold tracking-wider">Khung giờ</span>
-                  <span className="font-bold text-gray-800 mt-1 block">{selectedDateDetail.timeSlot}</span>
+                  <span className="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">Khung giờ</span>
+                  <span className="font-semibold text-slate-700 mt-1 block">{selectedDateDetail.timeSlot}</span>
                 </div>
                 <div>
-                  <span className="text-gray-400 block text-[10px] uppercase font-bold tracking-wider">Đã đặt chỗ</span>
-                  <span className="font-bold text-gray-800 block mt-1">
+                  <span className="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">Đã đặt chỗ</span>
+                  <span className="font-semibold text-slate-700 block mt-1">
                     {Math.max(0, (selectedDateDetail.totalQuantity || 5) - (selectedDateDetail.availableQuantity || 0))} chỗ
                   </span>
                 </div>
                 <div>
-                  <span className="text-gray-400 block text-[10px] uppercase font-bold tracking-wider">Còn trống</span>
-                  <span className="font-bold text-green-600 block mt-1">
+                  <span className="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">Còn trống</span>
+                  <span className="font-semibold text-emerald-600 block mt-1">
                     {selectedDateDetail.availableQuantity} / {selectedDateDetail.totalQuantity || 5} chỗ
                   </span>
                 </div>
               </div>
 
-              <div className="border-t pt-3 space-y-2">
-                <h4 className="text-[10px] font-extrabold uppercase tracking-wider text-red-500">Can thiệp khẩn cấp (Emergency Lock)</h4>
-                <p className="text-[10px] text-gray-400 leading-relaxed">
+              <div className="border-t border-slate-100 pt-3.5 space-y-2">
+                <h4 className="text-[9px] font-bold uppercase tracking-wider text-red-500">Can thiệp khẩn cấp (Emergency Lock)</h4>
+                <p className="text-[9px] text-slate-400 leading-relaxed">
                   Thay đổi trạng thái cưỡng chế trực tiếp đối với ngày này trên hệ thống. Lịch hiển thị của khách hàng sẽ được cập nhật ngay lập tức.
                 </p>
                 <div className="flex gap-2 pt-1">
@@ -475,17 +478,17 @@ export function InventoryScreen() {
                     <button
                       onClick={() => handleQuickForceUpdate(selectedDateDetail.date, "BLOCKED")}
                       disabled={loading}
-                      className="flex-1 py-2 bg-red-600 text-white rounded-lg text-[10px] font-bold hover:bg-red-700 disabled:opacity-50 transition-colors shadow-sm"
+                      className="flex-1 py-2 bg-red-600 text-white rounded-full text-[10px] font-semibold hover:bg-red-750 disabled:opacity-50 transition-colors shadow-sm"
                     >
-                      {loading ? "Đang xử lý..." : "🔒 Khóa khẩn cấp ngày này"}
+                      {loading ? "Đang xử lý..." : "🔒 Khóa khẩn cấp"}
                     </button>
                   ) : (
                     <button
                       onClick={() => handleQuickForceUpdate(selectedDateDetail.date, "AVAILABLE")}
                       disabled={loading}
-                      className="flex-1 py-2 bg-green-600 text-white rounded-lg text-[10px] font-bold hover:bg-green-700 disabled:opacity-50 transition-colors shadow-sm"
+                      className="flex-1 py-2 bg-emerald-600 text-white rounded-full text-[10px] font-semibold hover:bg-emerald-700 disabled:opacity-50 transition-colors shadow-sm"
                     >
-                      {loading ? "Đang xử lý..." : "🔓 Mở kho hoạt động lại"}
+                      {loading ? "Đang xử lý..." : "🔓 Mở kho hoạt động"}
                     </button>
                   )}
                 </div>

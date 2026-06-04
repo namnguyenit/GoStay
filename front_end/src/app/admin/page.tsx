@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import AdminService from "@/services/admin.service";
 import Link from "next/link";
+import AuthService from "@/services/auth.service";
 
 interface Stats {
   totalUsers: number;
@@ -20,6 +21,7 @@ export default function AdminDashboardPage() {
   });
   const [loading, setLoading] = useState(true);
   const [recentUsers, setRecentUsers] = useState<any[]>([]);
+  const [adminName, setAdminName] = useState("");
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -66,285 +68,458 @@ export default function AdminDashboardPage() {
     };
 
     fetchStats();
+    
+    const user = AuthService.getCurrentUser();
+    if (user?.username) setAdminName(user.username);
   }, []);
 
-  // CoreUI colorful flat panels
   const statCards = [
     {
       label: "Người dùng đăng ký",
       value: stats.totalUsers,
-      subtext: "Thành viên trực tuyến",
+      subtext: "Tổng số thành viên",
+      trend: "+12.5%",
+      trendColor: "text-emerald-600 bg-emerald-50/60 border-emerald-100/50",
+      detail: "Hoạt động: 94% • Khóa: 6%",
       href: "/admin/users",
-      bgClass: "bg-[#20a8d8]", // CoreUI primary blue
-      svgPath: "M0,15 Q15,5 30,12 T60,5 T90,15 T120,8 L120,30 L0,30 Z",
+      iconBg: "bg-blue-50/80 text-blue-500 border border-blue-100/30",
+      icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
     },
     {
-      label: "Đăng ký Host hoạt động",
+      label: "Host Đã duyệt",
       value: stats.totalHosts,
-      subtext: "Đối tác đã xác thực",
+      subtext: "Đối tác hoạt động",
+      trend: "+4.2%",
+      trendColor: "text-emerald-600 bg-emerald-50/60 border-emerald-100/50",
+      detail: "Khách sạn: 65% • Homestay: 35%",
       href: "/admin/approved-hosts",
-      bgClass: "bg-[#63c2de]", // CoreUI info cyan
-      svgPath: "M0,10 Q20,20 40,8 T80,12 T120,5 L120,30 L0,30 Z",
+      iconBg: "bg-teal-50/80 text-teal-600 border border-teal-100/30",
+      icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>,
     },
     {
-      label: "Yêu cầu duyệt Host",
+      label: "Host Chờ duyệt",
       value: stats.pendingHosts,
-      subtext: "Hồ sơ đang chờ duyệt",
+      subtext: "Yêu cầu đăng ký mới",
+      trend: "Cần xử lý",
+      trendColor: "text-amber-600 bg-amber-50/60 border-amber-100/50",
+      detail: `${stats.pendingHosts} yêu cầu mới chờ phản hồi`,
       href: "/admin/hosts",
-      bgClass: "bg-[#f8cb00]", // CoreUI warning yellow
-      svgPath: "M0,8 Q25,2 50,15 T100,5 T120,12 L120,30 L0,30 Z",
+      iconBg: "bg-amber-50/80 text-amber-500 border border-amber-100/30",
+      icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
     },
     {
       label: "Đề xuất Địa danh",
       value: stats.pendingLandmarks,
-      subtext: "Địa điểm chờ phê duyệt",
+      subtext: "Đang chờ duyệt",
+      trend: "Mới nhận",
+      trendColor: "text-rose-600 bg-rose-50/60 border-rose-100/50",
+      detail: `${stats.pendingLandmarks} đề xuất địa điểm tham quan`,
       href: "/admin/landmarks",
-      bgClass: "bg-[#f86c6b]", // CoreUI danger red
-      svgPath: "M0,20 C30,10 60,5 90,25 C100,30 110,12 120,10 L120,30 L0,30 Z",
+      iconBg: "bg-rose-50/80 text-rose-500 border border-rose-100/30",
+      icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.243-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
     },
   ];
-
+  
   return (
-    <div className="space-y-6">
-      {/* 4 CoreUI Premium Color-blocked Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {statCards.map((card) => (
-          <Link
-            href={card.href}
-            key={card.label}
-            className={`block rounded-lg overflow-hidden text-white shadow-sm hover:shadow-lg transition-all transform hover:-translate-y-0.5 ${card.bgClass}`}
-          >
-            <div className="p-4 space-y-1">
-              <div className="text-2xl font-bold">
-                {loading ? "..." : card.value}
-              </div>
-              <div className="text-xs font-semibold opacity-90">{card.label}</div>
-              <div className="text-[10px] opacity-75">{card.subtext}</div>
-            </div>
-            
-            {/* Simulated mini line chart underlay */}
-            <div className="h-10 w-full opacity-35 relative mt-2 overflow-hidden">
-              <svg className="absolute bottom-0 left-0 w-full h-full" viewBox="0 0 120 30" preserveAspectRatio="none">
-                <path d={card.svgPath} fill="rgba(255,255,255,0.4)" stroke="rgba(255,255,255,0.8)" strokeWidth="1.5"></path>
-              </svg>
-            </div>
-          </Link>
-        ))}
+    <div className="space-y-6 max-w-[1400px] animate-smooth-appear">
+      
+      {/* Page Title & Subtitle for Dashboard */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-100">
+        <div>
+          <h2 className="text-xl font-semibold text-slate-800 tracking-tight">Tổng quan hệ thống</h2>
+          <p className="text-slate-400 text-xs mt-0.5 font-medium">Thống kê hoạt động nền tảng GoStay & thông tin đối tác</p>
+        </div>
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-55/10 text-emerald-600 rounded-full text-xs font-semibold border border-emerald-100/30">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          Hệ thống: Hoạt động ổn định
+        </div>
       </div>
 
-      {/* Main Premium Traffic Chart Panel */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h3 className="text-lg font-bold text-gray-900">Lưu lượng Giao dịch & Booking</h3>
-            <p className="text-xs text-gray-400 font-semibold uppercase mt-0.5">Thống kê hoạt động GoStay toàn quốc</p>
-          </div>
+      {/* Main Grid Layout matching the reference CrewMate design */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        
+        {/* Left & Center Main Area (Span 2) */}
+        <div className="xl:col-span-2 space-y-6">
           
-          {/* Day / Month / Year Filters */}
-          <div className="flex items-center gap-1.5 border border-gray-200 rounded-lg p-0.5 bg-gray-50 text-xs font-bold text-gray-600">
-            <button className="px-3 py-1.5 rounded-md hover:bg-white hover:text-gray-900 transition-colors">Ngày</button>
-            <button className="px-3 py-1.5 rounded-md bg-white text-gray-900 shadow-sm border border-gray-200/50">Tháng</button>
-            <button className="px-3 py-1.5 rounded-md hover:bg-white hover:text-gray-900 transition-colors">Năm</button>
-            <button className="p-1.5 hover:bg-white rounded-md text-[#20a8d8] ml-1">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        {/* High-fidelity SVG Simulated Traffic Line Chart */}
-        <div className="w-full h-64 relative bg-gray-50/50 rounded-xl border border-gray-100 p-4 overflow-hidden">
-          {/* Y-axis helper lines */}
-          <div className="absolute inset-0 flex flex-col justify-between pointer-events-none p-4 opacity-55">
-            <div className="border-b border-gray-200/60 w-full text-3xs font-bold text-gray-400">250 lượt</div>
-            <div className="border-b border-gray-200/60 w-full text-3xs font-bold text-gray-400">200 lượt</div>
-            <div className="border-b border-gray-200/60 w-full text-3xs font-bold text-gray-400">150 lượt</div>
-            <div className="border-b border-gray-200/60 w-full text-3xs font-bold text-gray-400">100 lượt</div>
-            <div className="border-b border-gray-200/60 w-full text-3xs font-bold text-gray-400">50 lượt</div>
-            <div className="text-3xs font-bold text-gray-400">0</div>
-          </div>
-
-          {/* Lines */}
-          <svg className="w-full h-full absolute inset-0 p-4" viewBox="0 0 600 200" preserveAspectRatio="none">
-            {/* Filled green area for overall bookings */}
-            <path
-              d="M0,150 C50,80 100,120 150,60 C200,40 250,140 300,90 C350,70 400,160 450,80 C500,60 550,110 600,70 L600,200 L0,200 Z"
-              fill="rgba(32,168,216,0.06)"
-            ></path>
-            
-            {/* Booking Line (Blue) */}
-            <path
-              d="M0,150 C50,80 100,120 150,60 C200,40 250,140 300,90 C350,70 400,160 450,80 C500,60 550,110 600,70"
-              fill="none"
-              stroke="#20a8d8"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            ></path>
-            
-            {/* Host Signups Line (Green) */}
-            <path
-              d="M0,110 C60,105 120,115 180,95 C240,112 300,85 360,98 C420,118 480,90 540,102 C560,95 580,108 600,95"
-              fill="none"
-              stroke="#4dbd74"
-              strokeWidth="2"
-              strokeDasharray="4 3"
-              strokeLinecap="round"
-            ></path>
-          </svg>
-        </div>
-
-        {/* Chart Legend Metrics */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-6 text-center border-t border-gray-100 pt-6">
-          <div className="space-y-1">
-            <div className="text-xs text-gray-500 font-semibold">Lượt ghé thăm</div>
-            <div className="text-base font-extrabold text-gray-800">29.703 Users <span className="text-xs font-bold text-blue-500 ml-1">(40%)</span></div>
-            <div className="w-full bg-gray-100 rounded-full h-1"><div className="bg-[#20a8d8] h-1 rounded-full w-[40%]"></div></div>
-          </div>
-          <div className="space-y-1">
-            <div className="text-xs text-gray-500 font-semibold">Đăng ký mới</div>
-            <div className="text-base font-extrabold text-gray-800">24.093 Unique <span className="text-xs font-bold text-teal-500 ml-1">(20%)</span></div>
-            <div className="w-full bg-gray-100 rounded-full h-1"><div className="bg-[#63c2de] h-1 rounded-full w-[20%]"></div></div>
-          </div>
-          <div className="space-y-1">
-            <div className="text-xs text-gray-500 font-semibold">Xem dịch vụ</div>
-            <div className="text-base font-extrabold text-gray-800">78.706 Views <span className="text-xs font-bold text-green-500 ml-1">(60%)</span></div>
-            <div className="w-full bg-gray-100 rounded-full h-1"><div className="bg-[#4dbd74] h-1 rounded-full w-[60%]"></div></div>
-          </div>
-          <div className="space-y-1">
-            <div className="text-xs text-gray-500 font-semibold">Đơn đặt phòng</div>
-            <div className="text-base font-extrabold text-gray-800">22.123 Bookings <span className="text-xs font-bold text-yellow-500 ml-1">(80%)</span></div>
-            <div className="w-full bg-gray-100 rounded-full h-1"><div className="bg-[#f8cb00] h-1 rounded-full w-[80%]"></div></div>
-          </div>
-          <div className="space-y-1 col-span-2 md:col-span-1">
-            <div className="text-xs text-gray-500 font-semibold">Tỷ lệ hủy đơn</div>
-            <div className="text-base font-extrabold text-gray-800">40.15% <span className="text-xs font-bold text-red-500 ml-1">(Tốt)</span></div>
-            <div className="w-full bg-gray-100 rounded-full h-1"><div className="bg-[#f86c6b] h-1 rounded-full w-[40%]"></div></div>
-          </div>
-        </div>
-      </div>
-
-      {/* Grid: Recent Users Table & Quick Actions Panel */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Users Table */}
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50">
-            <h3 className="font-bold text-sm uppercase text-gray-700 tracking-wider">Thành viên mới đăng ký</h3>
-            <Link href="/admin/users" className="text-xs text-[#20a8d8] font-bold hover:underline">
-              Xem tất cả →
-            </Link>
-          </div>
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50/50 border-b border-gray-100">
-              <tr>
-                <th className="text-left px-6 py-3 font-semibold text-gray-500">Tài khoản</th>
-                <th className="text-left px-6 py-3 font-semibold text-gray-500">Email</th>
-                <th className="text-left px-6 py-3 font-semibold text-gray-500">Trạng thái</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {loading ? (
-                Array.from({ length: 4 }).map((_, i) => (
-                  <tr key={i}>
-                    <td colSpan={3} className="px-6 py-4">
-                      <div className="h-4 bg-gray-100 animate-pulse rounded" />
-                    </td>
-                  </tr>
-                ))
-              ) : recentUsers.length === 0 ? (
-                <tr>
-                  <td colSpan={3} className="px-6 py-8 text-center text-gray-400">
-                    Chưa có thành viên nào.
-                  </td>
-                </tr>
-              ) : (
-                recentUsers.map((u) => (
-                  <tr key={u.id} className="hover:bg-gray-50/70 transition-colors">
-                    <td className="px-6 py-3 font-semibold text-gray-800">{u.username}</td>
-                    <td className="px-6 py-3 text-gray-500 text-xs font-medium">{u.email}</td>
-                    <td className="px-6 py-3">
-                      <span
-                        className={`text-2xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
-                          u.isActive
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-700"
-                        }`}
-                      >
-                        {u.isActive ? "Hoạt động" : "Bị khóa"}
-                      </span>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Quick Task Actions Panel */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex flex-col justify-between">
-          <div>
-            <div className="border-b pb-3 mb-4">
-              <h3 className="font-bold text-sm uppercase text-gray-700 tracking-wider">Tác vụ Quản trị nhanh</h3>
+          {/* Card 1: Doanh thu & Hoa hồng (Monthly Payroll style) */}
+          <div className="bg-white rounded-[20px] border border-slate-100 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+            <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
+              <div>
+                <h3 className="font-semibold text-base text-slate-800 tracking-tight">Doanh thu & Hoa hồng</h3>
+                <p className="text-xs text-slate-400 mt-0.5 font-medium">Biến động doanh thu phòng & đối soát hoa hồng</p>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-4 text-left sm:text-right">
+                <div>
+                  <div className="flex items-center gap-1.5 sm:justify-end">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#6366f1]"></div>
+                    <span className="text-[10px] font-bold text-slate-450 uppercase tracking-wider">Doanh thu đối tác</span>
+                  </div>
+                  <div className="text-base font-semibold text-slate-850 flex items-center gap-1.5 mt-0.5 sm:justify-end">
+                    85,270,000đ
+                    <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50/60 border border-emerald-100/50 px-1 py-0.2 rounded">↑ 8%</span>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5 sm:justify-end">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#60a5fa]"></div>
+                    <span className="text-[10px] font-bold text-slate-450 uppercase tracking-wider">Hoa hồng GoStay</span>
+                  </div>
+                  <div className="text-base font-semibold text-slate-850 flex items-center gap-1.5 mt-0.5 sm:justify-end">
+                    4,480,000đ
+                    <span className="text-[9px] font-bold text-rose-600 bg-rose-50/60 border border-rose-100/50 px-1 py-0.2 rounded">↓ 3%</span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="space-y-3.5">
+
+            {/* Dot Chart SVG */}
+            <div className="h-[120px] w-full mt-6 bg-slate-50/30 rounded-xl border border-slate-100/50 p-2 relative overflow-hidden">
+              <svg className="w-full h-full" viewBox="0 0 500 80" preserveAspectRatio="none">
+                {/* Vertical grid lines */}
+                {Array.from({ length: 11 }).map((_, idx) => {
+                  const x = 20 + idx * 46;
+                  return (
+                    <g key={idx}>
+                      <line x1={x} y1="0" x2={x} y2="80" stroke="#f1f5f9" strokeWidth="1" strokeDasharray="3 3" />
+                      {/* Purple scatter dots (indigo-500) */}
+                      <circle cx={x} cy={15 + (idx % 3) * 18 + (idx % 2) * 5} r="3.5" fill="#6366f1" />
+                      {/* Light blue scatter dots (blue-450) */}
+                      <circle cx={x} cy={30 + (idx % 2) * 22 + (idx % 3) * 4} r="3.5" fill="#60a5fa" opacity="0.6" />
+                    </g>
+                  );
+                })}
+              </svg>
+            </div>
+          </div>
+
+          {/* Card 2: Hiệu suất đặt phòng (Work Hours Tracked style) */}
+          <div className="bg-white rounded-[20px] border border-slate-100 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="md:col-span-1 space-y-4">
+                <div>
+                  <h3 className="font-semibold text-base text-slate-800 tracking-tight">Hiệu suất đặt phòng</h3>
+                  <p className="text-xs text-slate-400 mt-0.5 font-medium">Tần suất giao dịch đặt phòng thành công</p>
+                </div>
+                
+                <div className="space-y-3 pt-2">
+                  <div>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-xl font-semibold text-slate-800">12.5 phòng</span>
+                      <span className="text-xs text-slate-450">/ ngày</span>
+                    </div>
+                    <div className="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100/50 px-1.5 py-0.5 rounded inline-block mt-1">
+                      ↑ 8% so với hôm qua
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-xl font-semibold text-slate-800">88 phòng</span>
+                      <span className="text-xs text-slate-450">/ tuần</span>
+                    </div>
+                    <div className="text-[10px] font-bold text-rose-600 bg-rose-50 border border-rose-100/50 px-1.5 py-0.5 rounded inline-block mt-1">
+                      ↓ 8% so với tuần trước
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Orange Bar Chart SVG (Spans 2 columns) */}
+              <div className="md:col-span-2 h-[130px] flex items-end bg-slate-50/30 rounded-xl border border-slate-100/50 p-2 relative overflow-hidden">
+                <svg className="w-full h-full" viewBox="0 0 320 100" preserveAspectRatio="none">
+                  <line x1="0" y1="50" x2="320" y2="50" stroke="#f8fafc" strokeWidth="1" strokeDasharray="4 4" />
+                  {Array.from({ length: 30 }).map((_, idx) => {
+                    const w = 4;
+                    const spacing = 6;
+                    const x = idx * (w + spacing) + 12;
+                    const h = 20 + Math.sin(idx * 0.4) * 22 + Math.cos(idx * 0.25) * 18 + (idx % 5) * 6;
+                    return (
+                      <rect
+                        key={idx}
+                        x={x}
+                        y={100 - h}
+                        width={w}
+                        height={h}
+                        rx={2}
+                        fill="#f97316"
+                        opacity="0.85"
+                      />
+                    );
+                  })}
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 3: Lịch trình duyệt & Hoạt động (Schedule style) */}
+          <div className="bg-white rounded-[20px] border border-slate-100 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-semibold text-base text-slate-800 tracking-tight">Lịch duyệt & Hoạt động</h3>
+              <button className="text-slate-400 hover:text-slate-650">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM18 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+              </button>
+            </div>
+
+            {/* Search bar wrapper */}
+            <div className="relative mb-4">
+              <input
+                type="text"
+                placeholder="Tìm kiếm lịch biểu, hoạt động quản trị..."
+                className="w-full pl-9 pr-4 py-2 bg-slate-50/80 border border-slate-100 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:bg-white focus:border-slate-200 transition-all"
+              />
+              <svg className="w-3.5 h-3.5 absolute left-3.5 top-2.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            </div>
+
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-xs font-semibold text-slate-500">Hôm nay, {new Date().toLocaleDateString("vi-VN", { day: "numeric", month: "long" })}</span>
+              <div className="flex items-center gap-1 bg-slate-50/80 p-0.5 rounded-lg border border-slate-150">
+                <button className="px-2.5 py-1 rounded bg-white text-slate-800 text-[10px] font-bold shadow-[0_1px_3px_rgba(0,0,0,0.05)] border border-slate-100">Danh sách</button>
+                <button className="px-2.5 py-1 rounded text-slate-400 text-[10px] font-medium hover:text-slate-855 transition-colors">Lịch biểu</button>
+              </div>
+            </div>
+
+            {/* Event Highlight Item */}
+            <div className="bg-slate-50/80 p-4 rounded-xl border border-slate-100/60 flex items-center justify-between">
+              <div>
+                <div className="text-[10px] font-bold text-blue-600 uppercase tracking-wider mb-0.5">Tiêu điểm hôm nay</div>
+                <p className="text-[13px] font-semibold text-slate-700">Duyệt yêu cầu đăng ký Host từ doanh nghiệp mới — trước 17:00</p>
+              </div>
+              <div className="w-8 h-8 rounded-lg bg-blue-50/80 flex items-center justify-center text-blue-500 border border-blue-100/30">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 4: Recent Users Table */}
+          <div className="bg-white rounded-[20px] border border-slate-100 overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+            <div className="flex items-center justify-between p-5 pb-3 border-b border-slate-50">
+              <div>
+                <h3 className="font-semibold text-base text-slate-800 tracking-tight">Thành viên mới đăng ký</h3>
+                <p className="text-xs text-slate-400 mt-0.5 font-medium">Danh sách thành viên hệ thống mới cập nhật</p>
+              </div>
+              <Link href="/admin/users" className="text-xs text-blue-600 font-semibold hover:bg-blue-50/50 px-3 py-1.5 rounded-full transition-colors border border-blue-50">
+                Xem tất cả
+              </Link>
+            </div>
+            <div className="p-3">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr>
+                    <th className="px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-2.5">Người dùng</th>
+                    <th className="px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-2.5">Email</th>
+                    <th className="px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-2.5 text-right">Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {loading ? (
+                    Array.from({ length: 3 }).map((_, i) => (
+                      <tr key={i}>
+                        <td colSpan={3} className="px-4 py-4.5">
+                          <div className="h-4 bg-slate-50 animate-pulse rounded" />
+                        </td>
+                      </tr>
+                    ))
+                  ) : recentUsers.length === 0 ? (
+                    <tr>
+                      <td colSpan={3} className="px-4 py-8 text-center text-xs text-slate-400 font-medium">
+                        Chưa có thành viên nào hoạt động.
+                      </td>
+                    </tr>
+                  ) : (
+                    recentUsers.map((u) => (
+                      <tr key={u.id} className="hover:bg-slate-50/40 transition-colors">
+                        <td className="px-4 py-2.5">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-7 h-7 rounded-full bg-blue-50/60 text-blue-600 flex items-center justify-center font-bold text-xs border border-blue-100/20">
+                              {u.username?.charAt(0).toUpperCase()}
+                            </div>
+                            <span className="font-semibold text-slate-800 text-[13px]">{u.username}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-2.5 text-slate-450 text-[13px] font-medium">{u.email}</td>
+                        <td className="px-4 py-2.5 text-right">
+                          <span
+                            className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold border ${
+                              u.isActive
+                                ? "bg-emerald-50 text-emerald-600 border-emerald-100/50"
+                                : "bg-rose-50 text-rose-600 border-rose-100/50"
+                            }`}
+                          >
+                            {u.isActive ? "Hoạt động" : "Bị khóa"}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Right Area (Span 1) */}
+        <div className="space-y-6">
+          
+          {/* Side by side small stats */}
+          <div className="grid grid-cols-2 gap-4">
+            
+            {/* Stat 1: Total Users */}
+            <Link href="/admin/users" className="block bg-white p-4.5 rounded-[20px] border border-slate-100 shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:border-slate-200/60 hover:shadow-[0_8px_20px_rgba(0,0,0,0.03)] transition-all">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Thành viên</span>
+              <div className="flex justify-between items-center mt-3">
+                <span className="text-xl font-semibold text-slate-800">{loading ? "..." : stats.totalUsers}</span>
+                <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center border border-blue-100/20">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                </div>
+              </div>
+            </Link>
+
+            {/* Stat 2: Pending Hosts */}
+            <Link href="/admin/hosts" className="block bg-white p-4.5 rounded-[20px] border border-slate-100 shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:border-slate-200/60 hover:shadow-[0_8px_20px_rgba(0,0,0,0.03)] transition-all">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Yêu cầu Host</span>
+              <div className="flex justify-between items-center mt-3">
+                <span className="text-xl font-semibold text-slate-800">{loading ? "..." : stats.pendingHosts}</span>
+                <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center border border-amber-100/20">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </div>
+              </div>
+            </Link>
+
+          </div>
+
+          {/* Card 2: Khu vực đối tác (Workforce Location Stats style) */}
+          <div className="bg-white rounded-[20px] border border-slate-100 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+            <h3 className="font-semibold text-base text-slate-800 tracking-tight">Khu vực đối tác</h3>
+            <p className="text-xs text-slate-400 mt-0.5 font-medium">Mật độ đối tác hoạt động trên GoStay</p>
+
+            {/* Side-by-side location totals */}
+            <div className="flex items-center gap-6 mt-4">
+              <div>
+                <div className="text-[10px] font-semibold text-slate-400 uppercase">TP. Hồ Chí Minh</div>
+                <div className="text-lg font-bold text-slate-800 flex items-center gap-1.5 mt-0.5">
+                  100
+                  <span className="w-4 h-4 rounded bg-blue-50 text-blue-600 text-[10px] flex items-center justify-center border border-blue-100/20">🏢</span>
+                </div>
+              </div>
+              
+              <div>
+                <div className="text-[10px] font-semibold text-slate-400 uppercase">Hà Nội</div>
+                <div className="text-lg font-bold text-slate-800 flex items-center gap-1.5 mt-0.5">
+                  120
+                  <span className="w-4 h-4 rounded bg-slate-50 text-slate-655 text-[10px] flex items-center justify-center border border-slate-200/40">🏛️</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Matrix grid of dots matching the image */}
+            <div className="grid grid-cols-8 gap-2.5 mt-5">
+              {Array.from({ length: 48 }).map((_, idx) => {
+                let bgClass = "bg-slate-100";
+                if (idx % 7 === 0) bgClass = "bg-blue-600";
+                else if (idx % 5 === 0) bgClass = "bg-blue-500";
+                else if (idx % 3 === 0) bgClass = "bg-blue-400";
+                else if (idx % 2 === 0) bgClass = "bg-blue-100";
+                
+                return (
+                  <div
+                    key={idx}
+                    className={`w-3.5 h-3.5 rounded-full ${bgClass} transition-transform hover:scale-110`}
+                    title={`Vùng mật độ ${idx}`}
+                  />
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Card 3: Tài khoản Admin (Profile style) */}
+          <div className="bg-slate-50/60 rounded-[20px] border border-slate-100 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-4">
+            <div className="flex items-center gap-3">
+              <img
+                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256"
+                alt="Admin Avatar"
+                className="w-11 h-11 rounded-full object-cover border-2 border-white shadow-sm"
+              />
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <h4 className="font-semibold text-sm text-slate-850 capitalize leading-none">{adminName || "Quản trị viên"}</h4>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                </div>
+                <p className="text-[11px] text-slate-400 font-medium mt-0.5">Hệ thống quản trị GoStay</p>
+                
+                <span className="inline-block mt-1.5 text-[9px] font-bold text-blue-600 bg-blue-50 border border-blue-100/50 px-2 py-0.5 rounded-full">
+                  Độ ổn định: 99.9%
+                </span>
+              </div>
+            </div>
+
+            {/* Small stats summary widgets under profile */}
+            <div className="grid grid-cols-2 gap-3.5">
+              <Link href="/admin/payouts" className="bg-white p-3.5 rounded-xl border border-slate-100 hover:border-slate-200 transition-colors block">
+                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Yêu cầu Payout</span>
+                <div className="text-xs font-semibold text-slate-700 mt-1 flex items-baseline gap-1">
+                  8 yêu cầu
+                  <span className="text-[9px] text-rose-500 font-bold">↓ 4%</span>
+                </div>
+              </Link>
+              <Link href="/admin/landmarks" className="bg-white p-3.5 rounded-xl border border-slate-100 hover:border-slate-200 transition-colors block">
+                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Đề xuất địa danh</span>
+                <div className="text-xs font-semibold text-slate-700 mt-1 flex items-baseline gap-1">
+                  {stats.pendingLandmarks} đề xuất
+                  <span className="text-[9px] text-emerald-500 font-bold">↑ 8%</span>
+                </div>
+              </Link>
+            </div>
+          </div>
+
+          {/* Quick Task Actions Panel */}
+          <div className="bg-white rounded-[20px] border border-slate-100 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-3">
+            <div>
+              <h3 className="font-semibold text-base text-slate-800 tracking-tight">Tác vụ khẩn</h3>
+              <p className="text-xs text-slate-400 mt-0.5 font-medium">Báo cáo phê duyệt các mục tồn đọng</p>
+            </div>
+            
+            <div className="space-y-2.5">
               <Link
                 href="/admin/hosts"
-                className="flex items-center justify-between p-3.5 rounded-xl bg-yellow-50/50 hover:bg-yellow-50 border border-yellow-100 transition-all transform hover:translate-x-1"
+                className="flex items-center justify-between p-3.5 rounded-xl border border-slate-100 hover:border-amber-200 hover:bg-amber-50/10 transition-all group"
               >
-                <span className="text-xs font-bold text-yellow-800">
-                  ⏳ Phê duyệt đăng ký đối tác Host
-                </span>
-                {stats.pendingHosts > 0 ? (
-                  <span className="bg-[#f8cb00] text-gray-900 text-xs font-extrabold px-2.5 py-0.5 rounded-full border border-[#e2ba00] shadow-sm animate-bounce">
-                    {stats.pendingHosts} chờ
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center border border-amber-100/30">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  </div>
+                  <div>
+                    <div className="text-[12px] font-semibold text-slate-700 group-hover:text-amber-700 transition-colors">Duyệt Host mới</div>
+                    <div className="text-[10px] text-slate-400 font-medium">Host đang chờ</div>
+                  </div>
+                </div>
+                {stats.pendingHosts > 0 && (
+                  <span className="bg-amber-50 text-amber-600 border border-amber-100/50 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                    {stats.pendingHosts}
                   </span>
-                ) : (
-                  <span className="text-3xs text-gray-400 font-semibold">Đã duyệt hết</span>
-                )}
-              </Link>
-
-              <Link
-                href="/admin/landmarks"
-                className="flex items-center justify-between p-3.5 rounded-xl bg-red-50/50 hover:bg-red-50 border border-red-100 transition-all transform hover:translate-x-1"
-              >
-                <span className="text-xs font-bold text-red-800">
-                  📍 Phê duyệt đề xuất địa danh mới
-                </span>
-                {stats.pendingLandmarks > 0 ? (
-                  <span className="bg-[#f86c6b] text-white text-xs font-extrabold px-2.5 py-0.5 rounded-full border border-red-500 shadow-sm animate-bounce">
-                    {stats.pendingLandmarks} mới
-                  </span>
-                ) : (
-                  <span className="text-3xs text-gray-400 font-semibold">Không có đề xuất</span>
                 )}
               </Link>
 
               <Link
                 href="/admin/payouts"
-                className="flex items-center justify-between p-3.5 rounded-xl bg-green-50/50 hover:bg-green-50 border border-green-100 transition-all transform hover:translate-x-1"
+                className="flex items-center justify-between p-3.5 rounded-xl border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50/10 transition-all group"
               >
-                <span className="text-xs font-bold text-green-800">
-                  💰 Quản lý thanh toán hoa hồng cho Host
-                </span>
-                <span className="text-3xs text-green-600 font-bold uppercase tracking-wider">Hàng tháng</span>
-              </Link>
-
-              <Link
-                href="/admin/inventory"
-                className="flex items-center justify-between p-3.5 rounded-xl bg-blue-50/50 hover:bg-blue-50 border border-blue-100 transition-all transform hover:translate-x-1"
-              >
-                <span className="text-xs font-bold text-blue-800">
-                  📦 Đồng bộ & can thiệp khẩn cấp tồn kho
-                </span>
-                <span className="text-3xs text-blue-600 font-bold uppercase tracking-wider">Bản đồ 30 ngày</span>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-500 flex items-center justify-center border border-emerald-100/30">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  </div>
+                  <div>
+                    <div className="text-[12px] font-semibold text-slate-700 group-hover:text-emerald-700 transition-colors">Chuyển Payout</div>
+                    <div className="text-[10px] text-slate-400 font-medium">Hoa hồng host</div>
+                  </div>
+                </div>
+                <span className="text-emerald-600 border border-emerald-100/50 text-[10px] font-bold bg-emerald-50 px-2 py-0.5 rounded-full">Có sẵn</span>
               </Link>
             </div>
           </div>
-          
-          <div className="text-center text-3xs text-gray-400 font-semibold pt-4 border-t border-gray-50 mt-4">
-            GoStay Admin Dashboard | CoreUI Inspired High-Fidelity Design System
-          </div>
+
         </div>
+
       </div>
     </div>
   );

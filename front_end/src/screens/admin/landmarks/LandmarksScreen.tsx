@@ -63,37 +63,40 @@ export function LandmarksScreen() {
 
 
   return (
-    <div>
-      <h2 className="text-xl font-bold text-gray-900 mb-6">Quản lý Địa danh</h2>
+    <div className="space-y-6 animate-smooth-appear">
+      <div>
+        <h2 className="text-xl font-semibold text-slate-800">Quản lý địa danh</h2>
+        <p className="text-xs text-slate-400 mt-1">Duyệt các đề xuất địa danh từ người dùng hoặc tự thiết lập địa danh chính thức.</p>
+      </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-5 border-b border-gray-200">
+      <div className="inline-flex bg-slate-100/80 p-0.5 rounded-full">
         <button
           onClick={() => setTab("suggestions")}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px ${
+          className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
             tab === "suggestions"
-              ? "border-[#20a8d8] text-[#20a8d8]"
-              : "border-transparent text-gray-500 hover:text-gray-700"
+              ? "bg-white shadow-sm text-slate-800"
+              : "text-slate-500 hover:text-slate-800"
           }`}
         >
           📋 Đề xuất {pendingCount > 0 && `(${pendingCount} chờ duyệt)`}
         </button>
         <button
           onClick={() => setTab("create")}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px ${
+          className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
             tab === "create"
-              ? "border-[#20a8d8] text-[#20a8d8]"
-              : "border-transparent text-gray-500 hover:text-gray-700"
+              ? "bg-white shadow-sm text-slate-800"
+              : "text-slate-500 hover:text-slate-800"
           }`}
         >
           ➕ Thêm địa danh mới
         </button>
         <button
           onClick={() => setTab("showlandmarks")}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px ${
+          className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
             tab === "showlandmarks"
-              ? "border-[#20a8d8] text-[#20a8d8]"
-              : "border-transparent text-gray-500 hover:text-gray-700"
+              ? "bg-white shadow-sm text-slate-800"
+              : "text-slate-500 hover:text-slate-800"
           }`}
         >
           Xem địa danh
@@ -104,110 +107,116 @@ export function LandmarksScreen() {
       {tab === "suggestions" && (
         <div className="space-y-4">
           {/* Sub-tabs for Status */}
-          <div className="flex gap-4 mb-4">
+          <div className="flex gap-2">
             <button
               onClick={() => setStatusTab("PENDING")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+              className={`px-3 py-1 rounded-full text-[11px] font-semibold transition-all border ${
                 statusTab === "PENDING"
-                  ? "bg-yellow-100 text-yellow-800"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  ? "bg-amber-50 text-amber-700 border-amber-250"
+                  : "bg-white text-slate-500 border-slate-100 hover:bg-slate-50"
               }`}
             >
               ⏳ Chờ duyệt {pendingCount > 0 && `(${pendingCount})`}
             </button>
             <button
               onClick={() => setStatusTab("RESOLVED")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+              className={`px-3 py-1 rounded-full text-[11px] font-semibold transition-all border ${
                 statusTab === "RESOLVED"
-                  ? "bg-green-100 text-green-800"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-250"
+                  : "bg-white text-slate-500 border-slate-100 hover:bg-slate-50"
               }`}
             >
               ✅ Đã chấp nhận
             </button>
             <button
               onClick={() => setStatusTab("REJECTED")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+              className={`px-3 py-1 rounded-full text-[11px] font-semibold transition-all border ${
                 statusTab === "REJECTED"
-                  ? "bg-red-100 text-red-800"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  ? "bg-red-50 text-red-700 border-red-250"
+                  : "bg-white text-slate-500 border-slate-100 hover:bg-slate-50"
               }`}
             >
               ❌ Từ chối
             </button>
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Ảnh</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Tên</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Mô tả</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Tọa độ</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Tỉnh/Thành phố</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Status</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Thao tác</th>
+          <div className="bg-white rounded-[20px] border border-slate-100 shadow-[0_2px_8px_rgba(0,0,0,0.02)] overflow-hidden">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="border-b border-slate-100 bg-slate-50/50">
+                  <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-16">Ảnh</th>
+                  <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tên</th>
+                  <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mô tả</th>
+                  <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tọa độ</th>
+                  <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tỉnh/Thành phố</th>
+                  <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</th>
+                  <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-right pr-6">Thao tác</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-slate-100">
                 {loading ? (
                   Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i}>
-                      <td colSpan={7} className="px-4 py-3">
-                        <div className="h-4 bg-gray-100 animate-pulse rounded" />
+                      <td colSpan={7} className="px-5 py-4">
+                        <div className="h-4 bg-slate-50 animate-pulse rounded" />
                       </td>
                     </tr>
                   ))
                 ) : suggestions.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-4 py-8 text-center text-gray-400">
+                    <td colSpan={7} className="px-5 py-8 text-center text-slate-400 font-medium">
                       Không có đề xuất nào.
                     </td>
                   </tr>
                 ) : (
                   suggestions.map((item) => (
-                    <tr key={item.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3">
+                    <tr key={item.id} className="hover:bg-slate-50/60 transition-colors">
+                      <td className="px-5 py-3">
                         {item.thumbnailUrl ? (
-                          <img src={item.thumbnailUrl} alt="Thumb" className="w-12 h-12 rounded object-cover" />
+                          <img src={item.thumbnailUrl} alt="Thumb" className="w-10 h-10 rounded-lg object-cover border border-slate-100 bg-slate-50" />
                         ) : (
-                          <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center text-xs text-gray-400">N/A</div>
+                          <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-[9px] text-slate-400">N/A</div>
                         )}
                       </td>
-                      <td className="px-4 py-3 font-medium text-gray-800">{item.name}</td>
-                      <td className="px-4 py-3 text-gray-500 text-xs max-w-xs truncate">
+                      <td className="px-5 py-3 font-semibold text-slate-800">{item.name}</td>
+                      <td className="px-5 py-3 text-slate-500 max-w-xs truncate">
                         {item.description}
                       </td>
-                      <td className="px-4 py-3 text-gray-500 text-xs">
+                      <td className="px-5 py-3 text-slate-500 font-mono text-[11px]">
                         {item.suggestedLatitude}, {item.suggestedLongitude}
                       </td>
-                      <td className="px-4 py-3 text-gray-500 text-xs">
+                      <td className="px-5 py-3 text-slate-650 font-medium">
                         {item.suggestedProvince}
                       </td>
-                      <td className="px-4 py-3">
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusBadge(item.status)}`}>
+                      <td className="px-5 py-3">
+                        <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-semibold ${
+                          item.status === "PENDING"
+                            ? "bg-amber-50 text-amber-700 border border-amber-100/50"
+                            : item.status === "RESOLVED"
+                            ? "bg-emerald-50 text-emerald-700 border border-emerald-100/50"
+                            : "bg-red-50 text-red-700 border border-red-100/50"
+                        }`}>
                           {item.status}
                         </span>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-5 py-3 text-right pr-6">
                         {item.status === "PENDING" ? (
-                          <div className="flex gap-2">
+                          <div className="flex gap-2 justify-end">
                             <button
                               onClick={() => handleUpdateStatus(item.id, "RESOLVED")}
-                              className="text-xs px-2 py-1 rounded bg-green-100 text-green-700 hover:bg-green-200 font-medium"
+                              className="text-[11px] px-2.5 py-1 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-colors"
                             >
                               Duyệt
                             </button>
                             <button
                               onClick={() => handleUpdateStatus(item.id, "REJECTED")}
-                              className="text-xs px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 font-medium"
+                              className="text-[11px] px-2.5 py-1 rounded-full bg-red-50 hover:bg-red-100 text-red-600 font-medium transition-colors"
                             >
                               Từ chối
                             </button>
                           </div>
                         ) : (
-                          <span className="text-xs text-gray-400">—</span>
+                          <span className="text-xs text-slate-400">—</span>
                         )}
                       </td>
                     </tr>
@@ -221,22 +230,21 @@ export function LandmarksScreen() {
 
       {/* Create Tab */}
       {tab === "create" && (
-        
-        <div className="bg-white rounded-xl border border-gray-200 p-6 max-w-5xl">
-          <h3 className="font-semibold text-gray-800 mb-4">Thêm địa danh mới</h3>
+        <div className="bg-white rounded-[20px] border border-slate-100 p-6 shadow-[0_2px_8px_rgba(0,0,0,0.02)] max-w-4xl text-xs">
+          <h3 className="font-semibold text-slate-800 text-sm mb-4">Thêm địa danh mới</h3>
 
           {successMsg && (
-            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+            <div className="mb-4 p-3 bg-emerald-50/60 border border-emerald-100 rounded-xl text-xs text-emerald-800">
               ✅ {successMsg}
             </div>
           )}
 
-          <form onSubmit={handleCreate} className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <form onSubmit={handleCreate} className="space-y-5">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Left Column: Text Fields */}
-              <div className="lg:col-span-2 space-y-5">
+              <div className="lg:col-span-2 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1.5">
                     Tên địa danh <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -245,12 +253,12 @@ export function LandmarksScreen() {
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
                     placeholder="VD: Hồ Hoàn Kiếm"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-app-primary"
+                    className="w-full border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-slate-350 focus:border-slate-350 text-slate-700 bg-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1.5">
                     Tỉnh/Thành phố <span className="text-red-500">*</span>
                   </label>
                   <Select 
@@ -258,13 +266,13 @@ export function LandmarksScreen() {
                     onValueChange={(val) => setForm({ ...form, province: val })}
                     required
                   >
-                    <SelectTrigger className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 h-[38px] text-sm text-gray-900 focus:ring-1 focus:ring-app-primary">
+                    <SelectTrigger className="w-full bg-white border border-slate-200 rounded-xl px-3 py-1.5 h-8 text-xs text-slate-800 focus:ring-1 focus:ring-slate-350">
                       <SelectValue placeholder="-- Chọn tỉnh/thành phố --" />
                     </SelectTrigger>
-                    <SelectContent position="popper" className="max-h-[300px]">
+                    <SelectContent position="popper" className="max-h-[250px] bg-white border border-slate-100 rounded-xl shadow-lg">
                       <SelectGroup>
                         {PROVINCES.map((province) => (
-                          <SelectItem key={province} value={province} className="text-sm">
+                          <SelectItem key={province} value={province} className="text-xs text-slate-700 hover:bg-slate-50 cursor-pointer">
                             {province}
                           </SelectItem>
                         ))}
@@ -275,7 +283,7 @@ export function LandmarksScreen() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1.5">
                       Vĩ độ (Latitude) <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -285,11 +293,11 @@ export function LandmarksScreen() {
                       value={form.latitude}
                       onChange={(e) => setForm({ ...form, latitude: e.target.value })}
                       placeholder="21.0285"
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-app-primary"
+                      className="w-full border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-slate-350 text-slate-700 bg-white"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1.5">
                       Kinh độ (Longitude) <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -299,33 +307,33 @@ export function LandmarksScreen() {
                       value={form.longitude}
                       onChange={(e) => setForm({ ...form, longitude: e.target.value })}
                       placeholder="105.8542"
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-app-primary"
+                      className="w-full border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-slate-350 text-slate-700 bg-white"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Mô tả thêm</label>
+                  <label className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1.5">Mô tả thêm</label>
                   <textarea
                     value={form.description}
                     onChange={(e) => setForm({ ...form, description: e.target.value })}
                     placeholder="Mô tả đặc điểm nổi bật của địa danh này..."
                     rows={4}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-app-primary resize-none"
+                    className="w-full border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-slate-350 text-slate-700 bg-white resize-none"
                   />
                 </div>
               </div>
 
               {/* Right Column: Image Uploads */}
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+              <div className="space-y-5">
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider">
                     Ảnh đại diện (Thumbnail)
                   </label>
                   
                   <div 
                     onClick={() => thumbnailInputRef.current?.click()}
-                    className="relative group w-full h-48 border-2 border-dashed border-gray-300 rounded-lg overflow-hidden hover:border-app-primary/50 transition-colors cursor-pointer bg-gray-50 flex flex-col items-center justify-center"
+                    className="relative group w-full h-40 border border-dashed border-slate-300 rounded-xl overflow-hidden hover:border-slate-400 transition-colors cursor-pointer bg-slate-50/50 flex flex-col items-center justify-center"
                   >
                     <input 
                       type="file" 
@@ -337,23 +345,23 @@ export function LandmarksScreen() {
                     {thumbnailPreview ? (
                       <img src={thumbnailPreview} alt="Thumbnail" className="object-cover w-full h-full" />
                     ) : (
-                      <div className="text-center p-4">
-                        <Upload className="w-8 h-8 text-gray-500 mx-auto mb-2" />
-                        <p className="text-sm text-gray-600">Tải ảnh đại diện</p>
-                        <p className="text-[10px] text-gray-500 mt-1">PNG, JPG, WEBP lên đến 10MB</p>
+                      <div className="text-center p-3">
+                        <Upload className="w-6 h-6 text-slate-450 mx-auto mb-1.5" />
+                        <p className="text-xs text-slate-650 font-medium">Tải ảnh đại diện</p>
+                        <p className="text-[9px] text-slate-400 mt-0.5">PNG, JPG, WEBP lên đến 10MB</p>
                       </div>
                     )}
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider">
                     Thư viện ảnh (Gallery)
                   </label>
                   
                   <div 
                     onClick={() => galleryInputRef.current?.click()}
-                    className="w-full h-32 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center hover:border-app-primary/50 transition-colors cursor-pointer bg-gray-50"
+                    className="w-full h-24 border border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center hover:border-slate-400 transition-colors cursor-pointer bg-slate-50/50"
                   >
                     <input 
                       type="file" 
@@ -363,14 +371,14 @@ export function LandmarksScreen() {
                       accept="image/*"
                       onChange={handleGalleryChange}
                     />
-                    <Upload className="w-6 h-6 text-gray-500 mb-2" />
-                    <p className="text-sm text-gray-600">Thêm ảnh khác</p>
+                    <Upload className="w-5 h-5 text-slate-450 mb-1.5" />
+                    <p className="text-xs text-slate-650 font-medium">Thêm ảnh khác</p>
                   </div>
 
                   {galleryPreviews.length > 0 && (
                     <div className="grid grid-cols-3 gap-2 mt-3">
                       {galleryPreviews.map((preview, index) => (
-                        <div key={index} className="relative group aspect-square rounded-lg overflow-hidden">
+                        <div key={index} className="relative group aspect-square rounded-xl overflow-hidden border border-slate-100 shadow-2xs">
                           <img src={preview} alt="Gallery" className="object-cover w-full h-full" />
                           <button
                             type="button"
@@ -378,9 +386,9 @@ export function LandmarksScreen() {
                               e.stopPropagation();
                               removeGalleryImage(index);
                             }}
-                            className="absolute top-1 right-1 bg-black/50 hover:bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-all"
+                            className="absolute top-1 right-1 bg-slate-900/60 hover:bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-all"
                           >
-                            <X className="w-3 h-3" />
+                            <X className="w-2.5 h-2.5" />
                           </button>
                         </div>
                       ))}
@@ -393,169 +401,167 @@ export function LandmarksScreen() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full bg-red-500 text-white px-4 py-3 rounded-lg text-sm font-medium hover:bg-red-600 disabled:opacity-50 transition-colors"
+              className="w-full bg-slate-800 text-white px-4 py-2.5 rounded-full text-xs font-semibold hover:bg-slate-900 disabled:opacity-50 transition-colors mt-4"
             >
               {submitting ? "Đang tạo..." : "Tạo địa danh"}
             </button>
           </form>
         </div>
-
       )}
 
-
-        {/* Show Landmarks Tab */}
-        {tab === "showlandmarks" && (
-          <div className="space-y-6">
-            {editingLandmark && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 max-w-lg">
-                <h3 className="font-semibold text-yellow-800 mb-4">✍️ Chỉnh sửa địa danh</h3>
-                <form onSubmit={handleSaveEdit} className="space-y-4">
+      {/* Show Landmarks Tab */}
+      {tab === "showlandmarks" && (
+        <div className="space-y-6 text-xs">
+          {editingLandmark && (
+            <div className="bg-amber-50/50 border border-amber-100 rounded-[20px] p-5 max-w-md animate-scale-up">
+              <h3 className="font-semibold text-amber-800 mb-3.5 text-xs uppercase tracking-wider">✍️ Chỉnh sửa địa danh</h3>
+              <form onSubmit={handleSaveEdit} className="space-y-3.5">
+                <div>
+                  <label className="block text-[9px] font-bold text-slate-450 uppercase mb-1">Tên địa danh</label>
+                  <input
+                    type="text"
+                    value={editingLandmark.name}
+                    onChange={(e) => setEditingLandmark({ ...editingLandmark, name: e.target.value })}
+                    className="w-full border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-slate-300 bg-white text-slate-800"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[9px] font-bold text-slate-450 uppercase mb-1">Mô tả</label>
+                  <textarea
+                    value={editingLandmark.description}
+                    onChange={(e) => setEditingLandmark({ ...editingLandmark, description: e.target.value })}
+                    rows={2}
+                    className="w-full border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-slate-300 bg-white text-slate-800 resize-none"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Tên địa danh</label>
+                    <label className="block text-[9px] font-bold text-slate-450 uppercase mb-1">Vĩ độ</label>
                     <input
-                      type="text"
-                      value={editingLandmark.name}
-                      onChange={(e) => setEditingLandmark({ ...editingLandmark, name: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300 bg-white text-gray-800"
+                      type="number"
+                      step="any"
+                      value={editingLandmark.latitude}
+                      onChange={(e) => setEditingLandmark({ ...editingLandmark, latitude: e.target.value })}
+                      className="w-full border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-slate-300 bg-white text-slate-800"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Mô tả</label>
-                    <textarea
-                      value={editingLandmark.description}
-                      onChange={(e) => setEditingLandmark({ ...editingLandmark, description: e.target.value })}
-                      rows={2}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300 resize-none bg-white text-gray-800"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Vĩ độ</label>
-                      <input
-                        type="number"
-                        step="any"
-                        value={editingLandmark.latitude}
-                        onChange={(e) => setEditingLandmark({ ...editingLandmark, latitude: e.target.value })}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300 bg-white text-gray-800"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Kinh độ</label>
-                      <input
-                        type="number"
-                        step="any"
-                        value={editingLandmark.longitude}
-                        onChange={(e) => setEditingLandmark({ ...editingLandmark, longitude: e.target.value })}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300 bg-white text-gray-800"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Tỉnh/Thành phố</label>
+                    <label className="block text-[9px] font-bold text-slate-450 uppercase mb-1">Kinh độ</label>
                     <input
-                      type="text"
-                      value={editingLandmark.province}
-                      onChange={(e) => setEditingLandmark({ ...editingLandmark, province: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300 bg-white text-gray-800"
+                      type="number"
+                      step="any"
+                      value={editingLandmark.longitude}
+                      onChange={(e) => setEditingLandmark({ ...editingLandmark, longitude: e.target.value })}
+                      className="w-full border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-slate-300 bg-white text-slate-800"
                     />
                   </div>
-                  <div className="flex gap-2">
-                    <button
-                      type="submit"
-                      className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
-                    >
-                      Lưu thay đổi
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setEditingLandmark(null)}
-                      className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors"
-                    >
-                      Hủy
-                    </button>
-                  </div>
-                </form>
-              </div>
-            )}
+                </div>
+                <div>
+                  <label className="block text-[9px] font-bold text-slate-450 uppercase mb-1">Tỉnh/Thành phố</label>
+                  <input
+                    type="text"
+                    value={editingLandmark.province}
+                    onChange={(e) => setEditingLandmark({ ...editingLandmark, province: e.target.value })}
+                    className="w-full border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-slate-300 bg-white text-slate-800"
+                  />
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <button
+                    type="submit"
+                    className="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-full text-[11px] font-semibold transition-colors"
+                  >
+                    Lưu thay đổi
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditingLandmark(null)}
+                    className="bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-full text-[11px] font-semibold hover:bg-slate-50 transition-colors"
+                  >
+                    Hủy
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
 
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
-                <h3 className="font-semibold text-gray-800">Danh sách địa danh chính thức</h3>
-              </div>
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="text-left px-4 py-3 font-semibold text-gray-600">Tên</th>
-                    <th className="text-left px-4 py-3 font-semibold text-gray-600">Mô tả</th>
-                    <th className="text-left px-4 py-3 font-semibold text-gray-600">Tọa độ</th>
-                    <th className="text-left px-4 py-3 font-semibold text-gray-600">Tỉnh/Thành phố</th>
-                    <th className="text-left px-4 py-3 font-semibold text-gray-600">Trạng thái</th>
-                    <th className="text-left px-4 py-3 font-semibold text-gray-600">Thao tác</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {loadingLandmarks ? (
-                    Array.from({ length: 5 }).map((_, i) => (
-                      <tr key={i}>
-                        <td colSpan={6} className="px-4 py-3">
-                          <div className="h-4 bg-gray-100 animate-pulse rounded" />
-                        </td>
-                      </tr>
-                    ))
-                  ) : landmarks.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="px-4 py-8 text-center text-gray-400">
-                        Không có địa danh nào.
+          <div className="bg-white rounded-[20px] border border-slate-100 shadow-[0_2px_8px_rgba(0,0,0,0.02)] overflow-hidden">
+            <div className="px-5 py-3 border-b border-slate-50 bg-slate-50/50">
+              <h3 className="font-semibold text-slate-800">Danh sách địa danh chính thức</h3>
+            </div>
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-100 bg-slate-50/50">
+                  <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tên</th>
+                  <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mô tả</th>
+                  <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tọa độ</th>
+                  <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tỉnh/Thành phố</th>
+                  <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Trạng thái</th>
+                  <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-right pr-6">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-xs">
+                {loadingLandmarks ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <tr key={i}>
+                      <td colSpan={6} className="px-5 py-4">
+                        <div className="h-4 bg-slate-50 animate-pulse rounded" />
                       </td>
                     </tr>
-                  ) : (
-                    landmarks.map((item) => (
-                      <tr key={item.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-3 font-medium text-gray-800">{item.name}</td>
-                        <td className="px-4 py-3 text-gray-500 text-xs max-w-xs truncate">
-                          {item.description}
-                        </td>
-                        <td className="px-4 py-3 text-gray-500 text-xs">
-                          {item.latitude}, {item.longitude}
-                        </td>
-                        <td className="px-4 py-3 text-gray-600">{item.province}</td>
-                        <td className="px-4 py-3">
-                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                            item.status === "ACTIVE" 
-                              ? "bg-green-100 text-green-700" 
-                              : "bg-gray-100 text-gray-600"
-                          }`}>
-                            {item.status}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => handleStartEdit(item)}
-                              className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 font-medium"
-                            >
-                              Sửa
-                            </button>
-                            <button
-                              onClick={() => handleUpdateLandmarkStatus(item.id, item.status)}
-                              className={`text-xs px-2 py-1 rounded font-medium ${
-                                item.status === "ACTIVE" 
-                                  ? "bg-amber-100 text-amber-700 hover:bg-amber-200" 
-                                  : "bg-green-100 text-green-700 hover:bg-green-200"
-                              }`}
-                            >
-                              {item.status === "ACTIVE" ? "Ẩn" : "Hiện"}
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+                  ))
+                ) : landmarks.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-5 py-8 text-center text-slate-400 font-medium">
+                      Không có địa danh nào.
+                    </td>
+                  </tr>
+                ) : (
+                  landmarks.map((item) => (
+                    <tr key={item.id} className="hover:bg-slate-50/60 transition-colors">
+                      <td className="px-5 py-3.5 font-semibold text-slate-800">{item.name}</td>
+                      <td className="px-5 py-3.5 text-slate-500 max-w-xs truncate">
+                        {item.description}
+                      </td>
+                      <td className="px-5 py-3.5 text-slate-500 font-mono text-[11px]">
+                        {item.latitude}, {item.longitude}
+                      </td>
+                      <td className="px-5 py-3.5 text-slate-700">{item.province}</td>
+                      <td className="px-5 py-3.5">
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
+                          item.status === "ACTIVE" 
+                            ? "bg-green-50 text-green-700 border border-green-100/30" 
+                            : "bg-slate-100 text-slate-500"
+                        }`}>
+                          {item.status}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5 text-right pr-6">
+                        <div className="flex gap-2 justify-end">
+                          <button
+                            onClick={() => handleStartEdit(item)}
+                            className="text-[11px] px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium transition-colors"
+                          >
+                            Sửa
+                          </button>
+                          <button
+                            onClick={() => handleUpdateLandmarkStatus(item.id, item.status)}
+                            className={`text-[11px] px-2.5 py-1 rounded-full font-medium transition-colors ${
+                              item.status === "ACTIVE" 
+                                ? "bg-amber-50 text-amber-700 hover:bg-amber-100" 
+                                : "bg-green-55/40 text-emerald-700 hover:bg-emerald-50 border border-emerald-100/30"
+                            }`}
+                          >
+                            {item.status === "ACTIVE" ? "Ẩn" : "Hiện"}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
-        )} 
+        </div>
+      )}
     </div>
   );
 }

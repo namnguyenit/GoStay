@@ -19,26 +19,29 @@ export function EnterprisesScreen() {
   } = useAdminEnterprises();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-smooth-appear">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-gray-900">Xét duyệt Doanh nghiệp (Enterprise)</h2>
+        <div>
+          <h2 className="text-xl font-semibold text-slate-800">Xét duyệt doanh nghiệp</h2>
+          <p className="text-xs text-slate-400 mt-1">Xét duyệt các yêu cầu đăng ký tài khoản doanh nghiệp (Enterprise).</p>
+        </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 border-b border-gray-200 pb-px">
+      <div className="inline-flex bg-slate-100/80 p-0.5 rounded-full">
         {(["pending", "all"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px ${
+            className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
               tab === t
-                ? "border-[#20a8d8] text-[#20a8d8]"
-                : "border-transparent text-gray-500 hover:text-gray-700"
+                ? "bg-white shadow-sm text-slate-800"
+                : "text-slate-500 hover:text-slate-800"
             }`}
           >
             {t === "pending"
               ? `⏳ Chờ xét duyệt (${pendingCount})`
-              : `🏢 Tất cả Doanh nghiệp (${allCount})`}
+              : `🏢 Tất cả doanh nghiệp (${allCount})`}
           </button>
         ))}
       </div>

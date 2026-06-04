@@ -12,19 +12,24 @@ export function HostsScreen() {
   } = useAdminHosts();
 
   return (
-    <div>
-      <h2 className="text-xl font-bold text-gray-900 mb-6">Quản lý Host</h2>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div>
+          <h2 className="text-lg font-semibold text-slate-800 tracking-tight">Quản lý đối tác Host</h2>
+          <p className="text-xs text-slate-400 mt-0.5 font-medium">Phê duyệt và theo dõi các đối tác lưu trú</p>
+        </div>
+      </div>
 
       {/* Tabs Layout */}
-      <div className="flex gap-2 mb-5 border-b border-gray-200">
+      <div className="inline-flex bg-slate-100/85 p-1 rounded-full border border-slate-150 mb-2">
         {(["pending", "all"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px ${
+            className={`px-5 py-2 rounded-full text-xs font-bold transition-all ${
               tab === t
-                ? "border-[#20a8d8] text-[#20a8d8]"
-                : "border-transparent text-gray-500 hover:text-gray-700"
+                ? "bg-white shadow-[0_2px_8px_-2px_rgba(0,0,0,0.1)] text-slate-800"
+                : "text-slate-500 hover:text-slate-800"
             }`}
           >
             {t === "pending" ? `⏳ Chờ duyệt (${pendingCount})` : `🏠 Tất cả Hosts (${allCount})`}

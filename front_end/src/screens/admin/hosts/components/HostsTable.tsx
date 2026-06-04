@@ -11,46 +11,52 @@ interface HostsTableProps {
 
 export function HostsTable({ loading, displayed, tab, onViewDetail, onApprove }: HostsTableProps) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <div className="bg-white rounded-[20px] border border-slate-100 overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
       <table className="w-full text-sm">
-        <thead className="bg-gray-50 border-b border-gray-200">
+        <thead>
           <tr>
-            <th className="text-left px-4 py-3 font-semibold text-gray-600">Username</th>
-            <th className="text-left px-4 py-3 font-semibold text-gray-600">Email</th>
-            <th className="text-left px-4 py-3 font-semibold text-gray-600">Trạng thái</th>
-            <th className="text-left px-4 py-3 font-semibold text-gray-600">Thao tác</th>
+            <th className="text-left px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 bg-slate-50/50">Username</th>
+            <th className="text-left px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 bg-slate-50/50">Email</th>
+            <th className="text-left px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 bg-slate-50/50">Trạng thái</th>
+            <th className="text-left px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 bg-slate-50/50">Thao tác</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-100">
+        <tbody className="divide-y divide-slate-50">
           {loading ? (
             Array.from({ length: 5 }).map((_, i) => (
               <tr key={i}>
-                <td colSpan={4} className="px-4 py-3">
-                  <div className="h-4 bg-gray-100 animate-pulse rounded" />
+                <td colSpan={4} className="px-5 py-4">
+                  <div className="h-4 bg-slate-50 animate-pulse rounded" />
                 </td>
               </tr>
             ))
           ) : displayed.length === 0 ? (
             <tr>
-              <td colSpan={4} className="px-4 py-8 text-center text-gray-400">
+              <td colSpan={4} className="px-5 py-8 text-center text-xs text-slate-400 font-medium">
                 {tab === "pending" ? "Không có đơn nào đang chờ duyệt." : "Chưa có Host nào."}
               </td>
             </tr>
           ) : (
             displayed.map((host) => (
-              <tr key={host.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3 font-medium text-gray-800">{host.username}</td>
-                <td className="px-4 py-3 text-gray-500 text-xs">{host.email}</td>
-                <td className="px-4 py-3">
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700 font-medium">
+              <tr key={host.id} className="hover:bg-slate-50/30 transition-colors">
+                <td className="px-5 py-3.5 font-semibold text-slate-800 text-[13.5px]">{host.username}</td>
+                <td className="px-5 py-3.5 text-slate-455 text-xs font-medium">{host.email}</td>
+                <td className="px-5 py-3.5">
+                  <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold border ${
+                    (host.approvalStatus ?? host.status ?? "PENDING") === "PENDING"
+                      ? "bg-amber-50 text-amber-600 border-amber-100/50"
+                      : (host.approvalStatus ?? host.status ?? "") === "APPROVED"
+                      ? "bg-emerald-50 text-emerald-600 border-emerald-100/50"
+                      : "bg-rose-50 text-rose-600 border-rose-100/50"
+                  }`}>
                     {host.approvalStatus ?? host.status ?? "PENDING"}
                   </span>
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-5 py-3.5">
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => onViewDetail(host.id)}
-                      className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-700 hover:bg-gray-200 font-medium"
+                      className="text-[11px] px-2.5 py-1.5 rounded-lg border font-bold bg-white text-slate-650 border-slate-200/70 hover:bg-slate-50 transition-colors"
                     >
                       Chi tiết
                     </button>
@@ -58,13 +64,13 @@ export function HostsTable({ loading, displayed, tab, onViewDetail, onApprove }:
                       <>
                         <button
                           onClick={() => onApprove(host.id, true)}
-                          className="text-xs px-2 py-1 rounded bg-green-100 text-green-700 hover:bg-green-200 font-medium"
+                          className="text-[11px] px-2.5 py-1.5 rounded-lg border font-bold bg-emerald-50 text-emerald-600 border-emerald-100/40 hover:bg-emerald-100/60 transition-colors"
                         >
                           Duyệt
                         </button>
                         <button
                           onClick={() => onApprove(host.id, false)}
-                          className="text-xs px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 font-medium"
+                          className="text-[11px] px-2.5 py-1.5 rounded-lg border font-bold bg-rose-50 text-rose-650 border-rose-100/40 hover:bg-rose-100/60 transition-colors"
                         >
                           Từ chối
                         </button>

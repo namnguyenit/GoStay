@@ -8,15 +8,20 @@ const ServiceServices = {
     const res = await Api.get(endpoint.service.getAll);
     // Parse DTO
     let adaptedRes = res;
-    if (res && res.data && res.data.content && Array.isArray(res.data.content)) {
+    let items = res?.data?.content || res?.data?.data;
+    if (Array.isArray(res?.data)) {
+      items = res.data;
+    }
+    
+    if (items && Array.isArray(items)) {
       adaptedRes = {
         ...res,
-        data: res.data.content.map((item: any) => ({
+        data: items.map((item: any) => ({
           id: item.id,
-          title: item.title,
+          name: item.title,
           price: item.basePrice ? Number(item.basePrice) : undefined,
           rating: item.averageRating ? Number(item.averageRating) : undefined,
-          img: item.thumbnailUrl,
+          image: item.thumbnailUrl,
           address: item.province,
         }))
       };

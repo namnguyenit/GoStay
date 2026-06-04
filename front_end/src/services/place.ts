@@ -8,10 +8,15 @@ const PlaceServices = {
     const res = await Api.get(endpoint.place.getAll);
     // Parse DTO
     let adaptedRes = res;
-    if (res && res.data && res.data.content && Array.isArray(res.data.content)) {
+    let items = res?.data?.content || res?.data?.data;
+    if (Array.isArray(res?.data)) {
+      items = res.data;
+    }
+    
+    if (items && Array.isArray(items)) {
       adaptedRes = {
         ...res,
-        data: res.data.content.map((item: any) => ({
+        data: items.map((item: any) => ({
           id: item.id,
           title: item.title,
           price: item.basePrice ? Number(item.basePrice) : undefined,
