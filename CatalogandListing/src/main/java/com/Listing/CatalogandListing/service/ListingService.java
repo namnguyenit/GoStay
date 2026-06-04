@@ -100,7 +100,7 @@ public class ListingService {
         }
 
         listing.setHostId(UUID.fromString(userId));
-        listing.setStatus(ListingStatus.ACTIVE);
+        listing.setStatus(ListingStatus.PENDING);
         listing.setLocation(GeometryUtil.createPoint(listing.getLongitude(), listing.getLatitude()));
         listing = listingRepository.save(listing);
 
@@ -183,31 +183,6 @@ public class ListingService {
             listingPage = listingRepository.findByStatus(enumStatus, pageable);
         } else {
             listingPage = listingRepository.findAll(pageable);
-        }
-
-        java.util.List<ListingDetailResponse> dtoList = listingPage.getContent()
-                .stream()
-                .map(listingMapper::toDetailResponse)
-                .collect(java.util.stream.Collectors.toList());
-
-        return PaginationResponse.<ListingDetailResponse>builder()
-                .content(dtoList)
-                .totalPages(listingPage.getTotalPages())
-                .totalElements(listingPage.getTotalElements())
-                .build();
-    }
-
-    public PaginationResponse<ListingDetailResponse> searchListings(com.Listing.CatalogandListing.enums.ListingCategory category, String province, int page, int size) {
-        Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "averageRating"));
-        Page<Listing> listingPage;
-        if (category != null && province != null && !province.isBlank()) {
-            listingPage = listingRepository.findByStatusAndCategoryAndProvince(ListingStatus.ACTIVE, category, province, pageable);
-        } else if (category != null) {
-            listingPage = listingRepository.findByStatusAndCategory(ListingStatus.ACTIVE, category, pageable);
-        } else if (province != null && !province.isBlank()) {
-            listingPage = listingRepository.findByStatusAndProvince(ListingStatus.ACTIVE, province, pageable);
-        } else {
-            listingPage = listingRepository.findByStatus(ListingStatus.ACTIVE, pageable);
         }
 
         java.util.List<ListingDetailResponse> dtoList = listingPage.getContent()

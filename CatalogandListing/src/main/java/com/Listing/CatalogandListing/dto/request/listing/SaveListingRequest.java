@@ -5,6 +5,7 @@ import com.Listing.CatalogandListing.enums.ListingCategory;
 import com.Listing.CatalogandListing.enums.PriceUnit;
 import com.Listing.CatalogandListing.enums.SubCategory;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -45,9 +46,13 @@ public class SaveListingRequest {
     private PriceUnit priceUnit;
 
     @NotNull(message = "Latitude không được để trống")
+    @DecimalMin(value = "-90.0", message = "Latitude phải nằm trong khoảng [-90, 90]")
+    @DecimalMax(value = "90.0", message = "Latitude phải nằm trong khoảng [-90, 90]")
     private Double latitude;
 
     @NotNull(message = "Longitude không được để trống")
+    @DecimalMin(value = "-180.0", message = "Longitude phải nằm trong khoảng [-180, 180]")
+    @DecimalMax(value = "180.0", message = "Longitude phải nằm trong khoảng [-180, 180]")
     private Double longitude;
 
     private String thumbnailUrl;

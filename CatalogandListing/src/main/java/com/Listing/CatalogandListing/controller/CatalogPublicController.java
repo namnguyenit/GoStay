@@ -14,8 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.Map;
-import com.Listing.CatalogandListing.entity.Listing;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,32 +22,6 @@ public class CatalogPublicController {
     final ListingService listingService;
     final ReviewService reviewService;
     final LandmarkService landmarkService;
-
-    /**
-     * Tìm kiếm và hiển thị danh sách Dịch vụ công khai (sắp xếp theo averageRating giảm dần)
-     * Lộ trình: GET /api/v1/catalog/listings
-     */
-    @GetMapping
-    public ResponseEntity<ApiResponse<PaginationResponse<ListingDetailResponse>>> searchListings(
-            @RequestParam(required = false) com.Listing.CatalogandListing.enums.ListingCategory category,
-            @RequestParam(required = false) String province,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        PaginationResponse<ListingDetailResponse> response = listingService.searchListings(category, province, page, size);
-        return ResponseEntity.ok(ApiResponse.success("Tìm kiếm danh sách dịch vụ thành công.", response));
-    }
-
-    /**
-     * Lấy danh sách Địa danh nổi tiếng công khai (Landmarks)
-     * Lộ trình: GET /api/v1/catalog/listings/landmarks
-     */
-    @GetMapping("/landmarks/{landmarkId}/nearby")
-    public ResponseEntity<ApiResponse<Map<String, List<Listing>>>> getNearbyListings(
-            @PathVariable UUID landmarkId,
-            @RequestParam(defaultValue = "5000") double radius) {
-        Map<String, List<Listing>> nearby = landmarkService.getNearbyListings(landmarkId, radius);
-        return ResponseEntity.ok(ApiResponse.success("Success", nearby));
-    }
 
     @GetMapping("/landmarks")
     public ResponseEntity<ApiResponse<List<Landmark>>> getPublicLandmarks() {

@@ -3,6 +3,7 @@ package com.Listing.CatalogandListing.controller;
 import com.Listing.CatalogandListing.dto.request.review.SubmitReviewRequest;
 import com.Listing.CatalogandListing.dto.response.ApiResponse;
 import com.Listing.CatalogandListing.service.ReviewService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,7 +25,7 @@ public class CatalogUserController {
      * @return 201 Created nếu thành công, 403 Forbidden nếu user chưa sử dụng dịch vụ
      */
     @PostMapping
-    public ResponseEntity<ApiResponse<Void>> submitReview(@RequestBody SubmitReviewRequest request) {
+    public ResponseEntity<ApiResponse<Void>> submitReview(@RequestBody @Valid SubmitReviewRequest request) {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         reviewService.submitReview(userId, request);
         return ResponseEntity.status(201).body(ApiResponse.created("Đăng đánh giá thành công."));

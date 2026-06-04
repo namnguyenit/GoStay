@@ -279,4 +279,30 @@ public class InventoryInternalService {
 
         return category.trim();
     }
+
+    @Transactional(readOnly = true)
+    public com.Gostay.BookingandInventory.dto.response.BatchCheckAvailabilityResponse batchCheckAvailability(com.Gostay.BookingandInventory.dto.request.BatchCheckAvailabilityRequest request) {
+        if (request.getListingIds() == null || request.getListingIds().isEmpty() || request.getStartDate() == null || request.getEndDate() == null) {
+            return new com.Gostay.BookingandInventory.dto.response.BatchCheckAvailabilityResponse(new ArrayList<>());
+        }
+
+        List<UUID> availableIds = new ArrayList<>();
+        for (UUID listingId : request.getListingIds()) {
+            boolean isAvailable = true;
+            LocalDate current = request.getStartDate();
+            while (!current.isAfter(request.getEndDate())) {
+                Optional<InventoryCalendar> calOpt = calendarRepository.findByListingIdAndDateAndTimeSlot(listingId, current, "ALL_DAY");
+                if (calOpt.isEmpty() || calOpt.get().getStatus() == InventoryCalendarStatus.BLOCKED || calOpt.get().getAvailableQuantity() < request.getRequiredQuantity()) {
+                    isAvailable = false;
+                    break;
+                }
+                current = current.plusDays(1);
+            }
+            if (isAvailable) {
+                availableIds.add(listingId);
+            }
+        }
+
+        return new com.Gostay.BookingandInventory.dto.response.BatchCheckAvailabilityResponse(availableIds);
+    }
 }

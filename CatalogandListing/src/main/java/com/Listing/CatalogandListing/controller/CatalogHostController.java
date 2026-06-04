@@ -7,6 +7,7 @@ import com.Listing.CatalogandListing.dto.response.PaginationResponse;
 import com.Listing.CatalogandListing.service.LandmarkService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +22,7 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/catalog/host")
+@PreAuthorize("hasAnyRole('HOST', 'ENTERPRISE')")
 public class CatalogHostController {
     final LandmarkService landmarkService;
     final ComplexService complexService;
@@ -36,7 +38,7 @@ public class CatalogHostController {
      */
     @PostMapping("/landmark-suggestions")
     public ResponseEntity<ApiResponse<Void>> suggestLandmark(
-            @RequestBody SuggestLandmarkRequest suggestLandmarkRequest) {
+            @RequestBody @Valid SuggestLandmarkRequest suggestLandmarkRequest) {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         landmarkService.suggestLandmark(userId, suggestLandmarkRequest);
         return ResponseEntity.status(201).body(ApiResponse.created("Đề nghị tạo khu vực landmark thành công."));
@@ -51,7 +53,7 @@ public class CatalogHostController {
      * @return 201 Created hoặc 403 Forbidden (Nếu không phải ENTERPRISE)
      */
     @PostMapping("/complexes")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ENTERPRISE')")
+    @PreAuthorize("hasRole('ENTERPRISE')")
     public ResponseEntity<ApiResponse<Void>> createComplex(@RequestBody @Valid CreateComplexRequest request) {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         complexService.createComplex(userId, request);
@@ -62,7 +64,7 @@ public class CatalogHostController {
      * Lấy danh sách Khu tổ hợp của Host
      */
     @GetMapping("/complexes")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ENTERPRISE')")
+    @PreAuthorize("hasRole('ENTERPRISE')")
     public ResponseEntity<ApiResponse<java.util.List<com.Listing.CatalogandListing.dto.response.ComplexResponse>>> getMyComplexes() {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         java.util.List<com.Listing.CatalogandListing.dto.response.ComplexResponse> complexes = complexService.getComplexesByHostId(userId);

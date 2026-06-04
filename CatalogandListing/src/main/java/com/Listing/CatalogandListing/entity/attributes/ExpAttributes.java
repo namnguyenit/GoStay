@@ -4,6 +4,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import java.util.List;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -31,8 +33,12 @@ public class ExpAttributes extends BaseListingAttributes {
         @NotBlank(message = "Meeting point is required")
         private String meetingPoint;
         @NotNull(message = "Meeting point latitude is required")
+        @DecimalMin(value = "-90.0", message = "Meeting point latitude must be between -90 and 90")
+        @DecimalMax(value = "90.0", message = "Meeting point latitude must be between -90 and 90")
         private Double meetingPointLat;
         @NotNull(message = "Meeting point longitude is required")
+        @DecimalMin(value = "-180.0", message = "Meeting point longitude must be between -180 and 180")
+        @DecimalMax(value = "180.0", message = "Meeting point longitude must be between -180 and 180")
         private Double meetingPointLng;
     }
 

@@ -275,7 +275,12 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public boolean hasPurchasedListing(UUID userId, UUID listingId) {
-        return orderRepository.hasPurchasedListing(userId, listingId, List.of(OrderStatus.COMPLETED, OrderStatus.CONFIRMED));
+        return hasCompletedListingOrder(userId, listingId);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean hasCompletedListingOrder(UUID userId, UUID listingId) {
+        return orderRepository.hasPurchasedListing(userId, listingId, List.of(OrderStatus.COMPLETED));
     }
 
     private void refreshSelectedCartItemsFromCatalog(List<CartItem> items) {

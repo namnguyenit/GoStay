@@ -1,0 +1,411 @@
+openapi: 3.0.3
+info:
+  title: Node Search, Location & Recommendation API
+  version: 1.0.0
+  description: Public API for Search, Location, and Recommendations (Node.js Service).
+servers:
+  - url: http://localhost:8086/api/v1
+    description: Local development server
+paths:
+  /search/locations/suggest:
+    get:
+      summary: Autocomplete cho ô địa điểm
+      description: Nhận text nhập vào và trả về gợi ý Landmark, Province hoặc Complex.
+      parameters:
+        - in: query
+          name: q
+          required: true
+          schema:
+            type: string
+          description: Từ khóa tìm kiếm (có dấu hoặc không dấu)
+      responses:
+        '200':
+          description: Danh sách gợi ý địa điểm
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LocationSuggestion'
+  /search/listings:
+    get:
+      summary: Tìm kiếm Listing (Airbnb style)
+      description: Search tổng hợp với filter địa điểm, thời gian, số khách, category.
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+          description: Từ khóa listing, hỗ trợ không dấu qua title_normalized.
+        - in: query
+          name: locationQuery
+          schema:
+            type: string
+          description: Tên Landmark, Province hoặc Complex.
+        - in: query
+          name: category
+          schema:
+            type: string
+            enum: [ALL, STAY, EXP, SVC]
+            default: ALL
+        - in: query
+          name: landmarkId
+          schema:
+            type: string
+        - in: query
+          name: lat
+          schema:
+            type: number
+        - in: query
+          name: lng
+          schema:
+            type: number
+        - in: query
+          name: radiusMeters
+          schema:
+            type: number
+            default: 5000
+        - in: query
+          name: checkIn
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: checkOut
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: guests
+          schema:
+            type: integer
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            enum: [DISTANCE, RATING, PRICE_ASC, PRICE_DESC, RELEVANCE]
+      responses:
+        '200':
+          description: Danh sách kết quả tìm kiếm
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+  /search/map:
+    get:
+      summary: Listing markers cho bản đồ
+      description: Search nhẹ cho map viewport, hỗ trợ bounding box hoặc các filter giống /search/listings.
+      parameters:
+        - in: query
+          name: minLat
+          schema:
+            type: number
+        - in: query
+          name: maxLat
+          schema:
+            type: number
+        - in: query
+          name: minLng
+          schema:
+            type: number
+        - in: query
+          name: maxLng
+          schema:
+            type: number
+        - in: query
+          name: category
+          schema:
+            type: string
+            enum: [ALL, STAY, EXP, SVC]
+            default: ALL
+        - in: query
+          name: q
+          schema:
+            type: string
+        - in: query
+          name: locationQuery
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Danh sách marker trong viewport
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MapSearchResponse'
+  /recommendations/home/feed:
+    get:
+      summary: Infinite scroll feed cho trang chủ
+      parameters:
+        - in: query
+          name: lat
+          schema:
+            type: number
+        - in: query
+          name: lng
+          schema:
+            type: number
+        - in: query
+          name: category
+          schema:
+            type: string
+            enum: [ALL, STAY, EXP, SVC]
+            default: ALL
+        - in: query
+          name: cursor
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Trang tiếp theo của feed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedResponse'
+  /recommendations/home/hero-landmarks:
+    get:
+      summary: 6 địa danh nổi bật cho hero banner
+      responses:
+        '200':
+          description: Danh sách địa danh nổi bật
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Destination'
+  /recommendations/provinces:
+    get:
+      summary: Danh sách tỉnh nổi bật để discovery
+      responses:
+        '200':
+          description: Danh sách tỉnh có địa danh active
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Province'
+  /recommendations/provinces/{province}/destinations:
+    get:
+      summary: Discovery theo tỉnh
+      description: Trả về Landmark và Complex/khu du lịch của tỉnh để người dùng đi tiếp vào detail hoặc listing quanh địa danh.
+      parameters:
+        - in: path
+          name: province
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Landmark và Complex thuộc tỉnh
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Destination'
+  /recommendations/cross-sell/cart-item:
+    post:
+      summary: Gợi ý chéo sau khi thêm một listing vào giỏ hàng
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrossSellRequest'
+      responses:
+        '200':
+          description: Top 5 gợi ý chéo
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ListingCard'
+components:
+  schemas:
+    ListingCard:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        category:
+          type: string
+        subCategory:
+          type: string
+        province:
+          type: string
+        thumbnailUrl:
+          type: string
+        basePrice:
+          type: number
+        priceUnit:
+          type: string
+        averageRating:
+          type: number
+        totalReviews:
+          type: integer
+        latitude:
+          type: number
+        longitude:
+          type: number
+        distanceMeters:
+          type: integer
+        isAvailable:
+          type: boolean
+    LocationSuggestion:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [LANDMARK, PROVINCE, COMPLEX]
+        id:
+          type: string
+        name:
+          type: string
+        province:
+          type: string
+    SearchResponse:
+      type: object
+      properties:
+        mode:
+          type: string
+          enum: [GROUPED, MIXED]
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ListingCard'
+        total:
+          type: integer
+    MapSearchResponse:
+      type: object
+      properties:
+        mode:
+          type: string
+          enum: [MAP]
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/MapListingMarker'
+        total:
+          type: integer
+    MapListingMarker:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        category:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        price:
+          type: number
+        priceUnit:
+          type: string
+        averageRating:
+          type: number
+        thumbnailUrl:
+          type: string
+        complexId:
+          type: string
+    Province:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        code:
+          type: string
+        landmarkCount:
+          type: integer
+        featuredLandmarkCount:
+          type: integer
+        complexCount:
+          type: integer
+        rank:
+          type: integer
+    Destination:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [LANDMARK, COMPLEX]
+        destinationType:
+          type: string
+          enum: [LANDMARK, COMPLEX]
+        name:
+          type: string
+        province:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        thumbnailUrl:
+          type: string
+        radiusMeters:
+          type: number
+    FeedResponse:
+      type: object
+      properties:
+        cursor:
+          type: string
+        nextCursor:
+          type: string
+        sections:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum:
+                  [
+                    LISTING_CAROUSEL,
+                    DESTINATION_GRID,
+                    HERO_LANDMARKS,
+                    FEATURED_LANDMARKS,
+                  ]
+              title:
+                type: string
+              items:
+                type: array
+                items:
+                  type: object
+    CrossSellRequest:
+      type: object
+      required:
+        - sourceListingId
+        - sourceCategory
+        - checkIn
+        - checkOut
+      properties:
+        sourceListingId:
+          type: string
+        sourceCategory:
+          type: string
+        checkIn:
+          type: string
+          format: date
+        checkOut:
+          type: string
+          format: date
+        guests:
+          type: integer
+        cartListingIds:
+          type: array
+          items:
+            type: string
+        limit:
+          type: integer
+          default: 5

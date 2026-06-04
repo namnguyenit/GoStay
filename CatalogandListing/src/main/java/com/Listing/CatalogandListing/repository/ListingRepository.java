@@ -4,8 +4,6 @@ import com.Listing.CatalogandListing.entity.Listing;
 import com.Listing.CatalogandListing.enums.ListingCategory;
 import com.Listing.CatalogandListing.enums.ListingStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import org.springframework.data.domain.Page;
@@ -23,11 +21,4 @@ public interface ListingRepository extends JpaRepository<Listing, UUID> {
     List<Listing> findByProvince(String province);
     List<Listing> findByStatus(ListingStatus status);
     Page<Listing> findByStatus(ListingStatus status, Pageable pageable);
-    
-    Page<Listing> findByStatusAndCategory(ListingStatus status, ListingCategory category, Pageable pageable);
-    Page<Listing> findByStatusAndProvince(ListingStatus status, String province, Pageable pageable);
-    Page<Listing> findByStatusAndCategoryAndProvince(ListingStatus status, ListingCategory category, String province, Pageable pageable);
-
-    @Query(value = "SELECT * FROM listings l WHERE l.status = 'ACTIVE' AND ST_DWithin(l.location\\:\\:geography, ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)\\:\\:geography, :radiusMeters)", nativeQuery = true)
-    List<Listing> findActiveListingsWithinRadius(@Param("longitude") double longitude, @Param("latitude") double latitude, @Param("radiusMeters") double radiusMeters);
 }

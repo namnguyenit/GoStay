@@ -10,3 +10,6 @@ server:
 internal:
   service:
     token: ${INTERNAL_SERVICE_TOKEN:gostay-internal-secret-token-12345}
+services:
+  order:
+    url: ${ORDER_SERVICE_URL:http://localhost:8084}

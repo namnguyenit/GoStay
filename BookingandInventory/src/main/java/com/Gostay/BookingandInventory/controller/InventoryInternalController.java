@@ -4,6 +4,7 @@ import com.Gostay.BookingandInventory.dto.request.BatchLockRequest;
 import com.Gostay.BookingandInventory.dto.request.InitializeInventoryRequest;
 import com.Gostay.BookingandInventory.dto.response.ApiResponse;
 import com.Gostay.BookingandInventory.dto.response.BatchLockResponse;
+import com.Gostay.BookingandInventory.dto.response.BatchCheckAvailabilityResponse;
 import com.Gostay.BookingandInventory.service.InventoryInternalService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -47,6 +48,7 @@ public class InventoryInternalController {
         return ResponseEntity.ok(ApiResponse.success("Khóa giữ chỗ thành công", response));
     }
 
+
     @PutMapping("/locks/{orderId}/confirm")
     public ResponseEntity<ApiResponse<Void>> confirmLock(@PathVariable UUID orderId) {
         inventoryInternalService.confirmLock(orderId);
@@ -57,5 +59,10 @@ public class InventoryInternalController {
     public ResponseEntity<ApiResponse<Void>> cancelLock(@PathVariable UUID orderId) {
         inventoryInternalService.cancelLock(orderId);
         return ResponseEntity.ok(ApiResponse.success("Đã hủy đơn và hoàn kho thành công"));
+    }
+
+    @PostMapping("/batch-check-availability")
+    public ResponseEntity<BatchCheckAvailabilityResponse> batchCheckAvailability(@RequestBody @Valid com.Gostay.BookingandInventory.dto.request.BatchCheckAvailabilityRequest request) {
+        return ResponseEntity.ok(inventoryInternalService.batchCheckAvailability(request));
     }
 }

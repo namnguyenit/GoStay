@@ -1,5 +1,5 @@
 package com.Listing.CatalogandListing.enums;
 
 public enum ListingStatus {
-    ACTIVE, HIDDEN, DELETED
+    PENDING, ACTIVE, HIDDEN, DELETED
 }

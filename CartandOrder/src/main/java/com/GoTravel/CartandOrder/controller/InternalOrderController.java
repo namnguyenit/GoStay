@@ -5,8 +5,11 @@ import com.GoTravel.CartandOrder.dto.response.OrderPaymentSummaryResponse;
 import com.GoTravel.CartandOrder.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
@@ -32,5 +35,14 @@ public class InternalOrderController {
     public ResponseEntity<ApiResponse<Void>> handlePaymentFailed(@PathVariable UUID orderId) {
         orderService.failPayment(orderId);
         return ResponseEntity.ok(ApiResponse.success("Đã ghi nhận thanh toán thất bại"));
+    }
+
+    @GetMapping("/users/{userId}/listings/{listingId}/completed")
+    public ResponseEntity<ApiResponse<Boolean>> hasCompletedListingOrder(
+            @PathVariable UUID userId,
+            @PathVariable UUID listingId
+    ) {
+        boolean completed = orderService.hasCompletedListingOrder(userId, listingId);
+        return ResponseEntity.ok(ApiResponse.success("Completed order verification successful", completed));
     }
 }
