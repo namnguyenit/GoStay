@@ -45,6 +45,7 @@ public class PaymentService {
     private final HostPayoutRepository hostPayoutRepository;
     private final OrderClient orderClient;
     private final SepayConfig sepayConfig;
+    private final PaymentMapper paymentMapper;
 
     private static final BigDecimal COMMISSION_RATE = new BigDecimal("0.05"); // 5% hoa hồng GoStay
     private static final Pattern PAYMENT_CODE_PATTERN = Pattern.compile("(GS[A-Z0-9]{10})");
@@ -60,7 +61,7 @@ public class PaymentService {
         PaymentRequest existingPayment = paymentRequestRepository.findByOrderIdAndUserId(order.getOrderId(), userId)
                 .orElse(null);
         if (existingPayment != null) {
-            return PaymentMapper.INSTANCE.toPaymentResponse(existingPayment);
+            return paymentMapper.toPaymentResponse(existingPayment);
         }
 
         String paymentCode = generatePaymentCode();
@@ -89,7 +90,7 @@ public class PaymentService {
         paymentRequest = paymentRequestRepository.save(paymentRequest);
         log.info("Created payment request {} for order {}", paymentCode, order.getOrderId());
 
-        return PaymentMapper.INSTANCE.toPaymentResponse(paymentRequest);
+        return paymentMapper.toPaymentResponse(paymentRequest);
     }
 
     /**
@@ -181,27 +182,27 @@ public class PaymentService {
     public PaymentResponse getPaymentById(UUID userId, UUID paymentId) {
         PaymentRequest paymentRequest = paymentRequestRepository.findByIdAndUserId(paymentId, userId)
                 .orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
-        return PaymentMapper.INSTANCE.toPaymentResponse(paymentRequest);
+        return paymentMapper.toPaymentResponse(paymentRequest);
     }
 
     @Transactional(readOnly = true)
     public PaymentResponse getPaymentByOrderId(UUID userId, UUID orderId) {
         PaymentRequest paymentRequest = paymentRequestRepository.findByOrderIdAndUserId(orderId, userId)
                 .orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
-        return PaymentMapper.INSTANCE.toPaymentResponse(paymentRequest);
+        return paymentMapper.toPaymentResponse(paymentRequest);
     }
 
     @Transactional(readOnly = true)
     public Page<PaymentResponse> getPaymentHistory(UUID userId, Pageable pageable) {
         return paymentRequestRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable)
-                .map(PaymentMapper.INSTANCE::toPaymentResponse);
+                .map(paymentMapper::toPaymentResponse);
     }
 
     @Transactional(readOnly = true)
     public PaymentResponse getPaymentStatusByOrderId(UUID orderId) {
         PaymentRequest paymentRequest = paymentRequestRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
-        return PaymentMapper.INSTANCE.toPaymentResponse(paymentRequest);
+        return paymentMapper.toPaymentResponse(paymentRequest);
     }
 
     private OrderPaymentSummaryResponse getTrustedOrderPaymentSummary(UUID userId, UUID orderId) {

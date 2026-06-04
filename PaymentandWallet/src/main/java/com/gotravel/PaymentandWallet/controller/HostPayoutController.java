@@ -30,6 +30,12 @@ public class HostPayoutController {
         return ResponseEntity.ok(ApiResponse.success(hostPayoutService.getPayoutsByHost(hostId, pageable)));
     }
 
+    @GetMapping("/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Page<HostPayoutResponse>>> getAllPayouts(Pageable pageable) {
+        return ResponseEntity.ok(ApiResponse.success(hostPayoutService.getAllPayouts(pageable)));
+    }
+
     @PutMapping("/{payoutId}/mark-paid")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> markAsPaid(@PathVariable UUID payoutId) {

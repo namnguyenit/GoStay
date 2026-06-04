@@ -16,7 +16,9 @@ export default function HostOrdersPage() {
     try {
       setLoading(true);
       const res: any = await HostService.getHostOrders();
-      if (res && res.content) {
+      if (res && res.data && res.data.content) {
+        setOrders(res.data.content);
+      } else if (res && res.content) {
         setOrders(res.content);
       } else {
         setOrders([]);
@@ -39,6 +41,21 @@ export default function HostOrdersPage() {
         return "bg-red-50 text-red-600";
       default:
         return "bg-gray-500/20 text-gray-500";
+    }
+  };
+
+  const safeFormatDate = (dateVal: any, formatStr: string) => {
+    if (!dateVal) return "";
+    try {
+      let d = dateVal;
+      if (Array.isArray(dateVal)) {
+        d = new Date(dateVal[0], dateVal[1] - 1, dateVal[2], dateVal[3] || 0, dateVal[4] || 0, dateVal[5] || 0);
+      } else {
+        d = new Date(dateVal);
+      }
+      return format(d, formatStr);
+    } catch (e) {
+      return "";
     }
   };
 
@@ -75,7 +92,7 @@ export default function HostOrdersPage() {
                 {orders.map((order) => (
                   <tr key={order.id} className="hover:bg-white/[0.02] transition-colors text-sm text-gray-200">
                     <td className="p-4 font-medium text-gray-900">{order.orderNumber}</td>
-                    <td className="p-4">{format(new Date(order.createdAt), "dd/MM/yyyy HH:mm")}</td>
+                    <td className="p-4">{safeFormatDate(order.createdAt, "dd/MM/yyyy HH:mm")}</td>
                     <td className="p-4">
                       {order.customerInfo?.fullName || "Khách"} <br />
                       <span className="text-xs text-gray-600">{order.customerInfo?.phone || ""}</span>
@@ -83,7 +100,7 @@ export default function HostOrdersPage() {
                     <td className="p-4">
                       <ul className="list-disc pl-4 text-xs text-gray-600 space-y-1">
                         {order.items?.map((item: any, i: number) => (
-                          <li key={i}>{item.listingTitle} ({format(new Date(item.startDate), "dd/MM")} - {format(new Date(item.endDate), "dd/MM")})</li>
+                          <li key={i}>{item.listingTitle} ({safeFormatDate(item.startDate, "dd/MM")} - {safeFormatDate(item.endDate, "dd/MM")})</li>
                         ))}
                       </ul>
                     </td>

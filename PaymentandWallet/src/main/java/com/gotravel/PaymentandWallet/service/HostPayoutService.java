@@ -27,6 +27,7 @@ import java.util.UUID;
 public class HostPayoutService {
 
     private final HostPayoutRepository hostPayoutRepository;
+    private final PaymentMapper paymentMapper;
 
     /**
      * Host xem danh sách các khoản tiền sẽ nhận (phân trang).
@@ -34,7 +35,13 @@ public class HostPayoutService {
     @Transactional(readOnly = true)
     public Page<HostPayoutResponse> getPayoutsByHost(UUID hostId, Pageable pageable) {
         return hostPayoutRepository.findByHostIdOrderByCreatedAtDesc(hostId, pageable)
-                .map(PaymentMapper.INSTANCE::toHostPayoutResponse);
+                .map(paymentMapper::toHostPayoutResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<HostPayoutResponse> getAllPayouts(Pageable pageable) {
+        return hostPayoutRepository.findAllByOrderByCreatedAtDesc(pageable)
+                .map(paymentMapper::toHostPayoutResponse);
     }
 
     @Transactional

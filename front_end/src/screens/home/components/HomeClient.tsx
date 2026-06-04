@@ -194,6 +194,32 @@ export default function HomeClient() {
         </div>
       </div>
       <div className="h-18" />
+
+      {/* Top Địa Danh Nổi Tiếng */}
+      {landmarks && landmarks.length > 0 && (
+        <>
+          <div className="px-4 text-title">Top những địa danh nổi tiếng tại Việt Nam</div>
+          <div className="h-10" />
+          <CarouselSection title="Địa danh nổi bật">
+            {landmarks.map((lm: any) => (
+              <OfferingCarouselItem
+                key={lm?.id}
+                item={{
+                  id: lm?.id,
+                  name: lm?.name,
+                  image: lm?.thumbnailUrl || lm?.referenceImageUrl,
+                  description: lm?.description,
+                }}
+                onSelect={(item) => {
+                  if (item?.id) router.push(`/landmark/${item.id}/detail`);
+                }}
+              />
+            ))}
+          </CarouselSection>
+          <div className="h-10" />
+        </>
+      )}
+
       {/* Top 3 locations with popular hotels */}
       {topProvinces.length > 0 && (
         <>

@@ -1,19 +1,49 @@
 "use client";
 
-import { useState } from "react";
-import AdminService from "@/services/admin.service";
 import { useAdminPayouts } from "./hook/useAdminPayouts";
+import { format } from "date-fns";
 
 export function PayoutsScreen() {
-    const { payoutId, setPayoutId, loading, actionResult, handleMarkPaid } = useAdminPayouts();
+  const { payouts, loading, actionResult, handleMarkPaid } = useAdminPayouts();
+
+  const safeFormatDate = (dateVal: any, formatStr: string) => {
+    if (!dateVal) return "";
+    try {
+      let d = dateVal;
+      if (Array.isArray(dateVal)) {
+        d = new Date(dateVal[0], dateVal[1] - 1, dateVal[2], dateVal[3] || 0, dateVal[4] || 0, dateVal[5] || 0);
+      } else {
+        d = new Date(dateVal);
+      }
+      return format(d, formatStr);
+    } catch (e) {
+      return "";
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "PENDING":
+        return "bg-yellow-50 text-yellow-600";
+      case "REQUESTED":
+        return "bg-blue-50 text-blue-600";
+      case "PAID":
+        return "bg-green-500/20 text-green-500";
+      default:
+        return "bg-gray-500/20 text-gray-500";
+    }
+  };
 
   return (
-    <div className="max-w-2xl">
-      <h2 className="text-xl font-bold text-gray-900 mb-6">Quản lý Thanh toán cho Host (Payouts)</h2>
+    <div className="space-y-6 animate-smooth-appear">
+      <div>
+        <h2 className="text-xl font-bold text-gray-900">Quản lý Thanh toán cho Host (Payouts)</h2>
+        <p className="text-sm text-gray-600">Kiểm tra lịch sử doanh thu và chuyển tiền cho Host.</p>
+      </div>
 
       {actionResult && (
         <div
-          className={`mb-6 p-4 rounded-lg text-sm border ${
+          className={`p-4 rounded-lg text-sm border ${
             actionResult.type === "success"
               ? "bg-green-50 border-green-200 text-green-800"
               : "bg-red-50 border-red-200 text-red-800"
@@ -23,45 +53,78 @@ export function PayoutsScreen() {
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-        <h3 className="font-semibold text-gray-800 mb-4 border-b pb-2">Đánh dấu Đã thanh toán (Mark as Paid)</h3>
-        <p className="text-sm text-gray-500 mb-4">
-          Sử dụng chức năng này sau khi bạn đã chuyển khoản thủ công cho Host để cập nhật trạng thái trên hệ thống.
-        </p>
-        
-        <form onSubmit={handleMarkPaid}>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Mã yêu cầu thanh toán (Payout ID) <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={payoutId}
-              onChange={(e) => setPayoutId(e.target.value)}
-              placeholder="VD: 550e8400-e29b-41d4-a716-446655440000"
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none"
-            />
+      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+        {loading && payouts.length === 0 ? (
+          <div className="p-10 flex justify-center">
+            <div className="w-8 h-8 border-4 border-app-primary border-t-transparent rounded-full animate-spin"></div>
           </div>
-          
-          <button
-            type="submit"
-            disabled={loading || !payoutId}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
-          >
-            {loading ? "Đang xử lý..." : "✔️ Xác nhận Đã chuyển tiền"}
-          </button>
-        </form>
-      </div>
-
-      <div className="bg-orange-50 border border-orange-200 rounded-xl p-5">
-        <h4 className="font-semibold text-orange-800 mb-2 flex items-center">
-          <span className="mr-2">💡</span> Ghi chú quan trọng
-        </h4>
-        <ul className="list-disc list-inside text-sm text-orange-700 space-y-1">
-          <li>API hiện tại chưa hỗ trợ lấy danh sách toàn bộ yêu cầu rút tiền của các Host.</li>
-          <li>Bạn cần lấy Payout ID từ thông báo hệ thống hoặc database để thực hiện thao tác này.</li>
-          <li>Việc đánh dấu đã thanh toán không thể hoàn tác trên giao diện.</li>
-        </ul>
+        ) : payouts.length === 0 ? (
+          <div className="p-10 text-center text-gray-600 text-sm">
+            Chưa có dữ liệu thanh toán.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 text-xs text-gray-600 uppercase tracking-wider border-b">
+                  <th className="p-4 font-semibold">Mã Đơn & Payout ID</th>
+                  <th className="p-4 font-semibold">Ngày Tạo</th>
+                  <th className="p-4 font-semibold">Mã Host</th>
+                  <th className="p-4 font-semibold">Tổng Đơn</th>
+                  <th className="p-4 font-semibold">Hoa Hồng (5%)</th>
+                  <th className="p-4 font-semibold text-green-600">Thực Nhận</th>
+                  <th className="p-4 font-semibold text-center">Trạng Thái</th>
+                  <th className="p-4 font-semibold text-center">Thao Tác</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {payouts.map((payout) => (
+                  <tr key={payout.id} className="hover:bg-gray-50 transition-colors text-sm text-gray-800">
+                    <td className="p-4">
+                      <div className="font-medium text-gray-900" title={payout.orderId}>
+                        Order: {payout.orderId?.substring(0, 8)}...
+                      </div>
+                      <div className="text-[10px] text-gray-500 font-mono mt-1" title={payout.id}>
+                        {payout.id?.substring(0, 8)}...
+                      </div>
+                    </td>
+                    <td className="p-4 text-gray-600">{safeFormatDate(payout.createdAt, "dd/MM/yyyy HH:mm")}</td>
+                    <td className="p-4 font-mono text-[11px] text-gray-500" title={payout.hostId}>
+                      {payout.hostId?.substring(0, 8)}...
+                    </td>
+                    <td className="p-4 text-gray-700">
+                      {payout.totalAmount?.toLocaleString()}đ
+                    </td>
+                    <td className="p-4 text-orange-600">
+                      -{payout.commissionAmount?.toLocaleString()}đ
+                    </td>
+                    <td className="p-4 font-bold text-green-600">
+                      {payout.hostAmount?.toLocaleString()}đ
+                    </td>
+                    <td className="p-4 text-center">
+                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${getStatusColor(payout.status)}`}>
+                        {payout.status}
+                      </span>
+                    </td>
+                    <td className="p-4 text-center">
+                      {(payout.status === "PENDING" || payout.status === "REQUESTED") ? (
+                        <button
+                          onClick={() => handleMarkPaid(payout.id)}
+                          disabled={loading}
+                          className="px-3 py-1 bg-green-50 text-green-600 border border-green-200 rounded text-xs font-semibold hover:bg-green-600 hover:text-white transition-colors disabled:opacity-50"
+                        >
+                          Đã CK
+                        </button>
+                      ) : (
+                        <span className="text-gray-400 text-xs">--</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

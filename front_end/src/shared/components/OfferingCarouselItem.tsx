@@ -41,23 +41,25 @@ export default function OfferingCarouselItem({
       </Card>
       <div className="p-1">
         <div
-          className="text-app-fg line-clamp-1"
+          className="text-app-fg line-clamp-1 cursor-pointer hover:underline"
           onClick={() => onSelect?.(item)}
         >
           {item?.name}
         </div>
-        <div className="center-y line-clamp-1 flex justify-between">
-          <div className="center-y gap-1">
-            <div className="text-caption underline">đ</div>
-            <div className="text-caption line-clamp-1">
-              {formatMoney(item?.price ?? 0)}
+        {(item?.price != null || item?.rating != null) && (
+          <div className="center-y line-clamp-1 flex justify-between mt-1">
+            <div className="center-y gap-1">
+              <div className="text-caption underline">đ</div>
+              <div className="text-caption line-clamp-1">
+                {formatMoney(item?.price ?? 0)}
+              </div>
+            </div>
+            <div className="row center-y gap-0.5">
+              <Star className="text-caption line-clamp-1 w-4" />
+              <div className="text-caption line-clamp-1">{item?.rating ?? 0}</div>
             </div>
           </div>
-          <div className="row center-y gap-0.5">
-            <Star className="text-caption line-clamp-1 w-4" />
-            <div className="text-caption line-clamp-1">{item?.rating ?? 0}</div>
-          </div>
-        </div>
+        )}
       </div>
     </CarouselItem>
   );

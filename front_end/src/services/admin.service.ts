@@ -171,6 +171,11 @@ const AdminService = {
   // ==========================================
   // PAYOUTS (Payment Admin)
   // ==========================================
+  getAllPayouts: async (page = 0, size = 10) => {
+    // GET /api/v1/payouts/all
+    return await Api.get(`/v1/payouts/all?page=${page}&size=${size}`);
+  },
+
   markPayoutPaid: async (payoutId: string) => {
     // PUT /api/v1/payouts/{payoutId}/mark-paid
     return await Api.put(`/v1/payouts/${payoutId}/mark-paid`, {});

@@ -14,6 +14,7 @@ import java.util.UUID;
 @Repository
 public interface HostPayoutRepository extends JpaRepository<HostPayout, UUID> {
     Page<HostPayout> findByHostIdOrderByCreatedAtDesc(UUID hostId, Pageable pageable);
+    Page<HostPayout> findAllByOrderByCreatedAtDesc(Pageable pageable);
     List<HostPayout> findByStatus(PayoutStatus status);
     Optional<HostPayout> findByOrderId(UUID orderId);
 }

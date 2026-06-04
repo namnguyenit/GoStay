@@ -151,14 +151,6 @@ export default function LandmarkDetailPage() {
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-        {/* Back button */}
-        <button
-          onClick={() => router.back()}
-          className="absolute top-[90px] left-8 flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full hover:bg-white/30 transition z-10"
-        >
-          <ArrowLeft size={16} />
-          <span className="text-sm font-medium">Quay lại</span>
-        </button>
         <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
           <h1 className="text-3xl md:text-5xl font-bold text-white mb-2 drop-shadow">
             {landmark.name}
@@ -178,9 +170,18 @@ export default function LandmarkDetailPage() {
       </div>
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 md:px-8 mt-10 space-y-14">
-        <Section
-          title="🏨 Khách sạn lân cận (5km)"
+      <div className="max-w-7xl mx-auto px-4 md:px-8 mt-10">
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-2 text-gray-600 hover:text-purple-600 transition mb-10 group"
+        >
+          <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+          <span className="text-base font-medium">Quay lại</span>
+        </button>
+
+        <div className="space-y-14">
+          <Section
+            title="🏨 Khách sạn lân cận (5km)"
           items={nearby.STAY ?? []}
           onItemClick={(id) => router.push(`/place/${id}/detail`)}
         />
@@ -203,6 +204,7 @@ export default function LandmarkDetailPage() {
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   );
