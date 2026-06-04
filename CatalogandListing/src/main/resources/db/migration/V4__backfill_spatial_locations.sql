@@ -15,6 +15,7 @@ WHERE location IS NULL
   AND latitude IS NOT NULL
   AND longitude IS NOT NULL
   AND latitude BETWEEN -90 AND 90
+  AND longitude BETWEEN -180 AND 180;
 
 UPDATE public.complexes
 SET location = ST_SetSRID(ST_MakePoint(longitude, latitude), 4326)
