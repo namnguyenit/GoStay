@@ -56,6 +56,27 @@ public class HostPayoutService {
         log.info("Payout {} marked as PAID. Host {} receives {}", payoutId, payout.getHostId(), payout.getHostAmount());
     }
 
+    @Transactional
+    public void markAllAsPaidByHost(UUID hostId) {
+        java.util.List<HostPayout> payouts = hostPayoutRepository.findByHostIdOrderByCreatedAtDesc(hostId, Pageable.unpaged())
+                .stream()
+                .filter(p -> p.getStatus() == PayoutStatus.PENDING || p.getStatus() == PayoutStatus.REQUESTED)
+                .toList();
+
+        if (payouts.isEmpty()) {
+            throw new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND);
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        for (HostPayout payout : payouts) {
+            payout.setStatus(PayoutStatus.PAID);
+            payout.setPaidAt(now);
+            hostPayoutRepository.save(payout);
+        }
+
+        log.info("Marked {} payouts as PAID for Host {}", payouts.size(), hostId);
+    }
+
     /**
      * Host yêu cầu rút tiền cho tất cả các khoản thu nhập đang PENDING.
      */

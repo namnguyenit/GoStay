@@ -32,10 +32,11 @@ export default function HostEarnings() {
         let successSum = 0;
         let pendingSum = 0;
         content.forEach((p: any) => {
-          if (p.status === "SUCCESS") {
-            successSum += p.amount || 0;
-          } else if (p.status === "PENDING") {
-            pendingSum += p.amount || 0;
+          const amount = p.hostAmount || p.amount || 0;
+          if (p.status === "PAID") {
+            successSum += amount;
+          } else if (p.status === "PENDING" || p.status === "REQUESTED") {
+            pendingSum += amount;
           }
         });
         setTotalEarnings(successSum);
@@ -173,20 +174,24 @@ export default function HostEarnings() {
                       </div>
                     </td>
                     <td className="py-4 px-6 font-bold text-gray-900">
-                      {item.amount ? `${item.amount.toLocaleString("vi-VN")}đ` : "0đ"}
+                      {(item.hostAmount || item.amount) ? `${(item.hostAmount || item.amount).toLocaleString("vi-VN")}đ` : "0đ"}
                     </td>
                     <td className="py-4 px-6">
                       <span className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded-full ${
-                        item.status === "SUCCESS" 
+                        item.status === "PAID" 
                           ? "bg-emerald-50 text-emerald-600" 
                           : item.status === "PENDING"
                           ? "bg-yellow-50 text-yellow-600"
+                          : item.status === "REQUESTED"
+                          ? "bg-blue-50 text-blue-600 animate-pulse"
                           : "bg-red-50 text-red-600"
                       }`}>
-                        {item.status === "SUCCESS" 
-                          ? "Thành công" 
+                        {item.status === "PAID" 
+                          ? "Đã quyết toán" 
                           : item.status === "PENDING"
-                          ? "Đang chờ xử lý"
+                          ? "Đang chờ đối soát"
+                          : item.status === "REQUESTED"
+                          ? "Đang yêu cầu rút"
                           : "Thất bại"}
                       </span>
                     </td>

@@ -180,6 +180,11 @@ const AdminService = {
     // PUT /api/v1/payouts/{payoutId}/mark-paid
     return await Api.put(`/v1/payouts/${payoutId}/mark-paid`, {});
   },
+
+  markHostPayoutsPaid: async (hostId: string) => {
+    // PUT /api/v1/payouts/host/{hostId}/mark-paid
+    return await Api.put(`/v1/payouts/host/${hostId}/mark-paid`, {});
+  },
 };
 
 export default AdminService;
