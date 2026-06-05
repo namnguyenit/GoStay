@@ -18,7 +18,7 @@ export const useHome = (
   );
   const [places, setPlaces] = useState<Places | null>(initPlace);
   const [services, setServices] = useState<Services | undefined>(initServices);
-  const [landmarks, setLandmarks] = useState<any[]>(initLandmarks.slice(0, 6));
+  const [landmarks, setLandmarks] = useState<any[]>(initLandmarks);
 
   const setClock = (time?: number) => {
     clearInterval(clock.current ?? undefined);
@@ -26,7 +26,8 @@ export const useHome = (
     clock.current = setInterval(() => {
       setImageIndex((prev: any) => {
         let i = prev + 1;
-        if (i >= (landmarks?.length ?? 0)) {
+        const maxLimit = Math.min(landmarks?.length ?? 0, 6);
+        if (i >= maxLimit) {
           i = 0;
         }
         return i;

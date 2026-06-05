@@ -10,7 +10,7 @@ export default function ImageNavigation() {
 
   return (
     <div className="row justify-end">
-      {landmarks?.map((e: any, index: any) => (
+      {landmarks?.slice(0, 6).map((e: any, index: any) => (
         <Fragment key={e?.id}>
           <div className="w-[10]" />
           <div

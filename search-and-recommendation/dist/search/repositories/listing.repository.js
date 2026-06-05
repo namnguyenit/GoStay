@@ -100,7 +100,7 @@ let ListingRepository = ListingRepository_1 = class ListingRepository {
             let orderBy = `"distanceMeters" ASC NULLS LAST`;
             switch (sortBy) {
                 case search_dto_1.SortMode.RATING:
-                    orderBy = `l.average_rating DESC NULLS LAST, ${hasSpatial ? '"distanceMeters" ASC NULLS LAST,' : ''} l.total_reviews DESC NULLS LAST`;
+                    orderBy = `CASE WHEN l.average_rating > 0 THEN (l.average_rating * 100 + l.total_reviews) ELSE 0 END DESC, ${hasSpatial ? '"distanceMeters" ASC NULLS LAST,' : ''} l.id DESC`;
                     break;
                 case search_dto_1.SortMode.PRICE_ASC:
                     orderBy = `l.base_price ASC NULLS LAST${hasSpatial ? ', "distanceMeters" ASC NULLS LAST' : ''}`;
@@ -109,13 +109,13 @@ let ListingRepository = ListingRepository_1 = class ListingRepository {
                     orderBy = `l.base_price DESC NULLS LAST${hasSpatial ? ', "distanceMeters" ASC NULLS LAST' : ''}`;
                     break;
                 case search_dto_1.SortMode.RELEVANCE:
-                    orderBy = `${hasKeyword ? '"textScore" DESC NULLS LAST,' : ''} l.total_reviews DESC NULLS LAST, l.average_rating DESC NULLS LAST${hasSpatial ? ', "distanceMeters" ASC NULLS LAST' : ''}`;
+                    orderBy = `${hasKeyword ? '"textScore" DESC NULLS LAST,' : ''} CASE WHEN l.average_rating > 0 THEN (l.average_rating * 100 + l.total_reviews) ELSE 0 END DESC${hasSpatial ? ', "distanceMeters" ASC NULLS LAST' : ''}, l.id DESC`;
                     break;
                 case search_dto_1.SortMode.DISTANCE:
                 default:
                     orderBy = hasSpatial
                         ? `"distanceMeters" ASC NULLS LAST`
-                        : `${hasKeyword ? '"textScore" DESC NULLS LAST,' : ''} l.total_reviews DESC NULLS LAST, l.average_rating DESC NULLS LAST`;
+                        : `${hasKeyword ? '"textScore" DESC NULLS LAST,' : ''} CASE WHEN l.average_rating > 0 THEN (l.average_rating * 100 + l.total_reviews) ELSE 0 END DESC, l.id DESC`;
                     break;
             }
             values.push(limit, offset);

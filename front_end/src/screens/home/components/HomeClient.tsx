@@ -46,6 +46,31 @@ export default function HomeClient() {
     .filter((c: any) => c.list.length > 0)
     .slice(0, 4);
 
+  const rankProvinceGroups = (groups: Record<string, any[]>) => {
+    return Object.entries(groups)
+      .map(([name, list]) => {
+        // Filter out unrated listings (those with rating === 0 or undefined)
+        const ratedListings = list.filter((x: any) => x.rating && x.rating > 0);
+        
+        let score = 0;
+        if (ratedListings.length > 0) {
+          // Has rated listings: weight average rating heavily + count of rated listings
+          const avgRating = ratedListings.reduce((sum: number, x: any) => sum + x.rating, 0) / ratedListings.length;
+          const count = ratedListings.length;
+          score = 100000 + (avgRating * 100) + count;
+        } else {
+          // Unrated-only listings: prioritize based on sheer listing count
+          score = list.length;
+        }
+
+        // Sort items in this province by rating descending
+        list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        return { name, list, score };
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3);
+  };
+
   // 2. Top 3 địa điểm có khách sạn ưa chuộng
   const groupPlacesByProvince = (placesList: any[]) => {
     if (!placesList) return [];
@@ -57,15 +82,7 @@ export default function HomeClient() {
       groups[province].push(p);
     });
     
-    return Object.entries(groups)
-      .map(([name, list]) => {
-        const maxRating = Math.max(...list.map(x => x.rating || 0));
-        // Sort items by rating descending
-        list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-        return { name, list, maxRating };
-      })
-      .sort((a, b) => b.maxRating - a.maxRating)
-      .slice(0, 3);
+    return rankProvinceGroups(groups);
   };
   const topProvinces = groupPlacesByProvince(places ?? []);
 
@@ -80,14 +97,7 @@ export default function HomeClient() {
       groups[province].push(e);
     });
     
-    return Object.entries(groups)
-      .map(([name, list]) => {
-        const maxRating = Math.max(...list.map(x => x.rating || 0));
-        list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-        return { name, list, maxRating };
-      })
-      .sort((a, b) => b.maxRating - a.maxRating)
-      .slice(0, 3);
+    return rankProvinceGroups(groups);
   };
   const topExpGroups = groupExperiencesByProvince(experiences ?? []);
 
@@ -102,14 +112,7 @@ export default function HomeClient() {
       groups[province].push(s);
     });
     
-    return Object.entries(groups)
-      .map(([name, list]) => {
-        const maxRating = Math.max(...list.map(x => x.rating || 0));
-        list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-        return { name, list, maxRating };
-      })
-      .sort((a, b) => b.maxRating - a.maxRating)
-      .slice(0, 3);
+    return rankProvinceGroups(groups);
   };
   const topSvcGroups = groupServicesByProvince(services ?? []);
 

@@ -26,7 +26,40 @@ export default function HomeProvider({
   initServices,
   initLandmarks = [],
 }: HomeProviderProp) {
-  const home = useHome(initExperiences, initPlace, initServices, initLandmarks);
+  const getListingsCountForLandmark = (landmark: any) => {
+    let count = 0;
+    const lmProvince = landmark.province?.toLowerCase();
+    const lmName = landmark.name?.toLowerCase();
+
+    if (initPlace) {
+      count += initPlace.filter((p: any) => 
+        (lmProvince && p.address?.toLowerCase().includes(lmProvince)) ||
+        (lmName && p.address?.toLowerCase().includes(lmName))
+      ).length;
+    }
+    if (initExperiences) {
+      count += initExperiences.filter((e: any) => 
+        (lmProvince && e.address?.toLowerCase().includes(lmProvince)) ||
+        (lmName && e.address?.toLowerCase().includes(lmName))
+      ).length;
+    }
+    if (initServices) {
+      count += initServices.filter((s: any) => 
+        (lmProvince && s.address?.toLowerCase().includes(lmProvince)) ||
+        (lmName && s.address?.toLowerCase().includes(lmName))
+      ).length;
+    }
+    return count;
+  };
+
+  const sortedLandmarks = [...initLandmarks]
+    .map(lm => ({
+      ...lm,
+      listingsCount: getListingsCountForLandmark(lm)
+    }))
+    .sort((a, b) => b.listingsCount - a.listingsCount);
+
+  const home = useHome(initExperiences, initPlace, initServices, sortedLandmarks);
 
   return <HomeContext.Provider value={home}>{children}</HomeContext.Provider>;
 }

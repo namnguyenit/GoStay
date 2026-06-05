@@ -46,6 +46,16 @@ export function ListingsScreen() {
           ✅ Hoạt động
         </button>
         <button
+          onClick={() => setStatusFilter("PENDING")}
+          className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
+            statusFilter === "PENDING"
+              ? "bg-white shadow-sm text-slate-800"
+              : "text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          🆕 Chờ duyệt
+        </button>
+        <button
           onClick={() => setStatusFilter("HIDDEN")}
           className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
             statusFilter === "HIDDEN"
@@ -155,6 +165,15 @@ export function ListingsScreen() {
                       >
                         Tồn kho
                       </a>
+
+                      {item.status === "PENDING" && (
+                        <button
+                          onClick={() => handleUpdateStatus(item.id, "ACTIVE")}
+                          className="text-[11px] px-2.5 py-1 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors"
+                        >
+                          Duyệt
+                        </button>
+                      )}
 
                       {item.status === "HIDDEN" && (
                         <button
@@ -311,6 +330,15 @@ export function ListingsScreen() {
               >
                 Đóng
               </button>
+
+              {selectedListing.status === "PENDING" && (
+                <button
+                  onClick={() => handleUpdateStatus(selectedListing.id, "ACTIVE")}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-full text-xs font-semibold hover:bg-blue-700 transition-colors"
+                >
+                  Duyệt dịch vụ
+                </button>
+              )}
 
               {selectedListing.status === "HIDDEN" && (
                 <button

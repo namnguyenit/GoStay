@@ -25,13 +25,13 @@ export const authRateLimiters = [
     createAuthLimiter({
         path: "/api/v1/auth/login",
         windowMs: 15 * 60 * 1000,
-        limit: 10,
+        limit: 99999,
         message: "Bạn đăng nhập quá nhiều lần. Vui lòng thử lại sau 15 phút."
     }),
     createAuthLimiter({
         path: "/api/v1/auth/register",
         windowMs: 60 * 60 * 1000,
-        limit: 5,
+        limit: 99999,
         message: "Bạn đăng ký quá nhiều lần. Vui lòng thử lại sau 1 giờ."
     })
 ];

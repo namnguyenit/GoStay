@@ -141,7 +141,7 @@ export class ListingRepository {
       let orderBy = `"distanceMeters" ASC NULLS LAST`;
       switch (sortBy) {
         case SortMode.RATING:
-          orderBy = `l.average_rating DESC NULLS LAST, ${hasSpatial ? '"distanceMeters" ASC NULLS LAST,' : ''} l.total_reviews DESC NULLS LAST`;
+          orderBy = `CASE WHEN l.average_rating > 0 THEN (l.average_rating * 100 + l.total_reviews) ELSE 0 END DESC, ${hasSpatial ? '"distanceMeters" ASC NULLS LAST,' : ''} l.id DESC`;
           break;
         case SortMode.PRICE_ASC:
           orderBy = `l.base_price ASC NULLS LAST${hasSpatial ? ', "distanceMeters" ASC NULLS LAST' : ''}`;
@@ -151,13 +151,13 @@ export class ListingRepository {
           break;
         case SortMode.RELEVANCE:
           // A mix of rating, popularity and distance.
-          orderBy = `${hasKeyword ? '"textScore" DESC NULLS LAST,' : ''} l.total_reviews DESC NULLS LAST, l.average_rating DESC NULLS LAST${hasSpatial ? ', "distanceMeters" ASC NULLS LAST' : ''}`;
+          orderBy = `${hasKeyword ? '"textScore" DESC NULLS LAST,' : ''} CASE WHEN l.average_rating > 0 THEN (l.average_rating * 100 + l.total_reviews) ELSE 0 END DESC${hasSpatial ? ', "distanceMeters" ASC NULLS LAST' : ''}, l.id DESC`;
           break;
         case SortMode.DISTANCE:
         default:
           orderBy = hasSpatial
             ? `"distanceMeters" ASC NULLS LAST`
-            : `${hasKeyword ? '"textScore" DESC NULLS LAST,' : ''} l.total_reviews DESC NULLS LAST, l.average_rating DESC NULLS LAST`;
+            : `${hasKeyword ? '"textScore" DESC NULLS LAST,' : ''} CASE WHEN l.average_rating > 0 THEN (l.average_rating * 100 + l.total_reviews) ELSE 0 END DESC, l.id DESC`;
           break;
       }
 
