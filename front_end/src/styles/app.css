@@ -1,32 +1,28 @@
 :root {
   --app-background: #ffffff;
-  --app-foreground: #1f1f2e;
+  --app-foreground: #222222;
 
-  --app-primary: #7c3aed;
-  /* purple-600 */
+  --app-primary: #ff385c;
   --app-primary-foreground: #ffffff;
 
-  --app-secondary: #a78bfa;
-  /* purple-400 */
-  --app-secondary-foreground: #1f1f2e;
+  --app-secondary: #e61e4f;
+  --app-secondary-foreground: #ffffff;
 
-  --app-accent: #c4b5fd;
-  /* purple-300 */
-  --app-accent-foreground: #1f1f2e;
+  --app-accent: #e61e4f;
+  --app-accent-foreground: #ffffff;
 
-  --app-muted: #f3f4f6;
-  /* gray-100 */
-  --app-muted-foreground: #6b7280;
+  --app-muted: #f7f7f7;
+  --app-muted-foreground: #717171;
 
   --app-destructive: #ef4444;
   /* red-500 */
   --app-destructive-foreground: #ffffff;
 
   --app-card: #ffffff;
-  --app-card-foreground: #1f1f2e;
+  --app-card-foreground: #222222;
 
   --app-popover: #ffffff;
-  --app-popover-foreground: #1f1f2e;
+  --app-popover-foreground: #222222;
 
   /* SIZE */
   --text-xs: 12px;
@@ -49,17 +45,17 @@
 }
 
 .app-dark {
-  --app-background: #0f0f1a;
+  --app-background: #ffffff;
   --app-foreground: #e5e7eb;
 
-  --app-primary: #a78bfa;
-  --app-primary-foreground: #1f1f2e;
+  --app-primary: #ff385c;
+  --app-primary-foreground: #ffffff;
 
-  --app-secondary: #6d28d9;
+  --app-secondary: #e61e4f;
   --app-secondary-foreground: #ffffff;
 
-  --app-accent: #4c1d95;
-  --app-accent-foreground: #e5e7eb;
+  --app-accent: #e61e4f;
+  --app-accent-foreground: #ffffff;
 
   --app-muted: #1f2937;
   --app-muted-foreground: #9ca3af;
@@ -114,13 +110,13 @@
     @apply text-app-fg text-3xl font-bold;
   }
   .text-title {
-    @apply text-app-fg text-xl font-semibold;
+    @apply text-[22px] leading-[26px] font-bold;
   }
   .text-content {
-    @apply text-app-fg text-base font-medium;
+    @apply text-app-fg text-base font-normal;
   }
   .text-caption {
-    @apply text-app-muted-fg text-sm font-light;
+    @apply text-app-muted-fg text-sm font-normal;
   }
   .scrollbar::-webkit-scrollbar {
     width: 6px;
@@ -168,12 +164,14 @@
 @layer base {
   body {
     @apply bg-app-bg text-app-fg;
+    font-family: Circular, -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
     /* CUSTOM BỎ CHẶN DO SELECT TRIGGER */
     pointer-events: auto !important;
   }
 
   html {
-    @apply text-base font-medium;
+    @apply text-base font-normal;
+    letter-spacing: 0;
   }
 }
 

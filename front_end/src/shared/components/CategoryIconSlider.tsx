@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, Compass, ConciergeBell } from "lucide-react";
+import { ChevronLeft, ChevronRight, ConciergeBell, Home, PartyPopper } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type CategoryType = "place" | "exp" | "service";
@@ -17,13 +17,13 @@ export default function CategoryIconSlider({
   const categories = [
     {
       id: "place" as CategoryType,
-      label: "Nơi cư trú",
+      label: "Nơi lưu trú",
       icon: Home,
     },
     {
       id: "exp" as CategoryType,
       label: "Trải nghiệm",
-      icon: Compass,
+      icon: PartyPopper,
     },
     {
       id: "service" as CategoryType,
@@ -33,39 +33,54 @@ export default function CategoryIconSlider({
   ];
 
   return (
-    <div className="flex items-center justify-center gap-8 md:gap-12 py-3 border-b border-zinc-100 dark:border-zinc-800 w-full max-w-xl mx-auto">
-      {categories.map((cat) => {
-        const Icon = cat.icon;
-        const isActive = value === cat.id;
+    <nav
+      className="sticky top-20 z-40 w-full border-b border-[#EAEAEA] bg-white"
+      aria-label="Danh mục"
+    >
+      <div className="mx-auto flex h-[78px] max-w-[1760px] items-center gap-4 px-6 md:px-10 xl:px-20">
+        <button
+          type="button"
+          className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#DDDDDD] bg-white text-[#222222] shadow-sm md:flex"
+          aria-label="Danh mục trước"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+        <div className="no-scrollbar flex flex-1 items-center gap-8 overflow-x-auto">
+          {categories.map((cat) => {
+            const Icon = cat.icon;
+            const isActive = value === cat.id;
 
-        return (
-          <button
-            key={cat.id}
-            onClick={() => onChange(cat.id)}
-            className={cn(
-              "flex flex-col items-center gap-1.5 pb-2.5 cursor-pointer relative group transition-colors duration-200 focus:outline-none border-b-2",
-              isActive
-                ? "border-app-primary text-app-primary dark:border-app-primary dark:text-app-primary"
-                : "border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
-            )}
-          >
-            <Icon
-              className={cn(
-                "h-6 w-6 transition-transform duration-300 group-hover:scale-105",
-                isActive ? "stroke-[2.5px]" : "stroke-[1.8px]"
-              )}
-            />
-            <span
-              className={cn(
-                "text-xs font-semibold tracking-wide transition-all duration-200",
-                isActive ? "opacity-100" : "opacity-85"
-              )}
-            >
-              {cat.label}
-            </span>
-          </button>
-        );
-      })}
-    </div>
+            return (
+              <button
+                key={cat.id}
+                onClick={() => onChange(cat.id)}
+                className={cn(
+                  "group relative flex h-[58px] min-w-[76px] flex-col items-center justify-center gap-1.5 text-[#717171] opacity-70 transition hover:text-[#222222] hover:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#222222]",
+                  isActive && "font-semibold text-[#222222] opacity-100"
+                )}
+              >
+                <Icon className="h-6 w-6 stroke-[1.8px]" />
+                <span className="whitespace-nowrap text-xs font-semibold leading-4">
+                  {cat.label}
+                </span>
+                <span
+                  className={cn(
+                    "absolute bottom-0 h-0.5 w-full rounded-full bg-[#222222] transition-opacity",
+                    isActive ? "opacity-100" : "opacity-0"
+                  )}
+                />
+              </button>
+            );
+          })}
+        </div>
+        <button
+          type="button"
+          className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#DDDDDD] bg-white text-[#222222] shadow-sm md:flex"
+          aria-label="Danh mục tiếp theo"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
+    </nav>
   );
 }

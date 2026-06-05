@@ -1,0 +1,953 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GoStay - Catalog & Listing Remaining Plan</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --surface: #ffffff;
+      --surface-soft: #eef4f8;
+      --text: #17202a;
+      --muted: #667085;
+      --border: #d7dee8;
+      --accent: #0f766e;
+      --blue: #2563eb;
+      --danger: #b42318;
+      --warning: #b54708;
+      --ok: #027a48;
+      --shadow: 0 10px 28px rgba(16, 24, 40, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.55;
+    }
+
+    main {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 64px;
+    }
+
+    h1, h2, h3, p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      font-size: 22px;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+
+    code {
+      background: #eef2f6;
+      border: 1px solid #dde5ee;
+      border-radius: 4px;
+      color: #263445;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.92em;
+      padding: 1px 5px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.75fr);
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .panel,
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-main {
+      border-left: 6px solid var(--accent);
+      padding: 24px;
+    }
+
+    .hero-side {
+      padding: 20px;
+    }
+
+    .lead {
+      color: #344054;
+      margin-top: 12px;
+      max-width: 86ch;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 14px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    button {
+      appearance: none;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+      min-height: 36px;
+      padding: 8px 12px;
+    }
+
+    button:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .progress-wrap {
+      margin-top: 14px;
+    }
+
+    .progress-top {
+      align-items: center;
+      display: flex;
+      font-weight: 800;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .progress-bar {
+      background: #e5eaf1;
+      border-radius: 999px;
+      height: 12px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      background: linear-gradient(90deg, var(--accent), var(--blue));
+      height: 100%;
+      transition: width 160ms ease;
+      width: 0;
+    }
+
+    .metrics {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 14px;
+    }
+
+    .metric {
+      background: #fbfcfe;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 20px;
+      line-height: 1.1;
+    }
+
+    .metric span {
+      color: var(--muted);
+      display: block;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .section {
+      margin-top: 18px;
+      overflow: hidden;
+    }
+
+    .section-header {
+      background: var(--surface-soft);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 22px;
+    }
+
+    .summary {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 5px;
+    }
+
+    .section-progress {
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 800;
+      margin-top: 8px;
+    }
+
+    .item {
+      border-bottom: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr);
+      gap: 12px;
+      padding: 18px 22px;
+    }
+
+    .item:last-child {
+      border-bottom: 0;
+    }
+
+    .item.done {
+      background: #f4fbf7;
+    }
+
+    .item input[type="checkbox"] {
+      accent-color: var(--accent);
+      height: 20px;
+      margin-top: 5px;
+      width: 20px;
+    }
+
+    .item-title {
+      align-items: center;
+      cursor: pointer;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .item-title label {
+      flex: 1 1 320px;
+      font-size: 17px;
+      font-weight: 800;
+      min-width: 0;
+    }
+
+    .badge {
+      border: 1px solid currentColor;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1;
+      padding: 5px 7px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .critical {
+      color: var(--danger);
+    }
+
+    .high {
+      color: var(--warning);
+    }
+
+    .medium {
+      color: var(--blue);
+    }
+
+    .done-note {
+      color: var(--ok);
+      display: none;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .item.done .done-note {
+      display: inline;
+    }
+
+    .toggle-detail {
+      align-items: center;
+      display: inline-flex;
+      font-size: 13px;
+      gap: 6px;
+      min-height: 32px;
+      padding: 6px 10px;
+    }
+
+    .toggle-detail::before {
+      content: "+";
+      font-weight: 900;
+      width: 12px;
+    }
+
+    .toggle-detail[aria-expanded="true"]::before {
+      content: "-";
+    }
+
+    .item-body {
+      display: none;
+      margin-top: 12px;
+    }
+
+    .item.open .item-body {
+      display: block;
+    }
+
+    .detail-grid {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .detail {
+      border-left: 3px solid #c7d7e6;
+      padding-left: 10px;
+    }
+
+    .detail strong {
+      color: #344054;
+      display: block;
+      font-size: 13px;
+      margin-bottom: 3px;
+    }
+
+    .detail span,
+    .detail li {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    ul {
+      margin: 4px 0 0 18px;
+      padding: 0;
+    }
+
+    .code-block {
+      background: #101828;
+      border-radius: 6px;
+      color: #ecfdf3;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 13px;
+      line-height: 1.45;
+      margin-top: 12px;
+      overflow-x: auto;
+      padding: 12px;
+      white-space: pre;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      padding: 0;
+    }
+
+    table {
+      border-collapse: collapse;
+      min-width: 780px;
+      width: 100%;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #eef4f8;
+      color: #344054;
+      font-size: 13px;
+    }
+
+    td {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .note {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 14px;
+      text-align: center;
+    }
+
+    @media (max-width: 900px) {
+      main {
+        width: min(100% - 20px, 1180px);
+        padding-top: 14px;
+      }
+
+      .hero,
+      .detail-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .metrics {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-main,
+      .hero-side,
+      .section-header,
+      .item {
+        padding: 16px;
+      }
+    }
+
+    @media print {
+      body {
+        background: #ffffff;
+      }
+
+      button,
+      .toolbar {
+        display: none;
+      }
+
+      main {
+        width: 100%;
+      }
+
+      .panel,
+      .section {
+        box-shadow: none;
+      }
+
+      .item-body {
+        display: block;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <div class="panel hero-main">
+        <h1>Catalog & Listing Remaining Plan</h1>
+        <p class="lead">
+          Bản này đã được cập nhật sau lần audit mới nhất: các mục đã hoàn thành đã được bỏ khỏi checklist. Phần còn lại tập trung vào những lỗi và rủi ro còn tồn đọng trước khi Node.js Search & Location Service và Recommendation Engine bắt đầu đọc dữ liệu từ Catalog DB.
+        </p>
+        <p class="meta">
+          Cập nhật: 04/06/2026. Phạm vi: <code>CatalogandListing</code>, Flyway migration, PostGIS strategy, read-only DB contract cho Node.js.
+        </p>
+        <div class="toolbar">
+          <button type="button" id="expandAll">Mở tất cả</button>
+          <button type="button" id="collapseAll">Thu gọn</button>
+          <button type="button" id="resetChecks">Bỏ tick toàn bộ</button>
+          <button type="button" id="printPage">In / Xuất PDF</button>
+        </div>
+      </div>
+
+      <aside class="panel hero-side">
+        <h2>Tiến độ còn lại</h2>
+        <div class="progress-wrap">
+          <div class="progress-top">
+            <span id="progressLabel">0/0 hoàn thành</span>
+            <span id="progressPercent">0%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+        </div>
+        <div class="metrics">
+          <div class="metric">
+            <strong class="critical">0</strong>
+            <span>việc chặn P0</span>
+          </div>
+          <div class="metric">
+            <strong class="high">0</strong>
+            <span>việc P1 cần chốt</span>
+          </div>
+          <div class="metric">
+            <strong class="medium">2</strong>
+            <span>rủi ro P2</span>
+          </div>
+          <div class="metric">
+            <strong class="critical">Test fail</strong>
+            <span>DB local chưa tồn tại</span>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>Những Gì Đã Hoàn Thành Và Đã Bỏ Khỏi Checklist</h2>
+        <p class="summary">Không còn theo dõi trong checklist dưới đây vì code/migration đã có dấu hiệu hoàn thành.</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Nhóm đã xong</th>
+              <th>Bằng chứng hiện tại</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Flyway và bỏ <code>ddl-auto:update</code></td>
+              <td><code>database.yaml</code> đã dùng <code>ddl-auto: validate</code>, có <code>V1/V2/V3</code> migration.</td>
+            </tr>
+            <tr>
+              <td>Set <code>location</code> cho dữ liệu ghi mới</td>
+              <td><code>GeometryUtil</code> đã được dùng trong create/update Listing, Landmark, Complex.</td>
+            </tr>
+            <tr>
+              <td>Backfill <code>location</code> cho dữ liệu cũ</td>
+              <td>Đã thêm <code>V4__backfill_spatial_locations.sql</code> để cập nhật <code>location</code> cho <code>listings</code>, <code>landmarks</code>, <code>complexes</code> và kiểm tra không còn dòng tọa độ hợp lệ nhưng location null.</td>
+            </tr>
+            <tr>
+              <td>Tối ưu PostGIS query theo mét cho Node.js</td>
+              <td>Đã thêm <code>V5__add_geography_expression_indexes.sql</code>: giữ <code>geometry(Point,4326)</code> cho Java/Hibernate, đồng thời tạo GiST expression index trên <code>location::geography</code> cho query Node theo mét. Query Node cần giữ <code>status = 'ACTIVE'</code>, <code>location IS NOT NULL</code>, lọc bằng <code>ST_DWithin</code> và sort bằng <code>ST_Distance</code>.</td>
+            </tr>
+            <tr>
+              <td>Map <code>complexId</code> ra response Listing detail</td>
+              <td><code>ListingMapper.toDetailResponse()</code> đã map <code>complex.id -> complexId</code>. Generated mapper đã sinh <code>listingDetailResponse.complexId(entityComplexId(entity))</code>, có null-check cho listing/complex/id.</td>
+            </tr>
+            <tr>
+              <td>Tạo DB role read-only cho Node.js Search/Recommendation</td>
+              <td>Đã thêm <code>V6__create_catalog_readonly_role.sql</code> để tạo role <code>catalog_readonly</code> và chỉ grant <code>SELECT</code> cho <code>listings</code>, <code>landmarks</code>, <code>complexes</code>, <code>reviews</code>. Đã thêm script admin tạo login <code>catalog_node_reader</code> bằng password ngoài source code và script verify quyền đọc/ghi.</td>
+            </tr>
+            <tr>
+              <td>Hoàn thiện tìm kiếm không dấu cho Landmark autocomplete và Listing keyword search</td>
+              <td>Đã thêm <code>V7__add_normalized_trigram_search_columns.sql</code>: tạo <code>name_normalized</code>, <code>title_normalized</code>, function normalize dùng <code>unaccent</code>, trigger tự cập nhật khi Java ghi, backfill dữ liệu cũ, và GIN trigram index partial cho dữ liệu <code>ACTIVE</code>.</td>
+            </tr>
+            <tr>
+              <td>Dọn ranh giới CQRS: Search/nearby nâng cao thuộc Node.js</td>
+              <td>Đã gỡ endpoint Java <code>GET /api/v1/catalog/listings/landmarks/{landmarkId}/nearby</code>, gỡ public listing search/filter <code>GET /api/v1/catalog/listings</code>, gỡ native query <code>ST_DWithin</code> khỏi <code>ListingRepository</code>, và thêm <code>API_BOUNDARY_CONTRACT.md</code> để chốt Java giữ command/detail read, Node giữ autocomplete/nearby/filter/recommendation.</td>
+            </tr>
+            <tr>
+              <td>Sửa test profile để verify Flyway/JPA không phụ thuộc DB local thủ công</td>
+              <td>Đã thêm Testcontainers PostgreSQL/PostGIS cho <code>CatalogandListingApplicationTests</code>, init role <code>gotravel_db</code>, override datasource động, chạy Flyway với <code>ddl-auto: validate</code>, và assert extension PostGIS, bảng, index spatial/trigram, role <code>catalog_readonly</code>, normalized columns. Khi Docker không khả dụng, integration test được skip thay vì rơi về DB local. Đã thêm GitHub Actions <code>catalog-listing-tests.yml</code> để CI chạy test trên runner có Docker.</td>
+            </tr>
+            <tr>
+              <td>Validate range tọa độ latitude/longitude</td>
+              <td>Đã thêm <code>@DecimalMin</code>/<code>@DecimalMax</code> cho Listing, Landmark, LandmarkSuggestion, Complex request và tọa độ meeting point của Experience. Đã thêm <code>V8__add_coordinate_range_constraints.sql</code> để DB chặn tọa độ ngoài WGS84 range cho <code>listings</code>, <code>landmarks</code>, <code>complexes</code>, <code>landmark_suggestions</code>. Đã thêm unit test <code>CoordinateValidationTest</code> và assert constraint trong integration test.</td>
+            </tr>
+            <tr>
+              <td>GiST spatial index cơ bản</td>
+              <td>Đã có GiST index cho <code>landmarks.location</code>, <code>listings.location</code>, <code>complexes.location</code>.</td>
+            </tr>
+            <tr>
+              <td>Validate category/subCategory/attributes</td>
+              <td><code>ListingService.validateCategoryAndAttributes()</code> đã chặn tổ hợp sai.</td>
+            </tr>
+            <tr>
+              <td>JSONB GIN và composite indexes</td>
+              <td><code>V3</code> đã có GIN JSONB, trigram raw title/name, và các composite index public query.</td>
+            </tr>
+            <tr>
+              <td>Public detail chỉ trả ACTIVE</td>
+              <td><code>CatalogPublicController</code> gọi <code>getPublicDetailListing()</code>.</td>
+            </tr>
+            <tr>
+              <td>Rating update cơ bản khi review mới</td>
+              <td><code>ReviewService.submitReview()</code> đã tính lại avg/count và save vào Listing.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>Query Chuẩn Node.js Cho PostGIS Theo Mét</h2>
+        <p class="summary">Node.js Search & Location Service nên dùng đúng mẫu này để khớp với expression GiST index trong <code>V5</code>.</p>
+      </div>
+      <div class="detail-grid">
+        <div class="detail">
+          <strong>Radius quanh một tọa độ</strong>
+          <span>Bind <code>$1 = longitude</code>, <code>$2 = latitude</code>, <code>$3 = radiusMeters</code>. Giữ <code>status = 'ACTIVE'</code> dạng literal và <code>location IS NOT NULL</code> để partial index được dùng ổn định.</span>
+        </div>
+        <div class="detail">
+          <strong>Index cần thấy trong EXPLAIN</strong>
+          <span><code>idx_listings_active_location_geog_gist</code>, <code>idx_landmarks_active_location_geog_gist</code> hoặc <code>idx_complexes_active_location_geog_gist</code> tùy bảng query.</span>
+        </div>
+      </div>
+      <div class="code-block">WITH q AS (
+  SELECT ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography AS point
+)
+SELECT
+  l.id,
+  l.title,
+  l.category,
+  l.sub_category,
+  l.base_price,
+  l.average_rating,
+  l.latitude,
+  l.longitude,
+  ST_Distance(l.location::geography, q.point) AS distance_meters
+FROM public.listings l
+CROSS JOIN q
+WHERE l.status = 'ACTIVE'
+  AND l.location IS NOT NULL
+  AND ST_DWithin(l.location::geography, q.point, $3)
+ORDER BY distance_meters ASC
+LIMIT $4 OFFSET $5;</div>
+      <div class="code-block">SELECT
+  l.id,
+  l.title,
+  l.category,
+  l.sub_category,
+  l.base_price,
+  l.average_rating,
+  ST_Distance(l.location::geography, lm.location::geography) AS distance_meters
+FROM public.landmarks lm
+JOIN public.listings l
+  ON l.status = 'ACTIVE'
+ AND l.location IS NOT NULL
+WHERE lm.id = $1
+  AND lm.status = 'ACTIVE'
+  AND lm.location IS NOT NULL
+  AND ST_DWithin(l.location::geography, lm.location::geography, $2)
+ORDER BY distance_meters ASC
+LIMIT $3;</div>
+      <div class="code-block">EXPLAIN (ANALYZE, BUFFERS)
+WITH q AS (
+  SELECT ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography AS point
+)
+SELECT l.id
+FROM public.listings l
+CROSS JOIN q
+WHERE l.status = 'ACTIVE'
+  AND l.location IS NOT NULL
+  AND ST_DWithin(l.location::geography, q.point, $3)
+ORDER BY ST_Distance(l.location::geography, q.point) ASC
+LIMIT $4;</div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>Query Chuẩn Node.js Cho Autocomplete Không Dấu</h2>
+        <p class="summary">Node.js nên normalize input bằng function DB để giống hệt dữ liệu đã backfill và trigger đang duy trì.</p>
+      </div>
+      <div class="detail-grid">
+        <div class="detail">
+          <strong>Landmark autocomplete</strong>
+          <span>Bind <code>$1 = userInput</code>, <code>$2 = limit</code>. Query này match được có dấu/không dấu và sai nhẹ nhờ trigram.</span>
+        </div>
+        <div class="detail">
+          <strong>Index cần thấy trong EXPLAIN</strong>
+          <span><code>idx_landmarks_active_name_normalized_trgm</code> cho Landmark, <code>idx_listings_active_title_normalized_trgm</code> cho Listing keyword search.</span>
+        </div>
+      </div>
+      <div class="code-block">WITH q AS (
+  SELECT public.gostay_normalize_search_text($1) AS term
+)
+SELECT
+  lm.id,
+  lm.name,
+  lm.province,
+  lm.latitude,
+  lm.longitude,
+  similarity(lm.name_normalized, q.term) AS score
+FROM public.landmarks lm
+CROSS JOIN q
+WHERE lm.status = 'ACTIVE'
+  AND lm.name_normalized IS NOT NULL
+  AND q.term IS NOT NULL
+  AND (
+    lm.name_normalized LIKE q.term || '%'
+    OR lm.name_normalized % q.term
+  )
+ORDER BY
+  CASE WHEN lm.name_normalized LIKE q.term || '%' THEN 0 ELSE 1 END,
+  score DESC,
+  lm.is_featured DESC NULLS LAST,
+  lm.name ASC
+LIMIT $2;</div>
+      <div class="code-block">WITH q AS (
+  SELECT public.gostay_normalize_search_text($1) AS term
+)
+SELECT
+  l.id,
+  l.title,
+  l.category,
+  l.sub_category,
+  l.base_price,
+  l.average_rating,
+  similarity(l.title_normalized, q.term) AS score
+FROM public.listings l
+CROSS JOIN q
+WHERE l.status = 'ACTIVE'
+  AND l.title_normalized IS NOT NULL
+  AND q.term IS NOT NULL
+  AND (
+    l.title_normalized LIKE '%' || q.term || '%'
+    OR l.title_normalized % q.term
+  )
+ORDER BY score DESC, l.average_rating DESC NULLS LAST, l.title ASC
+LIMIT $2 OFFSET $3;</div>
+    </section>
+
+    <section class="section" data-section>
+      <div class="section-header">
+        <h2>P0 - Không Còn Mục Chặn Trước Khi Node.js Đọc Catalog DB</h2>
+        <p class="summary">Các mục P0 đã được chuyển sang phần hoàn thành. Phần còn lại là P1/P2 để tăng chất lượng search, test tự động và contract đọc dài hạn.</p>
+        <div class="section-progress" data-section-progress></div>
+      </div>
+      <div class="detail">
+        <strong>Trạng thái</strong>
+        <span>Không còn item P0 đang mở trong checklist này.</span>
+      </div>
+    </section>
+
+    <section class="section" data-section>
+      <div class="section-header">
+        <h2>P1 - Không Còn Mục Cần Chốt Cho Search/Autocomplete</h2>
+        <p class="summary">Các mục P1 đã được chuyển sang phần hoàn thành. Phần còn lại là P2 để tăng độ ổn định dài hạn.</p>
+        <div class="section-progress" data-section-progress></div>
+      </div>
+      <div class="detail">
+        <strong>Trạng thái</strong>
+        <span>Không còn item P1 đang mở trong checklist này.</span>
+      </div>
+    </section>
+
+    <section class="section" data-section>
+      <div class="section-header">
+        <h2>P2 - Rủi Ro Cần Theo Dõi Sau Khi P0/P1 Xong</h2>
+        <p class="summary">Không nhất thiết chặn Node bắt đầu, nhưng cần đưa vào backlog để tránh dữ liệu lệch khi hệ thống lớn hơn.</p>
+        <div class="section-progress" data-section-progress></div>
+      </div>
+
+      <article class="item">
+        <input type="checkbox" id="p2-rating-backfill-async" data-check>
+        <div>
+          <div class="item-title">
+            <label>Backfill rating cũ và chuyển tính rating sang async sau MVP</label>
+            <span class="badge medium">P2</span>
+            <span class="done-note">Đã xong</span>
+          </div>
+          <div class="item-body">
+            <div class="detail-grid">
+              <div class="detail">
+                <strong>Vấn đề còn tồn đọng</strong>
+                <span>Review mới đã cập nhật rating, nhưng dữ liệu review cũ nếu có chưa chắc đã được backfill. Việc tính lại rating hiện đang chạy đồng bộ trong request submit review.</span>
+              </div>
+              <div class="detail">
+                <strong>Tác hại</strong>
+                <span>Ranking/recommendation có thể sai với dữ liệu cũ. Khi traffic review tăng, request submit review bị nặng hơn.</span>
+              </div>
+              <div class="detail">
+                <strong>Cần sửa</strong>
+                <ul>
+                  <li>Migration/job backfill <code>average_rating</code>, <code>total_reviews</code>.</li>
+                  <li>Sau MVP, chuyển sang async/event như báo cáo mô tả.</li>
+                </ul>
+              </div>
+              <div class="detail">
+                <strong>Tiêu chí hoàn thành</strong>
+                <span>Mọi listing có reviews đều có aggregate đúng; submit review không bị bottleneck khi nhiều request.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="item">
+        <input type="checkbox" id="p2-listing-search-document" data-check>
+        <div>
+          <div class="item-title">
+            <label>Chốt read model/view ổn định cho Node.js</label>
+            <span class="badge medium">P2</span>
+            <span class="done-note">Đã xong</span>
+          </div>
+          <div class="item-body">
+            <div class="detail-grid">
+              <div class="detail">
+                <strong>Vấn đề còn tồn đọng</strong>
+                <span>Node có thể đọc trực tiếp nhiều table/entity của Catalog, nhưng contract đọc chưa được đóng thành view hoặc DTO DB ổn định.</span>
+              </div>
+              <div class="detail">
+                <strong>Tác hại</strong>
+                <span>Node dễ phụ thuộc sâu vào cấu trúc Java entity. Khi Java đổi JSONB/field, Search/Recommendation có thể vỡ.</span>
+              </div>
+              <div class="detail">
+                <strong>Cần sửa</strong>
+                <ul>
+                  <li>Tạo view/materialized view <code>listing_search_documents</code> hoặc document hóa query contract.</li>
+                  <li>Expose các field Node cần: id, title, category, subCategory, price, rating, location, lat/lng, status, complexId, attributes/tags.</li>
+                </ul>
+              </div>
+              <div class="detail">
+                <strong>Tiêu chí hoàn thành</strong>
+                <span>Node có một nguồn đọc ổn định, được grant read-only, và không cần đoán schema Java.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>Thứ Tự Sửa Tiếp Theo</h2>
+        <p class="summary">Làm theo thứ tự này để tránh sửa vòng và giúp Trung có contract Node rõ ràng.</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Thứ tự</th>
+              <th>Việc cần làm</th>
+              <th>Kết quả mong muốn</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>Chốt read model/view ổn định cho Node.js.</td>
+              <td>Node có nguồn đọc rõ ràng, ít phụ thuộc vào cấu trúc entity Java.</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>Backfill rating cũ và tách rating aggregate sang async sau MVP.</td>
+              <td>Ranking/recommendation không bị lệch bởi dữ liệu review cũ và không làm nặng request review.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <p class="note">Checklist này chỉ lưu trạng thái trên trình duyệt hiện tại bằng localStorage.</p>
+  </main>
+
+  <script>
+    const STORAGE_PREFIX = "gostay.catalogListingRemainingPlan.";
+    const OPEN_PREFIX = "gostay.catalogListingRemainingPlan.open.";
+    const checks = Array.from(document.querySelectorAll("[data-check]"));
+    const items = Array.from(document.querySelectorAll(".item"));
+
+    function setItemOpen(item, open, persist) {
+      item.classList.toggle("open", open);
+      const button = item.querySelector(".toggle-detail");
+      const body = item.querySelector(".item-body");
+      if (button) {
+        button.setAttribute("aria-expanded", open ? "true" : "false");
+        button.textContent = open ? "Thu gọn" : "Chi tiết";
+      }
+      if (body && persist) {
+        localStorage.setItem(OPEN_PREFIX + body.id, open ? "1" : "0");
+      }
+    }
+
+    function setupAccordions() {
+      items.forEach((item, index) => {
+        const title = item.querySelector(".item-title");
+        const body = item.querySelector(".item-body");
+        const checkbox = item.querySelector("[data-check]");
+        if (!title || !body || title.querySelector(".toggle-detail")) return;
+
+        body.id = body.id || `item-body-${checkbox ? checkbox.id : index}`;
+
+        const label = title.querySelector("label");
+        if (label && checkbox) {
+          checkbox.setAttribute("aria-label", label.textContent.trim());
+        }
+
+        const toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.className = "toggle-detail";
+        toggle.setAttribute("aria-controls", body.id);
+        toggle.setAttribute("aria-expanded", "false");
+        toggle.textContent = "Chi tiết";
+        title.appendChild(toggle);
+
+        if (localStorage.getItem(OPEN_PREFIX + body.id) === "1") {
+          setItemOpen(item, true, false);
+        }
+
+        toggle.addEventListener("click", (event) => {
+          event.stopPropagation();
+          setItemOpen(item, !item.classList.contains("open"), true);
+        });
+
+        title.addEventListener("click", (event) => {
+          if (event.target.closest("button")) return;
+          setItemOpen(item, !item.classList.contains("open"), true);
+        });
+      });
+    }
+
+    function updateItemState(input) {
+      const item = input.closest(".item");
+      if (item) item.classList.toggle("done", input.checked);
+    }
+
+    function loadState() {
+      checks.forEach((input) => {
+        input.checked = localStorage.getItem(STORAGE_PREFIX + input.id) === "1";
+        updateItemState(input);
+      });
+    }
+
+    function saveState(input) {
+      localStorage.setItem(STORAGE_PREFIX + input.id, input.checked ? "1" : "0");
+    }
+
+    function updateProgress() {
+      const done = checks.filter((input) => input.checked).length;
+      const total = checks.length;
+      const percent = total ? Math.round((done / total) * 100) : 0;
+      document.getElementById("progressLabel").textContent = `${done}/${total} hoàn thành`;
+      document.getElementById("progressPercent").textContent = `${percent}%`;
+      document.getElementById("progressFill").style.width = `${percent}%`;
+
+      document.querySelectorAll("[data-section]").forEach((section) => {
+        const sectionChecks = Array.from(section.querySelectorAll("[data-check]"));
+        const sectionDone = sectionChecks.filter((input) => input.checked).length;
+        const sectionTotal = sectionChecks.length;
+        const target = section.querySelector("[data-section-progress]");
+        if (target) target.textContent = `${sectionDone}/${sectionTotal} mục hoàn thành`;
+      });
+    }
+
+    checks.forEach((input) => {
+      input.addEventListener("change", () => {
+        saveState(input);
+        updateItemState(input);
+        updateProgress();
+      });
+    });
+
+    document.getElementById("expandAll").addEventListener("click", () => {
+      items.forEach((item) => setItemOpen(item, true, true));
+    });
+
+    document.getElementById("collapseAll").addEventListener("click", () => {
+      items.forEach((item) => setItemOpen(item, false, true));
+    });
+
+    document.getElementById("resetChecks").addEventListener("click", () => {
+      if (!confirm("Bỏ tick toàn bộ checklist còn lại?")) return;
+      checks.forEach((input) => {
+        input.checked = false;
+        saveState(input);
+        updateItemState(input);
+      });
+      updateProgress();
+    });
+
+    document.getElementById("printPage").addEventListener("click", () => window.print());
+
+    setupAccordions();
+    loadState();
+    updateProgress();
+  </script>
+</body>
+</html>

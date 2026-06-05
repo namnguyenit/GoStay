@@ -1,13 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Star, Globe, Heart, Share2, MapPin, Calendar, Check, Users, Home, Clock, Info, CheckCircle2, XCircle, ChevronRight, Languages, Sparkles, ShoppingCart } from "lucide-react";
+import { Star, Heart, Share2, Check, Users, Home, Clock, Info, CheckCircle2, XCircle, Languages, Sparkles, ShoppingCart } from "lucide-react";
 
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatMoney } from "@/shared/utils";
 import ReviewSection from "./ReviewSection";
 import { useCart } from "@/shared/context/CartContext";
@@ -26,11 +24,47 @@ type CategoryItem =
   | undefined
   | null;
 
+type BedItem = {
+  quantity?: number;
+};
+
+type ItineraryItem = {
+  time?: string;
+  activity?: string;
+};
+
+type DetailAttributes = {
+  galleryUrls?: string[];
+  stayDetail?: {
+    maxGuests?: number;
+    bedrooms?: number;
+    beds?: BedItem[];
+    bathrooms?: number;
+  };
+  amenities?: string[];
+  expDetail?: {
+    durationMinutes?: number;
+    difficulty?: string;
+    groupSize?: { min?: number; max?: number };
+    languages?: string[];
+  };
+  itinerary?: ItineraryItem[];
+  inclusions?: string[];
+  exclusions?: string[];
+};
+
+type ListingDetailData = {
+  id?: string;
+  thumbnailUrl?: string;
+  averageRating?: number;
+  attributes?: DetailAttributes;
+};
+
 interface CategoryDetailScreenProps {
   items: CategoryItem[] | undefined;
   activeId: string;
   categoryType: "place" | "experience" | "service";
-  detailData?: any;
+  detailData?: ListingDetailData | null;
 }
 
 export default function CategoryDetailScreen({
@@ -40,12 +74,22 @@ export default function CategoryDetailScreen({
   detailData,
 }: CategoryDetailScreenProps) {
   const router = useRouter();
-  const infoRef = useRef<HTMLDivElement>(null);
   const { addToCart } = useCart();
   const [isCartModalOpen, setIsCartModalOpen] = useState(false);
+  const [imageSelection, setImageSelection] = useState({ activeId: "", index: 0 });
 
   // Find the selected item or default to the first one if not found
   const selectedItem = items.find((item) => item?.id === activeId) || items[0];
+  const detailGalleryUrls = Array.isArray(detailData?.attributes?.galleryUrls)
+    ? detailData.attributes.galleryUrls
+    : [];
+  const detailImages = [
+    detailData?.thumbnailUrl,
+    selectedItem?.image,
+    ...detailGalleryUrls,
+  ].filter((url, index, arr): url is string => Boolean(url) && arr.indexOf(url) === index);
+  const activeImageIndex = imageSelection.activeId === activeId ? imageSelection.index : 0;
+  const activeImage = detailImages[activeImageIndex] || selectedItem?.image;
 
   // Helper to get category text suffix
   const getUnitSuffix = () => {
@@ -74,34 +118,6 @@ export default function CategoryDetailScreen({
         return "";
     }
   };
-
-  // Get a simulated host profile picture and details based on the item id hash
-  const getHostInfo = (id: string = "") => {
-    const avatars = [
-      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
-    ];
-    const names = ["Liza", "Maria", "John", "Sarah", "Alex"];
-    const locations = ["Los Angeles", "Đà Lạt", "Hà Nội", "Sài Gòn", "Nha Trang"];
-
-    // Simple hash function to deterministically choose resources
-    let hash = 0;
-    for (let i = 0; i < id.length; i++) {
-      hash += id.charCodeAt(i);
-    }
-
-    const index = hash % avatars.length;
-    return {
-      avatar: avatars[index],
-      name: names[index],
-      location: locations[index],
-    };
-  };
-
-  const host = getHostInfo(selectedItem?.id);
 
   if (!selectedItem) {
     return (
@@ -154,11 +170,34 @@ export default function CategoryDetailScreen({
                 {/* Main rounded image with absolute centered host avatar overlay */}
                 <div className="relative w-full aspect-video rounded-3xl overflow-hidden shadow-md group bg-zinc-100">
                   <img
-                    src={selectedItem.image ?? undefined}
+                    src={activeImage ?? undefined}
                     alt={selectedItem.name}
                     className="size-full object-cover transition-transform duration-700 group-hover:scale-103"
                   />
                 </div>
+
+                {detailImages.length > 1 && (
+                  <div className="mt-4 grid grid-cols-5 gap-3">
+                    {detailImages.slice(0, 5).map((imageUrl, index) => (
+                      <button
+                        key={`${imageUrl}-${index}`}
+                        type="button"
+                        onClick={() => setImageSelection({ activeId, index })}
+                        className={`aspect-[4/3] overflow-hidden rounded-2xl border bg-zinc-100 transition-all ${
+                          activeImageIndex === index
+                            ? "border-[#e61e4d] ring-2 ring-[#e61e4d]/20"
+                            : "border-zinc-200 hover:border-zinc-400"
+                        }`}
+                      >
+                        <img
+                          src={imageUrl}
+                          alt={`${selectedItem.name} ${index + 1}`}
+                          className="size-full object-cover"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                )}
 
                 {/* Info Text block */}
                 <div className="mt-12 text-center md:text-left">
@@ -225,7 +264,7 @@ export default function CategoryDetailScreen({
                             <div className="bg-zinc-50 dark:bg-zinc-900 p-3 rounded-xl border border-zinc-100 dark:border-zinc-800 flex flex-col items-center justify-center text-center">
                               <Info className="w-5 h-5 text-app-primary mb-1" />
                               <span className="text-xs text-app-muted-fg">Giường</span>
-                              <span className="font-semibold text-sm">{detailData.attributes.stayDetail.beds?.reduce((acc: number, bed: any) => acc + (bed.quantity || 0), 0) || 1} giường</span>
+                              <span className="font-semibold text-sm">{detailData.attributes.stayDetail.beds?.reduce((acc: number, bed: BedItem) => acc + (bed.quantity || 0), 0) || 1} giường</span>
                             </div>
                             <div className="bg-zinc-50 dark:bg-zinc-900 p-3 rounded-xl border border-zinc-100 dark:border-zinc-800 flex flex-col items-center justify-center text-center">
                               <CheckCircle2 className="w-5 h-5 text-app-primary mb-1" />
@@ -294,7 +333,7 @@ export default function CategoryDetailScreen({
                             <div className="mb-6">
                               <h4 className="font-semibold text-app-fg mb-4">Lịch trình</h4>
                               <div className="space-y-4 pl-2 border-l-2 border-zinc-100 dark:border-zinc-800 ml-2">
-                                {detailData.attributes.itinerary.map((item: any, idx: number) => (
+                                {detailData.attributes.itinerary.map((item: ItineraryItem, idx: number) => (
                                   <div key={idx} className="relative pl-6">
                                     <div className="absolute w-3 h-3 bg-app-primary rounded-full -left-[27px] top-1.5 border-2 border-white dark:border-zinc-950" />
                                     <div className="font-semibold text-sm text-app-fg">{item.time}</div>
@@ -398,7 +437,7 @@ export default function CategoryDetailScreen({
                             id: selectedItem.id,
                             title: selectedItem.name || "",
                             price: String(selectedItem.price ?? 0),
-                            image: selectedItem.image || "",
+                            image: activeImage || selectedItem.image || "",
                             category: categoryType,
                           });
                           router.push(`/checkout?${params.toString()}`);

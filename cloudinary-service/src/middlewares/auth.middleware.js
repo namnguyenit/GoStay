@@ -3,6 +3,7 @@ import jwksClient from "jwks-rsa";
 import { throwError } from "../utils/throwError.js";
 
 const identityServiceUrl = process.env.IDENTITY_SERVICE_URL || "http://localhost:8080";
+const defaultInternalServiceToken = "gostay-internal-secret-token-12345";
 
 const client = jwksClient({
     jwksUri: `${identityServiceUrl}/.well-known/jwks.json`,
@@ -22,7 +23,10 @@ function getKey(header, callback) {
 }
 
 export const verifyMediaJWT = (req, res, next) => {
-    const internalServiceToken = process.env.INTERNAL_SERVICE_TOKEN || process.env.MEDIA_INTERNAL_SERVICE_TOKEN;
+    const internalServiceToken =
+        process.env.INTERNAL_SERVICE_TOKEN ||
+        process.env.MEDIA_INTERNAL_SERVICE_TOKEN ||
+        defaultInternalServiceToken;
     const providedServiceToken = req.headers["x-internal-service-token"];
 
     if (internalServiceToken && providedServiceToken === internalServiceToken) {

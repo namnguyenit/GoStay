@@ -126,10 +126,6 @@ public class LandmarkService {
      }
 
      public java.util.List<Landmark> getPublicLandmarks() {
-         java.util.List<Landmark> featured = landmarkRepository.findByIsFeaturedTrue();
-         if (featured != null && !featured.isEmpty()) {
-             return featured;
-         }
-         return landmarkRepository.findByStatus(com.Listing.CatalogandListing.enums.LandmarkStatus.ACTIVE);
+         return landmarkRepository.findActiveOrderByNearbyListingCount();
      }
 }

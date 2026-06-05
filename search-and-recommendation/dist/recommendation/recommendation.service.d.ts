@@ -17,6 +17,7 @@ export declare class RecommendationService {
     recommendByComplex(complexId: string): Promise<any[]>;
     recommendNearby(lat: number | string, lng: number | string, category?: any): Promise<any>;
     recommendForHome(province?: string): Promise<any[]>;
-    recommendByLandmark(landmarkId: string): Promise<any[]>;
+    recommendByLandmark(landmarkId: string): Promise<any>;
+    recommendByLandmarkGrouped(landmarkId: string, radiusMeters?: number): Promise<any>;
     recommendSimilar(listingId: string): Promise<any[]>;
 }

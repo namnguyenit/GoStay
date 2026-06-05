@@ -1,6 +1,20 @@
 import { Api } from "@/shared/api";
 import Cookies from "js-cookie";
-import { jwtDecode } from "jwt-decode";
+import { jwtDecode, type JwtPayload } from "jwt-decode";
+
+type RegisterPayload = {
+  username: string;
+  password: string;
+  email: string;
+  fullName: string;
+  phoneNumber: string;
+  dateOfBirth: string;
+  role?: string;
+};
+
+type TokenData = JwtPayload & {
+  scope?: string;
+};
 
 const AuthService = {
   login: async (credentials: { username: string; password: string }) => {
@@ -24,7 +38,7 @@ const AuthService = {
     return res;
   },
 
-  register: async (data: { username: string; password: string; email: string; fullName: string; phoneNumber: string; dateOfBirth: string }) => {
+  register: async (data: RegisterPayload) => {
     const res = await Api.post("/v1/auth/register", data);
     return res;
   },
@@ -52,12 +66,12 @@ const AuthService = {
           if (profileInfo?.data) {
             localStorage.setItem("user_info", JSON.stringify(profileInfo.data));
           }
-        } catch (_) {}
+        } catch {}
         // So sánh roles cũ và mới
         const newRoles = AuthService.getUserRoles().sort().join(",");
         return currentRoles !== newRoles;
       }
-    } catch (_) {}
+    } catch {}
     return false;
   },
 
@@ -69,18 +83,18 @@ const AuthService = {
     return null;
   },
 
-  getTokenData: () => {
+  getTokenData: (): TokenData | null => {
     const token = Cookies.get("access_token");
     if (!token) return null;
     try {
-      return jwtDecode(token);
-    } catch (error) {
+      return jwtDecode<TokenData>(token);
+    } catch {
       return null;
     }
   },
 
   getUserRoles: () => {
-    const tokenData: any = AuthService.getTokenData();
+    const tokenData = AuthService.getTokenData();
     if (!tokenData || !tokenData.scope) return [];
     // JWT scope có dạng "ROLE_USER ROLE_HOST" — strip prefix ROLE_ để dùng nhất quán
     return tokenData.scope

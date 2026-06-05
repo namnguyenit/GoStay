@@ -10,6 +10,6 @@ export declare class RecommendationController {
     getComplexRecommendations(id: string): Promise<any[]>;
     getHomeRecommendations(province?: string): Promise<any[]>;
     getNearbyRecommendations(dto: NearbyRecommendationQueryDto): Promise<any>;
-    getByLandmark(landmarkId: string): Promise<any[]>;
+    getByLandmark(landmarkId: string, radius?: string, radiusMeters?: string): Promise<any>;
     getSimilar(listingId: string): Promise<any[]>;
 }

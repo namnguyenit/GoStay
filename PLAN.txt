@@ -1,0 +1,175 @@
+Website Design Reverse Engineering Task
+You are a Senior UI/UX Reverse Engineer and Frontend Architect.
+Your task is to analyze the provided website URL and generate a comprehensive design.md document that contains ALL visual, structural, and styling information required for another AI to recreate the website as accurately as possible.
+Goal
+Create a design specification detailed enough that a frontend AI can rebuild the page with:
+•	Same layout
+•	Same spacing system
+•	Same typography hierarchy
+•	Same color palette
+•	Same visual style
+•	Same component structure
+•	Same responsiveness
+•	Same interactions
+•	Same design language
+Do NOT summarize.
+Extract as much detail as possible.
+________________________________________
+Website
+URL: {https://www.airbnb.com.vn/}
+________________________________________
+Output Format
+Generate a single markdown file named design.md.
+design.md
+1. Design System Overview
+•	Overall design style
+•	Visual personality
+•	Brand feeling
+•	UX patterns used
+________________________________________
+2. Layout Architecture
+Describe:
+•	Page width
+•	Max-width containers
+•	Grid system
+•	Number of columns
+•	Gutters
+•	Section spacing
+•	Vertical rhythm
+•	Alignment rules
+Provide estimated pixel values whenever possible.
+________________________________________
+3. Color System
+Extract:
+Primary Colors
+Usage	Hex
+Primary	
+Secondary	
+Accent	
+Neutral Colors
+Background Colors
+Border Colors
+Text Colors
+Include all discovered color tokens.
+________________________________________
+4. Typography System
+For every text style identify:
+Document:
+Estimate values when needed.
+________________________________________
+5. Spacing System
+Identify spacing scale:
+Explain where each spacing token is used.
+________________________________________
+6. Component Library
+Analyze every component:
+Navbar
+Describe:
+•	Height
+•	Structure
+•	Alignment
+•	Logo positioning
+•	Navigation spacing
+•	Hover effects
+Hero Section
+Describe:
+•	Layout
+•	Text alignment
+•	CTA buttons
+•	Images
+•	Gradients
+Cards
+Describe:
+•	Border radius
+•	Shadow
+•	Padding
+•	Hover behavior
+Buttons
+Describe:
+•	Variants
+•	Colors
+•	States
+•	Radius
+•	Animation
+Forms
+Footer
+Modals
+Tables
+Tabs
+Accordions
+Any custom components
+________________________________________
+7. CSS Specification
+Generate reusable CSS tokens:
+Document estimated values.
+________________________________________
+8. Responsive Behavior
+Analyze:
+Desktop
+Tablet
+Mobile
+For each breakpoint explain:
+•	Layout changes
+•	Grid changes
+•	Component behavior
+•	Navigation changes
+Estimate breakpoints.
+________________________________________
+9. Interaction Design
+Describe:
+•	Hover effects
+•	Animations
+•	Transitions
+•	Scroll effects
+•	Parallax
+•	Sticky elements
+•	Dropdowns
+Include timing estimates.
+________________________________________
+10. Visual Assets
+List:
+•	Icons
+•	Illustrations
+•	Images
+•	Logos
+•	Background patterns
+Describe style and usage.
+________________________________________
+11. Accessibility Notes
+Document:
+•	Contrast quality
+•	Focus states
+•	Semantic structure
+•	Keyboard navigation assumptions
+________________________________________
+12. Frontend Recreation Guide
+Provide implementation recommendations for:
+•	HTML structure
+•	CSS architecture
+•	Tailwind classes
+•	React component hierarchy
+•	Design tokens
+The goal is to enable another AI to recreate the UI with maximum visual similarity.
+________________________________________
+13. DOM Structure Map
+Create a hierarchical tree:
+Page
+├── Navbar
+├── Hero
+├── Features
+├── Testimonials
+├── CTA
+└── Footer
+Include all detected sections.
+________________________________________
+14. AI Reconstruction Blueprint
+Create a final section containing:
+•	Design tokens
+•	Component inventory
+•	Layout rules
+•	Responsive rules
+•	Critical visual details
+This section should contain everything needed by an AI coding agent to reproduce the design without seeing the original page again.
+Be extremely detailed.
+Prefer over-documentation rather than summarization.
+

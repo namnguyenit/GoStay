@@ -42,8 +42,9 @@ let RecommendationController = class RecommendationController {
     async getNearbyRecommendations(dto) {
         return this.recommendationService.getHomeFeed(dto);
     }
-    async getByLandmark(landmarkId) {
-        return this.recommendationService.recommendByLandmark(landmarkId);
+    async getByLandmark(landmarkId, radius, radiusMeters) {
+        const parsedRadius = Number(radiusMeters ?? radius);
+        return this.recommendationService.recommendByLandmarkGrouped(landmarkId, Number.isFinite(parsedRadius) && parsedRadius > 0 ? parsedRadius : 5000);
     }
     async getSimilar(listingId) {
         return this.recommendationService.recommendSimilar(listingId);
@@ -100,8 +101,10 @@ __decorate([
 __decorate([
     (0, common_1.Get)('landmarks/:landmarkId'),
     __param(0, (0, common_1.Param)('landmarkId')),
+    __param(1, (0, common_1.Query)('radius')),
+    __param(2, (0, common_1.Query)('radiusMeters')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String, String]),
     __metadata("design:returntype", Promise)
 ], RecommendationController.prototype, "getByLandmark", null);
 __decorate([

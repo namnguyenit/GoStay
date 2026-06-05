@@ -42,14 +42,18 @@ export class CandidateGenerator {
     });
   }
 
-  async generateByLandmark(landmarkId: string, limit: number = 200) {
+  async generateByLandmark(
+    landmarkId: string,
+    limit: number = 200,
+    radiusMeters: number = 5000,
+  ) {
     const landmark = await this.landmarkRepo.findById(landmarkId);
     if (!landmark) return [];
 
     return this.generateByCoordinate(
       landmark.latitude,
       landmark.longitude,
-      landmark.radiusMeters || landmark.radius_meters || 10000,
+      radiusMeters,
       limit,
     );
   }

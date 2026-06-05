@@ -9,27 +9,23 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import clsx from "clsx";
 import {
   ConciergeBell,
+  Globe2,
+  Heart,
   Home,
   LoaderCircle,
   LogIn,
   LogOutIcon,
+  Menu,
   PartyPopper,
+  Search,
   SettingsIcon,
-  UserIcon,
-  Compass,
   ShoppingCart,
+  UserCircle,
 } from "lucide-react";
-import {
-  CSSProperties,
-  ReactNode,
-  useEffect,
-  useState,
-  useTransition,
-} from "react";
+import { ReactNode, useEffect, useState, useTransition } from "react";
 import { isTab, useApp } from "../hooks/useApp";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -38,6 +34,19 @@ import { Footer } from "@/shared/components";
 import CartDrawer from "@/shared/components/CartDrawer";
 import { useCart } from "@/shared/context/CartContext";
 import { useAuthModal } from "@/shared/context/AuthModalContext";
+
+const NAV_ITEMS = [
+  { value: "place", label: "Nơi lưu trú", icon: Home },
+  { value: "experience", label: "Trải nghiệm", icon: PartyPopper },
+  { value: "service", label: "Dịch vụ", icon: ConciergeBell },
+] as const;
+
+type CurrentUser = {
+  id?: string;
+  firstName?: string;
+  lastName?: string;
+  avatarUrl?: string;
+} | null;
 
 export default function MainLayoutClient({
   children,
@@ -49,18 +58,23 @@ export default function MainLayoutClient({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const pathName = usePathname();
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<CurrentUser>(
+    () => AuthService.getCurrentUser() as CurrentUser,
+  );
   const { itemCount, setIsDrawerOpen } = useCart();
   const { openModal } = useAuthModal();
 
-  // Giữ lại logic isHost / isEnterprise từ TestSystem
   const roles = currentUser ? AuthService.getUserRoles() : [];
   const isHost = roles.includes("HOST");
   const isEnterprise = roles.includes("ENTERPRISE");
-
-  useEffect(() => {
-    setCurrentUser(AuthService.getCurrentUser());
-  }, [pathName]); // Cập nhật user info khi đổi route (ví dụ sau khi login xong)
+  const isHomePage = pathName === "/";
+  const elevatedHeader =
+    scrolled ||
+    Boolean(tab) ||
+    pathName.startsWith("/search") ||
+    pathName.startsWith("/settings") ||
+    pathName.startsWith("/checkout") ||
+    pathName.startsWith("/payment");
 
   const handleLogout = () => {
     AuthService.logout();
@@ -68,7 +82,6 @@ export default function MainLayoutClient({
     window.location.href = "/";
   };
 
-  // Giữ lại logic tự động refresh roles khi user quay lại tab (detect admin đã nâng quyền)
   useEffect(() => {
     if (!currentUser) return;
 
@@ -76,7 +89,8 @@ export default function MainLayoutClient({
       if (document.visibilityState === "visible") {
         const rolesChanged = await AuthService.refreshRoles();
         if (rolesChanged) {
-          setCurrentUser({ ...AuthService.getCurrentUser() });
+          const refreshedUser = AuthService.getCurrentUser() as CurrentUser;
+          setCurrentUser(refreshedUser ? { ...refreshedUser } : null);
         }
       }
     };
@@ -85,7 +99,7 @@ export default function MainLayoutClient({
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [currentUser?.id]);
+  }, [currentUser]);
 
   useEffect(() => {
     const segment = pathName.split("/")[1];
@@ -94,241 +108,243 @@ export default function MainLayoutClient({
     } else {
       setTab(undefined);
     }
-  }, [pathName]);
+  }, [pathName, setTab]);
+
+  const goHome = () => {
+    startTransition(() => {
+      setTab(undefined);
+      router.push("/");
+    });
+  };
+
+  const goToTab = (value: (typeof NAV_ITEMS)[number]["value"]) => {
+    startTransition(() => {
+      router.push(`/${value}`);
+    });
+  };
+
+  const openLogin = () => openModal("login");
 
   return (
     <main
-      className="no-scrollbar h-screen overflow-x-hidden overflow-y-auto"
+      className="no-scrollbar h-screen overflow-x-hidden overflow-y-auto bg-white text-[#222222]"
       onScroll={(event) => {
-        if ((event.target as HTMLDivElement).scrollTop > 50) setScrolled(true);
-        if ((event.target as HTMLDivElement).scrollTop <= 50)
-          setScrolled(false);
+        const top = (event.target as HTMLDivElement).scrollTop;
+        setScrolled(top > 50);
       }}
     >
-      {/* MAIN NAVIGATION — UI mới từ frontend */}
-      <div
+      <header
         className={clsx(
-          "fixed z-50 flex w-full items-center justify-between px-6 md:px-10 transition-all duration-500",
-          scrolled || tab || pathName.startsWith("/search") || pathName.startsWith("/settings") || pathName.startsWith("/checkout") || pathName.startsWith("/payment")
-            ? "h-[64px] bg-gradient-to-r from-violet-700 via-app-primary to-purple-700 shadow-lg shadow-violet-900/20 backdrop-blur-md"
-            : "h-[70px] bg-transparent",
+          "fixed inset-x-0 top-0 z-50 border-b border-[#DDDDDD] bg-white/95 backdrop-blur transition-shadow duration-200",
+          elevatedHeader ? "shadow-sm" : "shadow-none",
         )}
       >
-        {/* Left: Logo */}
-        <div
-          className="flex items-center gap-2.5 cursor-pointer select-none group"
-          onClick={() => {
-            startTransition(() => {
-              setTab(undefined);
-              router.push("/");
-            });
-          }}
-        >
-          <div className={clsx(
-            "flex h-9 w-9 items-center justify-center rounded-xl border transition-all duration-300 shadow-md group-hover:scale-105",
-            scrolled || tab || pathName.startsWith("/search") || pathName.startsWith("/settings") || pathName.startsWith("/checkout") || pathName.startsWith("/payment")
-              ? "bg-white/20 border-white/25 group-hover:bg-white/30"
-              : "bg-white/10 border-white/15 backdrop-blur-sm group-hover:bg-white/20"
-          )}>
-            <Compass className="h-5 w-5 text-white transition-transform duration-700 group-hover:rotate-180" />
-          </div>
-          <div className="hidden sm:flex flex-col justify-center leading-none">
-            <span className="text-lg font-black tracking-wider text-white flex items-center">
-              Go<span className="text-violet-200 font-extrabold">Travel</span>
-            </span>
-            <span className="text-[7px] font-bold tracking-[0.2em] text-white/40 uppercase mt-0.5">
-              Khám phá Việt Nam
-            </span>
-          </div>
-        </div>
-
-        {/* Center: Navigation Tabs */}
-        <Tabs
-          value={tab ?? ""}
-          onValueChange={(value) => {
-            startTransition(() => {
-              router.push(`/${value}`);
-            });
-          }}
-        >
-          <TabsList
-            variant="line"
-            style={{ "--foreground": "white" } as CSSProperties}
-            className="gap-0.5"
+        <div className="mx-auto flex h-20 max-w-[1760px] items-center justify-between px-6 md:px-10 xl:px-20">
+          <button
+            type="button"
+            onClick={goHome}
+            className="flex items-center gap-2 rounded-full text-[#FF385C] transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#222222]"
+            aria-label="Về trang chủ GoStay"
           >
-            <TabsTrigger
-              value="place"
-              className="data-[state=active]:text-white after:hidden"
-            >
-              <div className={clsx(
-                "flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-medium transition-all duration-300",
-                "text-white/80 hover:text-white hover:bg-white/10",
-                tab === "place" && "bg-white/15 text-white"
-              )}>
-                <Home className="h-4 w-4" />
-                <span className="hidden md:inline">Nơi cư trú</span>
-              </div>
-            </TabsTrigger>
-            <TabsTrigger
-              value="experience"
-              className="data-[state=active]:text-white after:hidden"
-            >
-              <div className={clsx(
-                "flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-medium transition-all duration-300",
-                "text-white/80 hover:text-white hover:bg-white/10",
-                tab === "experience" && "bg-white/15 text-white"
-              )}>
-                <PartyPopper className="h-4 w-4" />
-                <span className="hidden md:inline">Trải nghiệm</span>
-              </div>
-            </TabsTrigger>
-            <TabsTrigger
-              value="service"
-              className="data-[state=active]:text-white after:hidden"
-            >
-              <div className={clsx(
-                "flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-medium transition-all duration-300",
-                "text-white/80 hover:text-white hover:bg-white/10",
-                tab === "service" && "bg-white/15 text-white"
-              )}>
-                <ConciergeBell className="h-4 w-4" />
-                <span className="hidden md:inline">Dịch vụ</span>
-              </div>
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#FF385C] text-white">
+              <Home className="h-5 w-5" />
+            </span>
+            <span className="hidden text-2xl font-bold tracking-normal sm:block">
+              GoStay
+            </span>
+          </button>
 
-        {/* Right: User Section */}
-        <div className="hidden sm:flex items-center gap-3">
-          {currentUser ? (
-            <>
-              {/* Giữ lại nút Kênh Chủ Nhà / Kênh Doanh Nghiệp từ TestSystem */}
-              {isHost && (
-                <Link href="/host">
-                  <Button
-                    className="bg-white/15 hover:bg-white/25 text-white border border-white/20 rounded-full px-4 py-1.5 text-xs font-semibold transition-all duration-300 backdrop-blur-sm cursor-pointer"
-                  >
-                    Kênh Chủ Nhà
-                  </Button>
-                </Link>
-              )}
-              {isEnterprise && (
-                <Link href="/enterprise">
-                  <Button
-                    className="bg-white/15 hover:bg-white/25 text-white border border-white/20 rounded-full px-4 py-1.5 text-xs font-semibold transition-all duration-300 backdrop-blur-sm cursor-pointer"
-                  >
-                    Kênh Doanh Nghiệp
-                  </Button>
-                </Link>
-              )}
-              <div className="text-right">
-                <p className="text-sm font-semibold text-white leading-tight">
-                  {currentUser.lastName} {currentUser.firstName}
-                </p>
-                <p
+          <nav
+            className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 md:flex"
+            aria-label="Loại hình dịch vụ"
+          >
+            {NAV_ITEMS.map((item) => {
+              const Icon = item.icon;
+              const isActive = tab === item.value;
+
+              return (
+                <button
+                  key={item.value}
+                  type="button"
+                  onClick={() => goToTab(item.value)}
                   className={clsx(
-                    "text-[10px] font-medium leading-tight transition-colors duration-500",
-                    scrolled || tab
-                      ? "text-violet-200/70"
-                      : "text-white/50",
+                    "group relative flex items-center gap-2 px-1 py-2 text-base transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#222222]",
+                    isActive
+                      ? "font-semibold text-[#222222]"
+                      : "font-normal text-[#717171] hover:text-[#222222]",
                   )}
                 >
-                  {AuthService.getUserRoles().join(", ")}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="relative rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors"
-                  onClick={() => setIsDrawerOpen(true)}
-                  title="Giỏ hàng"
-                >
-                  <ShoppingCart className="h-5 w-5" />
-                  {itemCount > 0 && (
-                    <span className="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-violet-700">
-                      {itemCount}
-                    </span>
-                  )}
-                </Button>
+                  <Icon
+                    className={clsx(
+                      "h-5 w-5 transition-colors",
+                      isActive ? "text-[#222222]" : "text-[#717171]",
+                    )}
+                  />
+                  <span>{item.label}</span>
+                  <span
+                    className={clsx(
+                      "absolute inset-x-0 -bottom-1 h-0.5 rounded-full bg-[#222222] transition-opacity",
+                      isActive ? "opacity-100" : "opacity-0 group-hover:opacity-50",
+                    )}
+                  />
+                </button>
+              );
+            })}
+          </nav>
 
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="rounded-full relative cursor-pointer"
-                  onClick={() => router.push("/settings")}
+          <div className="flex items-center gap-2 md:gap-3">
+            <button
+              type="button"
+              onClick={() => router.push("/search")}
+              className="hidden h-11 items-center gap-3 rounded-full border border-[#DDDDDD] bg-white py-2 pl-4 pr-2 text-sm font-semibold text-[#222222] shadow-sm transition hover:shadow-md lg:flex"
+              aria-label="Mở tìm kiếm"
+            >
+              <span>Địa điểm bất kỳ</span>
+              <span className="h-5 w-px bg-[#DDDDDD]" />
+              <span>Thêm ngày</span>
+              <span className="h-5 w-px bg-[#DDDDDD]" />
+              <span className="font-normal text-[#717171]">Thêm khách</span>
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FF385C] text-white">
+                <Search className="h-4 w-4" />
+              </span>
+            </button>
+
+            {(isHost || isEnterprise) && currentUser && (
+              <div className="hidden items-center gap-2 xl:flex">
+                {isHost && (
+                  <Link href="/host">
+                    <Button
+                      variant="ghost"
+                      className="h-10 rounded-full px-4 text-sm font-semibold text-[#222222] hover:bg-[#F7F7F7]"
+                    >
+                      Kênh Chủ Nhà
+                    </Button>
+                  </Link>
+                )}
+                {isEnterprise && (
+                  <Link href="/enterprise">
+                    <Button
+                      variant="ghost"
+                      className="h-10 rounded-full px-4 text-sm font-semibold text-[#222222] hover:bg-[#F7F7F7]"
+                    >
+                      Kênh Doanh Nghiệp
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            )}
+
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hidden h-10 w-10 rounded-full text-[#222222] hover:bg-[#F7F7F7] md:inline-flex"
+              title="Ngôn ngữ"
+            >
+              <Globe2 className="h-5 w-5" />
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative h-10 w-10 rounded-full text-[#222222] hover:bg-[#F7F7F7]"
+              onClick={() => setIsDrawerOpen(true)}
+              title="Giỏ hàng"
+            >
+              <ShoppingCart className="h-5 w-5" />
+              {itemCount > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#FF385C] px-1 text-[10px] font-bold text-white ring-2 ring-white">
+                  {itemCount}
+                </span>
+              )}
+            </Button>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="h-11 rounded-full border-[#DDDDDD] bg-white py-1 pl-3 pr-1.5 text-[#222222] shadow-sm hover:shadow-md"
+                  aria-label="Mở menu tài khoản"
                 >
-                  <div className="rounded-full p-[2px] bg-gradient-to-br from-violet-300 via-white/50 to-purple-400 transition-transform hover:scale-105">
-                    <Avatar className="h-8 w-8 border-2 border-transparent">
+                  <Menu className="h-5 w-5" />
+                  {currentUser ? (
+                    <Avatar className="h-8 w-8">
                       <AvatarImage
                         src={
                           currentUser.avatarUrl ||
                           "https://github.com/shadcn.png"
                         }
                       />
-                      <AvatarFallback className="bg-violet-600 text-white text-xs font-bold">
+                      <AvatarFallback className="bg-[#717171] text-xs font-bold text-white">
                         {currentUser.firstName?.[0] || "U"}
                       </AvatarFallback>
                     </Avatar>
-                  </div>
-                  {/* Online indicator */}
-                  <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-400 border-2 border-violet-700" />
+                  ) : (
+                    <UserCircle className="h-8 w-8 text-[#717171]" />
+                  )}
                 </Button>
-
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="rounded-full text-white/70 hover:text-red-400 hover:bg-white/10 transition-colors"
-                  onClick={handleLogout}
-                  title="Đăng xuất"
-                >
-                  <LogOutIcon className="h-4 w-4" />
-                </Button>
-              </div>
-            </>
-          ) : (
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="relative rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors"
-                onClick={() => setIsDrawerOpen(true)}
-                title="Giỏ hàng"
-              >
-                <ShoppingCart className="h-5 w-5" />
-                {itemCount > 0 && (
-                  <span className="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-violet-700">
-                    {itemCount}
-                  </span>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64 rounded-xl p-2">
+                {currentUser ? (
+                  <>
+                    <div className="px-2 py-2">
+                      <div className="text-sm font-semibold text-[#222222]">
+                        {currentUser.lastName} {currentUser.firstName}
+                      </div>
+                      <div className="mt-0.5 text-xs text-[#717171]">
+                        {roles.join(", ")}
+                      </div>
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => router.push("/settings")}
+                      className="cursor-pointer gap-2"
+                    >
+                      <SettingsIcon className="h-4 w-4" />
+                      Cài đặt tài khoản
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handleLogout}
+                      className="cursor-pointer gap-2 text-[#E61E4F]"
+                    >
+                      <LogOutIcon className="h-4 w-4" />
+                      Đăng xuất
+                    </DropdownMenuItem>
+                  </>
+                ) : (
+                  <>
+                    <DropdownMenuItem
+                      onClick={openLogin}
+                      className="cursor-pointer gap-2 font-semibold"
+                    >
+                      <LogIn className="h-4 w-4" />
+                      Đăng nhập
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="cursor-pointer">
+                      Đón tiếp khách
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer">
+                      Trung tâm trợ giúp
+                    </DropdownMenuItem>
+                  </>
                 )}
-              </Button>
-              <Button 
-                onClick={() => openModal("login")}
-                className="bg-white/15 hover:bg-white/25 text-white border border-white/20 rounded-full px-5 py-2 text-sm font-semibold transition-all duration-300 backdrop-blur-sm shadow-md hover:shadow-lg cursor-pointer"
-              >
-                <LogIn className="mr-2 h-4 w-4" /> Đăng nhập
-              </Button>
-            </div>
-          )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
+      </header>
 
-        {/* Bottom gradient line */}
-        <div className={clsx(
-          "absolute bottom-0 left-0 right-0 h-[1px] transition-opacity duration-500",
-          scrolled || tab || pathName.startsWith("/search") || pathName.startsWith("/settings") || pathName.startsWith("/checkout") || pathName.startsWith("/payment")
-            ? "opacity-100 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-            : "opacity-0"
-        )} />
-      </div>
-      {tab && <div className="h-[70px]"></div>}
+      {tab && <div className="h-20" />}
+
       {isPending && (
         <div className="center size-full">
-          <div className="text-app-primary/50 row gap-1">
+          <div className="row gap-2 text-[#FF385C]">
             <LoaderCircle className="animate-spin" />
             Loading...
           </div>
         </div>
       )}
+
       {!isPending && (
         <>
           <CartDrawer />
@@ -336,6 +352,35 @@ export default function MainLayoutClient({
           <Footer />
         </>
       )}
+
+      <nav className="fixed inset-x-0 bottom-0 z-50 flex h-16 items-center justify-around border-t border-[#DDDDDD] bg-white md:hidden">
+        <button
+          type="button"
+          onClick={goHome}
+          className={clsx(
+            "flex flex-col items-center gap-1 text-[10px] font-semibold",
+            isHomePage ? "text-[#FF385C]" : "text-[#717171]",
+          )}
+        >
+          <Search className="h-5 w-5" />
+          Khám phá
+        </button>
+        <button
+          type="button"
+          className="flex flex-col items-center gap-1 text-[10px] font-semibold text-[#717171]"
+        >
+          <Heart className="h-5 w-5" />
+          Yêu thích
+        </button>
+        <button
+          type="button"
+          onClick={currentUser ? () => router.push("/settings") : openLogin}
+          className="flex flex-col items-center gap-1 text-[10px] font-semibold text-[#717171]"
+        >
+          <UserCircle className="h-5 w-5" />
+          {currentUser ? "Tài khoản" : "Đăng nhập"}
+        </button>
+      </nav>
     </main>
   );
 }

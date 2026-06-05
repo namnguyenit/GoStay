@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Carousel, CarouselContent } from "@/components/ui/carousel";
-import { ChevronLeft, ChevronRight, MoveRight, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight, MoveRight } from "lucide-react";
 import { ReactNode, useEffect, useState } from "react";
 import type { EmblaCarouselType } from "embla-carousel";
 
@@ -39,33 +39,46 @@ export default function CarouselSection({
   }, [carousel]);
 
   return (
-    <div className="px-4">
-      <div className="row justify-between">
-        <div className="center-y flex-1">
-          <div className="text-title line-clamp-1">{title}</div>
+    <section className="mx-auto w-full max-w-[1760px] px-6 py-2 md:px-10 xl:px-20">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex min-w-0 flex-1 items-center">
+          <h2 className="line-clamp-1 text-[22px] font-bold leading-[26px] text-[#222222]">
+            {title}
+          </h2>
           <div className="w-2" />
-          <Button className="bg-app-muted hover:bg-app-accent flex aspect-square h-auto items-center justify-center rounded-full border-0 p-0">
-            <MoveRight className="text-app-fg size-7 p-2" />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-full bg-[#F7F7F7] text-[#222222] hover:bg-[#EEEEEE]"
+            aria-label={`Xem thêm ${title}`}
+          >
+            <MoveRight className="h-4 w-4" />
           </Button>
         </div>
-        <div>
+        <div className="hidden items-center gap-2 sm:flex">
           <Button
-            className="bg-app-muted hover:bg-app-accent"
+            variant="outline"
+            size="icon"
+            className="h-8 w-8 rounded-full border-[#DDDDDD] bg-white text-[#222222] shadow-sm hover:bg-[#F7F7F7] disabled:opacity-35"
             onClick={() => carousel?.scrollPrev()}
             disabled={!canCarouse.canPrev}
+            aria-label="Cuộn carousel sang trái"
           >
-            <ChevronLeft className="text-app-muted-fg" />
+            <ChevronLeft className="h-4 w-4" />
           </Button>
           <Button
-            className="bg-app-muted hover:bg-app-accent"
+            variant="outline"
+            size="icon"
+            className="h-8 w-8 rounded-full border-[#DDDDDD] bg-white text-[#222222] shadow-sm hover:bg-[#F7F7F7] disabled:opacity-35"
             onClick={() => carousel?.scrollNext()}
             disabled={!canCarouse.canNext}
+            aria-label="Cuộn carousel sang phải"
           >
-            <ChevronRight className="text-app-muted-fg" />
+            <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
       </div>
-      <div className="h-4" />
+      <div className="h-5" />
       <Carousel
         opts={{
           align: "start",
@@ -73,8 +86,8 @@ export default function CarouselSection({
         setApi={setCarousel}
         className="w-full"
       >
-        <CarouselContent>{children}</CarouselContent>
+        <CarouselContent className="-ml-6">{children}</CarouselContent>
       </Carousel>
-    </div>
+    </section>
   );
 }

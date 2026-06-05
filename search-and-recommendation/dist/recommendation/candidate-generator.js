@@ -42,11 +42,11 @@ let CandidateGenerator = class CandidateGenerator {
             sortBy: 'RELEVANCE',
         });
     }
-    async generateByLandmark(landmarkId, limit = 200) {
+    async generateByLandmark(landmarkId, limit = 200, radiusMeters = 5000) {
         const landmark = await this.landmarkRepo.findById(landmarkId);
         if (!landmark)
             return [];
-        return this.generateByCoordinate(landmark.latitude, landmark.longitude, landmark.radiusMeters || landmark.radius_meters || 10000, limit);
+        return this.generateByCoordinate(landmark.latitude, landmark.longitude, radiusMeters, limit);
     }
     async generateByComplex(complexId, limit = 200) {
         return this.listingRepo.search({

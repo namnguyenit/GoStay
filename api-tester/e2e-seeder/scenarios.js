@@ -1,11 +1,29 @@
 const ApiClient = require('./api-client');
 const {
-  faker, IMAGE_POOLS, PROVINCES_AND_LANDMARKS, LISTING_TITLES, AMENITIES_LIST,
+  faker, IMAGE_POOLS, LISTING_IMAGE_POOLS, PROVINCES_AND_LANDMARKS,
+  LISTING_TITLES, SERVICE_TITLES_BY_SUBCATEGORY, AMENITIES_LIST,
   offsetCoord, pick, pickN, randomInt, randomPrice
 } = require('./vietnam-data');
 
 // Small delay to prevent overwhelming local services
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const LANDMARK_NEARBY_RADIUS_KM = 5;
+const MIN_LISTINGS_PER_LANDMARK = 10;
+
+const toRadians = (degrees) => (degrees * Math.PI) / 180;
+const haversineKm = (lat1, lng1, lat2, lng2) => {
+  const earthRadiusKm = 6371;
+  const dLat = toRadians(lat2 - lat1);
+  const dLng = toRadians(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRadians(lat1)) *
+      Math.cos(toRadians(lat2)) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+
+  return earthRadiusKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
 
 class SeederScenarios {
   constructor(baseURL) {
@@ -96,6 +114,9 @@ class SeederScenarios {
 
     // 6. Enterprises create complexes + listings inside them
     await this.enterpriseCreateComplexes();
+
+    // 6.5. Ensure each landmark has enough nearby listings in 5km
+    await this.ensureLandmarkCoverage(MIN_LISTINGS_PER_LANDMARK, LANDMARK_NEARBY_RADIUS_KM);
 
     // 7. Guests write reviews
     await this.guestSimulateReviews();
@@ -246,13 +267,229 @@ class SeederScenarios {
     console.log(`   ✓ Fetch được ${this.landmarks.length} landmarks từ DB.`);
   }
 
+  getAnchorCoordinates(anchor) {
+    const lat = Number(anchor?.lat ?? anchor?.latitude);
+    const lng = Number(anchor?.lng ?? anchor?.longitude);
+
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+      throw new Error(`Invalid anchor coordinates for ${anchor?.name || 'unknown anchor'}`);
+    }
+
+    return { lat, lng };
+  }
+
+  getListingImagePool(category, subCategory = 'NONE') {
+    if (category === 'SVC') {
+      return LISTING_IMAGE_POOLS.SVC?.[subCategory] || IMAGE_POOLS.SVC;
+    }
+
+    return LISTING_IMAGE_POOLS[category] || IMAGE_POOLS[category] || IMAGE_POOLS.LANDMARK;
+  }
+
+  buildListingImages(category, subCategory = 'NONE') {
+    const pool = this.getListingImagePool(category, subCategory);
+    const selected = pickN(pool, Math.min(5, pool.length));
+
+    while (selected.length < 5) {
+      const next = pick(pool);
+      if (!selected.includes(next)) selected.push(next);
+    }
+
+    return {
+      thumbnailUrl: selected[0],
+      galleryUrls: selected.slice(1, 5),
+    };
+  }
+
+  pickListingTitlePrefix(category, subCategory = 'NONE') {
+    if (category === 'SVC') {
+      return pick(SERVICE_TITLES_BY_SUBCATEGORY[subCategory] || LISTING_TITLES.SVC);
+    }
+
+    return pick(LISTING_TITLES[category]);
+  }
+
+  async fetchAllListings() {
+    let allListings = [];
+    let page = 0;
+
+    while (true) {
+      const batch = await this.admin.adminGetAllListings(page, 200);
+      if (!batch || batch.length === 0) break;
+      allListings = allListings.concat(batch);
+      if (batch.length < 200) break;
+      page++;
+    }
+
+    return allListings;
+  }
+
+  buildLandmarkCoverageMap(landmarks, listings, radiusKm) {
+    const coverage = new Map();
+    const activeListings = listings.filter((listing) =>
+      listing &&
+      listing.status === 'ACTIVE' &&
+      Number.isFinite(Number(listing.latitude)) &&
+      Number.isFinite(Number(listing.longitude))
+    );
+
+    for (const landmark of landmarks) {
+      const { lat, lng } = this.getAnchorCoordinates(landmark);
+      const nearbyCount = activeListings.filter((listing) => (
+        haversineKm(lat, lng, Number(listing.latitude), Number(listing.longitude)) <= radiusKm
+      )).length;
+
+      coverage.set(landmark.id, nearbyCount);
+    }
+
+    return coverage;
+  }
+
+  incrementCoverageForListing(landmarks, coverage, listing, radiusKm) {
+    const lat = Number(listing?.latitude);
+    const lng = Number(listing?.longitude);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+    for (const landmark of landmarks) {
+      const anchor = this.getAnchorCoordinates(landmark);
+      if (haversineKm(anchor.lat, anchor.lng, lat, lng) <= radiusKm) {
+        coverage.set(landmark.id, (coverage.get(landmark.id) || 0) + 1);
+      }
+    }
+  }
+
+  async findListingByPayload(owner, payload) {
+    const pagesToScan = 3;
+    for (let page = 0; page < pagesToScan; page++) {
+      const listings = await owner.getMyListings(page, 100);
+      const matched = listings.find((listing) =>
+        listing?.title === payload.title &&
+        Math.abs(Number(listing?.latitude) - Number(payload.latitude)) < 0.000001 &&
+        Math.abs(Number(listing?.longitude) - Number(payload.longitude)) < 0.000001
+      );
+
+      if (matched) {
+        return matched;
+      }
+
+      if (listings.length < 100) {
+        break;
+      }
+    }
+
+    return null;
+  }
+
+  async activateListing(owner, listing, category) {
+    const invPayload = {
+      category,
+      quantity: category === 'STAY' ? randomInt(2, 10) : randomInt(10, 50),
+      timeSlots: category === 'STAY' ? [] : ['08:00', '10:00', '14:00', '16:00']
+    };
+
+    const initRes = await owner.initializeInventory(listing.id, invPayload);
+    if (!initRes || !initRes.success) {
+      return false;
+    }
+
+    return this.admin.adminChangeListingStatus(listing.id, 'ACTIVE');
+  }
+
+  async ensureLandmarkCoverage(minListings = MIN_LISTINGS_PER_LANDMARK, radiusKm = LANDMARK_NEARBY_RADIUS_KM) {
+    console.log(`\n🧭 [6.5/7] Bù phân bố listing quanh landmark trong ${radiusKm}km...`);
+
+    if (!this.landmarks.length) {
+      this.landmarks = await this.admin.adminGetLandmarks(0, 200);
+    }
+
+    if (!this.landmarks.length || !this.hosts.length) {
+      console.log('   [WARN] Thiếu landmarks hoặc hosts để backfill coverage.');
+      return;
+    }
+
+    const allListings = await this.fetchAllListings();
+    const coverage = this.buildLandmarkCoverageMap(this.landmarks, allListings, radiusKm);
+    const deficitLandmarks = this.landmarks
+      .map((landmark) => ({
+        landmark,
+        count: coverage.get(landmark.id) || 0
+      }))
+      .filter((item) => item.count < minListings)
+      .sort((a, b) => a.count - b.count);
+
+    if (deficitLandmarks.length === 0) {
+      console.log(`   ✓ Tất cả ${this.landmarks.length} landmarks đã có ít nhất ${minListings} listings trong ${radiusKm}km.`);
+      return;
+    }
+
+    console.log(`   → Có ${deficitLandmarks.length}/${this.landmarks.length} landmarks đang thiếu coverage. Bắt đầu backfill...`);
+
+    let totalCreated = 0;
+    let hostCursor = 0;
+    const categoryCycle = ['STAY', 'EXP', 'SVC'];
+
+    for (const item of deficitLandmarks) {
+      const { landmark } = item;
+      const provinceData = PROVINCES_AND_LANDMARKS.find((province) => province.province === landmark.province) || { province: landmark.province };
+      let currentCount = coverage.get(landmark.id) || 0;
+      let createdForLandmark = 0;
+
+      while (currentCount < minListings) {
+        const owner = this.hosts[hostCursor % this.hosts.length];
+        hostCursor++;
+        const forcedCategory = categoryCycle[createdForLandmark % categoryCycle.length];
+        const payload = this.generateListingPayload(provinceData, landmark, null, {
+          radiusKm: Math.min(1.5, radiusKm / 2),
+          category: forcedCategory,
+        });
+
+        const created = await owner.createListing(payload);
+        if (!created || !created.success) {
+          await sleep(120);
+          continue;
+        }
+
+        await sleep(180);
+        const createdListing = await this.findListingByPayload(owner, payload);
+        if (!createdListing) {
+          console.log(`   [WARN] Không tìm lại được listing "${payload.title}" để kích hoạt.`);
+          await sleep(120);
+          continue;
+        }
+
+        const activated = await this.activateListing(owner, createdListing, payload.category);
+        if (!activated) {
+          console.log(`   [WARN] Không kích hoạt được listing "${payload.title}".`);
+          await sleep(120);
+          continue;
+        }
+
+        totalCreated++;
+        createdForLandmark++;
+        this.incrementCoverageForListing(this.landmarks, coverage, {
+          latitude: payload.latitude,
+          longitude: payload.longitude,
+        }, radiusKm);
+        currentCount = coverage.get(landmark.id) || 0;
+
+        await sleep(120);
+      }
+
+      console.log(`   ✓ ${landmark.name}: ${item.count} -> ${coverage.get(landmark.id) || currentCount} listings trong ${radiusKm}km`);
+    }
+
+    console.log(`   ✓ Đã backfill thêm ${totalCreated} listings để phủ đủ tối thiểu ${minListings} listing/landmark.`);
+  }
+
   // ============================================================
   // GENERATE LISTING PAYLOAD
   // ============================================================
-  generateListingPayload(provinceData, anchorLm, complexId = null) {
-    const categories = ['STAY', 'STAY', 'EXP', 'SVC']; // STAY có tỉ lệ cao hơn
+  generateListingPayload(provinceData, anchorLm, complexId = null, options = {}) {
+    const categories = options.category ? [options.category] : ['STAY', 'STAY', 'EXP', 'SVC']; // STAY có tỉ lệ cao hơn
     const cat = pick(categories);
-    const coord = offsetCoord(anchorLm.lat, anchorLm.lng, complexId ? 0.5 : 4.0);
+    const anchor = this.getAnchorCoordinates(anchorLm);
+    const radiusKm = options.radiusKm ?? (complexId ? 0.5 : 4.0);
+    const coord = offsetCoord(anchor.lat, anchor.lng, radiusKm);
 
     let subCategory = 'NONE';
     if (cat === 'SVC') {
@@ -260,12 +497,13 @@ class SeederScenarios {
     }
 
     const priceUnit = cat === 'STAY' ? 'PER_NIGHT' : (cat === 'EXP' ? 'PER_PAX' : 'PER_HOUR');
-    const titlePrefix = pick(LISTING_TITLES[cat]);
+    const titlePrefix = this.pickListingTitlePrefix(cat, subCategory);
     const title = `${titlePrefix} ${anchorLm.name} ${randomInt(1, 999)}`;
+    const images = this.buildListingImages(cat, subCategory);
 
     const attributes = {
       categoryType: cat === 'SVC' ? `SVC_${subCategory}` : cat,
-      galleryUrls: pickN(IMAGE_POOLS[cat], 4),
+      galleryUrls: images.galleryUrls,
     };
 
     if (cat === 'STAY') {
@@ -290,8 +528,8 @@ class SeederScenarios {
         difficulty: pick(['easy', 'moderate', 'hard']),
         groupSize: { min: 1, max: randomInt(5, 20) },
         meetingPoint: `${anchorLm.name}, ${provinceData.province}`,
-        meetingPointLat: anchorLm.lat,
-        meetingPointLng: anchorLm.lng,
+        meetingPointLat: anchor.lat,
+        meetingPointLng: anchor.lng,
         languages: pickN(['Tiếng Việt', 'English', '中文', '한국어', '日本語'], randomInt(1, 3)),
         includedItems: pickN(['Nước uống', 'Bữa sáng', 'Thiết bị', 'Hướng dẫn viên', 'Bảo hiểm'], randomInt(2, 4))
       };
@@ -321,7 +559,7 @@ class SeederScenarios {
       latitude: coord.lat,
       longitude: coord.lng,
       complexId: complexId || null,
-      thumbnailUrl: pick(IMAGE_POOLS[cat]),
+      thumbnailUrl: images.thumbnailUrl,
       attributes
     };
   }

@@ -2,18 +2,18 @@
 
 import { useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { MapPin, Star, Calendar, ArrowRight, Sparkles, X } from "lucide-react";
+import { Calendar, MapPin, Sparkles, X } from "lucide-react";
 import { motion } from "framer-motion";
 
 import { FilterService } from "@/services/filter";
 import { SearchInfoSection } from "@/shared/components";
-import { Card, CardContent } from "@/components/ui/card";
+import ListingGridCard from "@/shared/components/ListingGridCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { formatMoney } from "@/shared/utils";
 import { format } from "date-fns";
 import { useSafeContext } from "@/shared/hooks";
 import { AppContext } from "@/features/app/providers/app.provider";
+import type { Filter } from "@/modules/filter";
 
 type ListItem =
   | {
@@ -26,7 +26,6 @@ type ListItem =
       image?: string;
       categoryType?: string;
       categoryLabel?: string;
-      badgeStyles?: string;
       unit?: string;
     }
   | undefined
@@ -36,7 +35,7 @@ interface SearchClientProps {
   places: ListItem[];
   experiences: ListItem[];
   services: ListItem[];
-  searchParamsRaw: any;
+  searchParamsRaw: Record<string, string | string[] | undefined>;
 }
 
 export default function SearchClient({
@@ -52,7 +51,7 @@ export default function SearchClient({
   useEffect(() => {
     const params = new URLSearchParams(searchParams);
     setFilter(FilterService.get(params));
-  }, [searchParams]);
+  }, [searchParams, setFilter]);
 
   // Determine active category and appropriate list of items
   const { currentItems, categoryLabel, categoryType } = useMemo(() => {
@@ -62,24 +61,21 @@ export default function SearchClient({
       ...item,
       categoryType: "place",
       categoryLabel: "Nơi cư trú",
-      badgeStyles: "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400",
-      unit: "/đêm"
+      unit: "/ đêm"
     }));
 
     const mappedExperiences = (experiences || []).filter(Boolean).map(item => ({
       ...item,
       categoryType: "experience",
       categoryLabel: "Trải nghiệm",
-      badgeStyles: "bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400",
-      unit: "/nhóm"
+      unit: "/ nhóm"
     }));
 
     const mappedServices = (services || []).filter(Boolean).map(item => ({
       ...item,
       categoryType: "service",
       categoryLabel: "Dịch vụ",
-      badgeStyles: "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400",
-      unit: "/dịch vụ"
+      unit: "/ dịch vụ"
     }));
 
     if (type === "exp" || type === "experience") {
@@ -124,33 +120,27 @@ export default function SearchClient({
   }, [currentItems, filter]);
 
   // Handle new search from the search bar
-  const handleSearchSubmit = (newFilter: any) => {
+  const handleSearchSubmit = (newFilter: Filter) => {
     const params = FilterService.set(newFilter);
     router.push(`/search?${params.toString()}`);
   };
 
   const getUnitSuffix = () => {
-    if (categoryType === "place") return "/đêm";
-    if (categoryType === "experience") return "/nhóm";
-    return "/dịch vụ";
+    if (categoryType === "place") return "/ đêm";
+    if (categoryType === "experience") return "/ nhóm";
+    return "/ dịch vụ";
   };
 
   const getBadgeStyles = () => {
-    if (categoryType === "place") {
-      return "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400";
-    }
-    if (categoryType === "experience") {
-      return "bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400";
-    }
-    return "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400";
+    return "border border-[#DDDDDD] bg-[#F7F7F7] text-[#222222]";
   };
 
   return (
-    <div className="bg-app-bg text-app-fg min-h-screen pb-20">
-      <div className="h-[70]" />
+    <div className="min-h-screen bg-white pb-20 text-[#222222]">
+      <div className="h-[70px]" />
       {/* Top Search Bar Header */}
-      <div className="mb-8 border-b bg-zinc-50 px-4 py-6 shadow-sm dark:bg-zinc-900">
-        <div className="mx-auto flex max-w-7xl flex-col items-center gap-4">
+      <div className="mb-8 border-b border-[#DDDDDD] bg-[#F7F7F7] px-4 py-6">
+        <div className="mx-auto flex max-w-[1760px] flex-col items-center gap-4 px-2 md:px-6 xl:px-16">
           <div className="w-full max-w-3xl">
             {filter && (
               <SearchInfoSection
@@ -162,17 +152,17 @@ export default function SearchClient({
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 md:px-6">
+      <div className="mx-auto max-w-[1760px] px-6 md:px-10 xl:px-20">
         {/* Results Header */}
         <div className="mb-8 flex flex-col justify-between gap-4 border-b pb-4 md:flex-row md:items-center">
           <div>
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-amber-500" />
-              <h1 className="text-xl font-extrabold tracking-tight md:text-2xl">
+              <h1 className="text-[22px] font-bold leading-[26px] tracking-normal md:text-2xl">
                 {categoryLabel} tại {filter?.place || "mọi địa điểm"}
               </h1>
             </div>
-            <p className="text-app-muted-fg mt-1 text-sm">
+            <p className="mt-1 text-sm text-[#717171]">
               Tìm thấy {filteredItems.length} kết quả phù hợp với tiêu chí của
               bạn
             </p>
@@ -183,16 +173,16 @@ export default function SearchClient({
             {filter?.place && (
               <Badge
                 variant="outline"
-                className="rounded-full bg-zinc-50 px-3 py-1 font-medium dark:bg-zinc-900 flex items-center gap-1"
+                className="flex items-center gap-1 rounded-full bg-white px-3 py-1 font-medium"
               >
-                <MapPin className="text-app-muted-fg mr-1 h-3.5 w-3.5" />
+                <MapPin className="mr-1 h-3.5 w-3.5 text-[#717171]" />
                 {filter.place}
                 <button
                   onClick={() => {
                     const newFilter = { ...filter, place: "" };
                     handleSearchSubmit(newFilter);
                   }}
-                  className="hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-650 ml-1 rounded-full p-0.5"
+                  className="ml-1 rounded-full p-0.5 text-zinc-400 hover:bg-zinc-200 hover:text-zinc-600"
                   title="Xóa lọc địa điểm"
                 >
                   <X className="h-3 w-3" />
@@ -202,9 +192,9 @@ export default function SearchClient({
             {filter?.date?.from && (
               <Badge
                 variant="outline"
-                className="rounded-full bg-zinc-50 px-3 py-1 font-medium dark:bg-zinc-900 flex items-center gap-1"
+                className="flex items-center gap-1 rounded-full bg-white px-3 py-1 font-medium"
               >
-                <Calendar className="text-app-muted-fg mr-1 h-3.5 w-3.5" />
+                <Calendar className="mr-1 h-3.5 w-3.5 text-[#717171]" />
                 {format(new Date(filter.date.from), "dd/MM/yyyy")}
                 {filter.date.to &&
                   ` - ${format(new Date(filter.date.to), "dd/MM/yyyy")}`}
@@ -213,7 +203,7 @@ export default function SearchClient({
                     const newFilter = { ...filter, date: undefined };
                     handleSearchSubmit(newFilter);
                   }}
-                  className="hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-650 ml-1 rounded-full p-0.5"
+                  className="ml-1 rounded-full p-0.5 text-zinc-400 hover:bg-zinc-200 hover:text-zinc-600"
                   title="Xóa lọc ngày"
                 >
                   <X className="h-3 w-3" />
@@ -242,13 +232,12 @@ export default function SearchClient({
 
         {/* Results Grid */}
         {filteredItems.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
             {filteredItems.map((item, index) => {
               if (!item) return null;
 
               const itemCategoryType = item.categoryType || categoryType;
               const itemCategoryLabel = item.categoryLabel || categoryLabel;
-              const itemBadgeStyles = item.badgeStyles || getBadgeStyles();
               const itemUnit = item.unit || getUnitSuffix();
 
               return (
@@ -258,68 +247,14 @@ export default function SearchClient({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.05 }}
                 >
-                  <Card
-                    onClick={() =>
+                  <ListingGridCard
+                    item={item}
+                    categoryLabel={itemCategoryLabel}
+                    unit={itemUnit}
+                    onSelect={() =>
                       router.push(`/${itemCategoryType}/${item.id}/detail`)
                     }
-                    className="group bg-app-card flex h-full cursor-pointer flex-col overflow-hidden rounded-3xl border border-zinc-100 transition-all duration-300 hover:border-zinc-200 hover:shadow-lg dark:border-zinc-800 dark:hover:border-zinc-700"
-                  >
-                    {/* Image Area */}
-                    <div className="relative aspect-[4/3] w-full overflow-hidden bg-zinc-100">
-                      <img
-                        src={item.image ?? undefined}
-                        alt={item.name}
-                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-103"
-                      />
-                      <Badge
-                        className={`absolute top-4 left-4 z-10 rounded-full px-3 py-1 text-[10px] font-bold tracking-wider uppercase shadow-sm ${itemBadgeStyles}`}
-                      >
-                        {itemCategoryLabel}
-                      </Badge>
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                    </div>
-
-                    {/* Content Area */}
-                    <CardContent className="flex flex-grow flex-col justify-between p-4">
-                      <div>
-                        {/* Title */}
-                        <h3 className="text-app-fg group-hover:text-app-primary line-clamp-1 text-sm font-bold transition-colors duration-300 sm:text-base">
-                          {item.name}
-                        </h3>
-
-                        {/* Location */}
-                        <div className="text-app-muted-fg mt-1 flex items-center gap-1 text-xs">
-                          <MapPin className="h-3.5 w-3.5 flex-shrink-0 text-zinc-400" />
-                          <span className="line-clamp-1">
-                            {item.address || "Việt Nam"}
-                          </span>
-                        </div>
-
-                        {/* Description */}
-                        <p className="text-app-muted-fg mt-2 line-clamp-2 text-xs leading-relaxed font-normal">
-                          {item.description ||
-                            "Trải nghiệm cao cấp cùng dịch vụ đỉnh cao của chúng tôi."}
-                        </p>
-                      </div>
-
-                      {/* Pricing and Rating */}
-                      <div className="mt-4 flex items-center justify-between border-t pt-3">
-                        <div className="flex items-baseline">
-                          <span className="text-sm font-extrabold text-rose-600 sm:text-base dark:text-rose-400">
-                            đ{formatMoney(item.price ?? 0)}
-                          </span>
-                          <span className="text-app-muted-fg ml-0.5 text-[10px] font-light sm:text-xs">
-                            {itemUnit}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-1 text-xs font-bold text-amber-500 sm:text-sm">
-                          <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
-                          <span>{(item.rating ?? 5.0).toFixed(1)}</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  />
                 </motion.div>
               );
             })}
@@ -338,8 +273,8 @@ export default function SearchClient({
               Không tìm thấy kết quả nào
             </h2>
             <p className="text-app-muted-fg mt-2 max-w-sm px-4 text-sm">
-              Chúng tôi không tìm thấy dịch vụ nào khớp với từ khóa "
-              {filter?.place || ""}" tại thời điểm này.
+              Chúng tôi không tìm thấy dịch vụ nào khớp với từ khóa
+              &quot;{filter?.place || ""}&quot; tại thời điểm này.
             </p>
             <Button
               className="bg-app-primary hover:bg-app-primary/95 mt-6 rounded-xl px-5 font-semibold text-white"

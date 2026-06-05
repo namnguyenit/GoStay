@@ -51,10 +51,24 @@ const PlaceServices = {
   getNearbyListings: async (landmarkId: string, radiusMeters: number = 5000) => {
     try {
       const res = await Api.get(endpoint.place.getNearbyListings.replace('{id}', landmarkId) + '?radius=' + radiusMeters);
-      return res?.data ?? { STAY: [], EXPERIENCE: [], SVC: [] };
+      const data = res?.data ?? res;
+
+      if (Array.isArray(data)) {
+        return {
+          STAY: data.filter((item: any) => item?.category === "STAY"),
+          EXP: data.filter((item: any) => item?.category === "EXP"),
+          SVC: data.filter((item: any) => item?.category === "SVC"),
+        };
+      }
+
+      return {
+        STAY: data?.STAY ?? [],
+        EXP: data?.EXP ?? [],
+        SVC: data?.SVC ?? [],
+      };
     } catch (err) {
       console.error("Failed to fetch nearby listings:", err);
-      return { STAY: [], EXPERIENCE: [], SVC: [] };
+      return { STAY: [], EXP: [], SVC: [] };
     }
   },
   getLandmarks: async () => {

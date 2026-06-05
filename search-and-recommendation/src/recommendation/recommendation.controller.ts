@@ -51,8 +51,16 @@ export class RecommendationController {
   }
 
   @Get('landmarks/:landmarkId')
-  async getByLandmark(@Param('landmarkId') landmarkId: string) {
-    return this.recommendationService.recommendByLandmark(landmarkId);
+  async getByLandmark(
+    @Param('landmarkId') landmarkId: string,
+    @Query('radius') radius?: string,
+    @Query('radiusMeters') radiusMeters?: string,
+  ) {
+    const parsedRadius = Number(radiusMeters ?? radius);
+    return this.recommendationService.recommendByLandmarkGrouped(
+      landmarkId,
+      Number.isFinite(parsedRadius) && parsedRadius > 0 ? parsedRadius : 5000,
+    );
   }
 
   @Get('listings/:listingId/similar')

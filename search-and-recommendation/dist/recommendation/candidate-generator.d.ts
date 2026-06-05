@@ -8,7 +8,7 @@ export declare class CandidateGenerator {
     constructor(listingRepo: ListingRepository, landmarkRepo: LandmarkRepository, complexRepo: ComplexRepository);
     generateByCoordinate(lat: number, lng: number, radiusMeters?: number, limit?: number, category?: string): Promise<any[]>;
     generateForHome(province?: string, limit?: number, category?: string): Promise<any[]>;
-    generateByLandmark(landmarkId: string, limit?: number): Promise<any[]>;
+    generateByLandmark(landmarkId: string, limit?: number, radiusMeters?: number): Promise<any[]>;
     generateByComplex(complexId: string, limit?: number): Promise<any[]>;
     generateSimilar(listingId: string, limit?: number): Promise<any[]>;
     generateCrossSell(sourceListingId: string, cartIds?: string[], limit?: number): Promise<any[]>;

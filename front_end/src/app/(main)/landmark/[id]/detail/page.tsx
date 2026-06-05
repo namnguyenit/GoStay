@@ -91,7 +91,13 @@ export default function LandmarkDetailPage() {
         ]);
         const found = landmarksRes?.find((l: any) => l.id === id);
         if (found) setLandmark(found);
-        if (nearbyRes) setNearby(nearbyRes);
+        if (nearbyRes) {
+          setNearby({
+            STAY: nearbyRes.STAY ?? [],
+            EXP: nearbyRes.EXP ?? [],
+            SVC: nearbyRes.SVC ?? [],
+          });
+        }
       } catch (e) {
         console.error(e);
       } finally {

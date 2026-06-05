@@ -136,16 +136,36 @@ export class RecommendationService {
   }
 
   async recommendByLandmark(landmarkId: string) {
-    const cacheKey = `recommend:landmark:${landmarkId}`;
-    const cached = await this.cacheService.get<any[]>(cacheKey);
+    return this.recommendByLandmarkGrouped(landmarkId, 5000);
+  }
+
+  async recommendByLandmarkGrouped(
+    landmarkId: string,
+    radiusMeters: number = 5000,
+  ) {
+    const safeRadiusMeters =
+      Number.isFinite(radiusMeters) && radiusMeters > 0 ? radiusMeters : 5000;
+    const cacheKey = `recommend:landmark:${landmarkId}:radius:${safeRadiusMeters}`;
+    const cached = await this.cacheService.get<any>(cacheKey);
     if (cached) return cached;
 
-    const candidates =
-      await this.candidateGenerator.generateByLandmark(landmarkId);
+    const candidates = await this.candidateGenerator.generateByLandmark(
+      landmarkId,
+      200,
+      safeRadiusMeters,
+    );
     const scored = this.scoringService.score(candidates, {});
     const finalRanked = this.diversityService.diversifyAndRank(scored, 15);
-    await this.cacheService.set(cacheKey, finalRanked, 300);
-    return finalRanked;
+    const grouped = {
+      radiusMeters: safeRadiusMeters,
+      total: finalRanked.length,
+      STAY: finalRanked.filter((item) => item.category === 'STAY'),
+      EXP: finalRanked.filter((item) => item.category === 'EXP'),
+      SVC: finalRanked.filter((item) => item.category === 'SVC'),
+    };
+
+    await this.cacheService.set(cacheKey, grouped, 300);
+    return grouped;
   }
 
   async recommendSimilar(listingId: string) {
