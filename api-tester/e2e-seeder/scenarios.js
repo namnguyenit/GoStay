@@ -693,6 +693,105 @@ class SeederScenarios {
     console.log(`   ✓ Tổng: ${totalComplexes} complexes, ${totalListings} listings từ Enterprises`);
   }
 
+  formatLocalDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  buildBookingWindow(listing, index) {
+    const startDate = new Date();
+    startDate.setHours(12, 0, 0, 0);
+    startDate.setDate(startDate.getDate() + 14 + (index % 60));
+
+    const endDate = new Date(startDate);
+    const category = String(listing.category || '').toUpperCase();
+    const isStay = category === 'STAY';
+    if (isStay) {
+      endDate.setDate(endDate.getDate() + randomInt(1, 3));
+    }
+
+    const slots = ['08:00', '10:00', '14:00', '16:00'];
+    return {
+      startDate: this.formatLocalDate(startDate),
+      endDate: this.formatLocalDate(endDate),
+      timeSlot: isStay ? undefined : slots[index % slots.length],
+    };
+  }
+
+  buildBookNowPayload(guest, listing, index) {
+    const window = this.buildBookingWindow(listing, index);
+    const item = {
+      listingId: listing.id,
+      listingTitle: listing.title,
+      thumbnailUrl: listing.thumbnailUrl,
+      startDate: window.startDate,
+      endDate: window.endDate,
+      quantity: 1,
+    };
+
+    if (window.timeSlot) {
+      item.timeSlot = window.timeSlot;
+    }
+
+    const username = guest.username || `guest_${index + 1}`;
+    return {
+      item,
+      fullName: username.replace(/_/g, ' '),
+      email: `${username}@gmail.com`,
+      phone: `09${String(10000000 + (index % 89999999)).padStart(8, '0')}`,
+    };
+  }
+
+  getListingAttributes(listing) {
+    if (!listing?.attributes) return {};
+    if (typeof listing.attributes === 'string') {
+      try {
+        return JSON.parse(listing.attributes);
+      } catch (e) {
+        return {};
+      }
+    }
+    return listing.attributes;
+  }
+
+  getReviewImagesForListing(listing) {
+    const attributes = this.getListingAttributes(listing);
+    const galleryUrls = Array.isArray(attributes.galleryUrls) ? attributes.galleryUrls : [];
+    const images = [...new Set([listing.thumbnailUrl, ...galleryUrls].filter(Boolean))];
+    if (images.length === 0) return [];
+    return pickN(images, Math.min(randomInt(0, 2), images.length));
+  }
+
+  async purchaseListingForReview(guest, listing, index) {
+    const order = await guest.bookNow(this.buildBookNowPayload(guest, listing, index));
+    const orderId = order?.orderId || order?.id;
+    if (!orderId) {
+      return { success: false, reason: 'ORDER_FAILED' };
+    }
+
+    const payment = await guest.createPayment(orderId, order?.totalAmount, order?.hostId || listing.hostId);
+    const paymentId = payment?.paymentId || payment?.id;
+    if (!paymentId) {
+      return { success: false, reason: 'PAYMENT_FAILED', orderId };
+    }
+
+    const paid = await guest.mockPayment(paymentId);
+    if (!paid || !paid.success) {
+      return { success: false, reason: 'MOCK_PAYMENT_FAILED', orderId, paymentId };
+    }
+
+    for (let attempt = 0; attempt < 5; attempt++) {
+      if (await guest.checkPurchased(listing.id)) {
+        return { success: true, orderId, paymentId };
+      }
+      await sleep(200);
+    }
+
+    return { success: false, reason: 'PURCHASE_NOT_CONFIRMED', orderId, paymentId };
+  }
+
   // ============================================================
   // STEP 7: GUESTS WRITE REVIEWS
   // ============================================================
@@ -714,7 +813,22 @@ class SeederScenarios {
       console.log('   [WARN] Không tìm được listing nào để review');
       return;
     }
-    console.log(`   Tìm thấy ${allListings.length} listings để fake review...`);
+
+    const activeListings = allListings.filter(listing =>
+      listing?.id && String(listing.status || '').toUpperCase() === 'ACTIVE'
+    );
+
+    if (activeListings.length === 0) {
+      console.log(`   [WARN] Tìm thấy ${allListings.length} listings nhưng không có listing ACTIVE để mua/review`);
+      return;
+    }
+
+    if (this.guests.length === 0) {
+      console.log('   [WARN] Không có guest nào để mua dịch vụ và viết review');
+      return;
+    }
+
+    console.log(`   Tìm thấy ${activeListings.length}/${allListings.length} listings ACTIVE. Bắt đầu mua + thanh toán + review...`);
 
     const reviewComments = [
       'Phục vụ quá tuyệt vời, rất hài lòng! Nhất định sẽ quay lại.',
@@ -734,19 +848,48 @@ class SeederScenarios {
       'Lần đầu thử nhưng sẽ không phải lần cuối. Quá ổn!',
     ];
 
+    let totalOrders = 0;
+    let totalPayments = 0;
     let totalReviews = 0;
-    for (const guest of this.guests) {
-      const numReviews = randomInt(2, 6);
-      const listingsToReview = pickN(allListings, numReviews);
-      for (const listing of listingsToReview) {
-        const rating = randomInt(3, 5); // Mostly positive (3-5 stars)
-        const comment = pick(reviewComments);
-        const res = await guest.createReview(listing.id, rating, comment);
-        if (res) totalReviews++;
-        await sleep(100);
+    let failedPurchases = 0;
+    let failedReviews = 0;
+
+    for (let i = 0; i < activeListings.length; i++) {
+      const listing = activeListings[i];
+      const guest = this.guests[i % this.guests.length];
+      const purchase = await this.purchaseListingForReview(guest, listing, i);
+
+      if (purchase.orderId) totalOrders++;
+      if (purchase.paymentId) totalPayments++;
+
+      if (!purchase.success) {
+        failedPurchases++;
+        console.log(`   [WARN] Bỏ qua review "${listing.title}" do ${purchase.reason}`);
+        await sleep(120);
+        continue;
       }
+
+      const rating = randomInt(3, 5); // Mostly positive (3-5 stars)
+      const comment = pick(reviewComments);
+      const images = this.getReviewImagesForListing(listing);
+      const res = await guest.createReview(listing.id, rating, comment, images);
+      if (res) {
+        totalReviews++;
+      } else {
+        failedReviews++;
+      }
+
+      if ((i + 1) % 25 === 0 || i === activeListings.length - 1) {
+        console.log(`   → ${i + 1}/${activeListings.length} listings: ${totalReviews} reviews hợp lệ`);
+      }
+
+      await sleep(120);
     }
-    console.log(`   ✓ Đã tạo ${totalReviews} reviews từ ${this.guests.length} guests`);
+
+    console.log(`   ✓ Đã tạo ${totalOrders} orders, ${totalPayments} payments, ${totalReviews} reviews từ ${this.guests.length} guests`);
+    if (failedPurchases > 0 || failedReviews > 0) {
+      console.log(`   [WARN] ${failedPurchases} listings chưa mua/thanh toán được, ${failedReviews} reviews bị từ chối`);
+    }
   }
 }
 

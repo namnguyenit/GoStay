@@ -1,278 +1,303 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import AdminService from "@/services/admin.service";
-import { useAdminLandmark } from "./hook/useAdminLandmark";
-import { useRef } from "react";
+import { useRef, type ChangeEvent } from "react";
 import { Upload, X } from "lucide-react";
-import { PROVINCES } from "@/shared/constants/provinces";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AdminConfirmDialog } from "@/screens/admin/_components/AdminConfirmDialog";
+import { AdminPagination } from "@/screens/admin/_components/AdminPagination";
+import { PROVINCES } from "@/shared/constants/provinces";
+import { useAdminLandmark } from "./hook/useAdminLandmark";
 
 export function LandmarksScreen() {
-    const { tab,
+  const {
+    tab,
     setTab,
     statusTab,
     setStatusTab,
     suggestions,
+    suggestionsPage,
+    setSuggestionsPage,
+    suggestionsTotalPages,
+    suggestionsTotalElements,
     loading,
-    handleUpdateStatus,
+    handleApproveSuggestion,
+    openRejectSuggestion,
+    rejectModal,
+    setRejectModal,
+    handleRejectSuggestion,
     form,
     setForm,
     handleCreate,
     submitting,
-    successMsg,
+    feedback,
     statusBadge,
     pendingCount,
     landmarks,
+    landmarksPage,
+    setLandmarksPage,
+    landmarksTotalPages,
+    landmarksTotalElements,
     loadingLandmarks,
     editingLandmark,
     setEditingLandmark,
     handleUpdateLandmarkStatus,
     handleStartEdit,
     handleSaveEdit,
-    thumbnailFile, setThumbnailFile,
-    thumbnailPreview, setThumbnailPreview,
-    galleryFiles, setGalleryFiles,
-    galleryPreviews, setGalleryPreviews
+    setThumbnailFile,
+    thumbnailPreview,
+    setThumbnailPreview,
+    existingGalleryUrls,
+    setExistingGalleryUrls,
+    setGalleryFiles,
+    galleryPreviews,
+    setGalleryPreviews,
+    pageSize,
   } = useAdminLandmark();
 
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
-  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setThumbnailFile(file);
-      setThumbnailPreview(URL.createObjectURL(file));
-    }
+  const handleThumbnailChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setThumbnailFile(file);
+    setThumbnailPreview(URL.createObjectURL(file));
   };
 
-  const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const files = Array.from(e.target.files);
-      setGalleryFiles(prev => [...prev, ...files]);
-      const newPreviews = files.map(file => URL.createObjectURL(file));
-      setGalleryPreviews(prev => [...prev, ...newPreviews]);
-    }
+  const handleGalleryChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? []);
+    if (files.length === 0) return;
+
+    setGalleryFiles((prev) => [...prev, ...files]);
+    setGalleryPreviews((prev) => [...prev, ...files.map((file) => URL.createObjectURL(file))]);
   };
 
-  const removeGalleryImage = (index: number) => {
-    setGalleryFiles(prev => prev.filter((_, i) => i !== index));
-    setGalleryPreviews(prev => prev.filter((_, i) => i !== index));
+  const removeNewGalleryImage = (index: number) => {
+    setGalleryFiles((prev) => prev.filter((_, itemIndex) => itemIndex !== index));
+    setGalleryPreviews((prev) => prev.filter((_, itemIndex) => itemIndex !== index));
   };
 
+  const clearThumbnail = () => {
+    setThumbnailFile(null);
+    setThumbnailPreview(null);
+    setForm({ ...form, thumbnailUrl: "" });
+  };
 
   return (
     <div className="space-y-6 animate-smooth-appear">
       <div>
         <h2 className="text-xl font-semibold text-slate-800">Quản lý địa danh</h2>
-        <p className="text-xs text-slate-400 mt-1">Duyệt các đề xuất địa danh từ người dùng hoặc tự thiết lập địa danh chính thức.</p>
+        <p className="mt-1 text-xs text-slate-400">
+          Duyệt đề xuất bằng cách tạo địa danh chính thức trong bán kính mặc định 5km.
+        </p>
       </div>
 
-      {/* Tabs */}
-      <div className="inline-flex bg-slate-100/80 p-0.5 rounded-full">
+      {feedback && (
+        <div
+          className={`rounded-2xl border px-4 py-3 text-xs font-semibold ${
+            feedback.type === "success"
+              ? "border-emerald-100 bg-emerald-50 text-emerald-700"
+              : "border-rose-100 bg-rose-50 text-rose-700"
+          }`}
+        >
+          {feedback.message}
+        </div>
+      )}
+
+      <div className="inline-flex flex-wrap rounded-full bg-slate-100/80 p-0.5">
         <button
+          type="button"
           onClick={() => setTab("suggestions")}
-          className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
-            tab === "suggestions"
-              ? "bg-white shadow-sm text-slate-800"
-              : "text-slate-500 hover:text-slate-800"
+          className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
+            tab === "suggestions" ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-800"
           }`}
         >
-          📋 Đề xuất {pendingCount > 0 && `(${pendingCount} chờ duyệt)`}
+          Đề xuất {pendingCount > 0 && `(${pendingCount} chờ)`}
         </button>
         <button
+          type="button"
           onClick={() => setTab("create")}
-          className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
-            tab === "create"
-              ? "bg-white shadow-sm text-slate-800"
-              : "text-slate-500 hover:text-slate-800"
+          className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
+            tab === "create" ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-800"
           }`}
         >
-          ➕ Thêm địa danh mới
+          Thêm địa danh
         </button>
         <button
+          type="button"
           onClick={() => setTab("showlandmarks")}
-          className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
-            tab === "showlandmarks"
-              ? "bg-white shadow-sm text-slate-800"
-              : "text-slate-500 hover:text-slate-800"
+          className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
+            tab === "showlandmarks" ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-800"
           }`}
         >
-          Xem địa danh
+          Địa danh chính thức
         </button>
       </div>
 
-      {/* Suggestions Tab */}
       {tab === "suggestions" && (
         <div className="space-y-4">
-          {/* Sub-tabs for Status */}
-          <div className="flex gap-2">
-            <button
-              onClick={() => setStatusTab("PENDING")}
-              className={`px-3 py-1 rounded-full text-[11px] font-semibold transition-all border ${
-                statusTab === "PENDING"
-                  ? "bg-amber-50 text-amber-700 border-amber-250"
-                  : "bg-white text-slate-500 border-slate-100 hover:bg-slate-50"
-              }`}
-            >
-              ⏳ Chờ duyệt {pendingCount > 0 && `(${pendingCount})`}
-            </button>
-            <button
-              onClick={() => setStatusTab("RESOLVED")}
-              className={`px-3 py-1 rounded-full text-[11px] font-semibold transition-all border ${
-                statusTab === "RESOLVED"
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-250"
-                  : "bg-white text-slate-500 border-slate-100 hover:bg-slate-50"
-              }`}
-            >
-              ✅ Đã chấp nhận
-            </button>
-            <button
-              onClick={() => setStatusTab("REJECTED")}
-              className={`px-3 py-1 rounded-full text-[11px] font-semibold transition-all border ${
-                statusTab === "REJECTED"
-                  ? "bg-red-50 text-red-700 border-red-250"
-                  : "bg-white text-slate-500 border-slate-100 hover:bg-slate-50"
-              }`}
-            >
-              ❌ Từ chối
-            </button>
+          <div className="flex flex-wrap gap-2">
+            {(["PENDING", "RESOLVED", "REJECTED"] as const).map((status) => (
+              <button
+                key={status}
+                type="button"
+                onClick={() => setStatusTab(status)}
+                className={`rounded-full border px-3 py-1 text-[11px] font-semibold transition-all ${
+                  statusTab === status
+                    ? "border-slate-200 bg-white text-slate-800 shadow-sm"
+                    : "border-slate-100 bg-white text-slate-500 hover:bg-slate-50"
+                }`}
+              >
+                {status === "PENDING" ? `Chờ duyệt (${pendingCount})` : status === "RESOLVED" ? "Đã chấp nhận" : "Từ chối"}
+              </button>
+            ))}
           </div>
 
-          <div className="bg-white rounded-[20px] border border-slate-100 shadow-[0_2px_8px_rgba(0,0,0,0.02)] overflow-hidden">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="border-b border-slate-100 bg-slate-50/50">
-                  <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-16">Ảnh</th>
-                  <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tên</th>
-                  <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mô tả</th>
-                  <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tọa độ</th>
-                  <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tỉnh/Thành phố</th>
-                  <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</th>
-                  <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-right pr-6">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {loading ? (
-                  Array.from({ length: 5 }).map((_, i) => (
-                    <tr key={i}>
-                      <td colSpan={7} className="px-5 py-4">
-                        <div className="h-4 bg-slate-50 animate-pulse rounded" />
-                      </td>
-                    </tr>
-                  ))
-                ) : suggestions.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="px-5 py-8 text-center text-slate-400 font-medium">
-                      Không có đề xuất nào.
-                    </td>
+          <div className="overflow-hidden rounded-[20px] border border-slate-100 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[960px] border-collapse text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-100 bg-slate-50/50">
+                    <th className="w-16 px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Ảnh</th>
+                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Tên</th>
+                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Mô tả</th>
+                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Tọa độ</th>
+                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Tỉnh/TP</th>
+                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Status</th>
+                    <th className="px-5 py-3 pr-6 text-right text-[10px] font-bold tracking-wider text-slate-400 uppercase">Thao tác</th>
                   </tr>
-                ) : (
-                  suggestions.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="px-5 py-3">
-                        {item.thumbnailUrl ? (
-                          <img src={item.thumbnailUrl} alt="Thumb" className="w-10 h-10 rounded-lg object-cover border border-slate-100 bg-slate-50" />
-                        ) : (
-                          <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-[9px] text-slate-400">N/A</div>
-                        )}
-                      </td>
-                      <td className="px-5 py-3 font-semibold text-slate-800">{item.name}</td>
-                      <td className="px-5 py-3 text-slate-500 max-w-xs truncate">
-                        {item.description}
-                      </td>
-                      <td className="px-5 py-3 text-slate-500 font-mono text-[11px]">
-                        {item.suggestedLatitude}, {item.suggestedLongitude}
-                      </td>
-                      <td className="px-5 py-3 text-slate-650 font-medium">
-                        {item.suggestedProvince}
-                      </td>
-                      <td className="px-5 py-3">
-                        <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-semibold ${
-                          item.status === "PENDING"
-                            ? "bg-amber-50 text-amber-700 border border-amber-100/50"
-                            : item.status === "RESOLVED"
-                            ? "bg-emerald-50 text-emerald-700 border border-emerald-100/50"
-                            : "bg-red-50 text-red-700 border border-red-100/50"
-                        }`}>
-                          {item.status}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3 text-right pr-6">
-                        {item.status === "PENDING" ? (
-                          <div className="flex gap-2 justify-end">
-                            <button
-                              onClick={() => handleUpdateStatus(item.id, "RESOLVED")}
-                              className="text-[11px] px-2.5 py-1 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-colors"
-                            >
-                              Duyệt
-                            </button>
-                            <button
-                              onClick={() => handleUpdateStatus(item.id, "REJECTED")}
-                              className="text-[11px] px-2.5 py-1 rounded-full bg-red-50 hover:bg-red-100 text-red-600 font-medium transition-colors"
-                            >
-                              Từ chối
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="text-xs text-slate-400">—</span>
-                        )}
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {loading ? (
+                    Array.from({ length: 5 }).map((_, index) => (
+                      <tr key={index}>
+                        <td colSpan={7} className="px-5 py-4">
+                          <div className="h-4 rounded bg-slate-50 animate-pulse" />
+                        </td>
+                      </tr>
+                    ))
+                  ) : suggestions.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="px-5 py-8 text-center font-medium text-slate-400">
+                        Không có đề xuất nào.
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    suggestions.map((item) => {
+                      const thumb = item.thumbnailUrl ?? item.referenceImageUrl;
+
+                      return (
+                        <tr key={item.id} className="transition-colors hover:bg-slate-50/60">
+                          <td className="px-5 py-3">
+                            {thumb ? (
+                              <img src={thumb} alt={item.name ?? "thumbnail"} className="h-10 w-10 rounded-lg border border-slate-100 bg-slate-50 object-cover" />
+                            ) : (
+                              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-[9px] text-slate-400">N/A</div>
+                            )}
+                          </td>
+                          <td className="px-5 py-3 font-semibold text-slate-800">{item.name || "—"}</td>
+                          <td className="max-w-xs truncate px-5 py-3 text-slate-500">{item.description || "—"}</td>
+                          <td className="px-5 py-3 font-mono text-[11px] text-slate-500">
+                            {item.suggestedLatitude ?? "—"}, {item.suggestedLongitude ?? "—"}
+                          </td>
+                          <td className="px-5 py-3 font-medium text-slate-650">{item.suggestedProvince || "—"}</td>
+                          <td className="px-5 py-3">
+                            <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${statusBadge(item.status)}`}>
+                              {item.status}
+                            </span>
+                            {item.rejectReason && (
+                              <div className="mt-1 max-w-[160px] truncate text-[10px] text-rose-500" title={item.rejectReason}>
+                                {item.rejectReason}
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-5 py-3 pr-6 text-right">
+                            {item.status === "PENDING" ? (
+                              <div className="flex justify-end gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => handleApproveSuggestion(item)}
+                                  className="rounded-full bg-emerald-600 px-2.5 py-1 text-[11px] font-medium text-white transition-colors hover:bg-emerald-700"
+                                >
+                                  Tạo từ đề xuất
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => openRejectSuggestion(item.id)}
+                                  className="rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-medium text-red-600 transition-colors hover:bg-red-100"
+                                >
+                                  Từ chối
+                                </button>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-slate-400">—</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <AdminPagination
+              page={suggestionsPage}
+              totalPages={suggestionsTotalPages}
+              totalElements={suggestionsTotalElements}
+              pageSize={pageSize}
+              loading={loading}
+              onPageChange={setSuggestionsPage}
+            />
           </div>
         </div>
       )}
 
-      {/* Create Tab */}
       {tab === "create" && (
-        <div className="bg-white rounded-[20px] border border-slate-100 p-6 shadow-[0_2px_8px_rgba(0,0,0,0.02)] max-w-4xl text-xs">
-          <h3 className="font-semibold text-slate-800 text-sm mb-4">Thêm địa danh mới</h3>
-
-          {successMsg && (
-            <div className="mb-4 p-3 bg-emerald-50/60 border border-emerald-100 rounded-xl text-xs text-emerald-800">
-              ✅ {successMsg}
+        <div className="max-w-5xl rounded-[20px] border border-slate-100 bg-white p-6 text-xs shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="text-sm font-semibold text-slate-800">Thêm địa danh mới</h3>
+              {form.resolvedSuggestionId && (
+                <p className="mt-1 text-[11px] font-medium text-emerald-700">
+                  Đang tạo từ đề xuất: {form.resolvedSuggestionId}
+                </p>
+              )}
             </div>
-          )}
+            <span className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[11px] font-bold text-blue-700">
+              Radius mặc định: 5km
+            </span>
+          </div>
 
           <form onSubmit={handleCreate} className="space-y-5">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Left Column: Text Fields */}
-              <div className="lg:col-span-2 space-y-4">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+              <div className="space-y-4 lg:col-span-2">
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1.5">
+                  <label className="mb-1.5 block text-[10px] font-bold tracking-wider text-slate-450 uppercase">
                     Tên địa danh <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     required
                     value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    onChange={(event) => setForm({ ...form, name: event.target.value })}
                     placeholder="VD: Hồ Hoàn Kiếm"
-                    className="w-full border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-slate-350 focus:border-slate-350 text-slate-700 bg-white"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 focus:border-slate-350 focus:ring-1 focus:ring-slate-350 focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1.5">
+                  <label className="mb-1.5 block text-[10px] font-bold tracking-wider text-slate-450 uppercase">
                     Tỉnh/Thành phố <span className="text-red-500">*</span>
                   </label>
-                  <Select 
-                    value={form.province} 
-                    onValueChange={(val) => setForm({ ...form, province: val })}
-                    required
-                  >
-                    <SelectTrigger className="w-full bg-white border border-slate-200 rounded-xl px-3 py-1.5 h-8 text-xs text-slate-800 focus:ring-1 focus:ring-slate-350">
+                  <Select value={form.province} onValueChange={(value) => setForm({ ...form, province: value })}>
+                    <SelectTrigger className="h-8 w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-800 focus:ring-1 focus:ring-slate-350">
                       <SelectValue placeholder="-- Chọn tỉnh/thành phố --" />
                     </SelectTrigger>
-                    <SelectContent position="popper" className="max-h-[250px] bg-white border border-slate-100 rounded-xl shadow-lg">
+                    <SelectContent position="popper" className="max-h-[250px] rounded-xl border border-slate-100 bg-white shadow-lg">
                       <SelectGroup>
                         {PROVINCES.map((province) => (
-                          <SelectItem key={province} value={province} className="text-xs text-slate-700 hover:bg-slate-50 cursor-pointer">
+                          <SelectItem key={province} value={province} className="cursor-pointer text-xs text-slate-700 hover:bg-slate-50">
                             {province}
                           </SelectItem>
                         ))}
@@ -281,114 +306,145 @@ export function LandmarksScreen() {
                   </Select>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1.5">
-                      Vĩ độ (Latitude) <span className="text-red-500">*</span>
-                    </label>
+                    <label className="mb-1.5 block text-[10px] font-bold tracking-wider text-slate-450 uppercase">Vĩ độ *</label>
                     <input
                       type="number"
                       step="any"
                       required
                       value={form.latitude}
-                      onChange={(e) => setForm({ ...form, latitude: e.target.value })}
-                      placeholder="21.0285"
-                      className="w-full border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-slate-350 text-slate-700 bg-white"
+                      onChange={(event) => setForm({ ...form, latitude: event.target.value })}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 focus:ring-1 focus:ring-slate-350 focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1.5">
-                      Kinh độ (Longitude) <span className="text-red-500">*</span>
-                    </label>
+                    <label className="mb-1.5 block text-[10px] font-bold tracking-wider text-slate-450 uppercase">Kinh độ *</label>
                     <input
                       type="number"
                       step="any"
                       required
                       value={form.longitude}
-                      onChange={(e) => setForm({ ...form, longitude: e.target.value })}
-                      placeholder="105.8542"
-                      className="w-full border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-slate-350 text-slate-700 bg-white"
+                      onChange={(event) => setForm({ ...form, longitude: event.target.value })}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 focus:ring-1 focus:ring-slate-350 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-[10px] font-bold tracking-wider text-slate-450 uppercase">Bán kính (m)</label>
+                    <input
+                      type="number"
+                      min={100}
+                      value={form.radiusMeters}
+                      onChange={(event) => setForm({ ...form, radiusMeters: event.target.value })}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 focus:ring-1 focus:ring-slate-350 focus:outline-none"
                     />
                   </div>
                 </div>
 
+                <label className="flex w-fit items-center gap-2 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-[11px] font-semibold text-slate-650">
+                  <input
+                    type="checkbox"
+                    checked={form.isFeatured}
+                    onChange={(event) => setForm({ ...form, isFeatured: event.target.checked })}
+                  />
+                  Đánh dấu địa danh nổi bật
+                </label>
+
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1.5">Mô tả thêm</label>
+                  <label className="mb-1.5 block text-[10px] font-bold tracking-wider text-slate-450 uppercase">Mô tả thêm</label>
                   <textarea
                     value={form.description}
-                    onChange={(e) => setForm({ ...form, description: e.target.value })}
+                    onChange={(event) => setForm({ ...form, description: event.target.value })}
                     placeholder="Mô tả đặc điểm nổi bật của địa danh này..."
                     rows={4}
-                    className="w-full border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-slate-350 text-slate-700 bg-white resize-none"
+                    className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 focus:ring-1 focus:ring-slate-350 focus:outline-none"
                   />
                 </div>
               </div>
 
-              {/* Right Column: Image Uploads */}
               <div className="space-y-5">
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider">
-                    Ảnh đại diện (Thumbnail)
+                  <label className="block text-[10px] font-bold tracking-wider text-slate-450 uppercase">
+                    Ảnh đại diện
                   </label>
-                  
-                  <div 
+                  <div
                     onClick={() => thumbnailInputRef.current?.click()}
-                    className="relative group w-full h-40 border border-dashed border-slate-300 rounded-xl overflow-hidden hover:border-slate-400 transition-colors cursor-pointer bg-slate-50/50 flex flex-col items-center justify-center"
+                    className="group relative flex h-40 w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-xl border border-dashed border-slate-300 bg-slate-50/50 transition-colors hover:border-slate-400"
                   >
-                    <input 
-                      type="file" 
-                      ref={thumbnailInputRef} 
-                      className="hidden" 
+                    <input
+                      type="file"
+                      ref={thumbnailInputRef}
+                      className="hidden"
                       accept="image/*"
                       onChange={handleThumbnailChange}
                     />
                     {thumbnailPreview ? (
-                      <img src={thumbnailPreview} alt="Thumbnail" className="object-cover w-full h-full" />
+                      <>
+                        <img src={thumbnailPreview} alt="Thumbnail" className="h-full w-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            clearThumbnail();
+                          }}
+                          className="absolute top-2 right-2 rounded-full bg-slate-900/60 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </>
                     ) : (
-                      <div className="text-center p-3">
-                        <Upload className="w-6 h-6 text-slate-450 mx-auto mb-1.5" />
-                        <p className="text-xs text-slate-650 font-medium">Tải ảnh đại diện</p>
-                        <p className="text-[9px] text-slate-400 mt-0.5">PNG, JPG, WEBP lên đến 10MB</p>
+                      <div className="p-3 text-center">
+                        <Upload className="mx-auto mb-1.5 h-6 w-6 text-slate-450" />
+                        <p className="text-xs font-medium text-slate-650">Tải ảnh đại diện</p>
+                        <p className="mt-0.5 text-[9px] text-slate-400">PNG, JPG, WEBP</p>
                       </div>
                     )}
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider">
-                    Thư viện ảnh (Gallery)
+                  <label className="block text-[10px] font-bold tracking-wider text-slate-450 uppercase">
+                    Thư viện ảnh
                   </label>
-                  
-                  <div 
+                  <div
                     onClick={() => galleryInputRef.current?.click()}
-                    className="w-full h-24 border border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center hover:border-slate-400 transition-colors cursor-pointer bg-slate-50/50"
+                    className="flex h-24 w-full cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50/50 transition-colors hover:border-slate-400"
                   >
-                    <input 
-                      type="file" 
-                      ref={galleryInputRef} 
-                      className="hidden" 
+                    <input
+                      type="file"
+                      ref={galleryInputRef}
+                      className="hidden"
                       multiple
                       accept="image/*"
                       onChange={handleGalleryChange}
                     />
-                    <Upload className="w-5 h-5 text-slate-450 mb-1.5" />
-                    <p className="text-xs text-slate-650 font-medium">Thêm ảnh khác</p>
+                    <Upload className="mb-1.5 h-5 w-5 text-slate-450" />
+                    <p className="text-xs font-medium text-slate-650">Thêm ảnh gallery</p>
                   </div>
 
-                  {galleryPreviews.length > 0 && (
-                    <div className="grid grid-cols-3 gap-2 mt-3">
-                      {galleryPreviews.map((preview, index) => (
-                        <div key={index} className="relative group aspect-square rounded-xl overflow-hidden border border-slate-100 shadow-2xs">
-                          <img src={preview} alt="Gallery" className="object-cover w-full h-full" />
+                  {(existingGalleryUrls.length > 0 || galleryPreviews.length > 0) && (
+                    <div className="mt-3 grid grid-cols-3 gap-2">
+                      {existingGalleryUrls.map((url, index) => (
+                        <div key={url} className="group relative aspect-square overflow-hidden rounded-xl border border-slate-100 shadow-2xs">
+                          <img src={url} alt={`Existing gallery ${index}`} className="h-full w-full object-cover" />
                           <button
                             type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              removeGalleryImage(index);
-                            }}
-                            className="absolute top-1 right-1 bg-slate-900/60 hover:bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-all"
+                            onClick={() => setExistingGalleryUrls((prev) => prev.filter((_, itemIndex) => itemIndex !== index))}
+                            className="absolute top-1 right-1 rounded-full bg-slate-900/60 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
                           >
-                            <X className="w-2.5 h-2.5" />
+                            <X className="h-2.5 w-2.5" />
+                          </button>
+                        </div>
+                      ))}
+                      {galleryPreviews.map((preview, index) => (
+                        <div key={`${preview}-${index}`} className="group relative aspect-square overflow-hidden rounded-xl border border-slate-100 shadow-2xs">
+                          <img src={preview} alt={`New gallery ${index}`} className="h-full w-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => removeNewGalleryImage(index)}
+                            className="absolute top-1 right-1 rounded-full bg-slate-900/60 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                          >
+                            <X className="h-2.5 w-2.5" />
                           </button>
                         </div>
                       ))}
@@ -401,81 +457,114 @@ export function LandmarksScreen() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full bg-slate-800 text-white px-4 py-2.5 rounded-full text-xs font-semibold hover:bg-slate-900 disabled:opacity-50 transition-colors mt-4"
+              className="mt-4 w-full rounded-full bg-slate-800 px-4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-slate-900 disabled:opacity-50"
             >
-              {submitting ? "Đang tạo..." : "Tạo địa danh"}
+              {submitting ? "Đang tạo..." : form.resolvedSuggestionId ? "Tạo địa danh và duyệt đề xuất" : "Tạo địa danh"}
             </button>
           </form>
         </div>
       )}
 
-      {/* Show Landmarks Tab */}
       {tab === "showlandmarks" && (
         <div className="space-y-6 text-xs">
           {editingLandmark && (
-            <div className="bg-amber-50/50 border border-amber-100 rounded-[20px] p-5 max-w-md animate-scale-up">
-              <h3 className="font-semibold text-amber-800 mb-3.5 text-xs uppercase tracking-wider">✍️ Chỉnh sửa địa danh</h3>
+            <div className="max-w-3xl rounded-[20px] border border-amber-100 bg-amber-50/50 p-5 animate-scale-up">
+              <h3 className="mb-3.5 text-xs font-semibold tracking-wider text-amber-800 uppercase">Chỉnh sửa địa danh</h3>
               <form onSubmit={handleSaveEdit} className="space-y-3.5">
-                <div>
-                  <label className="block text-[9px] font-bold text-slate-450 uppercase mb-1">Tên địa danh</label>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <input
                     type="text"
                     value={editingLandmark.name}
-                    onChange={(e) => setEditingLandmark({ ...editingLandmark, name: e.target.value })}
-                    className="w-full border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-slate-300 bg-white text-slate-800"
+                    onChange={(event) => setEditingLandmark({ ...editingLandmark, name: event.target.value })}
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-800 focus:ring-1 focus:ring-slate-300 focus:outline-none"
+                    placeholder="Tên địa danh"
                   />
-                </div>
-                <div>
-                  <label className="block text-[9px] font-bold text-slate-450 uppercase mb-1">Mô tả</label>
-                  <textarea
-                    value={editingLandmark.description}
-                    onChange={(e) => setEditingLandmark({ ...editingLandmark, description: e.target.value })}
-                    rows={2}
-                    className="w-full border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-slate-300 bg-white text-slate-800 resize-none"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[9px] font-bold text-slate-450 uppercase mb-1">Vĩ độ</label>
-                    <input
-                      type="number"
-                      step="any"
-                      value={editingLandmark.latitude}
-                      onChange={(e) => setEditingLandmark({ ...editingLandmark, latitude: e.target.value })}
-                      className="w-full border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-slate-300 bg-white text-slate-800"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[9px] font-bold text-slate-450 uppercase mb-1">Kinh độ</label>
-                    <input
-                      type="number"
-                      step="any"
-                      value={editingLandmark.longitude}
-                      onChange={(e) => setEditingLandmark({ ...editingLandmark, longitude: e.target.value })}
-                      className="w-full border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-slate-300 bg-white text-slate-800"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-[9px] font-bold text-slate-450 uppercase mb-1">Tỉnh/Thành phố</label>
                   <input
                     type="text"
                     value={editingLandmark.province}
-                    onChange={(e) => setEditingLandmark({ ...editingLandmark, province: e.target.value })}
-                    className="w-full border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-slate-300 bg-white text-slate-800"
+                    onChange={(event) => setEditingLandmark({ ...editingLandmark, province: event.target.value })}
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-800 focus:ring-1 focus:ring-slate-300 focus:outline-none"
+                    placeholder="Tỉnh/Thành phố"
+                  />
+                  <input
+                    type="number"
+                    step="any"
+                    value={editingLandmark.latitude}
+                    onChange={(event) => setEditingLandmark({ ...editingLandmark, latitude: event.target.value })}
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-800 focus:ring-1 focus:ring-slate-300 focus:outline-none"
+                    placeholder="Vĩ độ"
+                  />
+                  <input
+                    type="number"
+                    step="any"
+                    value={editingLandmark.longitude}
+                    onChange={(event) => setEditingLandmark({ ...editingLandmark, longitude: event.target.value })}
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-800 focus:ring-1 focus:ring-slate-300 focus:outline-none"
+                    placeholder="Kinh độ"
+                  />
+                  <input
+                    type="number"
+                    value={editingLandmark.radiusMeters}
+                    onChange={(event) => setEditingLandmark({ ...editingLandmark, radiusMeters: event.target.value })}
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-800 focus:ring-1 focus:ring-slate-300 focus:outline-none"
+                    placeholder="Bán kính mét"
+                  />
+                  <input
+                    type="text"
+                    value={editingLandmark.thumbnailUrl}
+                    onChange={(event) => setEditingLandmark({ ...editingLandmark, thumbnailUrl: event.target.value })}
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-800 focus:ring-1 focus:ring-slate-300 focus:outline-none"
+                    placeholder="Thumbnail URL"
                   />
                 </div>
+                <label className="flex w-fit items-center gap-2 rounded-xl border border-amber-100 bg-white px-3 py-2 text-[11px] font-semibold text-slate-650">
+                  <input
+                    type="checkbox"
+                    checked={editingLandmark.isFeatured}
+                    onChange={(event) => setEditingLandmark({ ...editingLandmark, isFeatured: event.target.checked })}
+                  />
+                  Địa danh nổi bật
+                </label>
+                <textarea
+                  value={editingLandmark.description}
+                  onChange={(event) => setEditingLandmark({ ...editingLandmark, description: event.target.value })}
+                  rows={3}
+                  className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-800 focus:ring-1 focus:ring-slate-300 focus:outline-none"
+                  placeholder="Mô tả"
+                />
+                {editingLandmark.galleryUrls.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {editingLandmark.galleryUrls.map((url, index) => (
+                      <span key={url} className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-1 text-[10px] text-slate-500">
+                        Ảnh {index + 1}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setEditingLandmark({
+                              ...editingLandmark,
+                              galleryUrls: editingLandmark.galleryUrls.filter((_, itemIndex) => itemIndex !== index),
+                            })
+                          }
+                          className="font-bold text-rose-500"
+                        >
+                          x
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <div className="flex gap-2 pt-1">
                   <button
                     type="submit"
-                    className="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-full text-[11px] font-semibold transition-colors"
+                    disabled={submitting}
+                    className="rounded-full bg-slate-800 px-4 py-2 text-[11px] font-semibold text-white transition-colors hover:bg-slate-900 disabled:opacity-50"
                   >
-                    Lưu thay đổi
+                    {submitting ? "Đang lưu..." : "Lưu thay đổi"}
                   </button>
                   <button
                     type="button"
                     onClick={() => setEditingLandmark(null)}
-                    className="bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-full text-[11px] font-semibold hover:bg-slate-50 transition-colors"
+                    className="rounded-full border border-slate-200 bg-white px-4 py-2 text-[11px] font-semibold text-slate-600 transition-colors hover:bg-slate-50"
                   >
                     Hủy
                   </button>
@@ -484,84 +573,125 @@ export function LandmarksScreen() {
             </div>
           )}
 
-          <div className="bg-white rounded-[20px] border border-slate-100 shadow-[0_2px_8px_rgba(0,0,0,0.02)] overflow-hidden">
-            <div className="px-5 py-3 border-b border-slate-50 bg-slate-50/50">
+          <div className="overflow-hidden rounded-[20px] border border-slate-100 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+            <div className="border-b border-slate-50 bg-slate-50/50 px-5 py-3">
               <h3 className="font-semibold text-slate-800">Danh sách địa danh chính thức</h3>
             </div>
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-slate-100 bg-slate-50/50">
-                  <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tên</th>
-                  <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mô tả</th>
-                  <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tọa độ</th>
-                  <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tỉnh/Thành phố</th>
-                  <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Trạng thái</th>
-                  <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-right pr-6">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-xs">
-                {loadingLandmarks ? (
-                  Array.from({ length: 5 }).map((_, i) => (
-                    <tr key={i}>
-                      <td colSpan={6} className="px-5 py-4">
-                        <div className="h-4 bg-slate-50 animate-pulse rounded" />
-                      </td>
-                    </tr>
-                  ))
-                ) : landmarks.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="px-5 py-8 text-center text-slate-400 font-medium">
-                      Không có địa danh nào.
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[980px] border-collapse text-left">
+                <thead>
+                  <tr className="border-b border-slate-100 bg-slate-50/50">
+                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Ảnh</th>
+                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Tên</th>
+                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Tọa độ</th>
+                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Tỉnh/TP</th>
+                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Bán kính</th>
+                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Trạng thái</th>
+                    <th className="px-5 py-3 pr-6 text-right text-[10px] font-bold tracking-wider text-slate-400 uppercase">Thao tác</th>
                   </tr>
-                ) : (
-                  landmarks.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="px-5 py-3.5 font-semibold text-slate-800">{item.name}</td>
-                      <td className="px-5 py-3.5 text-slate-500 max-w-xs truncate">
-                        {item.description}
-                      </td>
-                      <td className="px-5 py-3.5 text-slate-500 font-mono text-[11px]">
-                        {item.latitude}, {item.longitude}
-                      </td>
-                      <td className="px-5 py-3.5 text-slate-700">{item.province}</td>
-                      <td className="px-5 py-3.5">
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
-                          item.status === "ACTIVE" 
-                            ? "bg-green-50 text-green-700 border border-green-100/30" 
-                            : "bg-slate-100 text-slate-500"
-                        }`}>
-                          {item.status}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3.5 text-right pr-6">
-                        <div className="flex gap-2 justify-end">
-                          <button
-                            onClick={() => handleStartEdit(item)}
-                            className="text-[11px] px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium transition-colors"
-                          >
-                            Sửa
-                          </button>
-                          <button
-                            onClick={() => handleUpdateLandmarkStatus(item.id, item.status)}
-                            className={`text-[11px] px-2.5 py-1 rounded-full font-medium transition-colors ${
-                              item.status === "ACTIVE" 
-                                ? "bg-amber-50 text-amber-700 hover:bg-amber-100" 
-                                : "bg-green-55/40 text-emerald-700 hover:bg-emerald-50 border border-emerald-100/30"
-                            }`}
-                          >
-                            {item.status === "ACTIVE" ? "Ẩn" : "Hiện"}
-                          </button>
-                        </div>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-xs">
+                  {loadingLandmarks ? (
+                    Array.from({ length: 5 }).map((_, index) => (
+                      <tr key={index}>
+                        <td colSpan={7} className="px-5 py-4">
+                          <div className="h-4 rounded bg-slate-50 animate-pulse" />
+                        </td>
+                      </tr>
+                    ))
+                  ) : landmarks.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="px-5 py-8 text-center font-medium text-slate-400">
+                        Không có địa danh nào.
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    landmarks.map((item) => (
+                      <tr key={item.id} className="transition-colors hover:bg-slate-50/60">
+                        <td className="px-5 py-3.5">
+                          {item.thumbnailUrl ? (
+                            <img src={item.thumbnailUrl} alt={item.name ?? "landmark"} className="h-10 w-10 rounded-lg border border-slate-100 object-cover" />
+                          ) : (
+                            <div className="h-10 w-10 rounded-lg bg-slate-100" />
+                          )}
+                        </td>
+                        <td className="px-5 py-3.5">
+                          <div className="font-semibold text-slate-800">{item.name}</div>
+                          <div className="mt-0.5 max-w-xs truncate text-[10px] text-slate-400">{item.description || "—"}</div>
+                          {item.isFeatured && (
+                            <span className="mt-1 inline-block rounded-full bg-blue-50 px-2 py-0.5 text-[9px] font-bold text-blue-700">
+                              Nổi bật
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-5 py-3.5 font-mono text-[11px] text-slate-500">{item.latitude}, {item.longitude}</td>
+                        <td className="px-5 py-3.5 text-slate-700">{item.province}</td>
+                        <td className="px-5 py-3.5 text-slate-600">{item.radiusMeters ?? 5000}m</td>
+                        <td className="px-5 py-3.5">
+                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${statusBadge(item.status)}`}>
+                            {item.status}
+                          </span>
+                        </td>
+                        <td className="px-5 py-3.5 pr-6 text-right">
+                          <div className="flex justify-end gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleStartEdit(item)}
+                              className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-700 transition-colors hover:bg-slate-200"
+                            >
+                              Sửa
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateLandmarkStatus(item.id, item.status)}
+                              disabled={submitting}
+                              className={`rounded-full px-2.5 py-1 text-[11px] font-medium transition-colors ${
+                                item.status === "ACTIVE"
+                                  ? "bg-amber-50 text-amber-700 hover:bg-amber-100"
+                                  : "border border-emerald-100/30 bg-green-55/40 text-emerald-700 hover:bg-emerald-50"
+                              }`}
+                            >
+                              {item.status === "ACTIVE" ? "Ẩn" : "Hiện"}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <AdminPagination
+              page={landmarksPage}
+              totalPages={landmarksTotalPages}
+              totalElements={landmarksTotalElements}
+              pageSize={pageSize}
+              loading={loadingLandmarks}
+              onPageChange={setLandmarksPage}
+            />
           </div>
         </div>
       )}
+
+      <AdminConfirmDialog
+        open={rejectModal.open}
+        title="Từ chối đề xuất địa danh"
+        description="Nhập lý do để người gửi hiểu vì sao đề xuất không được duyệt."
+        confirmLabel="Từ chối"
+        intent="danger"
+        loading={submitting}
+        disabled={!rejectModal.reason.trim()}
+        onOpenChange={(open) => setRejectModal(open ? rejectModal : { open: false, suggestionId: null, reason: "" })}
+        onConfirm={handleRejectSuggestion}
+      >
+        <textarea
+          value={rejectModal.reason}
+          onChange={(event) => setRejectModal({ ...rejectModal, reason: event.target.value })}
+          rows={4}
+          placeholder="VD: Tọa độ chưa chính xác hoặc ảnh tham chiếu không phù hợp..."
+          className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 focus:border-slate-300 focus:outline-none"
+        />
+      </AdminConfirmDialog>
     </div>
   );
 }

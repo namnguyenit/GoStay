@@ -1,10 +1,11 @@
 "use client";
 
 import React from "react";
+import { AdminUser } from "@/services/admin.service";
 
 interface EnterpriseDetailModalProps {
   isOpen: boolean;
-  user: any | null;
+  user: AdminUser | null;
   onClose: () => void;
 }
 

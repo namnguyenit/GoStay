@@ -4,11 +4,16 @@ import React from "react";
 import { useAdminHosts, Tab } from "./hook/useAdminHosts";
 import { HostsTable } from "./components/HostsTable";
 import { HostDetailModal } from "./components/HostDetailModal";
+import { AdminConfirmDialog } from "@/screens/admin/_components/AdminConfirmDialog";
+import { AdminPagination } from "@/screens/admin/_components/AdminPagination";
 
 export function HostsScreen() {
   const {
-    tab, setTab, pendingCount, allCount, loading, displayed,
-    detailModal, setDetailModal, detailLoading, handleViewDetail, handleApprove
+    tab, setTab, pendingCount, allCount, loading, actionLoading, displayed,
+    page, setPage, totalPages, totalElements, pageSize,
+    detailModal, setDetailModal, detailLoading,
+    confirm, setConfirm, feedback, handleConfirm,
+    handleViewDetail, handleApprove
   } = useAdminHosts();
 
   return (
@@ -19,6 +24,18 @@ export function HostsScreen() {
           <p className="text-xs text-slate-400 mt-0.5 font-medium">Phê duyệt và theo dõi các đối tác lưu trú</p>
         </div>
       </div>
+
+      {feedback && (
+        <div
+          className={`rounded-2xl border px-4 py-3 text-xs font-semibold ${
+            feedback.type === "success"
+              ? "border-emerald-100 bg-emerald-50 text-emerald-700"
+              : "border-rose-100 bg-rose-50 text-rose-700"
+          }`}
+        >
+          {feedback.message}
+        </div>
+      )}
 
       {/* Tabs Layout */}
       <div className="inline-flex bg-slate-100/85 p-1 rounded-full border border-slate-150 mb-2">
@@ -38,13 +55,23 @@ export function HostsScreen() {
       </div>
 
       {/* Tái sử dụng Component Bảng */}
-      <HostsTable 
-        loading={loading} 
-        displayed={displayed} 
-        tab={tab} 
-        onViewDetail={handleViewDetail} 
-        onApprove={handleApprove} 
-      />
+      <div className="overflow-hidden rounded-[20px] border border-slate-100 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+        <HostsTable 
+          loading={loading} 
+          displayed={displayed} 
+          tab={tab} 
+          onViewDetail={handleViewDetail} 
+          onApprove={handleApprove} 
+        />
+        <AdminPagination
+          page={page}
+          totalPages={totalPages}
+          totalElements={totalElements}
+          pageSize={pageSize}
+          loading={loading}
+          onPageChange={setPage}
+        />
+      </div>
 
       {/* Tái sử dụng Component Modal */}
       <HostDetailModal 
@@ -52,6 +79,17 @@ export function HostsScreen() {
         hostData={detailModal.host}
         isLoading={detailLoading}
         onClose={() => setDetailModal({ open: false, host: null })}
+      />
+
+      <AdminConfirmDialog
+        open={confirm.open}
+        title={confirm.open ? confirm.title : ""}
+        description={confirm.open ? confirm.description : undefined}
+        confirmLabel={confirm.open ? confirm.confirmLabel : undefined}
+        intent={confirm.open ? confirm.intent : "default"}
+        loading={actionLoading}
+        onOpenChange={(open) => setConfirm(open ? confirm : { open: false })}
+        onConfirm={handleConfirm}
       />
     </div>
   );

@@ -280,7 +280,7 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public boolean hasCompletedListingOrder(UUID userId, UUID listingId) {
-        return orderRepository.hasPurchasedListing(userId, listingId, List.of(OrderStatus.COMPLETED));
+        return orderRepository.hasPurchasedListing(userId, listingId, List.of(OrderStatus.CONFIRMED, OrderStatus.COMPLETED));
     }
 
     private void refreshSelectedCartItemsFromCatalog(List<CartItem> items) {

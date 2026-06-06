@@ -52,6 +52,9 @@ class ApiClient {
     try {
       const res = await this.client.get('/api/v1/me');
       this.userId = res.data?.data?.id || res.data?.id;
+      if (this.userId) {
+        this.client.defaults.headers.common['X-User-Id'] = this.userId;
+      }
       return res.data;
     } catch (e) {
       // Non-fatal: just log
@@ -265,6 +268,54 @@ class ApiClient {
       const msg = e.response?.data?.message || e.message;
       console.error(`  [FAIL] initializeInventory for listing ${listingId}: ${msg}`);
       return null;
+    }
+  }
+
+  // ============================================================
+  // ORDERS & PAYMENTS
+  // ============================================================
+  async bookNow(payload) {
+    try {
+      const res = await this.client.post('/api/v1/orders/book-now', payload);
+      return res.data?.data || res.data;
+    } catch (e) {
+      const listingId = payload?.item?.listingId || 'unknown listing';
+      console.error(`  [FAIL] bookNow listing ${listingId}: ${e.response?.data?.message || e.message}`);
+      return null;
+    }
+  }
+
+  async createPayment(orderId, amount, hostId) {
+    try {
+      const res = await this.client.post('/api/v1/payments/create', {
+        orderId,
+        amount,
+        hostId
+      });
+      return res.data?.data || res.data;
+    } catch (e) {
+      console.error(`  [FAIL] createPayment order ${orderId}: ${e.response?.data?.message || e.message}`);
+      return null;
+    }
+  }
+
+  async mockPayment(paymentId) {
+    try {
+      const res = await this.client.post(`/api/v1/payments/${paymentId}/mock-pay`, {});
+      return res.status === 200 ? { success: true } : null;
+    } catch (e) {
+      console.error(`  [FAIL] mockPayment ${paymentId}: ${e.response?.data?.message || e.message}`);
+      return null;
+    }
+  }
+
+  async checkPurchased(listingId) {
+    try {
+      const res = await this.client.get(`/api/v1/orders/check-purchased/${listingId}`);
+      return Boolean(res.data?.data ?? res.data);
+    } catch (e) {
+      console.error(`  [WARN] checkPurchased listing ${listingId}: ${e.response?.data?.message || e.message}`);
+      return false;
     }
   }
 
