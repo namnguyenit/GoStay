@@ -71,6 +71,33 @@ public class CatalogHostController {
         return ResponseEntity.ok(ApiResponse.success("Lấy danh sách khu tổ hợp thành công.", complexes));
     }
 
+    @GetMapping("/complexes/{complexId}")
+    @PreAuthorize("hasRole('ENTERPRISE')")
+    public ResponseEntity<ApiResponse<com.Listing.CatalogandListing.dto.response.ComplexResponse>> getMyComplex(
+            @PathVariable UUID complexId) {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        var complex = complexService.getComplexById(userId, complexId);
+        return ResponseEntity.ok(ApiResponse.success("Lấy chi tiết khu tổ hợp thành công.", complex));
+    }
+
+    @PutMapping("/complexes/{complexId}")
+    @PreAuthorize("hasRole('ENTERPRISE')")
+    public ResponseEntity<ApiResponse<Void>> updateComplex(
+            @PathVariable UUID complexId,
+            @RequestBody @Valid CreateComplexRequest request) {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        complexService.updateComplex(userId, complexId, request);
+        return ResponseEntity.ok(ApiResponse.success("Cập nhật khu tổ hợp thành công."));
+    }
+
+    @DeleteMapping("/complexes/{complexId}")
+    @PreAuthorize("hasRole('ENTERPRISE')")
+    public ResponseEntity<ApiResponse<Void>> deleteComplex(@PathVariable UUID complexId) {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        complexService.hideComplex(userId, complexId);
+        return ResponseEntity.ok(ApiResponse.success("Đã ẩn khu tổ hợp thành công."));
+    }
+
     /**
      * 3.3.3. ĐĂNG DỊCH VỤ MỚI (TẠO LISTING) - API ĐA HÌNH CỐT LÕI
      * Phương thức: POST

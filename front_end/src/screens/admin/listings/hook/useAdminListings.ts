@@ -99,12 +99,12 @@ export function useAdminListings() {
 
   const getStatusBadge = (status?: string) => {
     const map: Record<string, string> = {
-      PENDING: "bg-white text-slate-800 border border-slate-300",
+      PENDING: "bg-white text-slate-900 border border-slate-300",
       ACTIVE: "bg-slate-100 text-slate-900 border border-slate-200",
       HIDDEN: "bg-slate-50 text-slate-600 border border-slate-200",
       DELETED: "bg-white text-slate-500 border border-slate-300",
     };
-    return map[status ?? ""] ?? "bg-gray-100 text-gray-600 border border-gray-200";
+    return map[status ?? ""] ?? "bg-slate-100 text-slate-600 border border-slate-200";
   };
 
   return {

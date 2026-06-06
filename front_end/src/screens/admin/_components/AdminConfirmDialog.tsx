@@ -41,9 +41,9 @@ export function AdminConfirmDialog({
 }: AdminConfirmDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md rounded-[20px] border border-slate-100 bg-white p-0 text-slate-800 shadow-[0_24px_70px_rgba(15,23,42,0.16)]">
+      <DialogContent className="sm:max-w-md rounded-[20px] border border-slate-100 bg-white p-0 text-slate-900 shadow-[0_24px_70px_rgba(15,23,42,0.16)]">
         <DialogHeader className="p-5 pb-2">
-          <DialogTitle className="text-base font-semibold text-slate-850">{title}</DialogTitle>
+          <DialogTitle className="text-base font-semibold text-slate-950">{title}</DialogTitle>
           {description && (
             <DialogDescription className="text-xs font-medium leading-5 text-slate-500">
               {description}
@@ -59,7 +59,7 @@ export function AdminConfirmDialog({
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={loading}
-            className="rounded-full border-slate-200 bg-white px-4 text-xs text-slate-650"
+            className="rounded-full border-slate-200 bg-white px-4 text-xs text-slate-600"
           >
             {cancelLabel}
           </Button>
@@ -69,9 +69,9 @@ export function AdminConfirmDialog({
             disabled={loading || disabled}
             className={cn(
               "rounded-full px-4 text-xs text-white",
-              intent === "danger" && "bg-slate-900 hover:bg-slate-950",
-              intent === "success" && "bg-slate-900 hover:bg-slate-950",
-              intent === "default" && "bg-slate-850 hover:bg-slate-950"
+              intent === "danger" && "bg-sky-500 hover:bg-sky-600",
+              intent === "success" && "bg-sky-500 hover:bg-sky-600",
+              intent === "default" && "bg-sky-500 hover:bg-sky-600"
             )}
           >
             {loading ? "Đang xử lý..." : confirmLabel}

@@ -1,57 +1,79 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useCallback, useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, Lock, Unlock, Calendar, Users, Briefcase } from "lucide-react";
+import { ArrowLeft, Save, Calendar, Users, Briefcase } from "lucide-react";
 import HostService from "@/services/host.service";
 import { format } from "date-fns";
+import { getErrorMessage } from "../../../_utils";
+
+type InventoryLock = {
+  lockStatus?: string;
+  lockedQuantity?: number;
+  orderId?: string;
+  timeSlot?: string;
+};
+
+type CalendarConfig = {
+  date?: string;
+  timeSlot?: string;
+  availableQuantity?: number;
+  status?: string;
+};
+
+type DayConfig = {
+  timeSlot: string;
+  quantity: string;
+  status: string;
+};
 
 export default function DayDetailsPage({ params }: { params: Promise<{ listingId: string; date: string }> }) {
   const router = useRouter();
   
   const { listingId, date } = use(params);
 
-  const [locks, setLocks] = useState<any[]>([]);
+  const [locks, setLocks] = useState<InventoryLock[]>([]);
   const [loading, setLoading] = useState(true);
   
   // Mảng chứa cấu hình của từng khung giờ trong ngày
-  const [dayConfigs, setDayConfigs] = useState<{ timeSlot: string; quantity: string; status: string }[]>([]);
+  const [dayConfigs, setDayConfigs] = useState<DayConfig[]>([]);
   const [savingSlot, setSavingSlot] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
-  useEffect(() => {
-    if (listingId && date) {
-      fetchDayData();
-    }
-  }, [listingId, date]);
-
-  const fetchDayData = async () => {
+  const fetchDayData = useCallback(async () => {
     try {
       setLoading(true);
       const d = new Date(date);
       const month = d.getMonth() + 1;
       const year = d.getFullYear();
       
-      const calRes: any = await HostService.getCalendar(listingId, month, year);
+      const calRes = await HostService.getCalendar(listingId, month, year) as { data?: CalendarConfig[] };
       const calendars = calRes?.data || [];
-      const dayCals = calendars.filter((c: any) => c.date === date);
+      const dayCals = calendars.filter((c) => c.date === date);
       
       if (dayCals.length > 0) {
-        setDayConfigs(dayCals.map((c: any) => ({
+        setDayConfigs(dayCals.map((c) => ({
           timeSlot: c.timeSlot || "ALL_DAY",
           quantity: c.availableQuantity?.toString() || "0",
           status: c.status || "AVAILABLE"
         })));
       }
 
-      const locksRes: any = await HostService.getLocks(listingId, date);
+      const locksRes = await HostService.getLocks(listingId, date) as { data?: InventoryLock[] };
       setLocks(locksRes?.data || []);
       
-    } catch (error) {
-      console.error("Failed to fetch day details", error);
+    } catch {
+      setFeedback({ type: "error", message: "Không thể tải chi tiết ngày." });
     } finally {
       setLoading(false);
     }
-  };
+  }, [date, listingId]);
+
+  useEffect(() => {
+    if (listingId && date) {
+      fetchDayData();
+    }
+  }, [fetchDayData, listingId, date]);
 
   const handleUpdateSlot = async (slotConfig: typeof dayConfigs[0]) => {
     try {
@@ -74,9 +96,9 @@ export default function DayDetailsPage({ params }: { params: Promise<{ listingId
         action: actionStatus
       });
       
-      alert(`Đã lưu cấu hình cho khung giờ [${slotConfig.timeSlot === "ALL_DAY" ? "Cả ngày" : slotConfig.timeSlot}] thành công!`);
-    } catch (err: any) {
-      alert(`Lưu thất bại: ${err?.message || "Lỗi không xác định"}`);
+      setFeedback({ type: "success", message: `Đã lưu cấu hình cho khung giờ [${slotConfig.timeSlot === "ALL_DAY" ? "Cả ngày" : slotConfig.timeSlot}] thành công.` });
+    } catch (err: unknown) {
+      setFeedback({ type: "error", message: `Lưu thất bại: ${getErrorMessage(err)}` });
     } finally {
       setSavingSlot(null);
     }
@@ -110,6 +132,16 @@ export default function DayDetailsPage({ params }: { params: Promise<{ listingId
         </div>
       </div>
 
+      {feedback && (
+        <div className={`rounded-2xl border px-4 py-3 text-xs font-semibold ${
+          feedback.type === "success"
+            ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+            : "border-red-200 bg-red-50 text-red-700"
+        }`}>
+          {feedback.message}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* Left Column: Stats & Locks */}
@@ -129,7 +161,7 @@ export default function DayDetailsPage({ params }: { params: Promise<{ listingId
                       <Briefcase className="w-4 h-4" /> Đã chốt (Confirmed)
                     </div>
                     <span className="text-2xl font-bold text-emerald-600">
-                      {confirmedLocks.reduce((acc, l) => acc + l.lockedQuantity, 0)}
+                      {confirmedLocks.reduce((acc, l) => acc + (l.lockedQuantity ?? 0), 0)}
                     </span>
                   </div>
                   <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-xl">
@@ -137,7 +169,7 @@ export default function DayDetailsPage({ params }: { params: Promise<{ listingId
                       <Users className="w-4 h-4" /> Đang giữ chỗ (Held)
                     </div>
                     <span className="text-2xl font-bold text-yellow-600">
-                      {pendingLocks.reduce((acc, l) => acc + l.lockedQuantity, 0)}
+                      {pendingLocks.reduce((acc, l) => acc + (l.lockedQuantity ?? 0), 0)}
                     </span>
                   </div>
                 </div>

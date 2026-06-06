@@ -1,10 +1,38 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, Suspense } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import OrderService from "@/services/order";
 import { useCart } from "@/shared/context/CartContext";
 import { ShoppingCart } from "lucide-react";
+
+type OrderSubmitResponse = {
+  data?: {
+    data?: {
+      orderId?: string;
+      id?: string;
+      totalAmount?: number;
+    };
+    orderId?: string;
+    id?: string;
+    totalAmount?: number;
+  };
+};
+
+function getResponseOrderData(res: OrderSubmitResponse) {
+  return res?.data?.data || res?.data || {};
+}
+
+function getErrorMessage(error: unknown) {
+  if (error instanceof Error) return error.message;
+  if (error && typeof error === "object" && "response" in error) {
+    const response = (error as { response?: { data?: { message?: unknown } } }).response;
+    if (typeof response?.data?.message === "string") return response.data.message;
+  }
+  return "Đặt dịch vụ thất bại.";
+}
 
 function CheckoutForm() {
   const router = useRouter();
@@ -48,6 +76,17 @@ function CheckoutForm() {
 
     try {
       let orderId, totalAmount;
+      const customer = {
+        fullName: fullName.trim(),
+        email: email.trim(),
+        phone: phone.trim(),
+      };
+
+      if (!customer.fullName || !customer.email || !customer.phone) {
+        setError("Vui lòng nhập đầy đủ họ tên, email và số điện thoại để chủ nhà liên hệ khi cần.");
+        setLoading(false);
+        return;
+      }
 
       if (type === "cart") {
         if (items.length === 0 || selectedItemIds.length === 0) {
@@ -55,15 +94,11 @@ function CheckoutForm() {
           setLoading(false);
           return;
         }
-        const res: any = await OrderService.checkoutCart({
+        const res = await OrderService.checkoutCart({
           itemIds: selectedItemIds,
-          customerInfo: {
-            fullName: fullName || undefined,
-            email: email || undefined,
-            phone: phone || undefined,
-          }
-        });
-        const responseData = res?.data?.data || res?.data;
+          customerInfo: customer
+        }) as OrderSubmitResponse;
+        const responseData = getResponseOrderData(res);
         orderId = responseData?.orderId || responseData?.id;
         totalAmount = responseData?.totalAmount || selectedItemsTotal;
         
@@ -76,7 +111,7 @@ function CheckoutForm() {
         if (!listingId) { setError("Không tìm thấy dịch vụ."); setLoading(false); return; }
         if (new Date(endDate) < new Date(startDate)) { setError("Ngày kết thúc phải sau ngày bắt đầu."); setLoading(false); return; }
         
-        const res: any = await OrderService.bookNow({
+        const res = await OrderService.bookNow({
           item: {
             listingId,
             startDate,
@@ -86,11 +121,11 @@ function CheckoutForm() {
             listingTitle: title,
             thumbnailUrl: image,
           },
-          fullName: fullName || undefined,
-          email: email || undefined,
-          phone: phone || undefined,
-        });
-        const responseData = res?.data?.data || res?.data;
+          fullName: customer.fullName,
+          email: customer.email,
+          phone: customer.phone,
+        }) as OrderSubmitResponse;
+        const responseData = getResponseOrderData(res);
         orderId = responseData?.orderId || responseData?.id;
         totalAmount = responseData?.totalAmount || total;
         
@@ -99,14 +134,14 @@ function CheckoutForm() {
         }
         router.push(`/payment?orderId=${orderId}&amount=${totalAmount}&title=${encodeURIComponent(title)}`);
       }
-    } catch (err: any) {
-      setError(err?.response?.data?.message || err?.message || "Đặt dịch vụ thất bại.");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
   };
 
-  if (type === "direct" && !listingId) return <div className="p-8">Không tìm thấy dịch vụ. <a href="/" className="underline">Quay về trang chủ</a></div>;
+  if (type === "direct" && !listingId) return <div className="p-8">Không tìm thấy dịch vụ. <Link href="/" className="underline">Quay về trang chủ</Link></div>;
 
   return (
     <div className="min-h-screen pt-24 pb-12 px-4 max-w-lg mx-auto">
@@ -116,7 +151,7 @@ function CheckoutForm() {
 
       {type === "direct" && (
         <>
-          {image && <img src={image} alt={title} className="w-full h-48 object-cover rounded-xl mb-3" />}
+          {image && <Image unoptimized src={image} alt={title} width={640} height={192} className="mb-3 h-48 w-full rounded-xl object-cover" />}
           <p className="font-semibold text-lg mb-1">{title}</p>
           <p className="text-sm text-gray-500 mb-6">
             đ{price.toLocaleString("vi-VN")} / {category === "place" ? "đêm" : category === "experience" ? "người" : "buổi"}
@@ -177,15 +212,15 @@ function CheckoutForm() {
         )}
 
         <hr />
-        <p className="text-sm font-medium text-gray-600">Thông tin liên hệ (tuỳ chọn)</p>
+        <p className="text-sm font-medium text-gray-600">Thông tin liên hệ của khách *</p>
 
-        <input type="text" placeholder="Họ và tên" value={fullName} onChange={e => setFullName(e.target.value)}
+        <input type="text" required placeholder="Họ và tên" value={fullName} onChange={e => setFullName(e.target.value)}
           className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400"
         />
-        <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)}
+        <input type="email" required placeholder="Email" value={email} onChange={e => setEmail(e.target.value)}
           className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400"
         />
-        <input type="tel" placeholder="Số điện thoại" value={phone} onChange={e => setPhone(e.target.value)}
+        <input type="tel" required placeholder="Số điện thoại" value={phone} onChange={e => setPhone(e.target.value)}
           className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400"
         />
 

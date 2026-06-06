@@ -59,8 +59,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f8f9fa]">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-slate-800 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-gray-500 text-sm font-semibold">{authMessage}</p>
+          <div className="w-12 h-12 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-slate-500 text-sm font-semibold">{authMessage}</p>
         </div>
       </div>
     );
@@ -104,12 +104,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#f8f9fa] font-sans text-gray-900 selection:bg-slate-200 selection:text-slate-950">
+    <div className="min-h-screen overflow-x-hidden bg-[#f8f9fa] font-sans text-slate-900 selection:bg-sky-200 selection:text-slate-950">
       {mobileNavOpen && (
         <button
           type="button"
           aria-label="Đóng menu admin"
-          className="fixed inset-0 z-30 bg-slate-900/30 backdrop-blur-[2px] lg:hidden"
+          className="fixed inset-0 z-30 bg-sky-500/25 backdrop-blur-[2px] lg:hidden"
           onClick={() => setMobileNavOpen(false)}
         />
       )}
@@ -124,17 +124,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Brand */}
         <div className="flex h-[76px] items-center justify-between border-b border-slate-100/50 px-6 lg:h-[90px] lg:px-8">
           <div className="flex items-center gap-3 cursor-pointer">
-            <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-900 flex items-center justify-center font-bold text-[15px] tracking-tighter border border-slate-200/70">
-              G<span className="text-slate-500">S</span>
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-sky-400 to-cyan-500 text-[15px] font-bold tracking-tighter text-white shadow-[0_10px_24px_rgba(14,165,233,0.28)]">
+              G<span className="text-white/75">S</span>
             </div>
-            <span className="font-semibold text-[20px] tracking-tight text-slate-800">
+            <span className="font-semibold text-[20px] tracking-tight text-sky-600">
               GoStay
             </span>
           </div>
           <button
             type="button"
             onClick={() => setMobileNavOpen(false)}
-            className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition-colors hover:bg-slate-50 hover:text-slate-700 lg:hidden"
+            className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-700 lg:hidden"
             aria-label="Đóng menu admin"
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -144,7 +144,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-6 px-5 space-y-1 scrollbar-hide">
           
-          <div className="px-3 pt-2 pb-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+          <div className="px-3 pt-2 pb-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
             Main Menu
           </div>
 
@@ -153,7 +153,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             onClick={() => setMobileNavOpen(false)}
             className={`flex items-center px-4 py-2.5 mb-1.5 rounded-xl text-[13.5px] font-semibold transition-all ${
               pathname === "/admin"
-                ? "bg-slate-100 text-slate-950 font-bold"
+                ? "bg-sky-100 text-sky-700 ring-1 ring-sky-200 font-bold"
                 : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
             }`}
           >
@@ -166,7 +166,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             onClick={() => setMobileNavOpen(false)}
             className={`flex items-center px-4 py-2.5 mb-1.5 rounded-xl text-[13.5px] font-semibold transition-all ${
               pathname.startsWith("/admin/users")
-                ? "bg-slate-100 text-slate-950 font-bold"
+                ? "bg-sky-100 text-sky-700 ring-1 ring-sky-200 font-bold"
                 : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
             }`}
           >
@@ -179,7 +179,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             onClick={() => setMobileNavOpen(false)}
             className={`flex items-center px-4 py-2.5 mb-6 rounded-xl text-[13.5px] font-semibold transition-all ${
               pathname.startsWith("/admin/payouts")
-                ? "bg-slate-100 text-slate-950 font-bold"
+                ? "bg-sky-100 text-sky-700 ring-1 ring-sky-200 font-bold"
                 : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
             }`}
           >
@@ -193,7 +193,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             return (
               <div key={group.key} className="mb-4">
                 <div 
-                  className="px-3 pt-2 pb-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider flex justify-between items-center cursor-pointer"
+                  className="px-3 pt-2 pb-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider flex justify-between items-center cursor-pointer"
                   onClick={() => toggleGroup(group.key)}
                 >
                   {group.title}
@@ -211,11 +211,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                           onClick={() => setMobileNavOpen(false)}
                           className={`flex items-center px-4 py-2 rounded-xl text-[13px] font-semibold transition-all ${
                             isActive
-                              ? "bg-slate-100 text-slate-950 font-bold"
+                              ? "bg-sky-100 text-sky-700 ring-1 ring-sky-200 font-bold"
                               : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
                           }`}
                         >
-                          {item.icon ? item.icon : <span className={`w-1.5 h-1.5 rounded-full mr-3.5 ${isActive ? 'bg-slate-900' : 'bg-transparent'}`}></span>}
+                          {item.icon ? item.icon : <span className={`w-1.5 h-1.5 rounded-full mr-3.5 ${isActive ? 'bg-sky-500' : 'bg-transparent'}`}></span>}
                           {item.label}
                         </Link>
                       );
@@ -240,7 +240,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 className="w-9 h-9 rounded-full object-cover border border-white shadow-sm"
               />
               <div>
-                <p className="text-[13px] font-semibold text-slate-800 capitalize">{adminName || "Admin"}</p>
+                <p className="text-[13px] font-semibold text-slate-900 capitalize">{adminName || "Admin"}</p>
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">System Admin</p>
               </div>
             </div>
@@ -249,7 +249,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 AuthService.logout();
                 router.push("/");
               }}
-              className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all"
+              className="w-7 h-7 flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all"
               title="Logout"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
@@ -274,7 +274,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M4 6h16M4 12h16M4 18h16" /></svg>
             </button>
-            <h1 className="truncate text-[18px] font-semibold tracking-tight text-slate-800 sm:text-[20px]">
+            <h1 className="truncate text-[18px] font-semibold tracking-tight text-slate-900 sm:text-[20px]">
               {getActiveItemLabel()}
             </h1>
           </div>

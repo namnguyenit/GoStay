@@ -2,20 +2,84 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { ArrowLeft, ArrowRight, Save, Plus, Trash, Upload, X, Image as ImageIcon } from "lucide-react";
 import { useRef } from "react";
 import HostService from "@/services/host.service";
 import AuthService from "@/services/auth.service";
 import { PROVINCES } from "@/shared/constants/provinces";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getErrorCode, getErrorMessage } from "../../_utils";
+
+type ComplexOption = {
+  id: string;
+  name?: string;
+  province?: string;
+};
+
+type MediaUploadResponse = {
+  data?: {
+    url?: string | string[];
+  };
+};
+
+type AttributesPayload = {
+  categoryType: string;
+  galleryUrls: string[];
+  stayDetail?: {
+    propertyType: string;
+    roomSizeSqM: number;
+    maxGuests: number;
+    bedrooms: number;
+    bathrooms: number;
+    beds: Array<{ type: string; quantity: number }>;
+  };
+  amenities?: string[];
+  policies?: {
+    checkInTime: string;
+    checkOutTime: string;
+    allowPets: boolean;
+    allowSmoking: boolean;
+    partyAllowed: boolean;
+  };
+  expDetail?: {
+    durationMinutes: number;
+    difficulty: string;
+    languages: string[];
+    groupSize: { min: number; max: number };
+    meetingPoint: string;
+    meetingPointLat: number;
+    meetingPointLng: number;
+  };
+  inclusions?: string[];
+  exclusions?: string[];
+  itinerary?: Array<{ time: string; activity: string }>;
+  serviceDetail?: {
+    providerType: string;
+    durationMinutes: number;
+    deliveryDays: number;
+    deliverables: string;
+    cameraGear: string;
+  };
+  logistics?: {
+    serveAtClientLocation: boolean;
+    maxTravelRadiusKm: number;
+    equipmentRequiredFromClient: string;
+    deliveryTimeWindow: string;
+    facilityRequired: string;
+    cleanupProvided: boolean;
+    equipmentProvided: string;
+    setupTimeHours: number;
+  };
+};
 
 export default function NewListing() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [canSubmit, setCanSubmit] = useState(false);
   const [roles, setRoles] = useState<string[]>([]);
-  const [myComplexes, setMyComplexes] = useState<any[]>([]);
+  const [myComplexes, setMyComplexes] = useState<ComplexOption[]>([]);
+  const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
   useEffect(() => {
     const userRoles = AuthService.getUserRoles();
@@ -24,7 +88,9 @@ export default function NewListing() {
     if (userRoles.includes("ENTERPRISE")) {
       HostService.getMyComplexes().then(res => {
         if (res.data) setMyComplexes(res.data);
-      }).catch(err => console.error("Lỗi fetch complexes", err));
+      }).catch(() => {
+        setFeedback({ type: "error", message: "Không tải được danh sách khu tổ hợp của doanh nghiệp." });
+      });
     }
   }, []);
 
@@ -39,7 +105,6 @@ export default function NewListing() {
   const [priceUnit, setPriceUnit] = useState<"PER_NIGHT" | "PER_PAX" | "PER_HOUR">("PER_NIGHT");
   const [latitude, setLatitude] = useState("21.0285");
   const [longitude, setLongitude] = useState("105.8542");
-  const [thumbnailUrl, setThumbnailUrl] = useState("");
 
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
@@ -131,11 +196,6 @@ export default function NewListing() {
   const [allowSmoking, setAllowSmoking] = useState(false);
   const [partyAllowed, setPartyAllowed] = useState(false);
 
-  const [galleryUrls, setGalleryUrls] = useState<string[]>([
-    "https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&q=80&w=600"
-  ]);
-  const [newGalleryUrl, setNewGalleryUrl] = useState("");
-
   // Step Navigations
   const nextStep = () => setStep(s => s + 1);
   const prevStep = () => setStep(s => s - 1);
@@ -144,7 +204,7 @@ export default function NewListing() {
   const addBed = () => {
     setBeds([...beds, { type: "Single", quantity: 1 }]);
   };
-  const updateBed = (index: number, field: "type" | "quantity", value: any) => {
+  const updateBed = (index: number, field: "type" | "quantity", value: string | number) => {
     const updated = [...beds];
     updated[index] = { ...updated[index], [field]: field === "quantity" ? Number(value) : value };
     setBeds(updated);
@@ -162,17 +222,6 @@ export default function NewListing() {
   };
   const removeAmenity = (index: number) => {
     setAmenities(amenities.filter((_, i) => i !== index));
-  };
-
-  // Gallery Helpers
-  const addGalleryUrl = () => {
-    if (newGalleryUrl.trim() && !galleryUrls.includes(newGalleryUrl.trim())) {
-      setGalleryUrls([...galleryUrls, newGalleryUrl.trim()]);
-      setNewGalleryUrl("");
-    }
-  };
-  const removeGalleryUrl = (index: number) => {
-    setGalleryUrls(galleryUrls.filter((_, i) => i !== index));
   };
 
   // EXP Helpers
@@ -212,33 +261,34 @@ export default function NewListing() {
 
   const handleSubmit = async () => {
     if (step !== 3) return;
+    setFeedback(null);
 
     if (!title || !basePrice || !province || !latitude || !longitude) {
-      alert("Vui lòng điền đầy đủ các trường bắt buộc (Tên, Giá, Địa điểm, Tọa độ)!");
+      setFeedback({ type: "error", message: "Vui lòng điền đầy đủ các trường bắt buộc: tên, giá, địa điểm và tọa độ." });
       return;
     }
 
     if (category === "STAY") {
       if (!roomSizeSqM || !maxGuests || !bedrooms || !bathrooms || beds.length === 0) {
-        alert("Vui lòng nhập đầy đủ chi tiết diện tích, số khách, phòng ngủ, phòng tắm và cấu hình giường cho Nơi lưu trú!");
+        setFeedback({ type: "error", message: "Vui lòng nhập đầy đủ diện tích, số khách, phòng ngủ, phòng tắm và cấu hình giường cho nơi lưu trú." });
         return;
       }
       if (!checkInTime || !checkOutTime) {
-        alert("Vui lòng nhập giờ nhận phòng và trả phòng!");
+        setFeedback({ type: "error", message: "Vui lòng nhập giờ nhận phòng và trả phòng." });
         return;
       }
     } else if (category === "EXP") {
       if (!expDuration || !expGroupSizeMin || !expGroupSizeMax || !expMeetingPoint || !expMeetingLat || !expMeetingLng) {
-        alert("Vui lòng nhập đầy đủ thời lượng, quy mô nhóm và thông tin điểm hẹn cho Trải nghiệm!");
+        setFeedback({ type: "error", message: "Vui lòng nhập đầy đủ thời lượng, quy mô nhóm và thông tin điểm hẹn cho trải nghiệm." });
         return;
       }
       if (Number(expGroupSizeMax) < Number(expGroupSizeMin)) {
-        alert("Quy mô nhóm tối đa phải lớn hơn hoặc bằng tối thiểu!");
+        setFeedback({ type: "error", message: "Quy mô nhóm tối đa phải lớn hơn hoặc bằng tối thiểu." });
         return;
       }
     } else if (category === "SVC") {
       if (!svcDuration) {
-        alert("Vui lòng nhập thời lượng cho Dịch vụ!");
+        setFeedback({ type: "error", message: "Vui lòng nhập thời lượng cho dịch vụ." });
         return;
       }
     }
@@ -246,21 +296,21 @@ export default function NewListing() {
     setLoading(true);
 
     try {
-      let finalThumbnailUrl = thumbnailUrl;
-      let finalGalleryUrls = [...galleryUrls];
+      let finalThumbnailUrl = "";
+      let finalGalleryUrls: string[] = [];
 
       // Upload Thumbnail
       if (thumbnailFile) {
-        const thumbRes: any = await HostService.uploadSingleMedia(thumbnailFile, "listings");
-        if (thumbRes?.data?.url) {
+        const thumbRes = await HostService.uploadSingleMedia(thumbnailFile, "listings") as MediaUploadResponse;
+        if (typeof thumbRes?.data?.url === "string") {
           finalThumbnailUrl = thumbRes.data.url;
         }
       }
 
       // Upload Gallery
       if (galleryFiles.length > 0) {
-        const galleryRes: any = await HostService.uploadBulkMedia(galleryFiles, "listings");
-        if (galleryRes?.data?.url) {
+        const galleryRes = await HostService.uploadBulkMedia(galleryFiles, "listings") as MediaUploadResponse;
+        if (Array.isArray(galleryRes?.data?.url)) {
           finalGalleryUrls = [...finalGalleryUrls, ...galleryRes.data.url];
         }
       }
@@ -271,7 +321,7 @@ export default function NewListing() {
     }
 
     // Build SaveListingRequest DTO
-    const attributesPayload: any = {
+    const attributesPayload: AttributesPayload = {
       categoryType: finalCategoryType,
       galleryUrls: finalGalleryUrls
     };
@@ -342,17 +392,16 @@ export default function NewListing() {
       attributes: attributesPayload
     };
 
-      const res = await HostService.createListing(payload);
-      alert("Đăng ký dịch vụ mới thành công!");
+      await HostService.createListing(payload);
+      setFeedback({ type: "success", message: "Đăng ký dịch vụ mới thành công." });
       router.push("/host/listings");
-    } catch (err: any) {
-      console.error("Create listing failed:", err);
-      let errMsg = err?.message || "Lỗi không xác định";
+    } catch (err: unknown) {
+      let errMsg = getErrorMessage(err);
       // Xử lý lỗi khoảng cách (LISTING_OUT_OF_RANGE)
-      if (err?.code === 'LISTING_OUT_OF_RANGE' || errMsg.includes('Khoảng cách')) {
+      if (getErrorCode(err) === 'LISTING_OUT_OF_RANGE' || errMsg.includes('Khoảng cách')) {
         errMsg = "Dịch vụ này nằm cách Khu Tổ Hợp quá 3km. Vui lòng kiểm tra lại tọa độ hoặc chọn đúng Khu Tổ Hợp!";
       }
-      alert(`Đăng dịch vụ thất bại: ${errMsg}`);
+      setFeedback({ type: "error", message: `Đăng dịch vụ thất bại: ${errMsg}` });
     } finally {
       setLoading(false);
     }
@@ -385,6 +434,16 @@ export default function NewListing() {
         <div className={`h-1.5 flex-1 rounded-full ${step >= 2 ? "bg-app-primary" : "bg-gray-100"}`} />
         <div className={`h-1.5 flex-1 rounded-full ${step >= 3 ? "bg-app-primary" : "bg-gray-100"}`} />
       </div>
+
+      {feedback && (
+        <div className={`rounded-2xl border px-4 py-3 text-sm font-medium ${
+          feedback.type === "success"
+            ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+            : "border-red-200 bg-red-50 text-red-700"
+        }`}>
+          {feedback.message}
+        </div>
+      )}
 
       {/* Main Skeleton Form Container */}
       <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-6">
@@ -421,7 +480,7 @@ export default function NewListing() {
                 <select 
                   value={category} 
                   onChange={(e) => {
-                    const val = e.target.value as any;
+                    const val = e.target.value as "STAY" | "EXP" | "SVC";
                     setCategory(val);
                     setSubCategory(val === "SVC" ? "PHOTOGRAPHY" : "NONE");
                   }}
@@ -464,7 +523,7 @@ export default function NewListing() {
                   className="w-full bg-white border border-gray-300 shadow-sm rounded-xl px-4 py-2.5 text-xs text-gray-900 focus:outline-none focus:border-app-primary"
                 >
                   <option value="">-- Không thuộc Khu tổ hợp nào --</option>
-                  {myComplexes.map((c: any) => (
+                  {myComplexes.map((c) => (
                     <option key={c.id} value={c.id}>{c.name} - {c.province}</option>
                   ))}
                 </select>
@@ -497,7 +556,7 @@ export default function NewListing() {
                 <label className="block text-2xs font-bold text-gray-600 uppercase mb-1">Đơn vị giá *</label>
                 <select 
                   value={priceUnit} 
-                  onChange={(e) => setPriceUnit(e.target.value as any)}
+                  onChange={(e) => setPriceUnit(e.target.value as "PER_NIGHT" | "PER_PAX" | "PER_HOUR")}
                   className="w-full bg-white border border-gray-300 shadow-sm rounded-xl px-4 py-2.5 text-xs text-gray-900 focus:outline-none focus:border-app-primary"
                 >
                   <option value="PER_NIGHT" className="bg-white">Mỗi đêm (PER_NIGHT)</option>
@@ -557,7 +616,7 @@ export default function NewListing() {
                   onChange={handleThumbnailChange}
                 />
                 {thumbnailPreview ? (
-                  <img src={thumbnailPreview} alt="Thumbnail" className="object-cover w-full h-full" />
+                  <Image unoptimized src={thumbnailPreview} alt="Thumbnail" fill className="object-cover" sizes="(max-width: 768px) 100vw, 672px" />
                 ) : (
                   <div className="text-center p-4">
                     <Upload className="w-8 h-8 text-gray-500 mx-auto mb-2" />
@@ -975,7 +1034,7 @@ export default function NewListing() {
               <div className="grid grid-cols-3 gap-3">
                 {galleryPreviews.map((preview, idx) => (
                   <div key={idx} className="relative aspect-square rounded-xl overflow-hidden group border border-gray-300">
-                    <img src={preview} alt={'Gallery ' + idx} className="object-cover w-full h-full" />
+                    <Image unoptimized src={preview} alt={'Gallery ' + idx} fill className="object-cover" sizes="(max-width: 768px) 33vw, 220px" />
                     <button
                       type="button"
                       onClick={() => removeGalleryImage(idx)}

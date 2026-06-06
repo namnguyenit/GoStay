@@ -1,49 +1,49 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { DollarSign, ArrowUpRight, ShieldCheck, Clock, AlertCircle } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
+import { ArrowUpRight, CalendarDays, Clock, Download, ShieldCheck } from "lucide-react";
 import HostService from "@/services/host.service";
+import {
+  HostPayout,
+  formatCurrency,
+  formatDate,
+  getErrorMessage,
+  normalizePage,
+  parseDate,
+  payoutStatusClass,
+  payoutStatusLabel,
+} from "../_utils";
+
+const PAGE_SIZE = 10;
+const STATUS_OPTIONS = [
+  { value: "ALL", label: "Tất cả trạng thái" },
+  { value: "PAID", label: "Đã chi trả" },
+  { value: "PENDING", label: "Chờ đối soát" },
+  { value: "REQUESTED", label: "Đã yêu cầu rút" },
+  { value: "FAILED", label: "Thất bại" },
+];
+
+type Feedback = { type: "success" | "error"; message: string } | null;
 
 export default function HostEarnings() {
-  const [payouts, setPayouts] = useState<any[]>([]);
+  const [payouts, setPayouts] = useState<HostPayout[]>([]);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [page, setPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
-
-  const [totalEarnings, setTotalEarnings] = useState(0);
-  const [pendingEarnings, setPendingEarnings] = useState(0);
-
-  const size = 6;
+  const [status, setStatus] = useState("ALL");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [feedback, setFeedback] = useState<Feedback>(null);
 
   async function fetchPayouts() {
     try {
       setLoading(true);
-      const res = await HostService.getMyPayouts(page, size);
-      if (res && res.data) {
-        const content = res.data.content || res.data || [];
-        setPayouts(content);
-        if (res.data.totalPages !== undefined) {
-          setTotalPages(res.data.totalPages);
-        } else {
-          setTotalPages(1);
-        }
-
-        // Sum overall values for summary cards (based on fetched list)
-        let successSum = 0;
-        let pendingSum = 0;
-        content.forEach((p: any) => {
-          const amount = p.hostAmount || p.amount || 0;
-          if (p.status === "PAID") {
-            successSum += amount;
-          } else if (p.status === "PENDING" || p.status === "REQUESTED") {
-            pendingSum += amount;
-          }
-        });
-        setTotalEarnings(successSum);
-        setPendingEarnings(pendingSum);
-      }
-    } catch (err) {
-      console.error("Failed to fetch payouts:", err);
+      setFeedback(null);
+      const res = await HostService.getMyPayouts(0, 300);
+      setPayouts(normalizePage<HostPayout>(res, 300).content);
+    } catch (err: unknown) {
+      setFeedback({ type: "error", message: getErrorMessage(err, "Không thể tải dữ liệu thu nhập.") });
     } finally {
       setLoading(false);
     }
@@ -51,148 +51,160 @@ export default function HostEarnings() {
 
   useEffect(() => {
     fetchPayouts();
-  }, [page]);
+  }, []);
+
+  useEffect(() => {
+    setPage(0);
+  }, [status, fromDate, toDate]);
+
+  const filtered = useMemo(() => {
+    const from = fromDate ? new Date(`${fromDate}T00:00:00`) : null;
+    const to = toDate ? new Date(`${toDate}T23:59:59`) : null;
+    return payouts.filter((item) => {
+      const created = parseDate(item.createdAt);
+      const matchStatus = status === "ALL" || item.status === status;
+      const matchFrom = !from || (created && created >= from);
+      const matchTo = !to || (created && created <= to);
+      return matchStatus && matchFrom && matchTo;
+    });
+  }, [payouts, status, fromDate, toDate]);
+
+  const totals = useMemo(() => {
+    return filtered.reduce<{
+      totalAmount: number;
+      commission: number;
+      hostAmount: number;
+      paid: number;
+      pending: number;
+    }>(
+      (acc, item) => {
+        acc.totalAmount += Number(item.totalAmount ?? 0);
+        acc.commission += Number(item.commissionAmount ?? 0);
+        acc.hostAmount += Number(item.hostAmount ?? item.amount ?? 0);
+        if (item.status === "PAID") acc.paid += Number(item.hostAmount ?? item.amount ?? 0);
+        if (item.status === "PENDING" || item.status === "REQUESTED") acc.pending += Number(item.hostAmount ?? item.amount ?? 0);
+        return acc;
+      },
+      { totalAmount: 0, commission: 0, hostAmount: 0, paid: 0, pending: 0 }
+    );
+  }, [filtered]);
+
+  const totalPages = Math.max(Math.ceil(filtered.length / PAGE_SIZE), 1);
+  const pageItems = filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
+
+  const handleWithdraw = async () => {
+    try {
+      setSubmitting(true);
+      setFeedback(null);
+      await HostService.requestWithdrawal();
+      setFeedback({ type: "success", message: "Đã gửi yêu cầu rút tiền. Admin sẽ xử lý các khoản đủ điều kiện." });
+      fetchPayouts();
+    } catch (err: unknown) {
+      setFeedback({ type: "error", message: getErrorMessage(err, "Không có khoản thu nhập đang chờ rút hoặc hệ thống đang lỗi.") });
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <div className="space-y-6 animate-smooth-appear">
-      
-      {/* Title & Info */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-lg font-bold text-gray-900">Doanh thu & Thanh toán</h2>
-          <p className="text-xs text-gray-600">Theo dõi doanh thu chi trả thực tế từ GoStay chuyển khoản vào ví của bạn.</p>
+          <h2 className="text-lg font-bold text-gray-900">Thu nhập & chi trả</h2>
+          <p className="text-xs text-gray-600">
+            Theo dõi tổng đơn, hoa hồng nền tảng, số thực nhận và lịch sử payout theo ngày.
+          </p>
         </div>
-        <button 
-          onClick={async () => {
-            try {
-              await HostService.requestWithdrawal();
-              alert("Yêu cầu rút tiền thành công!");
-              fetchPayouts();
-            } catch (err: any) {
-              alert("Lỗi: Không có khoản thu nhập nào đang chờ rút hoặc lỗi hệ thống.");
-            }
-          }}
-          className="bg-app-primary hover:bg-app-primary/90 text-gray-900 text-xs font-bold py-2 px-4 rounded-xl transition-all shadow-lg shadow-app-primary/20"
+        <button
+          onClick={handleWithdraw}
+          disabled={submitting}
+          className="inline-flex items-center gap-2 rounded-xl bg-app-primary px-4 py-2.5 text-xs font-bold text-white shadow-lg shadow-app-primary/20 transition-all hover:bg-app-primary/95 disabled:opacity-50"
         >
-          Yêu cầu Rút tiền
+          <Download className="h-4 w-4" />
+          {submitting ? "Đang gửi..." : "Yêu cầu rút tiền"}
         </button>
       </div>
 
-      {/* Stats Summary Panel */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        
-        <div className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-gray-600 uppercase tracking-wider">Đã quyết toán</span>
-            <div className="p-1.5 bg-emerald-50 rounded-lg text-emerald-600 border border-emerald-200">
-              <ShieldCheck className="h-4 w-4" />
-            </div>
+      {feedback && (
+        <div className={`rounded-2xl border px-4 py-3 text-xs font-semibold ${
+          feedback.type === "success"
+            ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+            : "border-red-200 bg-red-50 text-red-700"
+        }`}>
+          {feedback.message}
+        </div>
+      )}
+
+      <section className="grid grid-cols-1 gap-4 md:grid-cols-4">
+        <Metric title="Tổng giá trị đơn" value={formatCurrency(totals.totalAmount)} icon={<ArrowUpRight className="h-4 w-4" />} />
+        <Metric title="Hoa hồng nền tảng" value={formatCurrency(totals.commission)} icon={<CalendarDays className="h-4 w-4" />} />
+        <Metric title="Host thực nhận" value={formatCurrency(totals.hostAmount)} icon={<ShieldCheck className="h-4 w-4" />} />
+        <Metric title="Đang chờ/rút" value={formatCurrency(totals.pending)} icon={<Clock className="h-4 w-4" />} />
+      </section>
+
+      <section className="rounded-2xl border border-gray-200 bg-white p-4">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+          <div>
+            <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-gray-500">Trạng thái payout</label>
+            <select
+              value={status}
+              onChange={(event) => setStatus(event.target.value)}
+              className="h-10 w-full rounded-xl border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-700 outline-none focus:border-app-primary"
+            >
+              {STATUS_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
           </div>
           <div>
-            <h3 className="text-lg font-bold text-gray-900">{totalEarnings.toLocaleString("vi-VN")}đ</h3>
-            <p className="text-[9px] text-emerald-600 font-medium mt-1">Đã chuyển khoản thành công</p>
-          </div>
-        </div>
-
-        <div className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-gray-600 uppercase tracking-wider">Đang chờ xử lý</span>
-            <div className="p-1.5 bg-yellow-50 rounded-lg text-yellow-600 border border-yellow-200">
-              <Clock className="h-4 w-4" />
-            </div>
+            <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-gray-500">Từ ngày tạo payout</label>
+            <input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} className="h-10 w-full rounded-xl border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-app-primary" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-gray-900">{pendingEarnings.toLocaleString("vi-VN")}đ</h3>
-            <p className="text-[9px] text-yellow-600 font-medium mt-1">Đang thực hiện chuyển tiền</p>
+            <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-gray-500">Đến ngày tạo payout</label>
+            <input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} className="h-10 w-full rounded-xl border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-app-primary" />
           </div>
         </div>
+      </section>
 
-        <div className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-gray-600 uppercase tracking-wider">Số đợt chi trả</span>
-            <div className="p-1.5 bg-app-primary/10 rounded-lg text-app-primary border border-app-primary/20">
-              <ArrowUpRight className="h-4 w-4" />
-            </div>
-          </div>
-          <div>
-            <h3 className="text-lg font-bold text-gray-900">{payouts.length} lần</h3>
-            <p className="text-[9px] text-gray-500 mt-1">Lịch sử thanh toán tổng cộng</p>
-          </div>
-        </div>
-
-      </div>
-
-      {/* Payouts Table list */}
-      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
         {loading ? (
-          <div className="w-full">
-            <div className="flex items-center justify-between px-6 py-4 bg-gray-50 border-b border-gray-200">
-               {[1,2,3,4].map(i => <div key={i} className="h-3 w-20 bg-gray-200 animate-shimmer rounded"></div>)}
-            </div>
-            {[1,2,3,4].map(i => (
-              <div key={i} className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-                <div className="w-1/4 space-y-2">
-                  <div className="h-4 w-24 bg-gray-200 animate-shimmer rounded"></div>
-                  <div className="h-3 w-16 bg-gray-100 animate-shimmer rounded"></div>
-                </div>
-                <div className="w-1/4"><div className="h-4 w-20 bg-gray-200 animate-shimmer rounded"></div></div>
-                <div className="w-1/4"><div className="h-4 w-24 bg-gray-200 animate-shimmer rounded"></div></div>
-                <div className="w-1/4 flex justify-end"><div className="h-6 w-24 bg-gray-200 animate-shimmer rounded-full"></div></div>
-              </div>
-            ))}
+          <div className="space-y-3 p-6">
+            {Array.from({ length: 6 }).map((_, index) => <div key={index} className="h-14 rounded-xl bg-gray-100 animate-pulse" />)}
           </div>
-        ) : payouts.length === 0 ? (
-          <div className="p-12 text-center text-gray-500">
-            <AlertCircle className="w-8 h-8 mx-auto text-gray-600 mb-2" />
-            <p className="text-xs">Chưa phát sinh lịch sử quyết toán tiền về ví của bạn.</p>
-          </div>
+        ) : pageItems.length === 0 ? (
+          <div className="p-12 text-center text-xs text-gray-500">Không có payout phù hợp với bộ lọc.</div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full min-w-[1120px] text-left text-xs">
               <thead>
-                <tr className="border-b border-gray-200 text-gray-600 text-[10px] font-bold uppercase tracking-wider bg-gray-50">
-                  <th className="py-4 px-6">Đợt thanh toán</th>
-                  <th className="py-4 px-6">Mã giao dịch (Payout ID)</th>
-                  <th className="py-4 px-6">Số tài khoản nhận</th>
-                  <th className="py-4 px-6">Số tiền nhận</th>
-                  <th className="py-4 px-6">Trạng thái</th>
+                <tr className="border-b border-gray-200 bg-gray-50 text-[10px] uppercase tracking-wider text-gray-500">
+                  <th className="px-5 py-3 font-bold">Ngày tạo</th>
+                  <th className="px-5 py-3 font-bold">Ngày chi trả</th>
+                  <th className="px-5 py-3 font-bold">Payout ID</th>
+                  <th className="px-5 py-3 font-bold">Order ID</th>
+                  <th className="px-5 py-3 text-right font-bold">Tổng đơn</th>
+                  <th className="px-5 py-3 text-right font-bold">Hoa hồng</th>
+                  <th className="px-5 py-3 text-right font-bold">Thực nhận</th>
+                  <th className="px-5 py-3 text-center font-bold">Trạng thái</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5 text-xs">
-                {payouts.map((item) => (
-                  <tr key={item.id} className="hover:bg-white/2 transition-colors">
-                    <td className="py-4 px-6 text-gray-700">
-                      {item.createdAt ? new Date(item.createdAt).toLocaleDateString("vi-VN") : "Chưa rõ ngày"}
+              <tbody className="divide-y divide-gray-100">
+                {pageItems.map((item) => (
+                  <tr key={item.payoutId || item.id} className="hover:bg-gray-50/70">
+                    <td className="px-5 py-4 text-gray-700">{formatDate(item.createdAt, true)}</td>
+                    <td className="px-5 py-4 text-gray-700">{item.paidAt ? formatDate(item.paidAt, true) : "Chưa chi trả"}</td>
+                    <td className="px-5 py-4 font-mono text-[10px] text-gray-600">{item.payoutId || item.id || "—"}</td>
+                    <td className="px-5 py-4 font-mono text-[10px] text-gray-600">{item.orderId || "—"}</td>
+                    <td className="px-5 py-4 text-right font-semibold text-gray-900">{formatCurrency(item.totalAmount)}</td>
+                    <td className="px-5 py-4 text-right text-gray-700">
+                      {formatCurrency(item.commissionAmount)}
+                      {item.commissionRate !== undefined && <span className="ml-1 text-[10px] text-gray-500">({Number(item.commissionRate) * 100}%)</span>}
                     </td>
-                    <td className="py-4 px-6 text-gray-600 font-mono text-[10px]">
-                      {item.id}
-                    </td>
-                    <td className="py-4 px-6 text-gray-600">
-                      <div>
-                        <p className="font-bold text-gray-900">{item.bankName || "N/A"}</p>
-                        <p className="text-[10px] text-gray-500 mt-0.5">{item.bankAccount || "N/A"}</p>
-                      </div>
-                    </td>
-                    <td className="py-4 px-6 font-bold text-gray-900">
-                      {(item.hostAmount || item.amount) ? `${(item.hostAmount || item.amount).toLocaleString("vi-VN")}đ` : "0đ"}
-                    </td>
-                    <td className="py-4 px-6">
-                      <span className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded-full ${
-                        item.status === "PAID" 
-                          ? "bg-emerald-50 text-emerald-600" 
-                          : item.status === "PENDING"
-                          ? "bg-yellow-50 text-yellow-600"
-                          : item.status === "REQUESTED"
-                          ? "bg-blue-50 text-blue-600 animate-pulse"
-                          : "bg-red-50 text-red-600"
-                      }`}>
-                        {item.status === "PAID" 
-                          ? "Đã quyết toán" 
-                          : item.status === "PENDING"
-                          ? "Đang chờ đối soát"
-                          : item.status === "REQUESTED"
-                          ? "Đang yêu cầu rút"
-                          : "Thất bại"}
+                    <td className="px-5 py-4 text-right font-bold text-gray-900">{formatCurrency(item.hostAmount ?? item.amount)}</td>
+                    <td className="px-5 py-4 text-center">
+                      <span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold ${payoutStatusClass(item.status)}`}>
+                        {payoutStatusLabel(item.status)}
                       </span>
                     </td>
                   </tr>
@@ -202,30 +214,27 @@ export default function HostEarnings() {
           </div>
         )}
 
-        {/* Pagination */}
-        {!loading && totalPages > 1 && (
-          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 bg-gray-50 text-xs">
-            <button
-              onClick={() => setPage(p => Math.max(0, p - 1))}
-              disabled={page === 0}
-              className="px-3 py-1.5 bg-gray-100 border border-gray-300 rounded-lg text-gray-900 hover:bg-white/10 transition-all disabled:opacity-30 disabled:hover:bg-gray-100"
-            >
-              Trang trước
-            </button>
-            <span className="text-gray-600">
-              Trang <strong className="text-gray-900">{page + 1}</strong> trên <strong className="text-gray-900">{totalPages}</strong>
-            </span>
-            <button
-              onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
-              disabled={page >= totalPages - 1}
-              className="px-3 py-1.5 bg-gray-100 border border-gray-300 rounded-lg text-gray-900 hover:bg-white/10 transition-all disabled:opacity-30 disabled:hover:bg-gray-100"
-            >
-              Trang sau
-            </button>
+        <div className="flex flex-col gap-3 border-t border-gray-200 bg-gray-50 px-5 py-4 text-xs text-gray-600 sm:flex-row sm:items-center sm:justify-between">
+          <span>Hiển thị {filtered.length === 0 ? 0 : page * PAGE_SIZE + 1}-{Math.min((page + 1) * PAGE_SIZE, filtered.length)} / {filtered.length} payout</span>
+          <div className="flex items-center gap-2">
+            <button disabled={page <= 0} onClick={() => setPage((prev) => Math.max(prev - 1, 0))} className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 font-semibold disabled:opacity-40">Trước</button>
+            <span className="font-bold text-gray-900">Trang {page + 1}/{totalPages}</span>
+            <button disabled={page >= totalPages - 1} onClick={() => setPage((prev) => Math.min(prev + 1, totalPages - 1))} className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 font-semibold disabled:opacity-40">Sau</button>
           </div>
-        )}
+        </div>
       </div>
+    </div>
+  );
+}
 
+function Metric({ title, value, icon }: { title: string; value: string; icon: ReactNode }) {
+  return (
+    <div className="rounded-2xl border border-gray-200 bg-white p-5">
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">{title}</span>
+        <span className="rounded-lg border border-sky-100 bg-sky-50 p-1.5 text-sky-600">{icon}</span>
+      </div>
+      <div className="mt-3 break-words text-lg font-bold text-gray-900">{value}</div>
     </div>
   );
 }

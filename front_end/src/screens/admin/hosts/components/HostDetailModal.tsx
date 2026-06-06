@@ -19,8 +19,8 @@ interface HostDetailModalProps {
 function Field({ label, value }: { label: string; value?: string }) {
   return (
     <div className="rounded-xl border border-slate-100 bg-slate-50/60 p-3">
-      <div className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">{label}</div>
-      <div className="mt-1 break-words text-xs font-semibold text-slate-750">{value || "—"}</div>
+      <div className="text-[10px] font-bold tracking-wider text-slate-500 uppercase">{label}</div>
+      <div className="mt-1 break-words text-xs font-semibold text-slate-700">{value || "—"}</div>
     </div>
   );
 }
@@ -28,7 +28,7 @@ function Field({ label, value }: { label: string; value?: string }) {
 function IdentityImage({ label, url }: { label: string; url?: string }) {
   return (
     <div className="rounded-xl border border-slate-100 bg-slate-50/60 p-3">
-      <div className="mb-2 text-[10px] font-bold tracking-wider text-slate-400 uppercase">{label}</div>
+      <div className="mb-2 text-[10px] font-bold tracking-wider text-slate-500 uppercase">{label}</div>
       {url ? (
         <a href={url} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-xl border border-slate-100 bg-white">
           <div className="relative h-40 w-full">
@@ -43,7 +43,7 @@ function IdentityImage({ label, url }: { label: string; url?: string }) {
           </div>
         </a>
       ) : (
-        <div className="flex h-40 items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white text-xs font-semibold text-slate-400">
+        <div className="flex h-40 items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white text-xs font-semibold text-slate-500">
           Chưa có ảnh
         </div>
       )}
@@ -56,8 +56,8 @@ export function HostDetailModal({ isOpen, hostData, isLoading, onClose }: HostDe
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-h-[90vh] overflow-y-auto rounded-[20px] border border-slate-100 bg-white p-0 sm:max-w-3xl">
         <DialogHeader className="border-b border-slate-100 p-5">
-          <DialogTitle className="text-base font-semibold text-slate-800">Chi tiết Host</DialogTitle>
-          <p className="text-xs font-medium text-slate-400">Thông tin xác minh lấy từ endpoint host detail.</p>
+          <DialogTitle className="text-base font-semibold text-slate-900">Chi tiết Host</DialogTitle>
+          <p className="text-xs font-medium text-slate-500">Thông tin xác minh lấy từ endpoint host detail.</p>
         </DialogHeader>
 
         {isLoading ? (
@@ -79,13 +79,13 @@ export function HostDetailModal({ isOpen, hostData, isLoading, onClose }: HostDe
                   className="h-14 w-14 rounded-full border border-slate-100 object-cover"
                 />
               ) : (
-                <div className="flex h-14 w-14 items-center justify-center rounded-full border border-slate-100 bg-slate-50 text-lg font-bold text-slate-400">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full border border-slate-100 bg-slate-50 text-lg font-bold text-slate-500">
                   {(hostData.fullName ?? "H").charAt(0).toUpperCase()}
                 </div>
               )}
               <div className="min-w-0">
-                <h4 className="truncate text-base font-semibold text-slate-850">{hostData.fullName || "Host chưa có tên"}</h4>
-                <p className="mt-1 break-all text-xs font-medium text-slate-400">{hostData.accountId}</p>
+                <h4 className="truncate text-base font-semibold text-slate-950">{hostData.fullName || "Host chưa có tên"}</h4>
+                <p className="mt-1 break-all text-xs font-medium text-slate-500">{hostData.accountId}</p>
               </div>
             </div>
 
@@ -101,7 +101,7 @@ export function HostDetailModal({ isOpen, hostData, isLoading, onClose }: HostDe
             </div>
           </div>
         ) : (
-          <div className="p-6 text-center text-xs font-semibold text-slate-400">
+          <div className="p-6 text-center text-xs font-semibold text-slate-500">
             Không có dữ liệu chi tiết.
           </div>
         )}

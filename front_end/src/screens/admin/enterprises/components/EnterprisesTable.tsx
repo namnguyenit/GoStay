@@ -23,12 +23,12 @@ export function EnterprisesTable({
       <table className="w-full min-w-[900px] border-collapse text-left text-xs">
         <thead>
           <tr className="border-b border-slate-100 bg-slate-50/50">
-            <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Username</th>
-            <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Doanh nghiệp</th>
-            <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Người đại diện</th>
-            <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Mã số thuế</th>
-            <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Trạng thái</th>
-            <th className="px-5 py-3 pr-6 text-right text-[10px] font-bold tracking-wider text-slate-400 uppercase">Thao tác</th>
+            <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Username</th>
+            <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Doanh nghiệp</th>
+            <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Người đại diện</th>
+            <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Mã số thuế</th>
+            <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Trạng thái</th>
+            <th className="px-5 py-3 pr-6 text-right text-[10px] font-bold tracking-wider text-slate-500 uppercase">Thao tác</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
@@ -42,7 +42,7 @@ export function EnterprisesTable({
             ))
           ) : displayed.length === 0 ? (
             <tr>
-              <td colSpan={6} className="px-5 py-8 text-center font-medium text-slate-400">
+              <td colSpan={6} className="px-5 py-8 text-center font-medium text-slate-500">
                 {tab === "pending"
                   ? "Không có doanh nghiệp nào chờ duyệt."
                   : "Chưa có doanh nghiệp nào."}
@@ -57,13 +57,13 @@ export function EnterprisesTable({
                 <tr key={user.id} className="transition-colors hover:bg-slate-50/60">
                   <td className="px-5 py-3.5">
                     <div className="min-w-0">
-                      <div className="max-w-[220px] truncate font-semibold text-slate-800">{user.username || "—"}</div>
-                      <div className="mt-0.5 max-w-[240px] truncate text-[10px] text-slate-400">{user.email || "—"}</div>
+                      <div className="max-w-[220px] truncate font-semibold text-slate-900">{user.username || "—"}</div>
+                      <div className="mt-0.5 max-w-[240px] truncate text-[10px] text-slate-500">{user.email || "—"}</div>
                     </div>
                   </td>
-                  <td className="px-5 py-3.5 text-slate-650">
-                    <div className="font-semibold text-slate-800">{ep?.companyName || "—"}</div>
-                    <div className="mt-0.5 max-w-xs truncate text-[10px] text-slate-400">{ep?.companyAddress || "—"}</div>
+                  <td className="px-5 py-3.5 text-slate-600">
+                    <div className="font-semibold text-slate-900">{ep?.companyName || "—"}</div>
+                    <div className="mt-0.5 max-w-xs truncate text-[10px] text-slate-500">{ep?.companyAddress || "—"}</div>
                   </td>
                   <td className="px-5 py-3.5 font-medium text-slate-600">{ep?.representativeName || "—"}</td>
                   <td className="px-5 py-3.5 font-mono text-[11px] text-slate-500">{ep?.taxCode || "—"}</td>
@@ -71,7 +71,7 @@ export function EnterprisesTable({
                     <span
                       className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${
                         status === "PENDING"
-                          ? "border border-slate-300 bg-white text-slate-800"
+                          ? "border border-slate-300 bg-white text-slate-900"
                           : status === "APPROVED"
                           ? "border border-slate-200 bg-slate-100 text-slate-900"
                           : "border border-slate-300 bg-white text-slate-500"
@@ -95,7 +95,7 @@ export function EnterprisesTable({
                           <button
                             type="button"
                             onClick={() => onApprove(user.id, true)}
-                            className="rounded-full bg-slate-900 px-2.5 py-1 text-[11px] font-medium text-white transition-colors hover:bg-slate-950"
+                            className="rounded-full bg-sky-500 px-2.5 py-1 text-[11px] font-medium text-white transition-colors hover:bg-sky-600"
                           >
                             Duyệt
                           </button>

@@ -90,8 +90,8 @@ export function PayoutsScreen() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-slate-800 leading-tight">Thanh toán (Payouts)</h2>
-          <p className="text-xs text-slate-400 mt-1">Quản lý payout host theo dữ liệu phân trang từ Payment service.</p>
+          <h2 className="text-xl font-semibold text-slate-900 leading-tight">Thanh toán (Payouts)</h2>
+          <p className="text-xs text-slate-500 mt-1">Quản lý payout host theo dữ liệu phân trang từ Payment service.</p>
         </div>
         <button 
           onClick={refetch} 
@@ -108,7 +108,7 @@ export function PayoutsScreen() {
         <div
           className={`p-3.5 rounded-[12px] text-xs font-medium border flex items-center gap-2.5 ${
             actionResult.type === "success"
-              ? "bg-white border-slate-200 text-slate-800"
+              ? "bg-white border-slate-200 text-slate-900"
               : "bg-slate-50 border-slate-200 text-slate-700"
           }`}
         >
@@ -125,14 +125,14 @@ export function PayoutsScreen() {
       <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
         <div className="flex min-w-0 flex-col justify-between rounded-[20px] border border-slate-100 bg-white p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
           <div className="flex justify-between items-start mb-4">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Cần Thanh Toán</span>
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Cần Thanh Toán</span>
             <div className="p-2 bg-slate-100 text-slate-600 rounded-xl">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             </div>
           </div>
           <div>
-            <h3 className="break-words text-[clamp(1.15rem,3vw,1.5rem)] font-semibold leading-tight tracking-tight text-slate-800 tabular-nums">{stats.totalPending.toLocaleString()}đ</h3>
-            <p className="mt-1 flex flex-wrap items-center gap-1 text-[11px] font-medium text-slate-400">
+            <h3 className="break-words text-[clamp(1.15rem,3vw,1.5rem)] font-semibold leading-tight tracking-tight text-slate-900 tabular-nums">{stats.totalPending.toLocaleString()}đ</h3>
+            <p className="mt-1 flex flex-wrap items-center gap-1 text-[11px] font-medium text-slate-500">
               <span className="flex items-center font-semibold text-slate-600">
                 <svg className="w-3.5 h-3.5 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 Chờ xử lý
@@ -144,14 +144,14 @@ export function PayoutsScreen() {
 
         <div className="flex min-w-0 flex-col justify-between rounded-[20px] border border-slate-100 bg-white p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
           <div className="flex justify-between items-start mb-4">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Đã Thanh Toán</span>
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Đã Thanh Toán</span>
             <div className="p-2 bg-slate-100 text-slate-600 rounded-xl">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             </div>
           </div>
           <div>
-            <h3 className="break-words text-[clamp(1.15rem,3vw,1.5rem)] font-semibold leading-tight tracking-tight text-slate-800 tabular-nums">{stats.totalPaid.toLocaleString()}đ</h3>
-            <p className="mt-1 flex flex-wrap items-center gap-1 text-[11px] font-medium text-slate-400">
+            <h3 className="break-words text-[clamp(1.15rem,3vw,1.5rem)] font-semibold leading-tight tracking-tight text-slate-900 tabular-nums">{stats.totalPaid.toLocaleString()}đ</h3>
+            <p className="mt-1 flex flex-wrap items-center gap-1 text-[11px] font-medium text-slate-500">
               <span className="flex items-center font-semibold text-slate-600">
                 <svg className="w-3 h-3 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                 Đã hoàn tất
@@ -163,14 +163,14 @@ export function PayoutsScreen() {
 
         <div className="flex min-w-0 flex-col justify-between rounded-[20px] border border-slate-100 bg-white p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
           <div className="flex justify-between items-start mb-4">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Hoa Hồng Theo API</span>
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Hoa Hồng Theo API</span>
             <div className="p-2 bg-slate-100 text-slate-600 rounded-xl">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             </div>
           </div>
           <div>
-            <h3 className="break-words text-[clamp(1.15rem,3vw,1.5rem)] font-semibold leading-tight tracking-tight text-slate-800 tabular-nums">{stats.totalCommission.toLocaleString()}đ</h3>
-            <p className="mt-1 flex flex-wrap items-center gap-1 text-[11px] font-medium text-slate-400">
+            <h3 className="break-words text-[clamp(1.15rem,3vw,1.5rem)] font-semibold leading-tight tracking-tight text-slate-900 tabular-nums">{stats.totalCommission.toLocaleString()}đ</h3>
+            <p className="mt-1 flex flex-wrap items-center gap-1 text-[11px] font-medium text-slate-500">
               <span className="flex items-center font-semibold text-slate-600">
                 <svg className="w-3.5 h-3.5 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 Doanh thu
@@ -187,7 +187,7 @@ export function PayoutsScreen() {
           <button
             onClick={() => setActiveTab("PENDING")}
             className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
-              activeTab === "PENDING" ? "bg-white shadow-sm text-slate-800" : "text-slate-500 hover:text-slate-800"
+              activeTab === "PENDING" ? "bg-white shadow-sm text-slate-900" : "text-slate-500 hover:text-slate-900"
             }`}
           >
             Chờ xử lý (Gộp)
@@ -195,7 +195,7 @@ export function PayoutsScreen() {
           <button
             onClick={() => setActiveTab("HISTORY")}
             className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
-              activeTab === "HISTORY" ? "bg-white shadow-sm text-slate-800" : "text-slate-500 hover:text-slate-800"
+              activeTab === "HISTORY" ? "bg-white shadow-sm text-slate-900" : "text-slate-500 hover:text-slate-900"
             }`}
           >
             Lịch sử chuyển khoản
@@ -203,13 +203,13 @@ export function PayoutsScreen() {
         </div>
         
         <div className="relative w-full sm:w-72">
-          <svg className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+          <svg className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
           <input 
             type="text" 
             placeholder="Tìm kiếm theo mã..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-1.5 bg-white border border-slate-100 rounded-full text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-200 transition-all"
+            className="w-full pl-9 pr-4 py-1.5 bg-white border border-slate-100 rounded-full text-xs font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-200 transition-all"
           />
         </div>
       </div>
@@ -218,11 +218,11 @@ export function PayoutsScreen() {
       <div className="bg-white rounded-[20px] border border-slate-100 shadow-[0_2px_8px_rgba(0,0,0,0.02)] overflow-hidden">
         {loading && payouts.length === 0 ? (
           <div className="p-16 flex justify-center">
-            <div className="w-6 h-6 border-2 border-slate-300 border-t-slate-800 rounded-full animate-spin"></div>
+            <div className="w-6 h-6 border-2 border-slate-300 border-t-sky-500 rounded-full animate-spin"></div>
           </div>
         ) : visibleRowCount === 0 ? (
-          <div className="p-16 text-center text-slate-400 text-xs font-medium flex flex-col items-center">
-            <svg className="w-10 h-10 text-slate-200 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg>
+          <div className="p-16 text-center text-slate-500 text-xs font-medium flex flex-col items-center">
+            <svg className="w-10 h-10 text-sky-200 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg>
             {searchQuery ? "Không tìm thấy dữ liệu phù hợp trong trang hiện tại." : "Tab này chưa có khoản thanh toán nào trong trang hiện tại."}
           </div>
         ) : (
@@ -233,20 +233,20 @@ export function PayoutsScreen() {
                 <>
                   <thead>
                     <tr className="border-b border-slate-100 bg-slate-50/50">
-                      <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mã Host</th>
-                      <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center">Số đơn hàng</th>
-                      <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-right">Tổng cần trả</th>
-                      <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center">Trạng thái</th>
-                      <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-right pr-6">Thao tác</th>
+                      <th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Mã Host</th>
+                      <th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center">Số đơn hàng</th>
+                      <th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-right">Tổng cần trả</th>
+                      <th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center">Trạng thái</th>
+                      <th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-right pr-6">Thao tác</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {groupedPendingPayouts.length === 0 ? (
-                      <tr><td colSpan={5} className="p-10 text-center text-slate-400 text-xs">Không có khoản chờ xử lý nào.</td></tr>
+                      <tr><td colSpan={5} className="p-10 text-center text-slate-500 text-xs">Không có khoản chờ xử lý nào.</td></tr>
                     ) : (
                       groupedPendingPayouts.map((batch) => (
                         <tr key={batch.hostId} className={`hover:bg-slate-50/60 transition-colors group ${batch.hasRequested ? "bg-slate-50/80 hover:bg-slate-100/70" : ""}`}>
-                          <td className="px-5 py-3.5 font-mono text-slate-800 font-semibold" title={batch.hostId}>
+                          <td className="px-5 py-3.5 font-mono text-slate-900 font-semibold" title={batch.hostId}>
                             <div className="flex items-center gap-2">
                               <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] text-slate-500 font-sans">
                                 H
@@ -259,18 +259,18 @@ export function PayoutsScreen() {
                               {batch.count} đơn
                             </span>
                           </td>
-                          <td className="px-5 py-3.5 text-right font-semibold text-slate-800 tabular-nums">
+                          <td className="px-5 py-3.5 text-right font-semibold text-slate-900 tabular-nums">
                             {batch.totalAmount.toLocaleString()}đ
                           </td>
                           <td className="px-5 py-3.5 text-center">
                             {batch.hasRequested ? (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-white text-slate-800 border border-slate-300">
-                                <span className="w-1 h-1 rounded-full bg-slate-700 animate-pulse"></span>
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-white text-slate-900 border border-slate-300">
+                                <span className="w-1 h-1 rounded-full bg-blue-800 animate-pulse"></span>
                                 Yêu cầu rút
                               </span>
                             ) : (
                               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-500">
-                                <span className="w-1 h-1 rounded-full bg-slate-400"></span>
+                                <span className="w-1 h-1 rounded-full bg-slate-500"></span>
                                 Chờ đối soát
                               </span>
                             )}
@@ -278,7 +278,7 @@ export function PayoutsScreen() {
                           <td className="px-5 py-3.5 text-right pr-6">
                             <button
                               onClick={() => openPaymentModalBatch(batch)}
-                              className="px-3 py-1.5 bg-slate-800 text-white rounded-full text-[11px] font-semibold hover:bg-slate-900 transition-all shadow-sm"
+                              className="px-3 py-1.5 bg-sky-500 text-white rounded-full text-[11px] font-semibold hover:bg-sky-600 transition-all shadow-sm"
                             >
                               Thanh toán tất cả
                             </button>
@@ -293,25 +293,25 @@ export function PayoutsScreen() {
                 <>
                   <thead>
                     <tr className="border-b border-slate-100 bg-slate-50/50">
-                      <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mã đơn & Payout ID</th>
-                      <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Ngày tạo</th>
-                      <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mã Host</th>
-                      <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tổng tiền đơn</th>
-                      <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-right">Thực nhận của Host</th>
-                      <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center">Ngày chuyển</th>
+                      <th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Mã đơn & Payout ID</th>
+                      <th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Ngày tạo</th>
+                      <th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Mã Host</th>
+                      <th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Tổng tiền đơn</th>
+                      <th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-right">Thực nhận của Host</th>
+                      <th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center">Ngày chuyển</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {historyPayouts.length === 0 ? (
-                      <tr><td colSpan={6} className="p-10 text-center text-slate-400 text-xs">Không có lịch sử thanh toán nào.</td></tr>
+                      <tr><td colSpan={6} className="p-10 text-center text-slate-500 text-xs">Không có lịch sử thanh toán nào.</td></tr>
                     ) : (
                       historyPayouts.map((payout) => (
                         <tr key={payout.id || payout.payoutId} className="hover:bg-slate-50/60 transition-colors">
                           <td className="px-5 py-3.5">
-                            <div className="font-semibold text-slate-800" title={payout.orderId}>
+                            <div className="font-semibold text-slate-900" title={payout.orderId}>
                               {payout.orderId?.substring(0, 8)}...
                             </div>
-                            <div className="text-[10px] text-slate-400 font-mono mt-0.5" title={payout.id || payout.payoutId}>
+                            <div className="text-[10px] text-slate-500 font-mono mt-0.5" title={payout.id || payout.payoutId}>
                               {(payout.id || payout.payoutId)?.substring(0, 8)}...
                             </div>
                           </td>
@@ -322,7 +322,7 @@ export function PayoutsScreen() {
                           <td className="px-5 py-3.5 text-slate-600 tabular-nums">
                             {payout.totalAmount?.toLocaleString()}đ
                           </td>
-                          <td className="px-5 py-3.5 text-right font-semibold text-slate-800 tabular-nums">
+                          <td className="px-5 py-3.5 text-right font-semibold text-slate-900 tabular-nums">
                             {payout.hostAmount?.toLocaleString()}đ
                           </td>
                           <td className="px-5 py-3.5 text-center">
@@ -353,18 +353,18 @@ export function PayoutsScreen() {
       {/* Payment Modal */}
       {(selectedPayout || selectedBatch) && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm animate-fade-in" onClick={closePaymentModal}></div>
+          <div className="absolute inset-0 bg-sky-500/20 backdrop-blur-sm animate-fade-in" onClick={closePaymentModal}></div>
           <div className="relative z-10 flex max-h-[92vh] w-full max-w-sm flex-col overflow-hidden rounded-[20px] border border-slate-100 bg-white shadow-xl animate-scale-up">
-            <div className="px-5 py-4 border-b border-slate-50 flex justify-between items-center">
-              <h3 className="font-semibold text-slate-800 text-sm">Chuyển khoản thanh toán</h3>
-              <button onClick={closePaymentModal} className="w-6 h-6 flex items-center justify-center rounded-full text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-colors">✕</button>
+            <div className="px-5 py-4 border-b border-slate-100 flex justify-between items-center">
+              <h3 className="font-semibold text-slate-900 text-sm">Chuyển khoản thanh toán</h3>
+              <button onClick={closePaymentModal} className="w-6 h-6 flex items-center justify-center rounded-full text-slate-500 hover:bg-slate-50 hover:text-slate-600 transition-colors">✕</button>
             </div>
             
             <div className="flex-1 overflow-y-auto p-5 sm:p-6">
               <div className="text-center mb-5">
-                <div className="text-[10px] font-bold text-slate-400 mb-1 tracking-wider uppercase">Số tiền thanh toán</div>
-                <div className="break-words text-[clamp(1.35rem,7vw,1.5rem)] font-semibold leading-tight tracking-tight text-slate-800 tabular-nums">
-                  {selectedBatch ? selectedBatch.totalAmount.toLocaleString() : selectedPayout?.hostAmount?.toLocaleString()}<span className="text-base text-slate-400 ml-0.5">đ</span>
+                <div className="text-[10px] font-bold text-slate-500 mb-1 tracking-wider uppercase">Số tiền thanh toán</div>
+                <div className="break-words text-[clamp(1.35rem,7vw,1.5rem)] font-semibold leading-tight tracking-tight text-slate-900 tabular-nums">
+                  {selectedBatch ? selectedBatch.totalAmount.toLocaleString() : selectedPayout?.hostAmount?.toLocaleString()}<span className="text-base text-slate-500 ml-0.5">đ</span>
                 </div>
                 {selectedBatch && (
                   <div className="text-[10px] font-semibold text-slate-700 mt-2 inline-flex items-center gap-1 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-full">
@@ -375,23 +375,23 @@ export function PayoutsScreen() {
 
               {isFetchingBank ? (
                 <div className="py-8 flex flex-col items-center justify-center">
-                  <div className="w-5 h-5 border-2 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
-                  <p className="text-xs text-slate-400 mt-2">Đang tải thông tin tài khoản...</p>
+                  <div className="w-5 h-5 border-2 border-slate-200 border-t-sky-500 rounded-full animate-spin"></div>
+                  <p className="text-xs text-slate-500 mt-2">Đang tải thông tin tài khoản...</p>
                 </div>
               ) : selectedHostBank ? (
                 <div className="space-y-4">
                   <div className="bg-slate-50/50 p-4 rounded-[12px] text-xs border border-slate-100 space-y-2">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="text-slate-400">Ngân hàng</span>
+                      <span className="text-slate-500">Ngân hàng</span>
                       <span className="font-semibold text-slate-700">{selectedHostBank.bankName}</span>
                     </div>
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="text-slate-400">Số tài khoản</span>
-                      <span className="break-all font-mono font-semibold text-slate-800">{selectedHostBank.accountNumber}</span>
+                      <span className="text-slate-500">Số tài khoản</span>
+                      <span className="break-all font-mono font-semibold text-slate-900">{selectedHostBank.accountNumber}</span>
                     </div>
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="text-slate-400">Chủ tài khoản</span>
-                      <span className="break-words text-right font-semibold uppercase text-slate-800">{selectedHostBank.accountName}</span>
+                      <span className="text-slate-500">Chủ tài khoản</span>
+                      <span className="break-words text-right font-semibold uppercase text-slate-900">{selectedHostBank.accountName}</span>
                     </div>
                   </div>
 
@@ -407,7 +407,7 @@ export function PayoutsScreen() {
                           className="w-36 h-36 rounded-lg object-contain"
                         />
                       </div>
-                      <p className="text-[10px] font-semibold text-slate-400 mt-2 uppercase tracking-wider">Quét mã để chuyển khoản</p>
+                      <p className="text-[10px] font-semibold text-slate-500 mt-2 uppercase tracking-wider">Quét mã để chuyển khoản</p>
                     </div>
                   )}
                 </div>
@@ -428,7 +428,7 @@ export function PayoutsScreen() {
               <button 
                 onClick={confirmPayment}
                 disabled={isFetchingBank || !selectedHostBank}
-                className="flex-[1.5] py-2 bg-slate-800 rounded-full text-xs font-semibold text-white hover:bg-slate-900 disabled:opacity-50 transition-colors flex justify-center items-center gap-1"
+                className="flex-[1.5] py-2 bg-sky-500 rounded-full text-xs font-semibold text-white hover:bg-sky-600 disabled:opacity-50 transition-colors flex justify-center items-center gap-1"
               >
                 Xác nhận đã chuyển
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>

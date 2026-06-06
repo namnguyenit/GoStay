@@ -3,6 +3,8 @@ package com.Listing.CatalogandListing.service;
 import com.Listing.CatalogandListing.dto.request.complex.CreateComplexRequest;
 import com.Listing.CatalogandListing.entity.Complex;
 import com.Listing.CatalogandListing.enums.ComplexStatus;
+import com.Listing.CatalogandListing.exception.AppException;
+import com.Listing.CatalogandListing.exception.ComplexErrorCode;
 import com.Listing.CatalogandListing.mapper.ComplexMapper;
 import com.Listing.CatalogandListing.repository.ComplexRepository;
 import lombok.AccessLevel;
@@ -37,5 +39,32 @@ public class ComplexService {
                 .stream()
                 .map(complexMapper::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    public ComplexResponse getComplexById(String userId, UUID complexId) {
+        Complex complex = getOwnedComplex(userId, complexId);
+        return complexMapper.toResponse(complex);
+    }
+
+    public void updateComplex(String userId, UUID complexId, CreateComplexRequest request) {
+        Complex complex = getOwnedComplex(userId, complexId);
+        complexMapper.updateEntityFromRequest(request, complex);
+        complex.setLocation(GeometryUtil.createPoint(complex.getLongitude(), complex.getLatitude()));
+        complexRepository.save(complex);
+    }
+
+    public void hideComplex(String userId, UUID complexId) {
+        Complex complex = getOwnedComplex(userId, complexId);
+        complex.setStatus(ComplexStatus.HIDDEN);
+        complexRepository.save(complex);
+    }
+
+    private Complex getOwnedComplex(String userId, UUID complexId) {
+        Complex complex = complexRepository.findById(complexId)
+                .orElseThrow(() -> new AppException(ComplexErrorCode.COMPLEX_NOT_FOUND));
+        if (!complex.getHostId().equals(UUID.fromString(userId))) {
+            throw new AppException(ComplexErrorCode.COMPLEX_ACCESS_DENIED);
+        }
+        return complex;
     }
 }

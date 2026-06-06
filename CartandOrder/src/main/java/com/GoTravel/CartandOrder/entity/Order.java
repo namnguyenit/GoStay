@@ -2,6 +2,8 @@ package com.GoTravel.CartandOrder.entity;
 
 import com.GoTravel.CartandOrder.enums.OrderStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -70,8 +72,14 @@ public class Order {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class CustomerInfo {
+        @NotBlank(message = "Họ tên khách hàng không được để trống")
         private String fullName;
+
+        @NotBlank(message = "Email khách hàng không được để trống")
+        @Email(message = "Email khách hàng không hợp lệ")
         private String email;
+
+        @NotBlank(message = "Số điện thoại khách hàng không được để trống")
         private String phone;
     }
 }

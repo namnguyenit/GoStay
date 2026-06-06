@@ -12,12 +12,12 @@ const HostService = {
   },
 
   // Create a new listing
-  createListing: async (data: any) => {
+  createListing: async (data: unknown) => {
     return await Api.post("/v1/catalog/host/listings", data);
   },
 
   // Update a listing
-  updateListing: async (id: string, data: any) => {
+  updateListing: async (id: string, data: unknown) => {
     return await Api.put(`/v1/catalog/host/listings/${id}`, data);
   },
 
@@ -72,7 +72,7 @@ const HostService = {
   },
 
   // Suggest a new landmark
-  suggestLandmark: async (data: any) => {
+  suggestLandmark: async (data: unknown) => {
     return await Api.post(`/v1/catalog/host/landmark-suggestions`, data);
   },
 
@@ -98,8 +98,20 @@ const HostService = {
   },
 
   // Create a new complex (Enterprise only)
-  createComplex: async (data: any) => {
+  createComplex: async (data: unknown) => {
     return await Api.post("/v1/catalog/host/complexes", data);
+  },
+
+  getComplex: async (id: string) => {
+    return await Api.get(`/v1/catalog/host/complexes/${id}`);
+  },
+
+  updateComplex: async (id: string, data: unknown) => {
+    return await Api.put(`/v1/catalog/host/complexes/${id}`, data);
+  },
+
+  deleteComplex: async (id: string) => {
+    return await Api.delete(`/v1/catalog/host/complexes/${id}`);
   }
 };
 

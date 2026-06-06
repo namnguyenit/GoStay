@@ -17,13 +17,26 @@ import java.util.UUID;
 @AllArgsConstructor
 public class OrderResponse {
     private UUID orderId;
+    private UUID userId;
     private UUID hostId;
     private String orderNumber;
     private String status;
     private BigDecimal totalAmount;
     private String currency;
+    private OrderCustomerInfo customerInfo;
     private LocalDateTime expiresAt;
+    private LocalDateTime createdAt;
     private List<OrderItemResponse> items;
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class OrderCustomerInfo {
+        private String fullName;
+        private String email;
+        private String phone;
+    }
 
     @Data
     @Builder

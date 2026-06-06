@@ -1,29 +1,47 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useCallback, useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Lock, Unlock, Percent } from "lucide-react";
-import HostService from "@/services/host.service";
+import HostService from "@/services/enterprise.service";
+import { HostListing, getErrorMessage, normalizePage } from "../_utils";
+
+type CalendarEntry = {
+  date?: string;
+  status?: string;
+  availableQuantity?: number;
+  totalQuantity?: number;
+  confirmedQuantity?: number;
+};
+
+type CalendarDay = {
+  isPadding: boolean;
+  day: number;
+  dateStr: string;
+  status?: string;
+  info?: CalendarEntry;
+};
+
+type OccupancyRate = {
+  occupancyRate?: number;
+  totalCapacityInMonth?: number;
+  soldCapacity?: number;
+};
 
 function CalendarComponent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const [listings, setListings] = useState<any[]>([]);
+  const [listings, setListings] = useState<HostListing[]>([]);
   const [selectedListingId, setSelectedListingId] = useState<string>("");
   const [loadingListings, setLoadingListings] = useState(true);
 
   // Calendar Date State
   const [currentDate, setCurrentDate] = useState(() => new Date());
-  const [calendarData, setCalendarData] = useState<any[]>([]);
-  const [occupancyRate, setOccupancyRate] = useState<any>(null);
+  const [calendarData, setCalendarData] = useState<CalendarEntry[]>([]);
+  const [occupancyRate, setOccupancyRate] = useState<OccupancyRate | null>(null);
   const [loadingCalendar, setLoadingCalendar] = useState(false);
-  const [submittingBlock, setSubmittingBlock] = useState<string | null>(null);
-
-  // Edit Inventory Capacity States
-  const [selectedDay, setSelectedDay] = useState<any | null>(null);
-  const [quantityInput, setQuantityInput] = useState<string>("");
-  const [submittingQuantity, setSubmittingQuantity] = useState(false);
+  const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
   // Tab & Initial Configuration States
   const [activeTab, setActiveTab] = useState<"calendar" | "config">("calendar");
@@ -45,7 +63,7 @@ function CalendarComponent() {
         setLoadingListings(true);
         const res = await HostService.getMyListings(0, 100);
         if (res && res.data) {
-          const content = res.data.content || res.data || [];
+          const content = normalizePage<HostListing>(res, 100).content;
           setListings(content);
           
           // Check query param
@@ -56,8 +74,8 @@ function CalendarComponent() {
             setSelectedListingId(content[0].id);
           }
         }
-      } catch (err) {
-        console.error("Failed to load listings", err);
+      } catch {
+        setFeedback({ type: "error", message: "Không thể tải danh sách dịch vụ." });
       } finally {
         setLoadingListings(false);
       }
@@ -66,7 +84,7 @@ function CalendarComponent() {
   }, [searchParams]);
 
   // 2. Fetch Calendar data once listing/date changes
-  async function fetchCalendarAndStats() {
+  const fetchCalendarAndStats = useCallback(async () => {
     if (!selectedListingId) return;
     try {
       setLoadingCalendar(true);
@@ -87,19 +105,19 @@ function CalendarComponent() {
         } else {
           setOccupancyRate(null);
         }
-      } catch (_) {
+      } catch {
         setOccupancyRate(null);
       }
-    } catch (err) {
-      console.error("Failed to fetch calendar", err);
+    } catch {
+      setFeedback({ type: "error", message: "Không thể tải lịch nhận khách." });
     } finally {
       setLoadingCalendar(false);
     }
-  }
+  }, [currentMonth, currentYear, selectedListingId]);
 
   useEffect(() => {
     fetchCalendarAndStats();
-  }, [selectedListingId, currentDate]);
+  }, [fetchCalendarAndStats]);
 
   const selectedListing = listings.find((l) => l.id === selectedListingId);
   const category = selectedListing?.category || "STAY";
@@ -132,17 +150,16 @@ function CalendarComponent() {
 
       if (isAlreadyInitialized) {
         await HostService.updateInventoryConfig(selectedListingId, configPayload);
-        alert("Cập nhật cấu hình tồn kho thành công!");
+        setFeedback({ type: "success", message: "Cập nhật cấu hình khả dụng thành công." });
       } else {
         await HostService.initializeInventory(selectedListingId, configPayload);
-        alert("Khởi tạo cấu hình tồn kho thành công! Hệ thống đã tự động sinh lịch 90 ngày.");
+        setFeedback({ type: "success", message: "Khởi tạo cấu hình khả dụng thành công. Hệ thống đã tự động sinh lịch 90 ngày." });
       }
       
       setActiveTab("calendar");
       fetchCalendarAndStats();
-    } catch (err: any) {
-      console.error("Initialize inventory failed:", err);
-      alert(`Khởi tạo thất bại: ${err?.message || "Lỗi không xác định"}`);
+    } catch (err: unknown) {
+      setFeedback({ type: "error", message: `Khởi tạo thất bại: ${getErrorMessage(err)}` });
     } finally {
       setInitializing(false);
     }
@@ -157,67 +174,16 @@ function CalendarComponent() {
   };
 
   // Day Click handler
-  const handleDayClick = (item: any) => {
+  const handleDayClick = (item: CalendarDay) => {
     if (!selectedListingId) return;
     router.push(`/enterprise/calendar/${selectedListingId}/${item.dateStr}`);
-  };
-
-  // Block/unblock date
-  const handleToggleBlock = async (dateStr: string, currentStatus: string) => {
-    if (!selectedListingId) return;
-    const action = currentStatus === "BLOCKED" ? "UNBLOCK" : "BLOCK";
-    const actionLabel = action === "BLOCK" ? "Khóa ngày" : "Mở ngày";
-
-    try {
-      setSubmittingBlock(dateStr);
-      await HostService.blockCalendar(selectedListingId, {
-        startDate: dateStr,
-        endDate: dateStr,
-        timeSlot: "ALL_DAY",
-        action: action
-      });
-      alert(`${actionLabel} thành công!`);
-      fetchCalendarAndStats();
-    } catch (err: any) {
-      console.error("Failed to update day availability", err);
-      alert(`Thao tác thất bại: ${err?.message || "Lỗi không xác định"}`);
-    } finally {
-      setSubmittingBlock(null);
-    }
-  };
-
-  // Save specific available quantity
-  const handleSaveQuantity = async (dateStr: string, quantity: number) => {
-    if (!selectedListingId) return;
-    if (isNaN(quantity) || quantity < 0) {
-      alert("Vui lòng nhập số lượng hợp lệ!");
-      return;
-    }
-
-    try {
-      setSubmittingQuantity(true);
-      await HostService.blockCalendar(selectedListingId, {
-        startDate: dateStr,
-        endDate: dateStr,
-        timeSlot: "ALL_DAY",
-        action: "UPDATE_QUANTITY",
-        availableQuantity: quantity
-      });
-      alert(`Đã cập nhật số chỗ trống ngày ${dateStr} thành ${quantity}!`);
-      fetchCalendarAndStats();
-    } catch (err: any) {
-      console.error("Failed to update quantity", err);
-      alert(`Thao tác thất bại: ${err?.message || "Lỗi không xác định"}`);
-    } finally {
-      setSubmittingQuantity(false);
-    }
   };
 
   // Build Calendar grid
   const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
   const firstDayIndex = new Date(currentYear, currentMonth - 1, 1).getDay(); // Sunday=0, Monday=1...
 
-  const daysGrid = [];
+  const daysGrid: CalendarDay[] = [];
   // Padding for previous month
   for (let i = 0; i < firstDayIndex; i++) {
     daysGrid.push({ isPadding: true, day: 0, dateStr: "" });
@@ -229,7 +195,7 @@ function CalendarComponent() {
     const dateStr = `${currentYear}-${formattedMonth}-${formattedDay}`;
     
     // Find calendar info for this date from API response
-    const dayInfo = calendarData.find((item: any) => item.date === dateStr);
+    const dayInfo = calendarData.find((item) => item.date === dateStr);
     daysGrid.push({
       isPadding: false,
       day: d,
@@ -250,8 +216,8 @@ function CalendarComponent() {
       {/* Title & Dropdown Listing selection */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-lg font-bold text-gray-900">Lịch & Tồn kho</h2>
-          <p className="text-xs text-gray-600">Đóng mở ngày nhận phòng cho từng dịch vụ của bạn.</p>
+          <h2 className="text-lg font-bold text-gray-900">Lịch nhận khách</h2>
+          <p className="text-xs text-gray-600">Theo dõi ngày mở bán, ngày khóa và lượng đặt theo từng dịch vụ.</p>
         </div>
 
         {/* Dropdown Select Listing */}
@@ -278,6 +244,16 @@ function CalendarComponent() {
         </div>
       </div>
 
+      {feedback && (
+        <div className={`rounded-2xl border px-4 py-3 text-xs font-semibold ${
+          feedback.type === "success"
+            ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+            : "border-red-200 bg-red-50 text-red-700"
+        }`}>
+          {feedback.message}
+        </div>
+      )}
+
       {/* Tab Switcher */}
       {selectedListingId && (
         <div className="flex gap-4 border-b border-gray-200 pb-0.5">
@@ -289,17 +265,13 @@ function CalendarComponent() {
                 : "text-gray-600 hover:text-gray-900"
             }`}
           >
-            Xem lịch trạng thái
+            Lịch trạng thái
           </button>
           <button
-            onClick={() => setActiveTab("config")}
-            className={`pb-2.5 text-xs font-bold transition-all relative ${
-              activeTab === "config"
-                ? "text-app-primary border-b-2 border-app-primary"
-                : "text-gray-600 hover:text-gray-900"
-            }`}
+            onClick={() => router.push(`/enterprise/availability?listingId=${selectedListingId}`)}
+            className="pb-2.5 text-xs font-bold text-gray-600 transition-all hover:text-gray-900"
           >
-            Cấu hình kho (Thiết lập ban đầu)
+            Sang cấu hình khả dụng
           </button>
         </div>
       )}
@@ -311,7 +283,7 @@ function CalendarComponent() {
           <form onSubmit={handleInitialize} className="bg-white border border-gray-200 rounded-2xl p-6 max-w-xl space-y-6">
             <div>
               <h3 className="text-sm font-bold text-gray-900 mb-1">
-                Thiết lập tồn kho cho: <span className="text-app-primary">{selectedListing?.title}</span>
+                Thiết lập khả dụng cho: <span className="text-app-primary">{selectedListing?.title}</span>
               </h3>
               <p className="text-2xs text-gray-600 uppercase tracking-wider">
                 Loại hình: {category === "STAY" ? "Lưu trú (STAY)" : category === "EXP" ? "Trải nghiệm (EXP)" : "Dịch vụ (SVC)"}
@@ -405,7 +377,7 @@ function CalendarComponent() {
                 disabled={initializing || (category !== "STAY" && slotsList.length === 0)}
                 className="bg-app-primary hover:bg-app-primary/95 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-app-primary/20 disabled:opacity-50 transition-all"
               >
-                {initializing ? "Đang xử lý khởi tạo..." : "Khởi tạo tồn kho & Mở lịch 90 ngày"}
+                {initializing ? "Đang xử lý khởi tạo..." : "Khởi tạo khả dụng & mở lịch 90 ngày"}
               </button>
             </div>
           </form>
@@ -470,14 +442,14 @@ function CalendarComponent() {
                   /* UN-INITIALIZED INVENTORY BANNER */
                   <div className="p-8 border border-dashed border-gray-300 rounded-2xl text-center space-y-3">
                     <p className="text-xs text-gray-600">
-                      Chỗ nghỉ/Dịch vụ này chưa được thiết lập tồn kho và lịch bán phòng.
+                      Dịch vụ này chưa được thiết lập khả dụng và lịch nhận khách.
                     </p>
                     <button
                       type="button"
-                      onClick={() => setActiveTab("config")}
+                      onClick={() => router.push(`/enterprise/availability?listingId=${selectedListingId}`)}
                       className="bg-app-primary hover:bg-app-primary/95 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all"
                     >
-                      Thiết lập cấu hình kho ngay
+                      Thiết lập khả dụng ngay
                     </button>
                   </div>
                 ) : (
@@ -488,7 +460,6 @@ function CalendarComponent() {
                       }
 
                       const isBlocked = item.status === "BLOCKED";
-                      const isUpdating = submittingBlock === item.dateStr;
                       const info = item.info;
 
                       return (
@@ -496,7 +467,7 @@ function CalendarComponent() {
                           key={item.dateStr}
                           type="button"
                           onClick={() => handleDayClick(item)}
-                          disabled={isUpdating}
+                          disabled={false}
                           className={`aspect-square rounded-xl border p-2 flex flex-col justify-between items-start transition-all relative group ${
                             isBlocked 
                               ? "bg-red-50/20 border-red-200 hover:border-red-500 text-red-600"
@@ -508,9 +479,9 @@ function CalendarComponent() {
                           {/* Occupancy Indicator */}
                           {info && (
                             <div className="text-[8px] font-semibold text-gray-700 mt-0.5 leading-tight">
-                              Còn: <span className={info.availableQuantity > 0 ? "text-emerald-600" : "text-gray-500"}>{info.availableQuantity}</span>/{info.totalQuantity}
-                              {info.confirmedQuantity > 0 && (
-                                <span className="text-app-accent block text-[7px] mt-0.5 font-bold">Đặt: {info.confirmedQuantity}</span>
+                              Còn: <span className={(info.availableQuantity ?? 0) > 0 ? "text-emerald-600" : "text-gray-500"}>{info.availableQuantity ?? 0}</span>/{info.totalQuantity ?? 0}
+                              {(info.confirmedQuantity ?? 0) > 0 && (
+                                <span className="text-app-accent block text-[7px] mt-0.5 font-bold">Đặt: {info.confirmedQuantity ?? 0}</span>
                               )}
                             </div>
                           )}
@@ -563,7 +534,7 @@ function CalendarComponent() {
                   <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
                     <div 
                       className="bg-app-accent h-2 rounded-full transition-all duration-500"
-                      style={{ width: `${Math.min(100, occupancyRate.occupancyRate)}%` }}
+                      style={{ width: `${Math.min(100, occupancyRate.occupancyRate ?? 0)}%` }}
                     />
                   </div>
 
@@ -594,7 +565,7 @@ function CalendarComponent() {
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-red-50/40 border border-red-200 rounded" />
-                  <span className="text-gray-700"><strong>BLOCKED (Khóa):</strong> Chủ nhà đã khóa ngày (sửa chữa, bận...). Khách không thể đặt.</span>
+                  <span className="text-gray-700"><strong>BLOCKED (Khóa):</strong> Doanh nghiệp đã khóa ngày (bảo trì, kín lịch...). Khách không thể đặt.</span>
                 </div>
               </div>
             </div>

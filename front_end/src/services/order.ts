@@ -12,16 +12,16 @@ export interface BookNowPayload {
     quantity: number;
     unitPrice?: number;
   };
-  fullName?: string;
-  email?: string;
-  phone?: string;
+  fullName: string;
+  email: string;
+  phone: string;
 }
 
 const OrderService = {
   bookNow: async (payload: BookNowPayload) => {
     return await Api.post("/v1/orders/book-now", payload);
   },
-  checkoutCart: async (payload: { itemIds: string[]; customerInfo: { fullName?: string; email?: string; phone?: string; } }) => {
+  checkoutCart: async (payload: { itemIds: string[]; customerInfo: { fullName: string; email: string; phone: string; } }) => {
     return await Api.post("/v1/orders/checkout-cart", payload);
   },
   getOrder: async (orderId: string) => {

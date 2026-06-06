@@ -76,12 +76,12 @@ export function ListingsScreen() {
     <div className="min-w-0 space-y-6 animate-smooth-appear">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <h2 className="text-xl font-semibold text-slate-800">Quản lý dịch vụ (Listings)</h2>
-          <p className="mt-1 text-xs text-slate-400">
+          <h2 className="text-xl font-semibold text-slate-900">Quản lý dịch vụ (Listings)</h2>
+          <p className="mt-1 text-xs text-slate-500">
             Phân trang, tìm kiếm từ Catalog API và kiểm duyệt trạng thái hiển thị.
           </p>
         </div>
-        <span className="rounded-full border border-slate-100 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-400">
+        <span className="rounded-full border border-slate-100 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-500">
           {totalElements} dịch vụ
         </span>
       </div>
@@ -90,7 +90,7 @@ export function ListingsScreen() {
         <div
           className={`rounded-2xl border px-4 py-3 text-xs font-semibold ${
             feedback.type === "success"
-              ? "border-slate-200 bg-white text-slate-800"
+              ? "border-slate-200 bg-white text-slate-900"
               : "border-slate-200 bg-slate-50 text-slate-700"
           }`}
         >
@@ -107,8 +107,8 @@ export function ListingsScreen() {
               onClick={() => setStatusFilter(tab.value)}
               className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
                 statusFilter === tab.value
-                  ? "bg-white text-slate-800 shadow-sm"
-                  : "text-slate-500 hover:text-slate-800"
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "text-slate-500 hover:text-slate-900"
               }`}
             >
               {tab.label}
@@ -130,13 +130,13 @@ export function ListingsScreen() {
           <table className="w-full min-w-[1100px] border-collapse text-left text-xs">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50/50">
-                <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Dịch vụ</th>
-                <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Danh mục</th>
-                <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Giá cơ bản</th>
-                <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Tỉnh thành</th>
-                <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Đánh giá</th>
-                <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Trạng thái</th>
-                <th className="px-5 py-3 pr-6 text-right text-[10px] font-bold tracking-wider text-slate-400 uppercase">Thao tác</th>
+                <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Dịch vụ</th>
+                <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Danh mục</th>
+                <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Giá cơ bản</th>
+                <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Tỉnh thành</th>
+                <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Đánh giá</th>
+                <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Trạng thái</th>
+                <th className="px-5 py-3 pr-6 text-right text-[10px] font-bold tracking-wider text-slate-500 uppercase">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -150,38 +150,38 @@ export function ListingsScreen() {
                 ))
               ) : listings.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-5 py-8 text-center font-medium text-slate-400">
+                  <td colSpan={7} className="px-5 py-8 text-center font-medium text-slate-500">
                     Không tìm thấy dịch vụ nào.
                   </td>
                 </tr>
               ) : (
                 listings.map((item) => (
                   <tr key={item.id} className="transition-colors hover:bg-slate-50/60">
-                    <td className="px-5 py-3.5 font-medium text-slate-800">
+                    <td className="px-5 py-3.5 font-medium text-slate-900">
                       <div className="flex min-w-0 items-center gap-3">
                         <ListingThumb item={item} />
                         <div className="min-w-0">
-                          <div className="line-clamp-1 max-w-[260px] font-semibold text-slate-800">{item.title || "—"}</div>
-                          <div className="mt-0.5 max-w-[240px] truncate text-[10px] text-slate-400">ID: {item.id}</div>
-                          <div className="mt-0.5 max-w-[180px] truncate text-[10px] text-slate-400">Host: {item.hostId || "—"}</div>
+                          <div className="line-clamp-1 max-w-[260px] font-semibold text-slate-900">{item.title || "—"}</div>
+                          <div className="mt-0.5 max-w-[240px] truncate text-[10px] text-slate-500">ID: {item.id}</div>
+                          <div className="mt-0.5 max-w-[180px] truncate text-[10px] text-slate-500">Host: {item.hostId || "—"}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-5 py-3.5 text-slate-500">
                       <div className="font-medium text-slate-700">{item.category || "—"}</div>
-                      <div className="mt-0.5 text-[10px] text-slate-450">{item.subCategory || "—"}</div>
+                      <div className="mt-0.5 text-[10px] text-slate-500">{item.subCategory || "—"}</div>
                     </td>
-                    <td className="px-5 py-3.5 font-semibold text-slate-800 tabular-nums">
-                      {formatCurrency(item.basePrice)} <span className="text-[10px] font-normal text-slate-450">/ {item.priceUnit || "—"}</span>
+                    <td className="px-5 py-3.5 font-semibold text-slate-900 tabular-nums">
+                      {formatCurrency(item.basePrice)} <span className="text-[10px] font-normal text-slate-500">/ {item.priceUnit || "—"}</span>
                     </td>
-                    <td className="px-5 py-3.5 font-medium text-slate-650">{item.province || "—"}</td>
-                    <td className="px-5 py-3.5 text-slate-650">
+                    <td className="px-5 py-3.5 font-medium text-slate-600">{item.province || "—"}</td>
+                    <td className="px-5 py-3.5 text-slate-600">
                       {(item.totalReviews ?? 0) > 0 ? (
                         <span className="font-semibold text-slate-700 tabular-nums">
                           {item.averageRating} ({item.totalReviews})
                         </span>
                       ) : (
-                        <span className="text-slate-400">Chưa đánh giá</span>
+                        <span className="text-slate-500">Chưa đánh giá</span>
                       )}
                     </td>
                     <td className="px-5 py-3.5">
@@ -208,7 +208,7 @@ export function ListingsScreen() {
                           <button
                             type="button"
                             onClick={() => handleUpdateStatus(item.id, "ACTIVE")}
-                            className="rounded-full bg-slate-900 px-2.5 py-1 text-[11px] font-medium text-white transition-colors hover:bg-slate-950"
+                            className="rounded-full bg-sky-500 px-2.5 py-1 text-[11px] font-medium text-white transition-colors hover:bg-sky-600"
                           >
                             Duyệt
                           </button>
@@ -217,7 +217,7 @@ export function ListingsScreen() {
                           <button
                             type="button"
                             onClick={() => handleUpdateStatus(item.id, "ACTIVE")}
-                            className="rounded-full bg-slate-900 px-2.5 py-1 text-[11px] font-medium text-white transition-colors hover:bg-slate-950"
+                            className="rounded-full bg-sky-500 px-2.5 py-1 text-[11px] font-medium text-white transition-colors hover:bg-sky-600"
                           >
                             Hiện
                           </button>
@@ -260,17 +260,17 @@ export function ListingsScreen() {
       </div>
 
       {selectedListing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/20 p-4 backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-sky-500/20 p-4 backdrop-blur-sm animate-fade-in">
           <div className="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-[20px] border border-slate-100 bg-white text-xs text-slate-600 shadow-xl animate-scale-up">
-            <div className="flex items-center justify-between border-b border-slate-50 bg-slate-50/50 px-5 py-4">
+            <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-5 py-4">
               <div className="min-w-0">
-                <h3 className="line-clamp-2 text-sm font-semibold text-slate-800">{selectedListing.title || "Chi tiết dịch vụ"}</h3>
-                <p className="mt-0.5 break-all text-[10px] text-slate-400">ID: {selectedListing.id}</p>
+                <h3 className="line-clamp-2 text-sm font-semibold text-slate-900">{selectedListing.title || "Chi tiết dịch vụ"}</h3>
+                <p className="mt-0.5 break-all text-[10px] text-slate-500">ID: {selectedListing.id}</p>
               </div>
               <button
                 type="button"
                 onClick={() => setSelectedListing(null)}
-                className="flex h-6 w-6 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-50 hover:text-slate-650"
+                className="flex h-6 w-6 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-600"
               >
                 x
               </button>
@@ -292,31 +292,31 @@ export function ListingsScreen() {
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <h4 className="mb-0.5 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Danh mục</h4>
-                  <p className="font-semibold text-slate-800">{selectedListing.category || "—"} / {selectedListing.subCategory || "—"}</p>
+                  <h4 className="mb-0.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Danh mục</h4>
+                  <p className="font-semibold text-slate-900">{selectedListing.category || "—"} / {selectedListing.subCategory || "—"}</p>
                 </div>
                 <div>
-                  <h4 className="mb-0.5 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Giá bán</h4>
-                  <p className="font-semibold text-slate-800">{formatCurrency(selectedListing.basePrice)} / {selectedListing.priceUnit || "—"}</p>
+                  <h4 className="mb-0.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Giá bán</h4>
+                  <p className="font-semibold text-slate-900">{formatCurrency(selectedListing.basePrice)} / {selectedListing.priceUnit || "—"}</p>
                 </div>
                 <div>
-                  <h4 className="mb-0.5 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Vị trí</h4>
-                  <p className="font-semibold text-slate-800">{selectedListing.province || "—"}</p>
+                  <h4 className="mb-0.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Vị trí</h4>
+                  <p className="font-semibold text-slate-900">{selectedListing.province || "—"}</p>
                 </div>
                 <div>
-                  <h4 className="mb-0.5 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Tọa độ</h4>
-                  <p className="font-semibold text-slate-800">{selectedListing.latitude ?? "—"}, {selectedListing.longitude ?? "—"}</p>
+                  <h4 className="mb-0.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Tọa độ</h4>
+                  <p className="font-semibold text-slate-900">{selectedListing.latitude ?? "—"}, {selectedListing.longitude ?? "—"}</p>
                 </div>
                 <div className="sm:col-span-2">
-                  <h4 className="mb-0.5 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Host ID</h4>
+                  <h4 className="mb-0.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Host ID</h4>
                   <p className="select-all rounded-lg border border-slate-100 bg-slate-50 px-2.5 py-1 font-mono text-slate-700">{selectedListing.hostId || "—"}</p>
                 </div>
               </div>
 
               {selectedListing.description && (
                 <div>
-                  <h4 className="mb-1 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Mô tả dịch vụ</h4>
-                  <p className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 leading-relaxed whitespace-pre-line text-slate-650">
+                  <h4 className="mb-1 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Mô tả dịch vụ</h4>
+                  <p className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 leading-relaxed whitespace-pre-line text-slate-600">
                     {selectedListing.description}
                   </p>
                 </div>
@@ -324,7 +324,7 @@ export function ListingsScreen() {
 
               {galleryUrls.length > 0 && (
                 <div>
-                  <h4 className="mb-2 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Bộ sưu tập ảnh</h4>
+                  <h4 className="mb-2 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Bộ sưu tập ảnh</h4>
                   <div className="flex gap-2 overflow-x-auto pb-1">
                     {galleryUrls.map((url, index) => (
                       <Image
@@ -343,12 +343,12 @@ export function ListingsScreen() {
 
               {attributes.length > 0 && (
                 <div>
-                  <h4 className="mb-2 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Thuộc tính dịch vụ</h4>
+                  <h4 className="mb-2 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Thuộc tính dịch vụ</h4>
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     {attributes.map(([key, value]) => (
                       <div key={key} className="flex justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50/30 p-2">
-                        <span className="text-slate-400 capitalize">{key.replace(/([A-Z])/g, " $1")}</span>
-                        <span className="text-right font-semibold text-slate-800">{formatAttributeValue(value)}</span>
+                        <span className="text-slate-500 capitalize">{key.replace(/([A-Z])/g, " $1")}</span>
+                        <span className="text-right font-semibold text-slate-900">{formatAttributeValue(value)}</span>
                       </div>
                     ))}
                   </div>
@@ -369,7 +369,7 @@ export function ListingsScreen() {
                 <button
                   type="button"
                   onClick={() => handleUpdateStatus(selectedListing.id, "ACTIVE")}
-                  className="rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-slate-950"
+                  className="rounded-full bg-sky-500 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-sky-600"
                 >
                   Duyệt dịch vụ
                 </button>
@@ -378,7 +378,7 @@ export function ListingsScreen() {
                 <button
                   type="button"
                   onClick={() => handleUpdateStatus(selectedListing.id, "HIDDEN")}
-                  className="rounded-full bg-slate-800 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-slate-900"
+                  className="rounded-full bg-sky-500 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-sky-600"
                 >
                   Tạm ẩn dịch vụ
                 </button>
@@ -387,7 +387,7 @@ export function ListingsScreen() {
                 <button
                   type="button"
                   onClick={() => handleUpdateStatus(selectedListing.id, "ACTIVE")}
-                  className="rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-slate-950"
+                  className="rounded-full bg-sky-500 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-sky-600"
                 >
                   Kích hoạt dịch vụ
                 </button>

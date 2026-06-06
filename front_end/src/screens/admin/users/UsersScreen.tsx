@@ -73,12 +73,12 @@ export function UsersScreen() {
     <div className="min-w-0 space-y-6">
       <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <h2 className="text-lg font-semibold tracking-tight text-slate-800">Quản lý Người dùng</h2>
-          <p className="mt-0.5 text-xs font-medium text-slate-400">
+          <h2 className="text-lg font-semibold tracking-tight text-slate-900">Quản lý Người dùng</h2>
+          <p className="mt-0.5 text-xs font-medium text-slate-500">
             Phân trang và tìm kiếm trực tiếp từ Identity API.
           </p>
         </div>
-        <span className="rounded-full border border-slate-100 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-400">
+        <span className="rounded-full border border-slate-100 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-500">
           {totalElements} tài khoản
         </span>
       </div>
@@ -87,7 +87,7 @@ export function UsersScreen() {
         <div
           className={`rounded-2xl border px-4 py-3 text-xs font-semibold ${
             feedback.type === "success"
-              ? "border-slate-200 bg-white text-slate-800"
+              ? "border-slate-200 bg-white text-slate-900"
               : "border-slate-200 bg-slate-50 text-slate-700"
           }`}
         >
@@ -101,9 +101,9 @@ export function UsersScreen() {
           placeholder="Tìm username, email hoặc họ tên..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded-xl border border-slate-100 bg-white py-2 pr-4 pl-9 text-xs font-semibold text-slate-700 shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all focus:border-slate-300 focus:ring-2 focus:ring-slate-900/5 focus:outline-none"
+          className="w-full rounded-xl border border-slate-100 bg-white py-2 pr-4 pl-9 text-xs font-semibold text-slate-700 shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all focus:border-slate-300 focus:ring-2 focus:ring-sky-500/15 focus:outline-none"
         />
-        <svg className="absolute top-2.5 left-3.5 h-3.5 w-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="absolute top-2.5 left-3.5 h-3.5 w-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
       </div>
@@ -113,13 +113,13 @@ export function UsersScreen() {
           <table className="w-full min-w-[900px] text-sm">
             <thead>
               <tr>
-                <th className="border-b border-slate-100 bg-slate-50/50 px-5 py-3 text-left text-[10px] font-bold tracking-wider text-slate-400 uppercase">Người dùng</th>
-                <th className="border-b border-slate-100 bg-slate-50/50 px-5 py-3 text-left text-[10px] font-bold tracking-wider text-slate-400 uppercase">Vai trò</th>
-                <th className="border-b border-slate-100 bg-slate-50/50 px-5 py-3 text-left text-[10px] font-bold tracking-wider text-slate-400 uppercase">Trạng thái</th>
-                <th className="border-b border-slate-100 bg-slate-50/50 px-5 py-3 text-right text-[10px] font-bold tracking-wider text-slate-400 uppercase">Thao tác</th>
+                <th className="border-b border-slate-100 bg-slate-50/50 px-5 py-3 text-left text-[10px] font-bold tracking-wider text-slate-500 uppercase">Người dùng</th>
+                <th className="border-b border-slate-100 bg-slate-50/50 px-5 py-3 text-left text-[10px] font-bold tracking-wider text-slate-500 uppercase">Vai trò</th>
+                <th className="border-b border-slate-100 bg-slate-50/50 px-5 py-3 text-left text-[10px] font-bold tracking-wider text-slate-500 uppercase">Trạng thái</th>
+                <th className="border-b border-slate-100 bg-slate-50/50 px-5 py-3 text-right text-[10px] font-bold tracking-wider text-slate-500 uppercase">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
+            <tbody className="divide-y divide-sky-50">
               {loading ? (
                 Array.from({ length: 6 }).map((_, index) => (
                   <tr key={index}>
@@ -130,7 +130,7 @@ export function UsersScreen() {
                 ))
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-5 py-8 text-center text-xs font-medium text-slate-400">
+                  <td colSpan={4} className="px-5 py-8 text-center text-xs font-medium text-slate-500">
                     Không tìm thấy tài khoản nào trong trang hiện tại.
                   </td>
                 </tr>
@@ -141,10 +141,10 @@ export function UsersScreen() {
                       <div className="flex min-w-0 items-center gap-3">
                         <UserAvatar user={user} />
                         <div className="min-w-0">
-                          <div className="truncate text-[13.5px] font-semibold text-slate-800">{user.username || "—"}</div>
-                          <div className="mt-0.5 max-w-[260px] truncate text-xs font-medium text-slate-455">{user.email || "—"}</div>
+                          <div className="truncate text-[13.5px] font-semibold text-slate-900">{user.username || "—"}</div>
+                          <div className="mt-0.5 max-w-[260px] truncate text-xs font-medium text-slate-500">{user.email || "—"}</div>
                           {user.userProfile?.fullName && (
-                            <div className="mt-0.5 max-w-[260px] truncate text-[10px] font-medium text-slate-400">{user.userProfile.fullName}</div>
+                            <div className="mt-0.5 max-w-[260px] truncate text-[10px] font-medium text-slate-500">{user.userProfile.fullName}</div>
                           )}
                         </div>
                       </div>
@@ -197,7 +197,7 @@ export function UsersScreen() {
                         <button
                           type="button"
                           onClick={() => setDetailModal({ open: true, user })}
-                          className="rounded-lg border border-slate-200/70 bg-white px-2.5 py-1.5 text-[11px] font-bold text-slate-650 transition-colors hover:bg-slate-50"
+                          className="rounded-lg border border-slate-200/70 bg-white px-2.5 py-1.5 text-[11px] font-bold text-slate-600 transition-colors hover:bg-slate-50"
                         >
                           Chi tiết
                         </button>
@@ -248,13 +248,13 @@ export function UsersScreen() {
       <Dialog open={roleModal.open} onOpenChange={(open) => setRoleModal({ open, user: open ? roleModal.user : null })}>
         <DialogContent className="rounded-[20px] border border-slate-100 bg-white p-0 sm:max-w-md">
           <DialogHeader className="border-b border-slate-100 p-5">
-            <DialogTitle className="text-base font-semibold text-slate-800">Nâng role tài khoản</DialogTitle>
-            <p className="break-words text-xs font-medium text-slate-400">
+            <DialogTitle className="text-base font-semibold text-slate-900">Nâng role tài khoản</DialogTitle>
+            <p className="break-words text-xs font-medium text-slate-500">
               Chọn role cần thêm cho {roleModal.user?.username ?? roleModal.user?.email ?? "người dùng"}.
             </p>
           </DialogHeader>
           <div className="space-y-2 p-5">
-            <label className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">Role mới</label>
+            <label className="text-[10px] font-bold tracking-wider text-slate-500 uppercase">Role mới</label>
             <select
               value={selectedRole}
               onChange={(event) => setSelectedRole(event.target.value)}
@@ -281,7 +281,7 @@ export function UsersScreen() {
               type="button"
               onClick={handleUpgradeRole}
               disabled={actionLoading}
-              className="rounded-full bg-slate-900 text-xs text-white hover:bg-slate-950"
+              className="rounded-full bg-sky-500 text-xs text-white hover:bg-sky-600"
             >
               {actionLoading ? "Đang xử lý..." : "Thêm role"}
             </Button>
@@ -292,48 +292,48 @@ export function UsersScreen() {
       <Dialog open={detailModal.open} onOpenChange={(open) => setDetailModal({ open, user: open ? detailModal.user : null })}>
         <DialogContent className="max-h-[90vh] overflow-y-auto rounded-[20px] border border-slate-100 bg-white p-0 sm:max-w-2xl">
           <DialogHeader className="border-b border-slate-100 p-5">
-            <DialogTitle className="text-base font-semibold text-slate-800">Chi tiết tài khoản</DialogTitle>
+            <DialogTitle className="text-base font-semibold text-slate-900">Chi tiết tài khoản</DialogTitle>
           </DialogHeader>
           {detailModal.user && (
             <div className="space-y-6 p-5 text-xs font-medium sm:p-6">
               <div className="flex min-w-0 items-center gap-4">
                 <UserAvatar user={detailModal.user} />
                 <div className="min-w-0">
-                  <h4 className="truncate text-base font-semibold leading-none text-slate-800">{detailModal.user.username}</h4>
-                  <p className="mt-1 break-all text-xs text-slate-400">{detailModal.user.email}</p>
+                  <h4 className="truncate text-base font-semibold leading-none text-slate-900">{detailModal.user.username}</h4>
+                  <p className="mt-1 break-all text-xs text-slate-500">{detailModal.user.email}</p>
                 </div>
               </div>
 
               <div>
-                <h4 className="mb-3 border-b border-slate-50 pb-1 text-xs font-semibold tracking-wider text-slate-400 uppercase">Thông tin cá nhân</h4>
+                <h4 className="mb-3 border-b border-slate-100 pb-1 text-xs font-semibold tracking-wider text-slate-500 uppercase">Thông tin cá nhân</h4>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <div><span className="text-slate-400">Họ tên:</span> <span className="break-words text-slate-700">{detailModal.user.userProfile?.fullName || "—"}</span></div>
-                  <div><span className="text-slate-400">SĐT:</span> <span className="break-all text-slate-700">{detailModal.user.userProfile?.phoneNumber || "—"}</span></div>
-                  <div><span className="text-slate-400">Ngày sinh:</span> <span className="break-all text-slate-700">{detailModal.user.userProfile?.dateOfBirth || "—"}</span></div>
-                  <div><span className="text-slate-400">Provider:</span> <span className="break-words text-slate-700">{detailModal.user.provider || "Local"}</span></div>
+                  <div><span className="text-slate-500">Họ tên:</span> <span className="break-words text-slate-700">{detailModal.user.userProfile?.fullName || "—"}</span></div>
+                  <div><span className="text-slate-500">SĐT:</span> <span className="break-all text-slate-700">{detailModal.user.userProfile?.phoneNumber || "—"}</span></div>
+                  <div><span className="text-slate-500">Ngày sinh:</span> <span className="break-all text-slate-700">{detailModal.user.userProfile?.dateOfBirth || "—"}</span></div>
+                  <div><span className="text-slate-500">Provider:</span> <span className="break-words text-slate-700">{detailModal.user.provider || "Local"}</span></div>
                 </div>
               </div>
 
               {detailModal.user.hostProfile && (
                 <div>
-                  <h4 className="mb-3 border-b border-slate-50 pb-1 text-xs font-semibold tracking-wider text-slate-400 uppercase">Hồ sơ Host</h4>
+                  <h4 className="mb-3 border-b border-slate-100 pb-1 text-xs font-semibold tracking-wider text-slate-500 uppercase">Hồ sơ Host</h4>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <div><span className="text-slate-400">CCCD/Passport:</span> <span className="break-all text-slate-700">{detailModal.user.hostProfile.cccdNumber || "—"}</span></div>
-                    <div><span className="text-slate-400">Ngân hàng:</span> <span className="break-words text-slate-700">{detailModal.user.hostProfile.bankName || "—"}</span></div>
-                    <div><span className="text-slate-400">Số tài khoản:</span> <span className="break-all text-slate-700">{detailModal.user.hostProfile.bankAccount || "—"}</span></div>
-                    <div><span className="text-slate-400">Trạng thái:</span> <span className="break-words text-slate-700">{detailModal.user.hostProfile.approvalStatus || "—"}</span></div>
+                    <div><span className="text-slate-500">CCCD/Passport:</span> <span className="break-all text-slate-700">{detailModal.user.hostProfile.cccdNumber || "—"}</span></div>
+                    <div><span className="text-slate-500">Ngân hàng:</span> <span className="break-words text-slate-700">{detailModal.user.hostProfile.bankName || "—"}</span></div>
+                    <div><span className="text-slate-500">Số tài khoản:</span> <span className="break-all text-slate-700">{detailModal.user.hostProfile.bankAccount || "—"}</span></div>
+                    <div><span className="text-slate-500">Trạng thái:</span> <span className="break-words text-slate-700">{detailModal.user.hostProfile.approvalStatus || "—"}</span></div>
                   </div>
                 </div>
               )}
 
               {detailModal.user.enterpriseProfile && (
                 <div>
-                  <h4 className="mb-3 border-b border-slate-50 pb-1 text-xs font-semibold tracking-wider text-slate-400 uppercase">Hồ sơ Enterprise</h4>
+                  <h4 className="mb-3 border-b border-slate-100 pb-1 text-xs font-semibold tracking-wider text-slate-500 uppercase">Hồ sơ Enterprise</h4>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <div><span className="text-slate-400">Công ty:</span> <span className="break-words text-slate-700">{detailModal.user.enterpriseProfile.companyName || "—"}</span></div>
-                    <div><span className="text-slate-400">MST:</span> <span className="break-all text-slate-700">{detailModal.user.enterpriseProfile.taxCode || "—"}</span></div>
-                    <div><span className="text-slate-400">Đại diện:</span> <span className="break-words text-slate-700">{detailModal.user.enterpriseProfile.representativeName || "—"}</span></div>
-                    <div className="sm:col-span-2"><span className="text-slate-400">Địa chỉ:</span> <span className="break-words text-slate-700">{detailModal.user.enterpriseProfile.companyAddress || "—"}</span></div>
+                    <div><span className="text-slate-500">Công ty:</span> <span className="break-words text-slate-700">{detailModal.user.enterpriseProfile.companyName || "—"}</span></div>
+                    <div><span className="text-slate-500">MST:</span> <span className="break-all text-slate-700">{detailModal.user.enterpriseProfile.taxCode || "—"}</span></div>
+                    <div><span className="text-slate-500">Đại diện:</span> <span className="break-words text-slate-700">{detailModal.user.enterpriseProfile.representativeName || "—"}</span></div>
+                    <div className="sm:col-span-2"><span className="text-slate-500">Địa chỉ:</span> <span className="break-words text-slate-700">{detailModal.user.enterpriseProfile.companyAddress || "—"}</span></div>
                   </div>
                 </div>
               )}

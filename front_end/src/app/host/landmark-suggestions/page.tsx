@@ -5,6 +5,13 @@ import { MapPin, Send, Upload, X, Image as ImageIcon } from "lucide-react";
 import Image from "next/image";
 import { PROVINCES } from "@/shared/constants/provinces";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getErrorMessage } from "../_utils";
+
+type MediaUploadResponse = {
+  data?: {
+    url?: string | string[];
+  };
+};
 
 export default function HostLandmarkSuggestPage() {
   const [form, setForm] = useState({
@@ -62,14 +69,14 @@ export default function HostLandmarkSuggestPage() {
       let uploadedGalleryUrls: string[] = [];
 
       if (thumbnailFile) {
-        const thumbRes: any = await HostService.uploadSingleMedia(thumbnailFile, "landmarks");
-        uploadedThumbnailUrl = thumbRes?.data?.url || "";
+        const thumbRes = await HostService.uploadSingleMedia(thumbnailFile, "landmarks") as MediaUploadResponse;
+        uploadedThumbnailUrl = typeof thumbRes?.data?.url === "string" ? thumbRes.data.url : "";
       }
 
       if (galleryFiles.length > 0) {
-        const galleryRes: any = await HostService.uploadBulkMedia(galleryFiles, "landmarks");
+        const galleryRes = await HostService.uploadBulkMedia(galleryFiles, "landmarks") as MediaUploadResponse;
         // data.url is an array of strings in bulk upload
-        uploadedGalleryUrls = galleryRes?.data?.url || [];
+        uploadedGalleryUrls = Array.isArray(galleryRes?.data?.url) ? galleryRes.data.url : [];
       }
 
       await HostService.suggestLandmark({
@@ -94,9 +101,8 @@ export default function HostLandmarkSuggestPage() {
       setThumbnailPreview(null);
       setGalleryFiles([]);
       setGalleryPreviews([]);
-    } catch (err: any) {
-      console.error("Failed to suggest landmark", err);
-      setErrorMsg(err?.message || "Đã xảy ra lỗi khi gửi đề xuất địa danh. Vui lòng kiểm tra lại thông tin.");
+    } catch (err: unknown) {
+      setErrorMsg(getErrorMessage(err, "Đã xảy ra lỗi khi gửi đề xuất địa danh. Vui lòng kiểm tra lại thông tin."));
     } finally {
       setLoading(false);
     }
@@ -239,7 +245,7 @@ export default function HostLandmarkSuggestPage() {
                     onChange={handleThumbnailChange}
                   />
                   {thumbnailPreview ? (
-                    <img src={thumbnailPreview} alt="Thumbnail" className="object-cover w-full h-full" />
+                    <Image unoptimized src={thumbnailPreview} alt="Thumbnail" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 420px" />
                   ) : (
                     <div className="text-center p-4">
                       <Upload className="w-8 h-8 text-gray-500 mx-auto mb-2" />
@@ -265,7 +271,7 @@ export default function HostLandmarkSuggestPage() {
                 <div className="grid grid-cols-3 gap-3">
                   {galleryPreviews.map((preview, idx) => (
                     <div key={idx} className="relative aspect-square rounded-xl overflow-hidden group border border-gray-300">
-                      <img src={preview} alt={`Gallery ${idx}`} className="object-cover w-full h-full" />
+                      <Image unoptimized src={preview} alt={`Gallery ${idx}`} fill className="object-cover" sizes="(max-width: 768px) 33vw, 140px" />
                       <button
                         type="button"
                         onClick={() => removeGalleryImage(idx)}

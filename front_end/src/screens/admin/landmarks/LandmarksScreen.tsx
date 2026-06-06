@@ -88,8 +88,8 @@ export function LandmarksScreen() {
   return (
     <div className="min-w-0 space-y-6 animate-smooth-appear">
       <div className="min-w-0">
-        <h2 className="text-xl font-semibold text-slate-800">Quản lý địa danh</h2>
-        <p className="mt-1 text-xs text-slate-400">
+        <h2 className="text-xl font-semibold text-slate-900">Quản lý địa danh</h2>
+        <p className="mt-1 text-xs text-slate-500">
           Duyệt đề xuất bằng cách tạo địa danh chính thức trong bán kính mặc định 5km.
         </p>
       </div>
@@ -98,7 +98,7 @@ export function LandmarksScreen() {
         <div
           className={`rounded-2xl border px-4 py-3 text-xs font-semibold ${
             feedback.type === "success"
-              ? "border-slate-200 bg-white text-slate-800"
+              ? "border-slate-200 bg-white text-slate-900"
               : "border-slate-200 bg-slate-50 text-slate-700"
           }`}
         >
@@ -111,7 +111,7 @@ export function LandmarksScreen() {
           type="button"
           onClick={() => setTab("suggestions")}
           className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
-            tab === "suggestions" ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-800"
+            tab === "suggestions" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"
           }`}
         >
           Đề xuất {pendingCount > 0 && `(${pendingCount} chờ)`}
@@ -120,7 +120,7 @@ export function LandmarksScreen() {
           type="button"
           onClick={() => setTab("create")}
           className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
-            tab === "create" ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-800"
+            tab === "create" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"
           }`}
         >
           Thêm địa danh
@@ -129,7 +129,7 @@ export function LandmarksScreen() {
           type="button"
           onClick={() => setTab("showlandmarks")}
           className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
-            tab === "showlandmarks" ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-800"
+            tab === "showlandmarks" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"
           }`}
         >
           Địa danh chính thức
@@ -146,7 +146,7 @@ export function LandmarksScreen() {
                 onClick={() => setStatusTab(status)}
                 className={`rounded-full border px-3 py-1 text-[11px] font-semibold transition-all ${
                   statusTab === status
-                    ? "border-slate-200 bg-white text-slate-800 shadow-sm"
+                    ? "border-slate-200 bg-white text-slate-900 shadow-sm"
                     : "border-slate-100 bg-white text-slate-500 hover:bg-slate-50"
                 }`}
               >
@@ -160,13 +160,13 @@ export function LandmarksScreen() {
               <table className="w-full min-w-[960px] border-collapse text-left text-xs">
                 <thead>
                   <tr className="border-b border-slate-100 bg-slate-50/50">
-                    <th className="w-16 px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Ảnh</th>
-                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Tên</th>
-                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Mô tả</th>
-                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Tọa độ</th>
-                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Tỉnh/TP</th>
-                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Status</th>
-                    <th className="px-5 py-3 pr-6 text-right text-[10px] font-bold tracking-wider text-slate-400 uppercase">Thao tác</th>
+                    <th className="w-16 px-5 py-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Ảnh</th>
+                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Tên</th>
+                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Mô tả</th>
+                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Tọa độ</th>
+                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Tỉnh/TP</th>
+                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Status</th>
+                    <th className="px-5 py-3 pr-6 text-right text-[10px] font-bold tracking-wider text-slate-500 uppercase">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -180,7 +180,7 @@ export function LandmarksScreen() {
                     ))
                   ) : suggestions.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-5 py-8 text-center font-medium text-slate-400">
+                      <td colSpan={7} className="px-5 py-8 text-center font-medium text-slate-500">
                         Không có đề xuất nào.
                       </td>
                     </tr>
@@ -201,15 +201,15 @@ export function LandmarksScreen() {
                                 className="h-10 w-10 rounded-lg border border-slate-100 bg-slate-50 object-cover"
                               />
                             ) : (
-                              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-[9px] text-slate-400">N/A</div>
+                              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-[9px] text-slate-500">N/A</div>
                             )}
                           </td>
-                          <td className="px-5 py-3 font-semibold text-slate-800">{item.name || "—"}</td>
+                          <td className="px-5 py-3 font-semibold text-slate-900">{item.name || "—"}</td>
                           <td className="max-w-xs truncate px-5 py-3 text-slate-500">{item.description || "—"}</td>
                           <td className="px-5 py-3 font-mono text-[11px] text-slate-500">
                             {item.suggestedLatitude ?? "—"}, {item.suggestedLongitude ?? "—"}
                           </td>
-                          <td className="px-5 py-3 font-medium text-slate-650">{item.suggestedProvince || "—"}</td>
+                          <td className="px-5 py-3 font-medium text-slate-600">{item.suggestedProvince || "—"}</td>
                           <td className="px-5 py-3">
                             <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${statusBadge(item.status)}`}>
                               {item.status}
@@ -226,7 +226,7 @@ export function LandmarksScreen() {
                                 <button
                                   type="button"
                                   onClick={() => handleApproveSuggestion(item)}
-                                  className="rounded-full bg-slate-900 px-2.5 py-1 text-[11px] font-medium text-white transition-colors hover:bg-slate-950"
+                                  className="rounded-full bg-sky-500 px-2.5 py-1 text-[11px] font-medium text-white transition-colors hover:bg-sky-600"
                                 >
                                   Tạo từ đề xuất
                                 </button>
@@ -239,7 +239,7 @@ export function LandmarksScreen() {
                                 </button>
                               </div>
                             ) : (
-                              <span className="text-xs text-slate-400">—</span>
+                              <span className="text-xs text-slate-500">—</span>
                             )}
                           </td>
                         </tr>
@@ -265,7 +265,7 @@ export function LandmarksScreen() {
         <div className="max-w-5xl rounded-[20px] border border-slate-100 bg-white p-6 text-xs shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
           <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h3 className="text-sm font-semibold text-slate-800">Thêm địa danh mới</h3>
+              <h3 className="text-sm font-semibold text-slate-900">Thêm địa danh mới</h3>
               {form.resolvedSuggestionId && (
                 <p className="mt-1 text-[11px] font-medium text-slate-700">
                   Đang tạo từ đề xuất: {form.resolvedSuggestionId}
@@ -281,7 +281,7 @@ export function LandmarksScreen() {
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
               <div className="space-y-4 lg:col-span-2">
                 <div>
-                  <label className="mb-1.5 block text-[10px] font-bold tracking-wider text-slate-450 uppercase">
+                  <label className="mb-1.5 block text-[10px] font-bold tracking-wider text-slate-500 uppercase">
                     Tên địa danh <span className="text-slate-500">*</span>
                   </label>
                   <input
@@ -290,16 +290,16 @@ export function LandmarksScreen() {
                     value={form.name}
                     onChange={(event) => setForm({ ...form, name: event.target.value })}
                     placeholder="VD: Hồ Hoàn Kiếm"
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 focus:border-slate-350 focus:ring-1 focus:ring-slate-350 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 focus:border-sky-400 focus:ring-1 focus:ring-slate-300 focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-[10px] font-bold tracking-wider text-slate-450 uppercase">
+                  <label className="mb-1.5 block text-[10px] font-bold tracking-wider text-slate-500 uppercase">
                     Tỉnh/Thành phố <span className="text-slate-500">*</span>
                   </label>
                   <Select value={form.province} onValueChange={(value) => setForm({ ...form, province: value })}>
-                    <SelectTrigger className="h-8 w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-800 focus:ring-1 focus:ring-slate-350">
+                    <SelectTrigger className="h-8 w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 focus:ring-1 focus:ring-slate-300">
                       <SelectValue placeholder="-- Chọn tỉnh/thành phố --" />
                     </SelectTrigger>
                     <SelectContent position="popper" className="max-h-[250px] rounded-xl border border-slate-100 bg-white shadow-lg">
@@ -316,40 +316,40 @@ export function LandmarksScreen() {
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                   <div>
-                    <label className="mb-1.5 block text-[10px] font-bold tracking-wider text-slate-450 uppercase">Vĩ độ *</label>
+                    <label className="mb-1.5 block text-[10px] font-bold tracking-wider text-slate-500 uppercase">Vĩ độ *</label>
                     <input
                       type="number"
                       step="any"
                       required
                       value={form.latitude}
                       onChange={(event) => setForm({ ...form, latitude: event.target.value })}
-                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 focus:ring-1 focus:ring-slate-350 focus:outline-none"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 focus:ring-1 focus:ring-slate-300 focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="mb-1.5 block text-[10px] font-bold tracking-wider text-slate-450 uppercase">Kinh độ *</label>
+                    <label className="mb-1.5 block text-[10px] font-bold tracking-wider text-slate-500 uppercase">Kinh độ *</label>
                     <input
                       type="number"
                       step="any"
                       required
                       value={form.longitude}
                       onChange={(event) => setForm({ ...form, longitude: event.target.value })}
-                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 focus:ring-1 focus:ring-slate-350 focus:outline-none"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 focus:ring-1 focus:ring-slate-300 focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="mb-1.5 block text-[10px] font-bold tracking-wider text-slate-450 uppercase">Bán kính (m)</label>
+                    <label className="mb-1.5 block text-[10px] font-bold tracking-wider text-slate-500 uppercase">Bán kính (m)</label>
                     <input
                       type="number"
                       min={100}
                       value={form.radiusMeters}
                       onChange={(event) => setForm({ ...form, radiusMeters: event.target.value })}
-                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 focus:ring-1 focus:ring-slate-350 focus:outline-none"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 focus:ring-1 focus:ring-slate-300 focus:outline-none"
                     />
                   </div>
                 </div>
 
-                <label className="flex w-fit items-center gap-2 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-[11px] font-semibold text-slate-650">
+                <label className="flex w-fit items-center gap-2 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-[11px] font-semibold text-slate-600">
                   <input
                     type="checkbox"
                     checked={form.isFeatured}
@@ -359,25 +359,25 @@ export function LandmarksScreen() {
                 </label>
 
                 <div>
-                  <label className="mb-1.5 block text-[10px] font-bold tracking-wider text-slate-450 uppercase">Mô tả thêm</label>
+                  <label className="mb-1.5 block text-[10px] font-bold tracking-wider text-slate-500 uppercase">Mô tả thêm</label>
                   <textarea
                     value={form.description}
                     onChange={(event) => setForm({ ...form, description: event.target.value })}
                     placeholder="Mô tả đặc điểm nổi bật của địa danh này..."
                     rows={4}
-                    className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 focus:ring-1 focus:ring-slate-350 focus:outline-none"
+                    className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 focus:ring-1 focus:ring-slate-300 focus:outline-none"
                   />
                 </div>
               </div>
 
               <div className="space-y-5">
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold tracking-wider text-slate-450 uppercase">
+                  <label className="block text-[10px] font-bold tracking-wider text-slate-500 uppercase">
                     Ảnh đại diện
                   </label>
                   <div
                     onClick={() => thumbnailInputRef.current?.click()}
-                    className="group relative flex h-40 w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-xl border border-dashed border-slate-300 bg-slate-50/50 transition-colors hover:border-slate-400"
+                    className="group relative flex h-40 w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-xl border border-dashed border-slate-300 bg-slate-50/50 transition-colors hover:border-slate-1000"
                   >
                     <input
                       type="file"
@@ -402,28 +402,28 @@ export function LandmarksScreen() {
                             event.stopPropagation();
                             clearThumbnail();
                           }}
-                          className="absolute top-2 right-2 rounded-full bg-slate-900/60 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                          className="absolute top-2 right-2 rounded-full bg-sky-600/70 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
                         >
                           <X className="h-3 w-3" />
                         </button>
                       </>
                     ) : (
                       <div className="p-3 text-center">
-                        <Upload className="mx-auto mb-1.5 h-6 w-6 text-slate-450" />
-                        <p className="text-xs font-medium text-slate-650">Tải ảnh đại diện</p>
-                        <p className="mt-0.5 text-[9px] text-slate-400">PNG, JPG, WEBP</p>
+                        <Upload className="mx-auto mb-1.5 h-6 w-6 text-slate-500" />
+                        <p className="text-xs font-medium text-slate-600">Tải ảnh đại diện</p>
+                        <p className="mt-0.5 text-[9px] text-slate-500">PNG, JPG, WEBP</p>
                       </div>
                     )}
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold tracking-wider text-slate-450 uppercase">
+                  <label className="block text-[10px] font-bold tracking-wider text-slate-500 uppercase">
                     Thư viện ảnh
                   </label>
                   <div
                     onClick={() => galleryInputRef.current?.click()}
-                    className="flex h-24 w-full cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50/50 transition-colors hover:border-slate-400"
+                    className="flex h-24 w-full cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50/50 transition-colors hover:border-slate-1000"
                   >
                     <input
                       type="file"
@@ -433,8 +433,8 @@ export function LandmarksScreen() {
                       accept="image/*"
                       onChange={handleGalleryChange}
                     />
-                    <Upload className="mb-1.5 h-5 w-5 text-slate-450" />
-                    <p className="text-xs font-medium text-slate-650">Thêm ảnh gallery</p>
+                    <Upload className="mb-1.5 h-5 w-5 text-slate-500" />
+                    <p className="text-xs font-medium text-slate-600">Thêm ảnh gallery</p>
                   </div>
 
                   {(existingGalleryUrls.length > 0 || galleryPreviews.length > 0) && (
@@ -452,7 +452,7 @@ export function LandmarksScreen() {
                           <button
                             type="button"
                             onClick={() => setExistingGalleryUrls((prev) => prev.filter((_, itemIndex) => itemIndex !== index))}
-                            className="absolute top-1 right-1 rounded-full bg-slate-900/60 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                            className="absolute top-1 right-1 rounded-full bg-sky-600/70 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
                           >
                             <X className="h-2.5 w-2.5" />
                           </button>
@@ -471,7 +471,7 @@ export function LandmarksScreen() {
                           <button
                             type="button"
                             onClick={() => removeNewGalleryImage(index)}
-                            className="absolute top-1 right-1 rounded-full bg-slate-900/60 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                            className="absolute top-1 right-1 rounded-full bg-sky-600/70 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
                           >
                             <X className="h-2.5 w-2.5" />
                           </button>
@@ -486,7 +486,7 @@ export function LandmarksScreen() {
             <button
               type="submit"
               disabled={submitting}
-              className="mt-4 w-full rounded-full bg-slate-800 px-4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-slate-900 disabled:opacity-50"
+              className="mt-4 w-full rounded-full bg-sky-500 px-4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-sky-600 disabled:opacity-50"
             >
               {submitting ? "Đang tạo..." : form.resolvedSuggestionId ? "Tạo địa danh và duyệt đề xuất" : "Tạo địa danh"}
             </button>
@@ -498,21 +498,21 @@ export function LandmarksScreen() {
         <div className="space-y-6 text-xs">
           {editingLandmark && (
             <div className="max-w-3xl rounded-[20px] border border-slate-200 bg-slate-50/70 p-5 animate-scale-up">
-              <h3 className="mb-3.5 text-xs font-semibold tracking-wider text-slate-800 uppercase">Chỉnh sửa địa danh</h3>
+              <h3 className="mb-3.5 text-xs font-semibold tracking-wider text-slate-900 uppercase">Chỉnh sửa địa danh</h3>
               <form onSubmit={handleSaveEdit} className="space-y-3.5">
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <input
                     type="text"
                     value={editingLandmark.name}
                     onChange={(event) => setEditingLandmark({ ...editingLandmark, name: event.target.value })}
-                    className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-800 focus:ring-1 focus:ring-slate-300 focus:outline-none"
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 focus:ring-1 focus:ring-slate-300 focus:outline-none"
                     placeholder="Tên địa danh"
                   />
                   <input
                     type="text"
                     value={editingLandmark.province}
                     onChange={(event) => setEditingLandmark({ ...editingLandmark, province: event.target.value })}
-                    className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-800 focus:ring-1 focus:ring-slate-300 focus:outline-none"
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 focus:ring-1 focus:ring-slate-300 focus:outline-none"
                     placeholder="Tỉnh/Thành phố"
                   />
                   <input
@@ -520,7 +520,7 @@ export function LandmarksScreen() {
                     step="any"
                     value={editingLandmark.latitude}
                     onChange={(event) => setEditingLandmark({ ...editingLandmark, latitude: event.target.value })}
-                    className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-800 focus:ring-1 focus:ring-slate-300 focus:outline-none"
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 focus:ring-1 focus:ring-slate-300 focus:outline-none"
                     placeholder="Vĩ độ"
                   />
                   <input
@@ -528,25 +528,25 @@ export function LandmarksScreen() {
                     step="any"
                     value={editingLandmark.longitude}
                     onChange={(event) => setEditingLandmark({ ...editingLandmark, longitude: event.target.value })}
-                    className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-800 focus:ring-1 focus:ring-slate-300 focus:outline-none"
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 focus:ring-1 focus:ring-slate-300 focus:outline-none"
                     placeholder="Kinh độ"
                   />
                   <input
                     type="number"
                     value={editingLandmark.radiusMeters}
                     onChange={(event) => setEditingLandmark({ ...editingLandmark, radiusMeters: event.target.value })}
-                    className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-800 focus:ring-1 focus:ring-slate-300 focus:outline-none"
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 focus:ring-1 focus:ring-slate-300 focus:outline-none"
                     placeholder="Bán kính mét"
                   />
                   <input
                     type="text"
                     value={editingLandmark.thumbnailUrl}
                     onChange={(event) => setEditingLandmark({ ...editingLandmark, thumbnailUrl: event.target.value })}
-                    className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-800 focus:ring-1 focus:ring-slate-300 focus:outline-none"
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 focus:ring-1 focus:ring-slate-300 focus:outline-none"
                     placeholder="Thumbnail URL"
                   />
                 </div>
-                <label className="flex w-fit items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-[11px] font-semibold text-slate-650">
+                <label className="flex w-fit items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-[11px] font-semibold text-slate-600">
                   <input
                     type="checkbox"
                     checked={editingLandmark.isFeatured}
@@ -558,7 +558,7 @@ export function LandmarksScreen() {
                   value={editingLandmark.description}
                   onChange={(event) => setEditingLandmark({ ...editingLandmark, description: event.target.value })}
                   rows={3}
-                  className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-800 focus:ring-1 focus:ring-slate-300 focus:outline-none"
+                  className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 focus:ring-1 focus:ring-slate-300 focus:outline-none"
                   placeholder="Mô tả"
                 />
                 {editingLandmark.galleryUrls.length > 0 && (
@@ -586,7 +586,7 @@ export function LandmarksScreen() {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="rounded-full bg-slate-800 px-4 py-2 text-[11px] font-semibold text-white transition-colors hover:bg-slate-900 disabled:opacity-50"
+                    className="rounded-full bg-sky-500 px-4 py-2 text-[11px] font-semibold text-white transition-colors hover:bg-sky-600 disabled:opacity-50"
                   >
                     {submitting ? "Đang lưu..." : "Lưu thay đổi"}
                   </button>
@@ -603,20 +603,20 @@ export function LandmarksScreen() {
           )}
 
           <div className="overflow-hidden rounded-[20px] border border-slate-100 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-            <div className="border-b border-slate-50 bg-slate-50/50 px-5 py-3">
-              <h3 className="font-semibold text-slate-800">Danh sách địa danh chính thức</h3>
+            <div className="border-b border-slate-100 bg-slate-50/50 px-5 py-3">
+              <h3 className="font-semibold text-slate-900">Danh sách địa danh chính thức</h3>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[980px] border-collapse text-left">
                 <thead>
                   <tr className="border-b border-slate-100 bg-slate-50/50">
-                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Ảnh</th>
-                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Tên</th>
-                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Tọa độ</th>
-                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Tỉnh/TP</th>
-                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Bán kính</th>
-                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Trạng thái</th>
-                    <th className="px-5 py-3 pr-6 text-right text-[10px] font-bold tracking-wider text-slate-400 uppercase">Thao tác</th>
+                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Ảnh</th>
+                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Tên</th>
+                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Tọa độ</th>
+                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Tỉnh/TP</th>
+                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Bán kính</th>
+                    <th className="px-5 py-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Trạng thái</th>
+                    <th className="px-5 py-3 pr-6 text-right text-[10px] font-bold tracking-wider text-slate-500 uppercase">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-xs">
@@ -630,7 +630,7 @@ export function LandmarksScreen() {
                     ))
                   ) : landmarks.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-5 py-8 text-center font-medium text-slate-400">
+                      <td colSpan={7} className="px-5 py-8 text-center font-medium text-slate-500">
                         Không có địa danh nào.
                       </td>
                     </tr>
@@ -652,8 +652,8 @@ export function LandmarksScreen() {
                           )}
                         </td>
                         <td className="px-5 py-3.5">
-                          <div className="font-semibold text-slate-800">{item.name}</div>
-                          <div className="mt-0.5 max-w-xs truncate text-[10px] text-slate-400">{item.description || "—"}</div>
+                          <div className="font-semibold text-slate-900">{item.name}</div>
+                          <div className="mt-0.5 max-w-xs truncate text-[10px] text-slate-500">{item.description || "—"}</div>
                           {item.isFeatured && (
                             <span className="mt-1 inline-block rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[9px] font-bold text-slate-700">
                               Nổi bật

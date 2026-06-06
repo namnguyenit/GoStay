@@ -11,15 +11,15 @@ import {
   ArrowLeft,
   TrendingUp,
   Building,
-  Menu
+  Menu,
+  SlidersHorizontal
 } from "lucide-react";
 import AuthService from "@/services/auth.service";
 
-export default function EnterpriseLayout({ children }: { children: React.ReactNode }) {
+export default function HostLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [isAuthorized, setIsAuthorized] = useState(false);
-  const [enterpriseName, setEnterpriseName] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -30,13 +30,8 @@ export default function EnterpriseLayout({ children }: { children: React.ReactNo
       }
       const roles = AuthService.getUserRoles();
       if (!roles.includes("ENTERPRISE")) {
-        alert("Bạn không có quyền truy cập kênh doanh nghiệp.");
         router.push("/");
         return;
-      }
-      const user = AuthService.getCurrentUser();
-      if (user) {
-        setEnterpriseName(user.lastName || user.fullName || user.username || "Enterprise");
       }
       setIsAuthorized(true);
     };
@@ -57,8 +52,9 @@ export default function EnterpriseLayout({ children }: { children: React.ReactNo
   const navLinks = [
     { name: "Tổng quan", href: "/enterprise", icon: TrendingUp },
     { name: "Dịch vụ", href: "/enterprise/listings", icon: Home, match: "/enterprise/listings" },
-    { name: "Khu Tổ Hợp", href: "/enterprise/complexes", icon: Building, match: "/enterprise/complexes" },
-    { name: "Lịch", href: "/enterprise/calendar", icon: Calendar, match: "/enterprise/calendar" },
+    { name: "Khu tổ hợp", href: "/enterprise/complexes", icon: Building, match: "/enterprise/complexes" },
+    { name: "Lịch nhận khách", href: "/enterprise/calendar", icon: Calendar, match: "/enterprise/calendar" },
+    { name: "Khả dụng & sức chứa", href: "/enterprise/availability", icon: SlidersHorizontal, match: "/enterprise/availability" },
     { name: "Đơn hàng", href: "/enterprise/orders", icon: Calendar, match: "/enterprise/orders" },
     { name: "Thu nhập", href: "/enterprise/earnings", icon: DollarSign, match: "/enterprise/earnings" },
     { name: "Đề xuất địa danh", href: "/enterprise/landmark-suggestions", icon: Building, match: "/enterprise/landmark-suggestions" },
@@ -68,10 +64,10 @@ export default function EnterpriseLayout({ children }: { children: React.ReactNo
     <div className="min-h-screen bg-gray-50 text-gray-900 flex flex-col font-sans">
       
       {/* Top Navbar */}
-      <header className="sticky top-0 z-50 bg-white border-b border-gray-200 px-6 h-20 flex items-center justify-between shadow-sm transition-all">
+      <header className="sticky top-0 z-50 flex h-20 items-center justify-between gap-4 border-b border-gray-200 bg-white px-4 shadow-sm transition-all sm:px-6">
         
         {/* Left: Logo */}
-        <div className="flex items-center gap-3 w-1/4">
+        <div className="flex min-w-0 shrink-0 items-center gap-3">
           <div className="p-2 bg-app-primary/10 rounded-xl border border-app-primary/30">
             <Building className="h-6 w-6 text-app-primary" />
           </div>
@@ -82,20 +78,20 @@ export default function EnterpriseLayout({ children }: { children: React.ReactNo
         </div>
 
         {/* Center: Navigation Links (Desktop) */}
-        <nav className="hidden lg:flex items-center justify-center gap-6 h-full w-2/4">
+        <nav className="hidden h-full min-w-0 flex-1 items-center justify-center gap-1 overflow-x-auto xl:flex">
           {navLinks.map((link) => {
             const isActive = link.match ? pathname.startsWith(link.match) : pathname === link.href;
             return (
               <Link 
                 key={link.href}
                 href={link.href} 
-                className={`flex items-center gap-2 h-full border-b-2 text-sm font-medium transition-colors ${
+                className={`flex h-full shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-2 text-xs font-semibold transition-colors 2xl:px-3 2xl:text-sm ${
                   isActive 
                     ? "border-app-primary text-app-primary" 
                     : "border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-300"
                 }`}
               >
-                <link.icon className="h-4 w-4" />
+                <link.icon className="h-4 w-4 shrink-0" />
                 {link.name}
               </Link>
             );
@@ -103,7 +99,7 @@ export default function EnterpriseLayout({ children }: { children: React.ReactNo
         </nav>
 
         {/* Right: Actions */}
-        <div className="flex items-center justify-end gap-4 w-1/4">
+        <div className="flex shrink-0 items-center justify-end gap-2 sm:gap-3">
           <Link href="/enterprise/listings/new" className="hidden sm:flex">
             <button className="flex items-center gap-2 bg-white border border-gray-200 hover:border-gray-300 text-gray-800 font-semibold text-xs rounded-full shadow-sm h-10 px-5 transition-all">
               <PlusCircle className="h-4 w-4 text-app-primary" />
@@ -119,7 +115,7 @@ export default function EnterpriseLayout({ children }: { children: React.ReactNo
           </Link>
           
           <button 
-            className="lg:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-full"
+            className="rounded-full p-2 text-gray-600 hover:bg-gray-100 xl:hidden"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             <Menu className="h-5 w-5" />
@@ -129,7 +125,8 @@ export default function EnterpriseLayout({ children }: { children: React.ReactNo
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-white border-b border-gray-200 px-4 py-4 space-y-2">
+        <div className="border-b border-gray-200 bg-white px-4 py-4 xl:hidden">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
            {navLinks.map((link) => {
             const isActive = link.match ? pathname.startsWith(link.match) : pathname === link.href;
             return (
@@ -148,6 +145,7 @@ export default function EnterpriseLayout({ children }: { children: React.ReactNo
               </Link>
             );
           })}
+          </div>
         </div>
       )}
 

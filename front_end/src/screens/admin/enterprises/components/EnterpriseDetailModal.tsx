@@ -20,17 +20,17 @@ export function EnterpriseDetailModal({
   const ep = user.enterpriseProfile;
 
   return (
-    <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+    <div className="fixed inset-0 bg-sky-500/20 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
       <div className="flex max-h-[90vh] w-full max-w-md flex-col overflow-hidden rounded-[20px] border border-slate-100 bg-white shadow-xl animate-scale-up">
         {/* Header */}
-        <div className="px-5 py-4 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
+        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
           <div className="min-w-0">
-            <h3 className="font-semibold text-slate-800 text-sm">Chi tiết Hồ sơ Doanh nghiệp</h3>
-            <p className="mt-0.5 max-w-[260px] truncate text-[10px] text-slate-400">Tài khoản: {user.username}</p>
+            <h3 className="font-semibold text-slate-900 text-sm">Chi tiết Hồ sơ Doanh nghiệp</h3>
+            <p className="mt-0.5 max-w-[260px] truncate text-[10px] text-slate-500">Tài khoản: {user.username}</p>
           </div>
           <button
             onClick={onClose}
-            className="w-6 h-6 flex items-center justify-center rounded-full text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-colors"
+            className="w-6 h-6 flex items-center justify-center rounded-full text-slate-500 hover:bg-slate-50 hover:text-slate-600 transition-colors"
           >
             ✕
           </button>
@@ -54,12 +54,12 @@ export function EnterpriseDetailModal({
               </div>
             )}
             <div className="min-w-0">
-              <h4 className="truncate text-sm font-semibold text-slate-800">{user.username}</h4>
-              <p className="break-all text-[11px] text-slate-400">{user.email}</p>
+              <h4 className="truncate text-sm font-semibold text-slate-900">{user.username}</h4>
+              <p className="break-all text-[11px] text-slate-500">{user.email}</p>
               <span
                 className={`text-[9px] px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider inline-block mt-1 ${
                   ep?.approvalStatus === "PENDING"
-                    ? "bg-white text-slate-800 border border-slate-300"
+                    ? "bg-white text-slate-900 border border-slate-300"
                     : ep?.approvalStatus === "APPROVED"
                     ? "bg-slate-100 text-slate-900 border border-slate-200"
                     : "bg-white text-slate-500 border border-slate-300"
@@ -72,26 +72,26 @@ export function EnterpriseDetailModal({
 
           {ep && (
             <div className="space-y-4">
-              <h4 className="font-bold text-[10px] uppercase tracking-wider text-slate-400 mb-2 border-b border-slate-100 pb-1">
+              <h4 className="font-bold text-[10px] uppercase tracking-wider text-slate-500 mb-2 border-b border-slate-100 pb-1">
                 Thông tin Pháp nhân
               </h4>
               <div className="space-y-3">
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider mb-0.5">Tên công ty / Doanh nghiệp</span>
-                  <span className="break-words font-semibold text-slate-800">{ep.companyName || "—"}</span>
+                  <span className="text-slate-500 block text-[10px] uppercase font-bold tracking-wider mb-0.5">Tên công ty / Doanh nghiệp</span>
+                  <span className="break-words font-semibold text-slate-900">{ep.companyName || "—"}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider mb-1">Mã số thuế doanh nghiệp</span>
+                  <span className="text-slate-500 block text-[10px] uppercase font-bold tracking-wider mb-1">Mã số thuế doanh nghiệp</span>
                   <span className="inline-block max-w-full break-all rounded border border-slate-100 bg-slate-50 px-2 py-1 font-mono font-semibold text-slate-700">
                     {ep.taxCode || "—"}
                   </span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider mb-0.5">Người đại diện pháp luật</span>
-                  <span className="break-words font-semibold text-slate-800">{ep.representativeName || "—"}</span>
+                  <span className="text-slate-500 block text-[10px] uppercase font-bold tracking-wider mb-0.5">Người đại diện pháp luật</span>
+                  <span className="break-words font-semibold text-slate-900">{ep.representativeName || "—"}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider mb-1">Địa chỉ trụ sở chính</span>
+                  <span className="text-slate-500 block text-[10px] uppercase font-bold tracking-wider mb-1">Địa chỉ trụ sở chính</span>
                   <span className="block break-words rounded-xl border border-slate-100 bg-slate-50/50 p-2.5 font-medium leading-relaxed text-slate-700">
                     {ep.companyAddress || "—"}
                   </span>

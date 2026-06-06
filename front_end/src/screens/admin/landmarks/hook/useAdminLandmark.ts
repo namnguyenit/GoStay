@@ -360,14 +360,14 @@ export function useAdminLandmark() {
 
   const statusBadge = (status?: SuggestionStatus | LandmarkStatus) => {
     const map: Record<string, string> = {
-      PENDING: "bg-white text-slate-800 border border-slate-300",
+      PENDING: "bg-white text-slate-900 border border-slate-300",
       RESOLVED: "bg-slate-100 text-slate-900 border border-slate-200",
       REJECTED: "bg-white text-slate-500 border border-slate-300",
       ACTIVE: "bg-slate-100 text-slate-900 border border-slate-200",
       HIDDEN: "bg-slate-100 text-slate-600 border border-slate-200",
       MAINTENANCE: "bg-slate-50 text-slate-600 border border-slate-200",
     };
-    return map[status ?? ""] ?? "bg-gray-100 text-gray-600 border border-gray-200";
+    return map[status ?? ""] ?? "bg-slate-100 text-slate-600 border border-slate-200";
   };
 
   return {

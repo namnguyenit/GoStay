@@ -34,8 +34,8 @@ export function EnterprisesScreen() {
     <div className="min-w-0 space-y-6 animate-smooth-appear">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <h2 className="text-xl font-semibold text-slate-800">Xét duyệt doanh nghiệp</h2>
-          <p className="text-xs text-slate-400 mt-1">Xét duyệt các yêu cầu đăng ký tài khoản doanh nghiệp (Enterprise).</p>
+          <h2 className="text-xl font-semibold text-slate-900">Xét duyệt doanh nghiệp</h2>
+          <p className="text-xs text-slate-500 mt-1">Xét duyệt các yêu cầu đăng ký tài khoản doanh nghiệp (Enterprise).</p>
         </div>
       </div>
 
@@ -43,7 +43,7 @@ export function EnterprisesScreen() {
         <div
           className={`rounded-2xl border px-4 py-3 text-xs font-semibold ${
             feedback.type === "success"
-              ? "border-slate-200 bg-white text-slate-800"
+              ? "border-slate-200 bg-white text-slate-900"
               : "border-slate-200 bg-slate-50 text-slate-700"
           }`}
         >
@@ -59,8 +59,8 @@ export function EnterprisesScreen() {
             onClick={() => setTab(t)}
             className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
               tab === t
-                ? "bg-white shadow-sm text-slate-800"
-                : "text-slate-500 hover:text-slate-800"
+                ? "bg-white shadow-sm text-slate-900"
+                : "text-slate-500 hover:text-slate-900"
             }`}
           >
             {t === "pending"

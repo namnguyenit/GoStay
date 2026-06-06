@@ -146,40 +146,40 @@ export default function AdminDashboardPage() {
   const revenueDaily = dashboard.revenue.daily ?? [];
   const recentRevenueDaily = revenueDaily.slice(-14);
   const accountSegments: ChartSegment[] = [
-    { label: "Users", value: toNumber(dashboard.identity.totalUsers), color: "#0f172a", href: "/admin/users" },
-    { label: "Hosts", value: toNumber(dashboard.identity.totalHosts), color: "#475569", href: "/admin/hosts" },
-    { label: "Enterprises", value: toNumber(dashboard.identity.totalEnterprises), color: "#94a3b8", href: "/admin/enterprises" },
+    { label: "Users", value: toNumber(dashboard.identity.totalUsers), color: "#0ea5e9", href: "/admin/users" },
+    { label: "Hosts", value: toNumber(dashboard.identity.totalHosts), color: "#22d3ee", href: "/admin/hosts" },
+    { label: "Enterprises", value: toNumber(dashboard.identity.totalEnterprises), color: "#bae6fd", href: "/admin/enterprises" },
   ];
   const listingSegments: ChartSegment[] = [
-    { label: "Active", value: toNumber(dashboard.catalog.activeListings), color: "#0f172a", href: "/admin/listings" },
-    { label: "Pending", value: toNumber(dashboard.catalog.pendingListings), color: "#475569", href: "/admin/listings" },
-    { label: "Hidden", value: toNumber(dashboard.catalog.hiddenListings), color: "#64748b", href: "/admin/listings" },
-    { label: "Deleted", value: toNumber(dashboard.catalog.deletedListings), color: "#cbd5e1", href: "/admin/listings" },
+    { label: "Active", value: toNumber(dashboard.catalog.activeListings), color: "#0ea5e9", href: "/admin/listings" },
+    { label: "Pending", value: toNumber(dashboard.catalog.pendingListings), color: "#22d3ee", href: "/admin/listings" },
+    { label: "Hidden", value: toNumber(dashboard.catalog.hiddenListings), color: "#7dd3fc", href: "/admin/listings" },
+    { label: "Deleted", value: toNumber(dashboard.catalog.deletedListings), color: "#bae6fd", href: "/admin/listings" },
   ];
   const paymentSegments: ChartSegment[] = [
-    { label: "Completed", value: toNumber(dashboard.payments.completedPayments), color: "#0f172a", href: "/admin/payouts" },
-    { label: "Pending", value: toNumber(dashboard.payments.pendingPayments), color: "#475569", href: "/admin/payouts" },
-    { label: "Expired", value: toNumber(dashboard.payments.expiredPayments), color: "#64748b", href: "/admin/payouts" },
-    { label: "Failed", value: toNumber(dashboard.payments.failedPayments), color: "#cbd5e1", href: "/admin/payouts" },
+    { label: "Completed", value: toNumber(dashboard.payments.completedPayments), color: "#0ea5e9", href: "/admin/payouts" },
+    { label: "Pending", value: toNumber(dashboard.payments.pendingPayments), color: "#22d3ee", href: "/admin/payouts" },
+    { label: "Expired", value: toNumber(dashboard.payments.expiredPayments), color: "#7dd3fc", href: "/admin/payouts" },
+    { label: "Failed", value: toNumber(dashboard.payments.failedPayments), color: "#bae6fd", href: "/admin/payouts" },
   ];
   const orderSegments: ChartSegment[] = [
-    { label: "Confirmed", value: toNumber(dashboard.orders.confirmedOrders), color: "#0f172a" },
-    { label: "Completed", value: toNumber(dashboard.orders.completedOrders), color: "#475569" },
-    { label: "Payment pending", value: toNumber(dashboard.orders.paymentPendingOrders), color: "#64748b" },
-    { label: "Cancelled", value: toNumber(dashboard.orders.cancelledOrders), color: "#cbd5e1" },
+    { label: "Confirmed", value: toNumber(dashboard.orders.confirmedOrders), color: "#0ea5e9" },
+    { label: "Completed", value: toNumber(dashboard.orders.completedOrders), color: "#22d3ee" },
+    { label: "Payment pending", value: toNumber(dashboard.orders.paymentPendingOrders), color: "#7dd3fc" },
+    { label: "Cancelled", value: toNumber(dashboard.orders.cancelledOrders), color: "#bae6fd" },
   ];
 
   return (
     <div className="min-w-0 max-w-[1400px] space-y-6 animate-smooth-appear">
       <div className="flex flex-col gap-4 border-b border-slate-100 pb-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-xl font-semibold tracking-tight text-slate-800">Tổng quan hệ thống</h2>
-          <p className="mt-0.5 text-xs font-medium text-slate-400">
+          <h2 className="text-xl font-semibold tracking-tight text-slate-900">Tổng quan hệ thống</h2>
+          <p className="mt-0.5 text-xs font-medium text-slate-500">
             Dữ liệu lấy từ các Admin Summary API thật của Identity, Catalog, Order và Payment.
           </p>
         </div>
         <div className="rounded-full border border-slate-100 bg-white px-3 py-1.5 text-xs font-semibold text-slate-500 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-          Admin: <span className="text-slate-800">{adminName || "Quản trị viên"}</span>
+          Admin: <span className="text-slate-900">{adminName || "Quản trị viên"}</span>
         </div>
       </div>
 
@@ -199,10 +199,10 @@ export default function AdminDashboardPage() {
             <span className={`inline-flex max-w-full rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${card.tone}`}>
               {card.label}
             </span>
-            <div className="mt-4 break-words text-[clamp(1.25rem,2vw,1.5rem)] font-semibold leading-tight text-slate-850 tabular-nums">
+            <div className="mt-4 break-words text-[clamp(1.25rem,2vw,1.5rem)] font-semibold leading-tight text-slate-950 tabular-nums">
               {loading ? "..." : card.value}
             </div>
-            <p className="mt-2 break-words text-xs font-medium leading-5 text-slate-450">{card.detail}</p>
+            <p className="mt-2 break-words text-xs font-medium leading-5 text-slate-500">{card.detail}</p>
           </Link>
         ))}
       </section>
@@ -241,9 +241,9 @@ export default function AdminDashboardPage() {
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <section className="xl:col-span-2 rounded-[20px] border border-slate-100 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-          <div className="border-b border-slate-50 p-5">
-            <h3 className="text-base font-semibold text-slate-800">Tác vụ cần xử lý</h3>
-            <p className="mt-0.5 text-xs font-medium text-slate-400">Count lấy trực tiếp từ các summary endpoint.</p>
+          <div className="border-b border-slate-100 p-5">
+            <h3 className="text-base font-semibold text-slate-900">Tác vụ cần xử lý</h3>
+            <p className="mt-0.5 text-xs font-medium text-slate-500">Count lấy trực tiếp từ các summary endpoint.</p>
           </div>
           <div className="grid grid-cols-1 gap-3 p-5 sm:grid-cols-2">
             {urgentTasks.map((task) => (
@@ -253,8 +253,8 @@ export default function AdminDashboardPage() {
                 className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50/50 p-4 transition-colors hover:border-slate-200 hover:bg-white"
               >
                 <div>
-                  <div className="text-sm font-semibold text-slate-800">{task.label}</div>
-                  <div className="mt-1 text-xs font-medium text-slate-400">
+                  <div className="text-sm font-semibold text-slate-900">{task.label}</div>
+                  <div className="mt-1 text-xs font-medium text-slate-500">
                     {task.count > 0 ? "Cần admin xử lý" : "Không có việc đang chờ"}
                   </div>
                 </div>
@@ -267,9 +267,9 @@ export default function AdminDashboardPage() {
         </section>
 
         <section className="rounded-[20px] border border-slate-100 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-          <div className="border-b border-slate-50 p-5">
-            <h3 className="text-base font-semibold text-slate-800">Payment / Payout</h3>
-            <p className="mt-0.5 text-xs font-medium text-slate-400">Tổng hợp từ Payment service.</p>
+          <div className="border-b border-slate-100 p-5">
+            <h3 className="text-base font-semibold text-slate-900">Payment / Payout</h3>
+            <p className="mt-0.5 text-xs font-medium text-slate-500">Tổng hợp từ Payment service.</p>
           </div>
           <div className="space-y-3 p-5">
             <Metric label="Payment completed" value={formatMoney(dashboard.payments.completedPaymentAmount)} />
@@ -282,9 +282,9 @@ export default function AdminDashboardPage() {
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <section className="xl:col-span-2 rounded-[20px] border border-slate-100 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-          <div className="border-b border-slate-50 p-5">
-            <h3 className="text-base font-semibold text-slate-800">Revenue report 30 ngày</h3>
-            <p className="mt-0.5 text-xs font-medium text-slate-400">
+          <div className="border-b border-slate-100 p-5">
+            <h3 className="text-base font-semibold text-slate-900">Revenue report 30 ngày</h3>
+            <p className="mt-0.5 text-xs font-medium text-slate-500">
               Dựa trên payout đã phát sinh trong Payment service, không dùng số demo.
             </p>
           </div>
@@ -293,9 +293,9 @@ export default function AdminDashboardPage() {
             <Metric label="Host amount" value={formatMoney(dashboard.revenue.hostAmount)} />
             <Metric label="Commission" value={formatMoney(dashboard.revenue.commissionAmount)} />
           </div>
-          <div className="max-h-64 overflow-y-auto border-t border-slate-50 p-5">
+          <div className="max-h-64 overflow-y-auto border-t border-slate-100 p-5">
             {(dashboard.revenue.daily ?? []).length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 p-4 text-xs font-medium text-slate-400">
+              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 p-4 text-xs font-medium text-slate-500">
                 Chưa có dữ liệu doanh thu trong khoảng thời gian này.
               </div>
             ) : (
@@ -303,7 +303,7 @@ export default function AdminDashboardPage() {
                 {(dashboard.revenue.daily ?? []).map((item) => (
                   <div key={item.date} className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/50 px-3 py-2 text-xs">
                     <span className="font-semibold text-slate-700">{item.date}</span>
-                    <span className="font-semibold text-slate-850">{formatMoney(item.commissionAmount)}</span>
+                    <span className="font-semibold text-slate-950">{formatMoney(item.commissionAmount)}</span>
                   </div>
                 ))}
               </div>
@@ -312,21 +312,21 @@ export default function AdminDashboardPage() {
         </section>
 
         <section className="rounded-[20px] border border-slate-100 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-          <div className="border-b border-slate-50 p-5">
-            <h3 className="text-base font-semibold text-slate-800">Thành viên mới cập nhật</h3>
-            <p className="mt-0.5 text-xs font-medium text-slate-400">5 tài khoản đầu từ API users.</p>
+          <div className="border-b border-slate-100 p-5">
+            <h3 className="text-base font-semibold text-slate-900">Thành viên mới cập nhật</h3>
+            <p className="mt-0.5 text-xs font-medium text-slate-500">5 tài khoản đầu từ API users.</p>
           </div>
-          <div className="divide-y divide-slate-50 p-3">
+          <div className="divide-y divide-sky-50 p-3">
             {loading ? (
               Array.from({ length: 3 }).map((_, index) => <div key={index} className="m-2 h-10 rounded bg-slate-50 animate-pulse" />)
             ) : recentUsers.length === 0 ? (
-              <div className="p-6 text-center text-xs font-medium text-slate-400">Chưa có dữ liệu người dùng.</div>
+              <div className="p-6 text-center text-xs font-medium text-slate-500">Chưa có dữ liệu người dùng.</div>
             ) : (
               recentUsers.map((user) => (
                 <div key={user.id} className="flex items-center justify-between px-2 py-3 text-xs">
                   <div>
-                    <div className="font-semibold text-slate-800">{user.username || "—"}</div>
-                    <div className="mt-0.5 text-slate-400">{user.email || "—"}</div>
+                    <div className="font-semibold text-slate-900">{user.username || "—"}</div>
+                    <div className="mt-0.5 text-slate-500">{user.email || "—"}</div>
                   </div>
                   <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-bold ${user.isActive ? "border-slate-200 bg-slate-50 text-slate-700" : "border-slate-300 bg-white text-slate-500"}`}>
                     {user.isActive ? "Active" : "Banned"}
@@ -354,10 +354,10 @@ function ChartShell({
 }) {
   return (
     <section className={`overflow-hidden rounded-[22px] border border-slate-100 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.02)] ${className}`}>
-      <div className="flex flex-col gap-3 border-b border-slate-50 p-5 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex flex-col gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h3 className="text-base font-semibold text-slate-800">{title}</h3>
-          <p className="mt-0.5 text-xs font-medium text-slate-400">{description}</p>
+          <h3 className="text-base font-semibold text-slate-900">{title}</h3>
+          <p className="mt-0.5 text-xs font-medium text-slate-500">{description}</p>
         </div>
         <span className="w-fit shrink-0 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
           Live API
@@ -409,17 +409,17 @@ function RevenueTrendChart({
         <Metric label="Host payout" value={formatMoney(data.reduce((sum, item) => sum + toNumber(item.hostAmount), 0))} />
         <Metric label="Commission" value={formatMoney(data.reduce((sum, item) => sum + toNumber(item.commissionAmount), 0))} />
       </div>
-      <div className="overflow-hidden rounded-2xl border border-slate-100 bg-gradient-to-b from-slate-50/80 to-white p-3">
+      <div className="overflow-hidden rounded-2xl border border-slate-100 bg-gradient-to-b from-sky-50/80 to-white p-3">
         <svg viewBox={`0 0 ${width} ${height}`} className="h-[260px] w-full" role="img" aria-label="Biểu đồ doanh thu 14 ngày gần nhất">
           <defs>
             <linearGradient id="revenueArea" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="#0f172a" stopOpacity="0.18" />
-              <stop offset="100%" stopColor="#0f172a" stopOpacity="0.02" />
+              <stop offset="0%" stopColor="#0ea5e9" stopOpacity="0.26" />
+              <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0.04" />
             </linearGradient>
           </defs>
           {[0, 1, 2, 3].map((line) => {
             const y = paddingTop + (line / 3) * innerHeight;
-            return <line key={line} x1={paddingX} x2={width - paddingX} y1={y} y2={y} stroke="#e2e8f0" strokeDasharray="4 8" />;
+            return <line key={line} x1={paddingX} x2={width - paddingX} y1={y} y2={y} stroke="#bae6fd" strokeDasharray="4 8" />;
           })}
           {data.map((item, index) => {
             const barWidth = Math.max(8, innerWidth / data.length / 2.8);
@@ -433,18 +433,18 @@ function RevenueTrendChart({
                 width={barWidth}
                 height={barHeight}
                 rx={barWidth / 2}
-                fill="#94a3b8"
+                fill="#67e8f9"
                 opacity="0.65"
               />
             );
           })}
           <path d={areaPath} fill="url(#revenueArea)" />
-          <path d={linePath} fill="none" stroke="#0f172a" strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" />
+          <path d={linePath} fill="none" stroke="#0ea5e9" strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" />
           {points.map((point, index) => (
             <g key={point.item.date ?? index}>
-              <circle cx={point.x} cy={point.y} r="4.5" fill="#ffffff" stroke="#0f172a" strokeWidth="3" />
+              <circle cx={point.x} cy={point.y} r="4.5" fill="#ffffff" stroke="#0ea5e9" strokeWidth="3" />
               {labelIndexes.has(index) && (
-                <text x={point.x} y={height - 10} textAnchor="middle" className="fill-slate-400 text-[11px] font-bold">
+                <text x={point.x} y={height - 10} textAnchor="middle" className="fill-slate-500 text-[11px] font-bold">
                   {shortDate(point.item.date)}
                 </text>
               )}
@@ -453,8 +453,8 @@ function RevenueTrendChart({
         </svg>
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-3 text-[11px] font-bold text-slate-500">
-        <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-slate-950" /> Gross amount</span>
-        <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-slate-400" /> Commission bars</span>
+        <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-sky-500" /> Gross amount</span>
+        <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-cyan-300" /> Commission bars</span>
       </div>
     </div>
   );
@@ -486,14 +486,14 @@ function DonutChart({
           return `${segment.color} ${start}% ${end}%`;
         })
         .join(", ")
-    : "#e2e8f0 0% 100%";
+    : "#bae6fd 0% 100%";
 
   return (
     <div className={`grid items-center gap-5 ${compact ? "grid-cols-1" : "sm:grid-cols-[180px_1fr]"}`}>
       <div className="relative mx-auto flex h-44 w-44 items-center justify-center rounded-full" style={{ background: `conic-gradient(${gradient})` }}>
         <div className="flex h-[118px] w-[118px] flex-col items-center justify-center rounded-full border border-slate-100 bg-white px-3 text-center shadow-inner">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{centerLabel}</span>
-          <span className="mt-1 max-w-full break-words text-[clamp(1rem,4vw,1.5rem)] font-semibold leading-tight text-slate-850 tabular-nums">{formatNumber(total)}</span>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{centerLabel}</span>
+          <span className="mt-1 max-w-full break-words text-[clamp(1rem,4vw,1.5rem)] font-semibold leading-tight text-slate-950 tabular-nums">{formatNumber(total)}</span>
         </div>
       </div>
       <div className="space-y-2">
@@ -523,7 +523,7 @@ function HorizontalBars({ segments, loading }: { segments: ChartSegment[]; loadi
           <div key={segment.label} className="rounded-2xl border border-slate-100 bg-slate-50/60 p-3">
             <div className="mb-2 flex items-center justify-between text-xs">
               <span className="font-semibold text-slate-700">{segment.label}</span>
-              <span className="font-bold text-slate-850">{formatNumber(segment.value)} · {width}%</span>
+              <span className="font-bold text-slate-950">{formatNumber(segment.value)} · {width}%</span>
             </div>
             <div className="h-2.5 overflow-hidden rounded-full bg-white">
               <div className="h-full rounded-full transition-all" style={{ width: `${width}%`, backgroundColor: segment.color }} />
@@ -542,7 +542,7 @@ function ChartLegendRow({ segment, total }: { segment: ChartSegment; total: numb
         <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: segment.color }} />
         <span className="truncate">{segment.label}</span>
       </span>
-      <span className="shrink-0 text-xs font-bold text-slate-850 tabular-nums">
+      <span className="shrink-0 text-xs font-bold text-slate-950 tabular-nums">
         {formatNumber(segment.value)} · {percent(segment.value, total)}%
       </span>
     </div>
@@ -554,7 +554,7 @@ function ChartLegendRow({ segment, total }: { segment: ChartSegment; total: numb
 
 function EmptyChart({ message, compact = false }: { message: string; compact?: boolean }) {
   return (
-    <div className={`flex ${compact ? "h-[180px]" : "h-[286px]"} items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 p-6 text-center text-xs font-semibold text-slate-400`}>
+    <div className={`flex ${compact ? "h-[180px]" : "h-[286px]"} items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 p-6 text-center text-xs font-semibold text-slate-500`}>
       {message}
     </div>
   );
@@ -563,8 +563,8 @@ function EmptyChart({ message, compact = false }: { message: string; compact?: b
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0 rounded-2xl border border-slate-100 bg-slate-50/60 p-3">
-      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{label}</div>
-      <div className="mt-1 break-words text-sm font-semibold leading-tight text-slate-850 tabular-nums">{value}</div>
+      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{label}</div>
+      <div className="mt-1 break-words text-sm font-semibold leading-tight text-slate-950 tabular-nums">{value}</div>
     </div>
   );
 }

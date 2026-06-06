@@ -39,7 +39,7 @@ export function AdminPagination({
         >
           Trước
         </Button>
-        <span className="min-w-20 text-center text-[11px] font-bold text-slate-650 sm:min-w-24">
+        <span className="min-w-20 text-center text-[11px] font-bold text-slate-600 sm:min-w-24">
           Trang {page + 1}/{safeTotalPages}
         </span>
         <Button

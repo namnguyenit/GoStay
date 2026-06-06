@@ -15,13 +15,13 @@ export function HostsTable({ loading, displayed, tab, onViewDetail, onApprove }:
       <table className="w-full min-w-[760px] text-sm">
         <thead>
           <tr>
-            <th className="border-b border-slate-100 bg-slate-50/50 px-5 py-3 text-left text-[10px] font-bold tracking-wider text-slate-400 uppercase">Username</th>
-            <th className="border-b border-slate-100 bg-slate-50/50 px-5 py-3 text-left text-[10px] font-bold tracking-wider text-slate-400 uppercase">Email</th>
-            <th className="border-b border-slate-100 bg-slate-50/50 px-5 py-3 text-left text-[10px] font-bold tracking-wider text-slate-400 uppercase">Trạng thái</th>
-            <th className="border-b border-slate-100 bg-slate-50/50 px-5 py-3 text-right text-[10px] font-bold tracking-wider text-slate-400 uppercase">Thao tác</th>
+            <th className="border-b border-slate-100 bg-slate-50/50 px-5 py-3 text-left text-[10px] font-bold tracking-wider text-slate-500 uppercase">Username</th>
+            <th className="border-b border-slate-100 bg-slate-50/50 px-5 py-3 text-left text-[10px] font-bold tracking-wider text-slate-500 uppercase">Email</th>
+            <th className="border-b border-slate-100 bg-slate-50/50 px-5 py-3 text-left text-[10px] font-bold tracking-wider text-slate-500 uppercase">Trạng thái</th>
+            <th className="border-b border-slate-100 bg-slate-50/50 px-5 py-3 text-right text-[10px] font-bold tracking-wider text-slate-500 uppercase">Thao tác</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-50">
+        <tbody className="divide-y divide-sky-50">
           {loading ? (
             Array.from({ length: 5 }).map((_, index) => (
               <tr key={index}>
@@ -32,7 +32,7 @@ export function HostsTable({ loading, displayed, tab, onViewDetail, onApprove }:
             ))
           ) : displayed.length === 0 ? (
             <tr>
-              <td colSpan={4} className="px-5 py-8 text-center text-xs font-medium text-slate-400">
+              <td colSpan={4} className="px-5 py-8 text-center text-xs font-medium text-slate-500">
                 {tab === "pending" ? "Không có đơn nào đang chờ duyệt." : "Chưa có Host nào."}
               </td>
             </tr>
@@ -42,16 +42,16 @@ export function HostsTable({ loading, displayed, tab, onViewDetail, onApprove }:
 
               return (
                 <tr key={host.id} className="transition-colors hover:bg-slate-50/30">
-                  <td className="px-5 py-3.5 text-[13.5px] font-semibold text-slate-800">
+                  <td className="px-5 py-3.5 text-[13.5px] font-semibold text-slate-900">
                     <div className="max-w-[220px] truncate">{host.username || "—"}</div>
                   </td>
-                  <td className="px-5 py-3.5 text-xs font-medium text-slate-455">
+                  <td className="px-5 py-3.5 text-xs font-medium text-slate-500">
                     <div className="max-w-[260px] truncate">{host.email || "—"}</div>
                   </td>
                   <td className="px-5 py-3.5">
                     <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-bold ${
                       status === "PENDING"
-                        ? "border-slate-300 bg-white text-slate-800"
+                        ? "border-slate-300 bg-white text-slate-900"
                         : status === "APPROVED"
                         ? "border-slate-200 bg-slate-100 text-slate-900"
                         : "border-slate-300 bg-white text-slate-500"
@@ -64,7 +64,7 @@ export function HostsTable({ loading, displayed, tab, onViewDetail, onApprove }:
                       <button
                         type="button"
                         onClick={() => onViewDetail(host.id)}
-                        className="rounded-lg border border-slate-200/70 bg-white px-2.5 py-1.5 text-[11px] font-bold text-slate-650 transition-colors hover:bg-slate-50"
+                        className="rounded-lg border border-slate-200/70 bg-white px-2.5 py-1.5 text-[11px] font-bold text-slate-600 transition-colors hover:bg-slate-50"
                       >
                         Chi tiết
                       </button>
@@ -73,7 +73,7 @@ export function HostsTable({ loading, displayed, tab, onViewDetail, onApprove }:
                           <button
                             type="button"
                             onClick={() => onApprove(host.id, true)}
-                            className="rounded-lg border border-slate-900 bg-slate-900 px-2.5 py-1.5 text-[11px] font-bold text-white transition-colors hover:bg-slate-950"
+                            className="rounded-lg border border-sky-500 bg-sky-500 px-2.5 py-1.5 text-[11px] font-bold text-white transition-colors hover:bg-sky-600"
                           >
                             Duyệt
                           </button>

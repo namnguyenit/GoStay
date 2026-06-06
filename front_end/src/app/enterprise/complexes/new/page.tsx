@@ -1,186 +1,192 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, Loader2, Building, MapPin, AlignLeft } from "lucide-react";
-import HostService from "@/services/host.service";
+import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Building, Loader2, MapPin } from "lucide-react";
+import EnterpriseService from "@/services/enterprise.service";
+import { PROVINCES } from "@/shared/constants/provinces";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getErrorMessage } from "../../_utils";
 
 export default function NewComplexPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
+  const [feedback, setFeedback] = useState<{ type: "error"; message: string } | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     province: "",
-    district: "",
-    ward: "",
-    streetAddress: "",
     latitude: "",
-    longitude: ""
+    longitude: "",
+    thumbnailUrl: "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const setField = (field: keyof typeof formData, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setFeedback(null);
+
+    const latitude = Number(formData.latitude);
+    const longitude = Number(formData.longitude);
+    if (!formData.name.trim() || !formData.province.trim() || Number.isNaN(latitude) || Number.isNaN(longitude)) {
+      setFeedback({ type: "error", message: "Vui lòng nhập tên, tỉnh/thành và tọa độ hợp lệ." });
+      return;
+    }
 
     try {
-      const payload = {
-        ...formData,
-        latitude: parseFloat(formData.latitude),
-        longitude: parseFloat(formData.longitude)
-      };
-
-      if (isNaN(payload.latitude) || isNaN(payload.longitude)) {
-        throw new Error("Tọa độ Latitude và Longitude phải là số hợp lệ.");
-      }
-
-      await HostService.createComplex(payload);
+      setLoading(true);
+      await EnterpriseService.createComplex({
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        province: formData.province,
+        latitude,
+        longitude,
+        thumbnailUrl: formData.thumbnailUrl.trim(),
+        galleryUrls: [],
+      });
       router.push("/enterprise/complexes");
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || "Có lỗi xảy ra khi tạo Khu Tổ Hợp.");
+    } catch (err: unknown) {
+      setFeedback({ type: "error", message: getErrorMessage(err, "Có lỗi xảy ra khi tạo khu tổ hợp.") });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto w-full space-y-6">
-      {/* Header */}
+    <div className="mx-auto w-full max-w-4xl space-y-6">
       <div className="flex items-center gap-4">
         <Link href="/enterprise/complexes">
-          <button className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-all">
+          <button className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-gray-500 transition-all hover:bg-gray-50 hover:text-gray-900">
             <ArrowLeft className="h-5 w-5" />
           </button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Tạo Khu Tổ Hợp Mới</h1>
-          <p className="text-gray-500 text-sm mt-0.5">
-            Điền thông tin chi tiết về khu vực kinh doanh của bạn
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900">Tạo khu tổ hợp mới</h1>
+          <p className="mt-0.5 text-sm text-gray-500">Thiết lập tâm khu tổ hợp để các listing thuộc khu nằm trong bán kính 3km.</p>
         </div>
       </div>
 
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm font-medium">
-          {error}
+      {feedback && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+          {feedback.message}
         </div>
       )}
 
-      {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-8">
-        
-        {/* Basic Info */}
-        <div className="bg-white border border-gray-200 rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm">
+        <section className="space-y-6 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
           <div className="flex items-center gap-2 border-b border-gray-100 pb-4">
-            <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
+            <div className="rounded-xl bg-blue-50 p-2 text-blue-600">
               <Building className="h-5 w-5" />
             </div>
             <h2 className="text-lg font-bold text-gray-900">Thông tin cơ bản</h2>
           </div>
 
-          <div className="space-y-5">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Tên Khu Tổ Hợp <span className="text-red-500">*</span>
-              </label>
-              <input 
-                type="text" 
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                required
-                placeholder="VD: Vinpearl Resort Nha Trang, Chuỗi Homestay Sapa..." 
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-app-primary/20 focus:border-app-primary transition-all text-sm outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                <AlignLeft className="h-4 w-4 text-gray-400" /> Mô tả chi tiết
-              </label>
-              <textarea 
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                rows={4}
-                placeholder="Mô tả về quy mô, các tiện ích chung nổi bật của tổ hợp..."
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-app-primary/20 focus:border-app-primary transition-all text-sm outline-none resize-none"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Location Info */}
-        <div className="bg-white border border-gray-200 rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm">
-          <div className="flex items-center gap-2 border-b border-gray-100 pb-4">
-            <div className="p-2 bg-green-50 text-green-600 rounded-xl">
-              <MapPin className="h-5 w-5" />
-            </div>
-            <h2 className="text-lg font-bold text-gray-900">Vị trí & Tọa độ</h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Tỉnh / Thành phố <span className="text-red-500">*</span></label>
-              <input type="text" name="province" required value={formData.province} onChange={handleChange} placeholder="VD: Hà Nội" className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-app-primary/20 focus:border-app-primary transition-all text-sm outline-none" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Quận / Huyện</label>
-              <input type="text" name="district" value={formData.district} onChange={handleChange} placeholder="VD: Cầu Giấy" className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-app-primary/20 focus:border-app-primary transition-all text-sm outline-none" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Phường / Xã</label>
-              <input type="text" name="ward" value={formData.ward} onChange={handleChange} placeholder="VD: Dịch Vọng" className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-app-primary/20 focus:border-app-primary transition-all text-sm outline-none" />
-            </div>
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-gray-700">Tên khu tổ hợp <span className="text-red-500">*</span></label>
+            <input
+              value={formData.name}
+              onChange={(event) => setField("name", event.target.value)}
+              required
+              placeholder="VD: Vinpearl Resort Nha Trang"
+              className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm outline-none transition-all focus:border-app-primary focus:ring-2 focus:ring-app-primary/20"
+            />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Địa chỉ cụ thể (Số nhà, Tên đường)</label>
-            <input type="text" name="streetAddress" value={formData.streetAddress} onChange={handleChange} placeholder="VD: 123 Đường Xuân Thủy" className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-app-primary/20 focus:border-app-primary transition-all text-sm outline-none" />
+            <label className="mb-2 block text-sm font-semibold text-gray-700">Mô tả</label>
+            <textarea
+              value={formData.description}
+              onChange={(event) => setField("description", event.target.value)}
+              rows={4}
+              placeholder="Mô tả quy mô, tiện ích chung và điểm nổi bật của khu tổ hợp..."
+              className="w-full resize-none rounded-xl border border-gray-300 px-4 py-3 text-sm outline-none transition-all focus:border-app-primary focus:ring-2 focus:ring-app-primary/20"
+            />
           </div>
 
-          <div className="bg-orange-50 border border-orange-100 p-4 rounded-2xl">
-            <p className="text-sm text-orange-800 font-medium mb-4 flex items-center gap-2">
-              ⚠️ Tọa độ trung tâm Khu Tổ Hợp (Các dịch vụ thuộc tổ hợp này không được cách xa quá 3km).
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-gray-700">Thumbnail URL</label>
+            <input
+              value={formData.thumbnailUrl}
+              onChange={(event) => setField("thumbnailUrl", event.target.value)}
+              placeholder="https://..."
+              className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm outline-none transition-all focus:border-app-primary focus:ring-2 focus:ring-app-primary/20"
+            />
+          </div>
+        </section>
+
+        <section className="space-y-6 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+          <div className="flex items-center gap-2 border-b border-gray-100 pb-4">
+            <div className="rounded-xl bg-green-50 p-2 text-green-600">
+              <MapPin className="h-5 w-5" />
+            </div>
+            <h2 className="text-lg font-bold text-gray-900">Vị trí & tọa độ</h2>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-gray-700">Tỉnh/Thành phố <span className="text-red-500">*</span></label>
+            <Select value={formData.province} onValueChange={(value) => setField("province", value)} required>
+              <SelectTrigger className="h-[46px] w-full rounded-xl border border-gray-300 bg-white px-4 text-sm text-gray-900 focus:ring-1 focus:ring-app-primary">
+                <SelectValue placeholder="-- Chọn tỉnh/thành phố --" />
+              </SelectTrigger>
+              <SelectContent position="popper" className="max-h-[300px]">
+                <SelectGroup>
+                  {PROVINCES.map((province) => (
+                    <SelectItem key={province} value={province} className="text-sm">{province}</SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="rounded-2xl border border-orange-100 bg-orange-50 p-4">
+            <p className="mb-4 text-sm font-medium text-orange-800">
+              Tọa độ trung tâm khu tổ hợp. Listing gắn vào khu này phải nằm trong bán kính 3km.
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Vĩ độ (Latitude) <span className="text-red-500">*</span></label>
-                <input type="number" step="any" name="latitude" required value={formData.latitude} onChange={handleChange} placeholder="VD: 21.028511" className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all text-sm outline-none bg-white" />
+                <label className="mb-2 block text-sm font-semibold text-gray-700">Vĩ độ (Latitude) <span className="text-red-500">*</span></label>
+                <input
+                  type="number"
+                  step="any"
+                  required
+                  value={formData.latitude}
+                  onChange={(event) => setField("latitude", event.target.value)}
+                  placeholder="VD: 21.028511"
+                  className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm outline-none transition-all focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Kinh độ (Longitude) <span className="text-red-500">*</span></label>
-                <input type="number" step="any" name="longitude" required value={formData.longitude} onChange={handleChange} placeholder="VD: 105.804817" className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all text-sm outline-none bg-white" />
+                <label className="mb-2 block text-sm font-semibold text-gray-700">Kinh độ (Longitude) <span className="text-red-500">*</span></label>
+                <input
+                  type="number"
+                  step="any"
+                  required
+                  value={formData.longitude}
+                  onChange={(event) => setField("longitude", event.target.value)}
+                  placeholder="VD: 105.804817"
+                  className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm outline-none transition-all focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                />
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Submit Actions */}
         <div className="flex items-center justify-end gap-4 pt-4">
           <Link href="/enterprise/complexes">
-            <button type="button" className="px-6 py-3 rounded-full text-sm font-semibold text-gray-600 hover:bg-gray-100 transition-colors">
-              Hủy bỏ
-            </button>
+            <button type="button" className="rounded-full px-6 py-3 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-100">Hủy</button>
           </Link>
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={loading}
-            className="flex items-center justify-center gap-2 bg-app-primary hover:bg-app-primary/90 disabled:opacity-70 text-white px-8 py-3 rounded-full text-sm font-semibold transition-all shadow-md min-w-[160px]"
+            className="flex min-w-[160px] items-center justify-center gap-2 rounded-full bg-app-primary px-8 py-3 text-sm font-semibold text-white shadow-md transition-all hover:bg-app-primary/90 disabled:opacity-70"
           >
-            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Lưu Khu Tổ Hợp"}
+            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Lưu khu tổ hợp"}
           </button>
         </div>
-
       </form>
     </div>
   );
