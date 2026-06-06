@@ -122,10 +122,10 @@ export default function HomeClient() {
 
   return (
     <>
-      <div className="center relative size-full">
+      <div className="relative w-full h-[450px] md:h-[640px] bg-zinc-950 overflow-hidden flex items-center">
         {/* BG — giữ landmarks làm background như TestSystem */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="size-full scale-115 bg-black">
+          <div className="size-full scale-115 bg-zinc-950">
             <AnimatePresence mode="wait">
               <motion.div
                 key={landmarks?.[imageIndex]?.id}
@@ -138,57 +138,99 @@ export default function HomeClient() {
                 <img
                   src={landmarks?.[imageIndex]?.thumbnailUrl ?? undefined}
                   alt=""
-                  className="size-full object-cover"
+                  className="size-full object-cover opacity-90"
                 />
               </motion.div>
             </AnimatePresence>
           </div>
         </div>
         {/* Overlay */}
-        <div className="absolute inset-0 pointer-events-none">
-          {/* Lớp phủ gradient tối phần trên cùng (navbar area) */}
-          <div className="absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-black/70 via-black/20 to-transparent" />
-          <div className="blur-bottom size-full" />
+        <div className="absolute inset-0 pointer-events-none z-10">
+          {/* Lớp phủ Gradient Trái-Sang-Phải làm tối bên trái nơi đặt chữ */}
+          <div className="absolute inset-y-0 left-0 w-full md:w-3/5 bg-gradient-to-r from-black/85 via-black/45 to-transparent" />
+          {/* Lớp phủ tối phần trên (navbar area) */}
+          <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/55 to-transparent" />
+          {/* Lớp phủ tối phần dưới (bottom transition area) */}
+          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/50 to-transparent" />
         </div>
+
         {/* FG */}
-        <div className="relative h-full w-18/19">
+        <div className="relative h-full w-full max-w-[1707px] mx-auto px-6 md:px-12 flex items-center z-20">
           {/* INFO — giữ thông tin landmark từ TestSystem */}
-          <div className="pos-center-y">
-            <motion.div
-              key={landmarks?.[imageIndex]?.id}
-              initial={{ opacity: 0, x: "-100%" }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.6, ease: "easeIn" }}
-              className="w-full"
-            >
-              <div>
-                <div className="text-header text-white">
-                  {landmarks?.[imageIndex]?.name}
+          <div className="w-full max-w-[700px] flex items-center justify-start py-12 md:py-24">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={landmarks?.[imageIndex]?.id}
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 30 }}
+                transition={{ duration: 0.4, ease: "easeInOut" }}
+                className="w-full flex flex-col items-start text-white"
+              >
+                {/* Badges Row */}
+                <div className="flex flex-wrap items-center gap-2 mb-6 text-xs font-semibold">
+                  <span className="border border-[#FF385C] text-[#FF385C] bg-[#FF385C]/10 px-2 py-0.5 rounded-[5px]">
+                    ★ {landmarks?.[imageIndex]?.rating || "4.8"}
+                  </span>
+                  <span className="border border-white/40 bg-white/10 text-white px-2 py-0.5 rounded-[5px]">
+                    {landmarks?.[imageIndex]?.province || "Việt Nam"}
+                  </span>
+                  <span className="bg-white/10 text-white px-2 py-0.5 rounded-[5px]">
+                    Điểm đến nổi bật
+                  </span>
                 </div>
-                <div className="text-content text-white mt-2 max-w-2xl line-clamp-2">{landmarks?.[imageIndex]?.description}</div>
-                <div className="text-content text-white mt-1 font-medium">{landmarks?.[imageIndex]?.province}</div>
-                <div className="h-[20]" />
-                <Button
-                  className="text-title bg-app-primary hover:bg-app-accent w-[200]"
-                  onClick={() => {
-                    const activeLandmark = landmarks?.[imageIndex];
-                    if (activeLandmark?.id) {
-                      router.push(`/landmark/${activeLandmark.id}/detail`);
-                    }
-                  }}
-                >
-                  Xem chi tiết
-                </Button>
-              </div>
-            </motion.div>
+
+                {/* Title */}
+                <h1 className="text-[32px] md:text-[42px] font-bold leading-[1.3] md:leading-[1.5] mb-4 text-white drop-shadow-[0_2px_1px_rgba(0,0,0,0.3)]">
+                  <button
+                    onClick={() => {
+                      const activeLandmark = landmarks?.[imageIndex];
+                      if (activeLandmark?.id) {
+                        router.push(`/landmark/${activeLandmark.id}/detail`);
+                      }
+                    }}
+                    className="hover:underline text-left cursor-pointer border-none bg-transparent text-white font-bold p-0"
+                  >
+                    {landmarks?.[imageIndex]?.name}
+                  </button>
+                </h1>
+
+                {/* Description */}
+                <p className="text-sm text-white/80 leading-[1.6] mb-8 max-w-full drop-shadow-[0_1px_1px_rgba(0,0,0,0.2)] line-clamp-3">
+                  {landmarks?.[imageIndex]?.description}
+                </p>
+
+                {/* CTA Action Group */}
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={() => {
+                      const activeLandmark = landmarks?.[imageIndex];
+                      if (activeLandmark?.id) {
+                        router.push(`/landmark/${activeLandmark.id}/detail`);
+                      }
+                    }}
+                    className="h-12 px-6 rounded-full bg-gradient-to-r from-[#E61E4F] via-[#E61E4F] to-[#D70466] text-white font-semibold text-sm flex items-center gap-2.5 shadow-md hover:shadow-lg hover:brightness-105 active:scale-98 transition-all duration-200 cursor-pointer border-none outline-none group"
+                  >
+                    {/* Compass Icon */}
+                    <svg className="w-5 h-5 text-white animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10" />
+                      <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
+                    </svg>
+                    <span>Khám phá ngay</span>
+                  </button>
+                </div>
+              </motion.div>
+            </AnimatePresence>
           </div>
-          <div className="absolute right-0 bottom-1/6 w-full">
+
+          {/* Thumbs Navigation */}
+          <div className="absolute bottom-6 md:bottom-12 left-6 md:left-auto right-6 md:right-12 z-30">
             <ImageNavigation />
           </div>
         </div>
+
         {/* Search Info — cải tiến từ frontend với FilterService */}
-        <div className="pos-center-x bottom-[-30] w-6/10">
+        <div className="pos-center-x bottom-[-30] w-6/10 z-30">
           <Suspense fallback={<div className="h-[70] w-full rounded-full bg-white dark:bg-zinc-900 border animate-pulse" />}>
             <SearchInfoSection
               onClickSearch={(value) => {

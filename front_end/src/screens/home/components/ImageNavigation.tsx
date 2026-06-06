@@ -1,42 +1,37 @@
 import { useSafeContext } from "@/shared/hooks";
 import { cn } from "@/lib/utils";
 import { HomeContext } from "@/screens/home/providers/home.provider";
-import { useContext } from "react";
-import { Fragment } from "react/jsx-runtime";
 
 export default function ImageNavigation() {
   const { imageIndex, setImageIndex, setClock, landmarks } =
     useSafeContext(HomeContext);
 
   return (
-    <div className="row justify-end">
-      {landmarks?.slice(0, 6).map((e: any, index: any) => (
-        <Fragment key={e?.id}>
-          <div className="w-[10]" />
+    <div className="flex items-center justify-center md:justify-end gap-2.5 w-full flex-wrap">
+      {landmarks?.slice(0, 6).map((e: any, index: any) => {
+        const isActive = landmarks?.[imageIndex]?.id === e.id;
+        return (
           <div
-            className={cn(
-              "border-app-muted-fg/25 aspect-video min-w-14 rounded-sm border hover:border-white lg:w-1/20",
-              landmarks?.[imageIndex]?.id == e.id
-                ? "border-3 border-white"
-                : "border-transparent",
-            )}
+            key={e?.id}
             onClick={() => {
               setClock(6000);
               setImageIndex(index);
             }}
+            className={cn(
+              "relative w-[60px] h-[40px] rounded-[4px] cursor-pointer transition-all duration-300 overflow-hidden",
+              isActive
+                ? "border-2 border-[#FF385C] scale-105 shadow-[0_4px_10px_rgba(0,0,0,0.3)] opacity-100"
+                : "border border-white/40 hover:border-white hover:scale-102 opacity-70 hover:opacity-100"
+            )}
           >
-            <div className="relative size-full">
-              <div className="absolute inset-0">
-                <img
-                  src={e.thumbnailUrl}
-                  alt=""
-                  className="size-full rounded-sm object-cover"
-                />
-              </div>
-            </div>
+            <img
+              src={e.thumbnailUrl}
+              alt={e.name || ""}
+              className="w-full h-full object-cover"
+            />
           </div>
-        </Fragment>
-      ))}
+        );
+      })}
     </div>
   );
 }
