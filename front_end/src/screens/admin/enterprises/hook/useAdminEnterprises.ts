@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import AdminService, { AdminUser } from "@/services/admin.service";
 import {
   ConfirmState,
@@ -35,7 +35,7 @@ export function useAdminEnterprises() {
     setPage(0);
   };
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const [currentRes, pendingCountRes, allCountRes] = await Promise.all([
@@ -59,11 +59,11 @@ export function useAdminEnterprises() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, tab]);
 
   useEffect(() => {
     fetchData();
-  }, [page, tab]);
+  }, [fetchData]);
 
   const runConfirm = async () => {
     if (!confirm.open) return;

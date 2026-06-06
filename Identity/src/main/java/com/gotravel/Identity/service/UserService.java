@@ -306,6 +306,8 @@ public class UserService {
 
         userMapper.updateHostProfileFromRequest(hostProfileRequest, existingProfile);
 
+        // Revoke HOST role since profile is pending again
+        user.getRoles().removeIf(r -> r.getName().equals("HOST"));
 
         existingProfile.setApprovalStatus(Approval_status.PENDING);
         userRepository.save(user);
@@ -463,6 +465,9 @@ public class UserService {
                 .orElseThrow(() -> new AppException(UserErrorCode.ROLE_NOT_FOUND));
 
         user.getRoles().add(role);
+        if (user.getHostProfile() != null) {
+            user.getHostProfile().setApprovalStatus(Approval_status.APPROVED);
+        }
         userRepository.save(user);
         return true;
     }
@@ -657,10 +662,15 @@ public class UserService {
         boolean isActive = Boolean.TRUE.equals(user.getIsActive());
         boolean isDeleted = Boolean.TRUE.equals(user.getIsDeleted());
 
+        String hostStatus = user.getHostProfile() != null ? user.getHostProfile().getApprovalStatus().toString() : null;
+        String enterpriseStatus = user.getEnterpriseProfile() != null ? user.getEnterpriseProfile().getApprovalStatus().toString() : null;
+
         return UserStatusResponese.builder()
                 .isActive(isActive)
                 .isDeleted(isDeleted)
                 .isAllowed(isActive && !isDeleted)
+                .hostApprovalStatus(hostStatus)
+                .enterpriseApprovalStatus(enterpriseStatus)
                 .build();
     }
 

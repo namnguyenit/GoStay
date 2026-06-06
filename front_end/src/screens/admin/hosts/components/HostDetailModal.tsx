@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import {
   Dialog,
   DialogContent,
@@ -30,7 +31,16 @@ function IdentityImage({ label, url }: { label: string; url?: string }) {
       <div className="mb-2 text-[10px] font-bold tracking-wider text-slate-400 uppercase">{label}</div>
       {url ? (
         <a href={url} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-xl border border-slate-100 bg-white">
-          <img src={url} alt={label} className="h-40 w-full object-cover transition-transform hover:scale-[1.02]" />
+          <div className="relative h-40 w-full">
+            <Image
+              unoptimized
+              fill
+              src={url}
+              alt={label}
+              className="object-cover transition-transform hover:scale-[1.02]"
+              sizes="(max-width: 768px) 100vw, 384px"
+            />
+          </div>
         </a>
       ) : (
         <div className="flex h-40 items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white text-xs font-semibold text-slate-400">
@@ -60,7 +70,14 @@ export function HostDetailModal({ isOpen, hostData, isLoading, onClose }: HostDe
           <div className="space-y-5 p-6">
             <div className="flex items-center gap-4">
               {hostData.avatarUrl ? (
-                <img src={hostData.avatarUrl} alt={hostData.fullName ?? "Host avatar"} className="h-14 w-14 rounded-full border border-slate-100 object-cover" />
+                <Image
+                  unoptimized
+                  src={hostData.avatarUrl}
+                  alt={hostData.fullName ?? "Host avatar"}
+                  width={56}
+                  height={56}
+                  className="h-14 w-14 rounded-full border border-slate-100 object-cover"
+                />
               ) : (
                 <div className="flex h-14 w-14 items-center justify-center rounded-full border border-slate-100 bg-slate-50 text-lg font-bold text-slate-400">
                   {(hostData.fullName ?? "H").charAt(0).toUpperCase()}

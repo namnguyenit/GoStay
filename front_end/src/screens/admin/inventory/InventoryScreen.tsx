@@ -1,6 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import { useAdminInventory } from "./hook/useAdminInventory";
+import type { InventoryAvailability } from "./hook/useAdminInventory";
 
 export function InventoryScreen() {
   const {
@@ -23,9 +25,10 @@ export function InventoryScreen() {
   } = useAdminInventory();
 
   const selectedListingInfo = listingsList.find((x) => x.id === listingId);
+  const isAvailableStatus = (status: string) => status === "ACTIVE" || status === "AVAILABLE";
 
   // Group consecutive blocked dates
-  const getBlockedRanges = (availList: any[]) => {
+  const getBlockedRanges = (availList: InventoryAvailability[]) => {
     const blockedDates = Array.from(
       new Set(availList.filter((x) => x.status === "BLOCKED").map((x) => x.date))
     ).sort() as string[];
@@ -73,8 +76,9 @@ export function InventoryScreen() {
 
   // Helper to color-code availability cards
   const getAvailabilityColor = (avail: number, total: number, status: string) => {
-    if (status !== "ACTIVE" && status !== "AVAILABLE") return "bg-red-50 border-red-200 text-red-800";
+    if (!isAvailableStatus(status)) return "bg-red-50 border-red-200 text-red-800";
     if (avail === 0) return "bg-red-50 border-red-200 text-red-800";
+    if (total <= 0) return "bg-slate-50 border-slate-200 text-slate-700";
     const percent = (avail / total) * 100;
     if (percent < 50) return "bg-amber-50 border-amber-200 text-amber-800";
     return "bg-green-50 border-green-200 text-green-800";
@@ -142,9 +146,12 @@ export function InventoryScreen() {
               <div className="mb-4 p-3.5 bg-slate-50/50 rounded-[14px] border border-slate-100 space-y-3 text-xs">
                 <div className="flex gap-2.5 items-center">
                   {selectedListingInfo.thumbnailUrl ? (
-                    <img
+                    <Image
+                      unoptimized
                       src={selectedListingInfo.thumbnailUrl}
-                      alt={selectedListingInfo.title}
+                      alt={selectedListingInfo.title ?? "listing thumbnail"}
+                      width={40}
+                      height={40}
                       className="w-10 h-10 object-cover rounded-lg border border-slate-100 bg-white"
                     />
                   ) : (
@@ -337,7 +344,7 @@ export function InventoryScreen() {
             ) : availability.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-80 text-slate-400 text-xs text-center">
                 <span>⚠️ Chưa cấu hình tồn kho hoặc không tìm thấy dữ liệu tồn kho.</span>
-                <span className="text-[10px] text-slate-400 mt-1">Bấm "Đồng bộ tồn kho ngay" ở bên trái để khởi tạo lịch!</span>
+                <span className="text-[10px] text-slate-400 mt-1">Bấm &quot;Đồng bộ tồn kho ngay&quot; ở bên trái để khởi tạo lịch!</span>
               </div>
             ) : (
               <div className="space-y-4">
@@ -358,7 +365,9 @@ export function InventoryScreen() {
                 <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3">
                   {availability.map((item, index) => {
                     const label = formatDateLabel(item.date);
-                    const isFull = item.availableQuantity === 0 || item.status !== "ACTIVE";
+                    const safeTotal = item.totalQuantity ?? 0;
+                    const fillPercent = safeTotal > 0 ? (item.availableQuantity / safeTotal) * 100 : 0;
+                    const isFull = item.availableQuantity === 0 || !isAvailableStatus(item.status);
                     const isAllDay = item.timeSlot === "ALL_DAY";
 
                     return (
@@ -367,7 +376,7 @@ export function InventoryScreen() {
                         onClick={() => setSelectedDateDetail(item)}
                         className={`p-3 rounded-xl border flex flex-col justify-between transition-all hover:shadow-sm cursor-pointer ${getAvailabilityColor(
                           item.availableQuantity,
-                          item.totalQuantity || 5,
+                          safeTotal,
                           item.status
                         )}`}
                       >
@@ -391,7 +400,9 @@ export function InventoryScreen() {
                           <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Sức chứa</div>
                           <div className="flex justify-between items-baseline text-xs text-slate-700">
                             <span className="font-semibold text-slate-800">{item.availableQuantity}</span>
-                            <span className="text-[9px] text-slate-400">/ {item.totalQuantity || 5} chỗ</span>
+                            <span className="text-[9px] text-slate-400">
+                              {safeTotal > 0 ? `/ ${safeTotal} chỗ` : "/ chưa có tổng"}
+                            </span>
                           </div>
 
                           {/* Progress bar */}
@@ -400,19 +411,19 @@ export function InventoryScreen() {
                               className={`h-full rounded-full ${
                                 isFull
                                   ? "bg-red-500"
-                                  : item.availableQuantity / (item.totalQuantity || 5) < 0.5
+                                  : safeTotal > 0 && item.availableQuantity / safeTotal < 0.5
                                   ? "bg-amber-500"
                                   : "bg-green-500"
                               }`}
                               style={{
-                                width: `${((item.availableQuantity || 0) / (item.totalQuantity || 5)) * 100}%`,
+                                width: `${fillPercent}%`,
                               }}
                             ></div>
                           </div>
                         </div>
 
                         {!isAllDay && (
-                          <div className="mt-2 text-[9px] font-semibold text-slate-450 border-t border-slate-100 pt-1 truncate" title={item.timeSlot}>
+                          <div className="mt-2 text-[9px] font-semibold text-slate-450 border-t border-slate-100 pt-1 truncate" title={item.timeSlot ?? ""}>
                             🕒 {item.timeSlot}
                           </div>
                         )}
@@ -457,13 +468,15 @@ export function InventoryScreen() {
                 <div>
                   <span className="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">Đã đặt chỗ</span>
                   <span className="font-semibold text-slate-700 block mt-1">
-                    {Math.max(0, (selectedDateDetail.totalQuantity || 5) - (selectedDateDetail.availableQuantity || 0))} chỗ
+                    {selectedDateDetail.totalQuantity !== undefined
+                      ? `${Math.max(0, selectedDateDetail.totalQuantity - (selectedDateDetail.availableQuantity || 0))} chỗ`
+                      : "Chưa có dữ liệu"}
                   </span>
                 </div>
                 <div>
                   <span className="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">Còn trống</span>
                   <span className="font-semibold text-emerald-600 block mt-1">
-                    {selectedDateDetail.availableQuantity} / {selectedDateDetail.totalQuantity || 5} chỗ
+                    {selectedDateDetail.availableQuantity} / {selectedDateDetail.totalQuantity ?? "chưa có tổng"} chỗ
                   </span>
                 </div>
               </div>

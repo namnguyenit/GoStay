@@ -30,6 +30,7 @@ public class InternalFeignConfig {
         }
 
         String normalizedPath = path.startsWith("/") ? path : "/" + path;
-        return normalizedPath.equals("/api/v1/internal") || normalizedPath.startsWith("/api/v1/internal/");
+        return normalizedPath.equals("/api/v1/internal") || normalizedPath.startsWith("/api/v1/internal/") ||
+               normalizedPath.equals("/api/users/internal") || normalizedPath.startsWith("/api/users/internal/");
     }
 }

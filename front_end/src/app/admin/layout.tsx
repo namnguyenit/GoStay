@@ -1,14 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
+import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import AuthService from "@/services/auth.service";
 
 interface NavItem {
   href: string;
   label: string;
-  icon?: any;
+  icon?: ReactNode;
 }
 
 interface NavGroup {
@@ -22,6 +24,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [adminName, setAdminName] = useState("");
+  const [authMessage, setAuthMessage] = useState("Authenticating...");
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     partners: true,
@@ -40,7 +43,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       }
       const roles = AuthService.getUserRoles();
       if (!roles.includes("ADMIN")) {
-        alert("Bạn không có quyền truy cập trang quản trị.");
+        setAuthMessage("Bạn không có quyền truy cập trang quản trị. Đang chuyển về trang chủ...");
         router.push("/");
         return;
       }
@@ -56,7 +59,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className="min-h-screen flex items-center justify-center bg-[#f8f9fa]">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-gray-500 text-sm font-semibold">Authenticating...</p>
+          <p className="text-gray-500 text-sm font-semibold">{authMessage}</p>
         </div>
       </div>
     );
@@ -203,9 +206,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="p-6 pb-8">
           <div className="bg-slate-50/80 p-3.5 rounded-2xl flex items-center justify-between border border-slate-100/60">
             <div className="flex items-center gap-3">
-              <img
+              <Image
+                unoptimized
                 src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256"
                 alt="Avatar"
+                width={36}
+                height={36}
                 className="w-9 h-9 rounded-full object-cover border border-white shadow-sm"
               />
               <div>

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,9 +21,12 @@ function UserAvatar({ user }: { user: AdminUser }) {
 
   if (avatarUrl) {
     return (
-      <img
+      <Image
+        unoptimized
         src={avatarUrl}
         alt={user.username ?? "avatar"}
+        width={40}
+        height={40}
         className="h-10 w-10 rounded-full border border-slate-100 object-cover"
       />
     );

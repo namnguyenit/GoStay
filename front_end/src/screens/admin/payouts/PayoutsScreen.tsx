@@ -1,42 +1,41 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { useAdminPayouts } from "./hook/useAdminPayouts";
+import type { AdminPayout, GroupedPendingPayout } from "./hook/useAdminPayouts";
 import { format } from "date-fns";
+import { AdminPagination } from "@/screens/admin/_components/AdminPagination";
 
 export function PayoutsScreen() {
   const { 
     payouts, groupedPendingPayouts, historyPayouts, stats, loading, actionResult, handleMarkPaid, handleMarkHostPaid,
     activeTab, setActiveTab, searchQuery, setSearchQuery,
     fetchHostBankDetails, isFetchingBank, selectedHostBank, setSelectedHostBank,
+    page, setPage, totalPages, totalElements, pageSize,
     refetch
   } = useAdminPayouts();
 
   const [selectedBatch, setSelectedBatch] = useState<{ hostId: string; totalAmount: number; count: number } | null>(null);
-  const [selectedPayout, setSelectedPayout] = useState<any>(null);
+  const [selectedPayout, setSelectedPayout] = useState<AdminPayout | null>(null);
+  const visibleRowCount = activeTab === "PENDING" ? groupedPendingPayouts.length : historyPayouts.length;
 
-  const safeFormatDate = (dateVal: any, formatStr: string) => {
+  const safeFormatDate = (dateVal: AdminPayout["createdAt"], formatStr: string) => {
     if (!dateVal) return "";
     try {
-      let d = dateVal;
+      let d: Date;
       if (Array.isArray(dateVal)) {
         d = new Date(dateVal[0], dateVal[1] - 1, dateVal[2], dateVal[3] || 0, dateVal[4] || 0, dateVal[5] || 0);
       } else {
         d = new Date(dateVal);
       }
       return format(d, formatStr);
-    } catch (e) {
+    } catch {
       return "";
     }
   };
 
-  const openPaymentModalSingle = (payout: any) => {
-    setSelectedBatch(null);
-    setSelectedPayout(payout);
-    fetchHostBankDetails(payout.hostId);
-  };
-
-  const openPaymentModalBatch = (batch: any) => {
+  const openPaymentModalBatch = (batch: GroupedPendingPayout) => {
     setSelectedPayout(null);
     setSelectedBatch(batch);
     fetchHostBankDetails(batch.hostId);
@@ -52,7 +51,10 @@ export function PayoutsScreen() {
     if (selectedBatch) {
       await handleMarkHostPaid(selectedBatch.hostId);
     } else if (selectedPayout) {
-      await handleMarkPaid(selectedPayout.id || selectedPayout.payoutId);
+      const payoutId = selectedPayout.id || selectedPayout.payoutId;
+      if (payoutId) {
+        await handleMarkPaid(payoutId);
+      }
     }
     closePaymentModal();
   };
@@ -69,7 +71,7 @@ export function PayoutsScreen() {
       amount = selectedBatch.totalAmount;
       content = `Thanh toan gop GoStay Host ${selectedBatch.hostId.substring(0, 8)}`;
     } else if (selectedPayout) {
-      amount = selectedPayout.hostAmount;
+      amount = selectedPayout.hostAmount || 0;
       content = `Thanh toan GoStay ${selectedPayout.orderId?.substring(0, 8)}`;
     } else {
       return null;
@@ -89,7 +91,7 @@ export function PayoutsScreen() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-semibold text-slate-800 leading-tight">Thanh toán (Payouts)</h2>
-          <p className="text-xs text-slate-400 mt-1">Quản lý và theo dõi thu nhập của host cũng như phí hoa hồng của hệ thống.</p>
+          <p className="text-xs text-slate-400 mt-1">Quản lý payout host theo dữ liệu phân trang từ Payment service.</p>
         </div>
         <button 
           onClick={refetch} 
@@ -123,7 +125,7 @@ export function PayoutsScreen() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         <div className="bg-white p-5 rounded-[20px] border border-slate-100 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col justify-between">
           <div className="flex justify-between items-start mb-4">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Cần Thanh Toán (Nợ)</span>
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Cần Thanh Toán</span>
             <div className="p-2 bg-orange-50 text-orange-500 rounded-xl">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             </div>
@@ -135,7 +137,7 @@ export function PayoutsScreen() {
                 <svg className="w-3.5 h-3.5 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 Chờ xử lý
               </span>
-              đối soát
+              trên trang hiện tại
             </p>
           </div>
         </div>
@@ -154,14 +156,14 @@ export function PayoutsScreen() {
                 <svg className="w-3 h-3 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                 Đã hoàn tất
               </span>
-              chuyển khoản
+              trên trang hiện tại
             </p>
           </div>
         </div>
 
         <div className="bg-white p-5 rounded-[20px] border border-slate-100 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col justify-between">
           <div className="flex justify-between items-start mb-4">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Hoa Hồng Tạm Tính (5%)</span>
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Hoa Hồng Theo API</span>
             <div className="p-2 bg-blue-50 text-blue-500 rounded-xl">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             </div>
@@ -173,7 +175,7 @@ export function PayoutsScreen() {
                 <svg className="w-3.5 h-3.5 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 Doanh thu
               </span>
-              phí nền tảng
+              trên trang hiện tại
             </p>
           </div>
         </div>
@@ -218,10 +220,10 @@ export function PayoutsScreen() {
           <div className="p-16 flex justify-center">
             <div className="w-6 h-6 border-2 border-slate-300 border-t-slate-800 rounded-full animate-spin"></div>
           </div>
-        ) : payouts.length === 0 ? (
+        ) : visibleRowCount === 0 ? (
           <div className="p-16 text-center text-slate-400 text-xs font-medium flex flex-col items-center">
             <svg className="w-10 h-10 text-slate-200 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg>
-            {searchQuery ? "Không tìm thấy dữ liệu phù hợp." : "Hiện không có khoản thanh toán nào."}
+            {searchQuery ? "Không tìm thấy dữ liệu phù hợp trong trang hiện tại." : "Tab này chưa có khoản thanh toán nào trong trang hiện tại."}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -338,6 +340,14 @@ export function PayoutsScreen() {
             </table>
           </div>
         )}
+        <AdminPagination
+          page={page}
+          totalPages={totalPages}
+          totalElements={totalElements}
+          pageSize={pageSize}
+          loading={loading}
+          onPageChange={setPage}
+        />
       </div>
 
       {/* Payment Modal */}
@@ -388,7 +398,14 @@ export function PayoutsScreen() {
                   {getVietQrUrl() && (
                     <div className="flex flex-col items-center">
                       <div className="p-2 bg-white rounded-xl shadow-sm border border-slate-100">
-                        <img src={getVietQrUrl()!} alt="VietQR" className="w-36 h-36 rounded-lg object-contain" />
+                        <Image
+                          unoptimized
+                          src={getVietQrUrl()!}
+                          alt="VietQR"
+                          width={144}
+                          height={144}
+                          className="w-36 h-36 rounded-lg object-contain"
+                        />
                       </div>
                       <p className="text-[10px] font-semibold text-slate-400 mt-2 uppercase tracking-wider">Quét mã để chuyển khoản</p>
                     </div>

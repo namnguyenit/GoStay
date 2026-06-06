@@ -1,10 +1,25 @@
-import { useEffect, useState } from "react";
-import AdminService from "@/services/admin.service";
+import { useCallback, useEffect, useState } from "react";
+import AdminService, { AdminInventoryAvailability, AdminListing } from "@/services/admin.service";
+
+export type InventoryAvailability = AdminInventoryAvailability;
+
+type InventoryActionError = {
+  message?: string;
+};
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "object" && error !== null && "message" in error) {
+    const message = (error as InventoryActionError).message;
+    if (message) return message;
+  }
+  return fallback;
+};
 
 export function useAdminInventory() {
   const [listingId, setListingId] = useState("");
-  const [listingsList, setListingsList] = useState<any[]>([]);
-  const [availability, setAvailability] = useState<any[]>([]);
+  const [listingsList, setListingsList] = useState<AdminListing[]>([]);
+  const [availability, setAvailability] = useState<InventoryAvailability[]>([]);
   const [loadingListings, setLoadingListings] = useState(false);
   const [loadingCalendar, setLoadingCalendar] = useState(false);
 
@@ -18,20 +33,23 @@ export function useAdminInventory() {
   const [actionResult, setActionResult] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
   // Load listings for selector dropdown
-  const fetchListings = async () => {
+  const fetchListings = useCallback(async () => {
     setLoadingListings(true);
     try {
       const res = await AdminService.getListings("ACTIVE", 0, 100);
       setListingsList(res?.data?.content ?? []);
     } catch (err) {
-      console.error("Failed to load listings for dropdown", err);
+      setActionResult({
+        type: "error",
+        message: getErrorMessage(err, "Không thể tải danh sách dịch vụ đang hoạt động."),
+      });
     } finally {
       setLoadingListings(false);
     }
-  };
+  }, []);
 
   // Load inventory calendar availability
-  const fetchAvailability = async (targetId = listingId) => {
+  const fetchAvailability = useCallback(async (targetId: string) => {
     if (!targetId) return;
     setLoadingCalendar(true);
     try {
@@ -48,12 +66,15 @@ export function useAdminInventory() {
       );
       setAvailability(res?.data ?? []);
     } catch (err) {
-      console.error("Failed to fetch availability", err);
       setAvailability([]);
+      setActionResult({
+        type: "error",
+        message: getErrorMessage(err, "Không thể tải lịch tồn kho của dịch vụ này."),
+      });
     } finally {
       setLoadingCalendar(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchListings();
@@ -64,23 +85,25 @@ export function useAdminInventory() {
       const id = params.get("listingId");
       if (id) {
         setListingId(id);
-        fetchAvailability(id);
       }
     }
-  }, []);
+  }, [fetchListings]);
 
   useEffect(() => {
     if (listingId) {
-      fetchAvailability();
+      fetchAvailability(listingId);
     } else {
       setAvailability([]);
     }
-  }, [listingId]);
+  }, [fetchAvailability, listingId]);
 
   const handleForceUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!listingId || !forceUpdateData.status || !forceUpdateData.startDate || !forceUpdateData.endDate) {
-      alert("Vui lòng chọn Listing ID, chọn trạng thái và khoảng thời gian can thiệp.");
+      setActionResult({
+        type: "error",
+        message: "Vui lòng chọn Listing ID, chọn trạng thái và khoảng thời gian can thiệp.",
+      });
       return;
     }
     setLoading(true);
@@ -88,15 +111,15 @@ export function useAdminInventory() {
     try {
       await AdminService.forceUpdateInventory(listingId, forceUpdateData);
       setActionResult({ type: "success", message: `Thực thi cập nhật cưỡng chế trạng thái kho thành công.` });
-      fetchAvailability();
-    } catch (err: any) {
-      setActionResult({ type: "error", message: err?.message || "Có lỗi xảy ra khi can thiệp." });
+      await fetchAvailability(listingId);
+    } catch (err: unknown) {
+      setActionResult({ type: "error", message: getErrorMessage(err, "Có lỗi xảy ra khi can thiệp.") });
     } finally {
       setLoading(false);
     }
   };
 
-  const [selectedDateDetail, setSelectedDateDetail] = useState<any | null>(null);
+  const [selectedDateDetail, setSelectedDateDetail] = useState<InventoryAvailability | null>(null);
 
   const handleQuickForceUpdate = async (dateStr: string, newStatus: string) => {
     if (!listingId) return;
@@ -110,12 +133,12 @@ export function useAdminInventory() {
         endDate: dateStr,
       });
       setActionResult({ type: "success", message: `Can thiệp trạng thái ngày ${dateStr} thành công.` });
-      await fetchAvailability();
+      await fetchAvailability(listingId);
       
       // Cập nhật state modal cục bộ để đồng bộ giao diện
-      setSelectedDateDetail((prev: any) => prev ? { ...prev, status: newStatus === "BLOCKED" ? "BLOCKED" : "AVAILABLE" } : null);
-    } catch (err: any) {
-      setActionResult({ type: "error", message: err?.message || "Có lỗi xảy ra khi can thiệp." });
+      setSelectedDateDetail((prev) => prev ? { ...prev, status: newStatus === "BLOCKED" ? "BLOCKED" : "AVAILABLE" } : null);
+    } catch (err: unknown) {
+      setActionResult({ type: "error", message: getErrorMessage(err, "Có lỗi xảy ra khi can thiệp.") });
     } finally {
       setLoading(false);
     }
@@ -133,9 +156,9 @@ export function useAdminInventory() {
         endDate: endStr,
       });
       setActionResult({ type: "success", message: `Mở khóa khoảng ngày từ ${startStr} đến ${endStr} thành công.` });
-      await fetchAvailability();
-    } catch (err: any) {
-      setActionResult({ type: "error", message: err?.message || "Có lỗi xảy ra khi mở khóa." });
+      await fetchAvailability(listingId);
+    } catch (err: unknown) {
+      setActionResult({ type: "error", message: getErrorMessage(err, "Có lỗi xảy ra khi mở khóa.") });
     } finally {
       setLoading(false);
     }
@@ -143,17 +166,23 @@ export function useAdminInventory() {
 
   const handleSync = async () => {
     if (!listingId) {
-      alert("Vui lòng chọn hoặc nhập Listing ID để đồng bộ.");
+      setActionResult({ type: "error", message: "Vui lòng chọn hoặc nhập Listing ID để đồng bộ." });
       return;
     }
     setLoading(true);
     setActionResult(null);
     try {
-      await AdminService.syncInventory(listingId);
-      setActionResult({ type: "success", message: `Đồng bộ lại tồn kho chuẩn xác thành công.` });
-      fetchAvailability();
-    } catch (err: any) {
-      setActionResult({ type: "error", message: err?.message || "Có lỗi xảy ra khi đồng bộ." });
+      const res = await AdminService.syncInventory(listingId);
+      const fixedCount = res?.data?.recordsFixed;
+      setActionResult({
+        type: "success",
+        message: fixedCount !== undefined
+          ? `Đồng bộ tồn kho thành công, đã sửa ${fixedCount} bản ghi.`
+          : "Đồng bộ lại tồn kho chuẩn xác thành công.",
+      });
+      await fetchAvailability(listingId);
+    } catch (err: unknown) {
+      setActionResult({ type: "error", message: getErrorMessage(err, "Có lỗi xảy ra khi đồng bộ.") });
     } finally {
       setLoading(false);
     }

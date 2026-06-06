@@ -1,6 +1,7 @@
 package com.Listing.CatalogandListing.service;
 
 import com.Listing.CatalogandListing.dto.request.listing.SaveListingRequest;
+import com.Listing.CatalogandListing.dto.response.IdentityApiResponse;
 import com.Listing.CatalogandListing.entity.Listing;
 import com.Listing.CatalogandListing.enums.ListingStatus;
 import com.Listing.CatalogandListing.exception.AppException;
@@ -11,6 +12,7 @@ import com.Listing.CatalogandListing.repository.ComplexRepository;
 import com.Listing.CatalogandListing.entity.Complex;
 import com.Listing.CatalogandListing.dto.response.PaginationResponse;
 import com.Listing.CatalogandListing.dto.response.ListingDetailResponse;
+import com.Listing.CatalogandListing.dto.response.UserStatusResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import com.Listing.CatalogandListing.client.InventoryClient;
@@ -36,6 +38,7 @@ public class ListingService {
     ListingRepository listingRepository;
     ComplexRepository complexRepository;
     InventoryClient inventoryClient;
+    com.Listing.CatalogandListing.client.IdentityClient identityClient;
 
     public PaginationResponse<ListingDetailResponse> getListingsByHost(String userId, int page, int size) {
         Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
@@ -74,6 +77,8 @@ public class ListingService {
     }
 
     public void createListing(String userId, SaveListingRequest request) {
+        ensureUserCanManageListings(userId);
+
         validateCategoryAndAttributes(request.getCategory(), request.getSubCategory(), request.getAttributes());
         Listing listing = listingMapper.toEntity(request);
         
@@ -103,21 +108,6 @@ public class ListingService {
         listing.setStatus(ListingStatus.PENDING);
         listing.setLocation(GeometryUtil.createPoint(listing.getLongitude(), listing.getLatitude()));
         listing = listingRepository.save(listing);
-
-        // Call Inventory Service to automatically create calendar
-        // Commented out: Let the host initialize and configure inventory manually from the host portal
-        /*
-        try {
-            InitializeInventoryRequest initReq = InitializeInventoryRequest.builder()
-                .listingId(listing.getId())
-                .totalQuantity(5) // Default quantity for demo
-                .build();
-            inventoryClient.initializeInventory(initReq);
-            log.info("Successfully requested inventory initialization for listing {}", listing.getId());
-        } catch (Exception e) {
-            log.error("Failed to initialize inventory for listing {}", listing.getId(), e);
-        }
-        */
     }
 
     public void updateListing(UUID listingId, String userId, SaveListingRequest request) {
@@ -129,6 +119,9 @@ public class ListingService {
             throw new com.Listing.CatalogandListing.exception.AppException(
                     com.Listing.CatalogandListing.exception.ListingErrorCode.LISTING_ACCESS_DENIED);
         }
+
+        ensureUserCanManageListings(userId);
+
         validateCategoryAndAttributes(request.getCategory(), request.getSubCategory(), request.getAttributes());
         
         if (request.getComplexId() != null) {
@@ -215,6 +208,20 @@ public class ListingService {
                 * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c;
+    }
+
+    private void ensureUserCanManageListings(String userId) {
+        IdentityApiResponse<UserStatusResponse> userStatusResp = identityClient.checkUserStatus(userId);
+        if (userStatusResp == null || userStatusResp.getData() == null) {
+            throw new AppException(ListingErrorCode.LISTING_ACCESS_DENIED);
+        }
+
+        UserStatusResponse status = userStatusResp.getData();
+        boolean approvedHost = "APPROVED".equals(status.getHostApprovalStatus());
+        boolean approvedEnterprise = "APPROVED".equals(status.getEnterpriseApprovalStatus());
+        if (!approvedHost && !approvedEnterprise) {
+            throw new AppException(ListingErrorCode.LISTING_ACCESS_DENIED);
+        }
     }
 
     private void validateCategoryAndAttributes(ListingCategory category, SubCategory subCategory, com.Listing.CatalogandListing.entity.attributes.BaseListingAttributes attributes) {

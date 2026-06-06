@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { AdminConfirmDialog } from "@/screens/admin/_components/AdminConfirmDialog";
 import { AdminPagination } from "@/screens/admin/_components/AdminPagination";
 import { formatCurrency } from "@/screens/admin/_components/admin-utils";
@@ -29,9 +30,12 @@ function ListingThumb({ item }: { item: AdminListing }) {
   }
 
   return (
-    <img
+    <Image
+      unoptimized
       src={item.thumbnailUrl}
       alt={item.title ?? "listing"}
+      width={44}
+      height={44}
       className="h-11 w-11 rounded-xl border border-slate-100 bg-slate-50 object-cover"
     />
   );
@@ -274,11 +278,16 @@ export function ListingsScreen() {
 
             <div className="flex-1 space-y-5 overflow-y-auto p-6">
               {selectedListing.thumbnailUrl && (
-                <img
-                  src={selectedListing.thumbnailUrl}
-                  alt={selectedListing.title ?? "listing thumbnail"}
-                  className="h-52 w-full rounded-2xl border border-slate-100 object-cover"
-                />
+                <div className="relative h-52 w-full overflow-hidden rounded-2xl border border-slate-100">
+                  <Image
+                    unoptimized
+                    fill
+                    src={selectedListing.thumbnailUrl}
+                    alt={selectedListing.title ?? "listing thumbnail"}
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 768px"
+                  />
+                </div>
               )}
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -318,10 +327,13 @@ export function ListingsScreen() {
                   <h4 className="mb-2 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Bộ sưu tập ảnh</h4>
                   <div className="flex gap-2 overflow-x-auto pb-1">
                     {galleryUrls.map((url, index) => (
-                      <img
+                      <Image
+                        unoptimized
                         key={`${url}-${index}`}
                         src={url}
                         alt={`gallery-${index}`}
+                        width={144}
+                        height={96}
                         className="h-24 w-36 flex-shrink-0 rounded-lg border border-slate-100 object-cover"
                       />
                     ))}

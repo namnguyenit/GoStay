@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import AdminService, { AdminHostDetail, AdminUser } from "@/services/admin.service";
 import {
   ConfirmState,
@@ -36,7 +36,7 @@ export function useAdminHosts() {
     setPage(0);
   };
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const [currentRes, pendingCountRes, allCountRes] = await Promise.all([
@@ -60,11 +60,11 @@ export function useAdminHosts() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, tab]);
 
   useEffect(() => {
     fetchData();
-  }, [page, tab]);
+  }, [fetchData]);
 
   const handleViewDetail = async (id: string) => {
     setDetailModal({ open: true, host: null });

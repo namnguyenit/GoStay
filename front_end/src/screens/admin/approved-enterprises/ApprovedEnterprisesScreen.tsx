@@ -5,7 +5,7 @@ import { useApprovedEnterprises } from "./hook/useApprovedEnterprises";
 import { EnterpriseDetailModal } from "../enterprises/components/EnterpriseDetailModal";
 
 export function ApprovedEnterprisesScreen() {
-  const { enterprises, loading, detailModal, setDetailModal } = useApprovedEnterprises();
+  const { enterprises, loading, feedback, detailModal, setDetailModal } = useApprovedEnterprises();
 
   return (
     <div className="space-y-6 animate-smooth-appear">
@@ -18,6 +18,12 @@ export function ApprovedEnterprisesScreen() {
           {enterprises.length} đối tác
         </span>
       </div>
+
+      {feedback && (
+        <div className="rounded-xl border border-red-100 bg-red-50/70 px-4 py-3 text-xs font-medium text-red-700">
+          {feedback.message}
+        </div>
+      )}
 
       <div className="bg-white rounded-[20px] border border-slate-100 shadow-[0_2px_8px_rgba(0,0,0,0.02)] overflow-hidden">
         <table className="w-full text-left border-collapse text-xs">

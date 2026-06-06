@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRef, type ChangeEvent } from "react";
 import { Upload, X } from "lucide-react";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -191,7 +192,14 @@ export function LandmarksScreen() {
                         <tr key={item.id} className="transition-colors hover:bg-slate-50/60">
                           <td className="px-5 py-3">
                             {thumb ? (
-                              <img src={thumb} alt={item.name ?? "thumbnail"} className="h-10 w-10 rounded-lg border border-slate-100 bg-slate-50 object-cover" />
+                              <Image
+                                unoptimized
+                                src={thumb}
+                                alt={item.name ?? "thumbnail"}
+                                width={40}
+                                height={40}
+                                className="h-10 w-10 rounded-lg border border-slate-100 bg-slate-50 object-cover"
+                              />
                             ) : (
                               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-[9px] text-slate-400">N/A</div>
                             )}
@@ -380,7 +388,14 @@ export function LandmarksScreen() {
                     />
                     {thumbnailPreview ? (
                       <>
-                        <img src={thumbnailPreview} alt="Thumbnail" className="h-full w-full object-cover" />
+                        <Image
+                          unoptimized
+                          fill
+                          src={thumbnailPreview}
+                          alt="Thumbnail"
+                          className="object-cover"
+                          sizes="(max-width: 1024px) 100vw, 320px"
+                        />
                         <button
                           type="button"
                           onClick={(event) => {
@@ -426,7 +441,14 @@ export function LandmarksScreen() {
                     <div className="mt-3 grid grid-cols-3 gap-2">
                       {existingGalleryUrls.map((url, index) => (
                         <div key={url} className="group relative aspect-square overflow-hidden rounded-xl border border-slate-100 shadow-2xs">
-                          <img src={url} alt={`Existing gallery ${index}`} className="h-full w-full object-cover" />
+                          <Image
+                            unoptimized
+                            fill
+                            src={url}
+                            alt={`Existing gallery ${index}`}
+                            className="object-cover"
+                            sizes="120px"
+                          />
                           <button
                             type="button"
                             onClick={() => setExistingGalleryUrls((prev) => prev.filter((_, itemIndex) => itemIndex !== index))}
@@ -438,7 +460,14 @@ export function LandmarksScreen() {
                       ))}
                       {galleryPreviews.map((preview, index) => (
                         <div key={`${preview}-${index}`} className="group relative aspect-square overflow-hidden rounded-xl border border-slate-100 shadow-2xs">
-                          <img src={preview} alt={`New gallery ${index}`} className="h-full w-full object-cover" />
+                          <Image
+                            unoptimized
+                            fill
+                            src={preview}
+                            alt={`New gallery ${index}`}
+                            className="object-cover"
+                            sizes="120px"
+                          />
                           <button
                             type="button"
                             onClick={() => removeNewGalleryImage(index)}
@@ -610,7 +639,14 @@ export function LandmarksScreen() {
                       <tr key={item.id} className="transition-colors hover:bg-slate-50/60">
                         <td className="px-5 py-3.5">
                           {item.thumbnailUrl ? (
-                            <img src={item.thumbnailUrl} alt={item.name ?? "landmark"} className="h-10 w-10 rounded-lg border border-slate-100 object-cover" />
+                            <Image
+                              unoptimized
+                              src={item.thumbnailUrl}
+                              alt={item.name ?? "landmark"}
+                              width={40}
+                              height={40}
+                              className="h-10 w-10 rounded-lg border border-slate-100 object-cover"
+                            />
                           ) : (
                             <div className="h-10 w-10 rounded-lg bg-slate-100" />
                           )}

@@ -1,9 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import { useApprovedHosts } from "./hook/useApprovedHosts";
 
 export function ApprovedHostsScreen() {
-  const { hosts, loading, detailModal, setDetailModal } = useApprovedHosts();
+  const { hosts, loading, feedback, detailModal, setDetailModal } = useApprovedHosts();
 
   return (
     <div className="space-y-6">
@@ -14,6 +15,12 @@ export function ApprovedHostsScreen() {
         </div>
         <span className="text-xs font-semibold text-slate-400 bg-slate-50 border border-slate-100 px-3 py-1.5 rounded-full">{hosts.length} hosts</span>
       </div>
+
+      {feedback && (
+        <div className="rounded-xl border border-red-100 bg-red-50/70 px-4 py-3 text-xs font-medium text-red-700">
+          {feedback.message}
+        </div>
+      )}
 
       <div className="bg-white rounded-[20px] border border-slate-100 overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
         <table className="w-full text-sm">
@@ -72,7 +79,14 @@ export function ApprovedHostsScreen() {
             <div className="p-6 overflow-y-auto flex-1 space-y-6">
               <div className="flex gap-4 items-center">
                 {detailModal.user.userProfile?.avatarUrl ? (
-                  <img src={detailModal.user.userProfile.avatarUrl} alt="avatar" className="w-16 h-16 rounded-full object-cover border border-slate-100 shadow-sm" />
+                  <Image
+                    unoptimized
+                    src={detailModal.user.userProfile.avatarUrl}
+                    alt="avatar"
+                    width={64}
+                    height={64}
+                    className="w-16 h-16 rounded-full object-cover border border-slate-100 shadow-sm"
+                  />
                 ) : (
                   <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 text-xl font-bold border border-slate-100">
                     {detailModal.user.username?.charAt(0).toUpperCase()}

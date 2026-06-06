@@ -11,6 +11,7 @@ export type ApprovalStatus = "PENDING" | "APPROVED" | "REJECTED";
 export type ListingStatus = "PENDING" | "ACTIVE" | "HIDDEN" | "DELETED";
 export type LandmarkStatus = "ACTIVE" | "HIDDEN" | "MAINTENANCE";
 export type SuggestionStatus = "PENDING" | "RESOLVED" | "REJECTED";
+export type PayoutStatus = "PENDING" | "REQUESTED" | "PAID" | string;
 
 export type AdminApiResponse<T> = {
   data: T;
@@ -128,6 +129,34 @@ export type SaveLandmarkPayload = {
   galleryUrls?: string[];
   resolvedSuggestionId?: string;
   isFeatured?: boolean;
+};
+
+export type AdminInventoryAvailability = {
+  date: string;
+  timeSlot?: string;
+  totalQuantity?: number;
+  availableQuantity: number;
+  lockedQuantity?: number;
+  confirmedQuantity?: number;
+  status: string;
+};
+
+export type AdminInventorySyncResponse = {
+  recordsFixed?: number;
+};
+
+export type AdminPayout = {
+  id?: string;
+  payoutId?: string;
+  orderId?: string;
+  hostId?: string;
+  totalAmount?: number;
+  commissionRate?: number;
+  commissionAmount?: number;
+  hostAmount?: number;
+  status?: PayoutStatus;
+  paidAt?: string | number | number[] | Date;
+  createdAt?: string | number | number[] | Date;
 };
 
 const pageQuery = (page: number, size: number) => `page=${page}&size=${size}`;
@@ -291,7 +320,11 @@ const AdminService = {
   // ==========================================
   // INVENTORY (Booking Admin)
   // ==========================================
-  getInventoryAvailability: async (listingId: string, startDate: string, endDate: string) => {
+  getInventoryAvailability: async (
+    listingId: string,
+    startDate: string,
+    endDate: string
+  ): Promise<AdminApiResponse<AdminInventoryAvailability[]>> => {
     // GET /api/v1/admin/inventory/listings/{listingId}/availability
     return await Api.get(`/v1/admin/inventory/listings/${listingId}/availability?startDate=${startDate}&endDate=${endDate}`);
   },
@@ -301,7 +334,7 @@ const AdminService = {
     return await Api.put(`/v1/admin/inventory/listings/${listingId}/force-update`, data);
   },
 
-  syncInventory: async (listingId: string) => {
+  syncInventory: async (listingId: string): Promise<AdminApiResponse<AdminInventorySyncResponse>> => {
     // POST /api/v1/admin/inventory/listings/{listingId}/sync
     return await Api.post(`/v1/admin/inventory/listings/${listingId}/sync`, {});
   },
@@ -309,7 +342,7 @@ const AdminService = {
   // ==========================================
   // PAYOUTS (Payment Admin)
   // ==========================================
-  getAllPayouts: async (page = 0, size = 10) => {
+  getAllPayouts: async (page = 0, size = 10): Promise<AdminApiResponse<AdminPage<AdminPayout>>> => {
     // GET /api/v1/payouts/all
     return await Api.get(`/v1/payouts/all?page=${page}&size=${size}`);
   },

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Star, Heart, Share2, Check, Users, Home, Clock, Info, CheckCircle2, XCircle, Languages, Sparkles, ShoppingCart } from "lucide-react";
@@ -33,6 +34,20 @@ type ItineraryItem = {
   activity?: string;
 };
 
+type ListingPolicies = {
+  checkInTime?: string;
+  checkOutTime?: string;
+  allowPets?: boolean;
+  partyAllowed?: boolean;
+};
+
+type ServiceDetail = {
+  cuisineType?: string[];
+  specialDietary?: string[];
+  includesIngredients?: boolean;
+  cleanUpAfter?: boolean;
+};
+
 type DetailAttributes = {
   galleryUrls?: string[];
   stayDetail?: {
@@ -42,6 +57,7 @@ type DetailAttributes = {
     bathrooms?: number;
   };
   amenities?: string[];
+  policies?: ListingPolicies;
   expDetail?: {
     durationMinutes?: number;
     difficulty?: string;
@@ -51,12 +67,15 @@ type DetailAttributes = {
   itinerary?: ItineraryItem[];
   inclusions?: string[];
   exclusions?: string[];
+  serviceDetail?: ServiceDetail;
 };
 
 type ListingDetailData = {
   id?: string;
   thumbnailUrl?: string;
   averageRating?: number;
+  totalReviews?: number;
+  province?: string;
   attributes?: DetailAttributes;
 };
 
@@ -90,6 +109,8 @@ export default function CategoryDetailScreen({
   ].filter((url, index, arr): url is string => Boolean(url) && arr.indexOf(url) === index);
   const activeImageIndex = imageSelection.activeId === activeId ? imageSelection.index : 0;
   const activeImage = detailImages[activeImageIndex] || selectedItem?.image;
+  const ratingValue = selectedItem?.rating ?? detailData?.averageRating;
+  const locationText = detailData?.province || selectedItem?.address;
 
   // Helper to get category text suffix
   const getUnitSuffix = () => {
@@ -169,11 +190,20 @@ export default function CategoryDetailScreen({
               >
                 {/* Main rounded image with absolute centered host avatar overlay */}
                 <div className="relative w-full aspect-video rounded-3xl overflow-hidden shadow-md group bg-zinc-100">
-                  <img
-                    src={activeImage ?? undefined}
-                    alt={selectedItem.name}
-                    className="size-full object-cover transition-transform duration-700 group-hover:scale-103"
-                  />
+                  {activeImage ? (
+                    <Image
+                      unoptimized
+                      fill
+                      src={activeImage}
+                      alt={selectedItem.name ?? "listing image"}
+                      className="object-cover transition-transform duration-700 group-hover:scale-103"
+                      sizes="(max-width: 1024px) 100vw, 720px"
+                    />
+                  ) : (
+                    <div className="flex size-full items-center justify-center text-sm font-semibold text-zinc-400">
+                      GoStay
+                    </div>
+                  )}
                 </div>
 
                 {detailImages.length > 1 && (
@@ -183,16 +213,19 @@ export default function CategoryDetailScreen({
                         key={`${imageUrl}-${index}`}
                         type="button"
                         onClick={() => setImageSelection({ activeId, index })}
-                        className={`aspect-[4/3] overflow-hidden rounded-2xl border bg-zinc-100 transition-all ${
+                        className={`relative aspect-[4/3] overflow-hidden rounded-2xl border bg-zinc-100 transition-all ${
                           activeImageIndex === index
                             ? "border-[#e61e4d] ring-2 ring-[#e61e4d]/20"
                             : "border-zinc-200 hover:border-zinc-400"
                         }`}
                       >
-                        <img
+                        <Image
+                          unoptimized
+                          fill
                           src={imageUrl}
                           alt={`${selectedItem.name} ${index + 1}`}
-                          className="size-full object-cover"
+                          className="object-cover"
+                          sizes="160px"
                         />
                       </button>
                     ))}
@@ -209,11 +242,11 @@ export default function CategoryDetailScreen({
 
                   {/* Meta details */}
                   <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-2 gap-y-1 text-sm text-app-fg mt-4 font-medium">
-                    {(selectedItem.rating || detailData?.averageRating) ? (
+                    {ratingValue !== undefined ? (
                       <>
                         <div className="flex items-center text-amber-500">
                           <Star className="h-4 w-4 fill-amber-500 mr-1" />
-                          <span>{(selectedItem.rating || detailData?.averageRating).toFixed(1)}</span>
+                          <span>{ratingValue.toFixed(1)}</span>
                         </div>
                         <span className="text-zinc-300">•</span>
                       </>
@@ -226,9 +259,9 @@ export default function CategoryDetailScreen({
                       </>
                     ) : null}
                     
-                    {(detailData?.province || selectedItem.address) && (
+                    {locationText && (
                       <span className="text-app-muted-fg">
-                        Tại {detailData?.province || selectedItem.address}
+                        Tại {locationText}
                       </span>
                     )}
                   </div>
@@ -476,12 +509,21 @@ export default function CategoryDetailScreen({
                     }`}
                   >
                     {/* Item Image */}
-                    <div className="w-28 h-20 sm:w-32 sm:h-24 rounded-xl overflow-hidden flex-shrink-0 bg-zinc-100">
-                      <img
-                        src={item.image ?? undefined}
-                        alt={item.name}
-                        className="w-full h-full object-cover"
-                      />
+                    <div className="relative w-28 h-20 sm:w-32 sm:h-24 rounded-xl overflow-hidden flex-shrink-0 bg-zinc-100">
+                      {item.image ? (
+                        <Image
+                          unoptimized
+                          fill
+                          src={item.image}
+                          alt={item.name ?? "listing option"}
+                          className="object-cover"
+                          sizes="128px"
+                        />
+                      ) : (
+                        <div className="flex size-full items-center justify-center text-[10px] font-semibold text-zinc-400">
+                          GoStay
+                        </div>
+                      )}
                     </div>
 
                     {/* Item Info */}

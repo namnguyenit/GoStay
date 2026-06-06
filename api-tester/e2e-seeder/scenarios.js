@@ -380,6 +380,14 @@ class SeederScenarios {
     return null;
   }
 
+  findComplexByPayload(complexes, payload) {
+    return complexes.find((complex) =>
+      complex?.name === payload.name &&
+      Math.abs(Number(complex?.latitude) - Number(payload.latitude)) < 0.000001 &&
+      Math.abs(Number(complex?.longitude) - Number(payload.longitude)) < 0.000001
+    );
+  }
+
   async activateListing(owner, listing, category) {
     const invPayload = {
       category,
@@ -647,11 +655,17 @@ class SeederScenarios {
           entComplexes++;
           totalComplexes++;
 
-          // Fetch the created complex to get its ID
+          // Fetch the created complex by exact payload. API ordering is not guaranteed.
           await sleep(300);
           const myComplexes = await ent.getMyComplexes();
-          // Use the most recently created one (last in list)
-          const complexId = myComplexes.length > 0 ? myComplexes[myComplexes.length - 1].id : null;
+          const createdComplex = this.findComplexByPayload(myComplexes, complexPayload);
+          const complexId = createdComplex?.id || null;
+
+          if (!complexId) {
+            console.log(`   [WARN] Không tìm lại được complex "${complexPayload.name}" để gắn listings.`);
+            await sleep(120);
+            continue;
+          }
 
           // Create 10 listings inside this complex
           for (let k = 0; k < 10; k++) {

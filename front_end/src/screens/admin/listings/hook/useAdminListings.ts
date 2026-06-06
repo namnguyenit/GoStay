@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import AdminService, { AdminListing, ListingStatus } from "@/services/admin.service";
 import {
   ConfirmState,
@@ -29,7 +29,7 @@ export function useAdminListings() {
     setPage(0);
   };
 
-  const fetchListings = async () => {
+  const fetchListings = useCallback(async () => {
     setLoading(true);
     try {
       const res = await AdminService.getListings(statusFilter, page, DEFAULT_ADMIN_PAGE_SIZE);
@@ -44,11 +44,11 @@ export function useAdminListings() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, statusFilter]);
 
   useEffect(() => {
     fetchListings();
-  }, [statusFilter, page]);
+  }, [fetchListings]);
 
   const filteredListings = useMemo(() => {
     const q = search.trim().toLowerCase();

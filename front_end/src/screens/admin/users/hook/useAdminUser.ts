@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import AdminService, { AdminRoleName, AdminUser } from "@/services/admin.service";
 import {
   ConfirmState,
@@ -44,7 +44,7 @@ export function useAdminUser() {
   });
   const [selectedRole, setSelectedRole] = useState<AdminRoleName>("HOST");
 
-  const fetchUsers = async (pageToLoad = page) => {
+  const fetchUsers = useCallback(async (pageToLoad = page) => {
     setLoading(true);
     try {
       const res = await AdminService.getUsers(pageToLoad, DEFAULT_ADMIN_PAGE_SIZE);
@@ -59,11 +59,11 @@ export function useAdminUser() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page]);
 
   useEffect(() => {
     fetchUsers(page);
-  }, [page]);
+  }, [fetchUsers, page]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();

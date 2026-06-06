@@ -1,10 +1,17 @@
 import { useEffect, useState } from "react";
-import AdminService from "@/services/admin.service";
+import AdminService, { AdminUser } from "@/services/admin.service";
+import { getAdminErrorMessage } from "@/screens/admin/_components/admin-utils";
+
+type FeedbackState = {
+  type: "success" | "error";
+  message: string;
+} | null;
 
 export function useApprovedHosts() {
-  const [hosts, setHosts] = useState<any[]>([]);
+  const [hosts, setHosts] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
-  const [detailModal, setDetailModal] = useState<{ open: boolean; user: any | null }>({
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
+  const [detailModal, setDetailModal] = useState<{ open: boolean; user: AdminUser | null }>({
     open: false,
     user: null,
   });
@@ -15,7 +22,10 @@ export function useApprovedHosts() {
       const res = await AdminService.getApprovedHosts(0, 100);
       setHosts(res?.data?.content ?? []);
     } catch (error) {
-      console.error("Failed to fetch approved hosts", error);
+      setFeedback({
+        type: "error",
+        message: getAdminErrorMessage(error, "Không thể tải danh sách host đã duyệt."),
+      });
     } finally {
       setLoading(false);
     }
@@ -28,6 +38,7 @@ export function useApprovedHosts() {
   return {
     hosts,
     loading,
+    feedback,
     detailModal,
     setDetailModal,
   };

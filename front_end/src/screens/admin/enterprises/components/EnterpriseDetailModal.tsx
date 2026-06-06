@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import React from "react";
 import { AdminUser } from "@/services/admin.service";
 
@@ -39,9 +40,12 @@ export function EnterpriseDetailModal({
         <div className="p-6 overflow-y-auto flex-1 space-y-5 text-xs text-slate-600">
           <div className="flex gap-3 items-center">
             {user.userProfile?.avatarUrl ? (
-              <img
+              <Image
+                unoptimized
                 src={user.userProfile.avatarUrl}
                 alt="avatar"
+                width={48}
+                height={48}
                 className="w-12 h-12 rounded-full object-cover border border-slate-100 bg-slate-50"
               />
             ) : (

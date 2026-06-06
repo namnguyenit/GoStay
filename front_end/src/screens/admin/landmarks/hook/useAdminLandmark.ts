@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import AdminService, {
   AdminLandmark,
@@ -117,7 +117,7 @@ export function useAdminLandmark() {
     setGalleryPreviews([]);
   };
 
-  const fetchSuggestions = async () => {
+  const fetchSuggestions = useCallback(async () => {
     setLoading(true);
     try {
       const res = await AdminService.getLandmarkSuggestions(
@@ -136,18 +136,18 @@ export function useAdminLandmark() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusTab, suggestionsPage]);
 
-  const fetchPendingCount = async () => {
+  const fetchPendingCount = useCallback(async () => {
     try {
       const res = await AdminService.getLandmarkSuggestions("PENDING", 0, 1);
       setPendingCount(res?.data?.totalElements ?? 0);
     } catch {
       setPendingCount(0);
     }
-  };
+  }, []);
 
-  const fetchLandmarks = async () => {
+  const fetchLandmarks = useCallback(async () => {
     setLoadingLandmarks(true);
     try {
       const res = await AdminService.getLandmarks("", landmarksPage, DEFAULT_ADMIN_PAGE_SIZE);
@@ -162,20 +162,20 @@ export function useAdminLandmark() {
     } finally {
       setLoadingLandmarks(false);
     }
-  };
+  }, [landmarksPage]);
 
   useEffect(() => {
     if (tab === "suggestions") {
       fetchSuggestions();
       fetchPendingCount();
     }
-  }, [tab, statusTab, suggestionsPage]);
+  }, [fetchPendingCount, fetchSuggestions, tab]);
 
   useEffect(() => {
     if (tab === "showlandmarks") {
       fetchLandmarks();
     }
-  }, [tab, landmarksPage]);
+  }, [fetchLandmarks, tab]);
 
   const handleApproveSuggestion = (suggestion: LandmarkSuggestion) => {
     resetCreateForm();
