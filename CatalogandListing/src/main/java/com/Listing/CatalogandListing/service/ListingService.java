@@ -169,10 +169,21 @@ public class ListingService {
     }
 
     public PaginationResponse<ListingDetailResponse> getAllListings(String status, int page, int size) {
+        return getAllListings(status, page, size, null);
+    }
+
+    public PaginationResponse<ListingDetailResponse> getAllListings(String status, int page, int size, String keyword) {
         Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
         Page<Listing> listingPage;
+        ListingStatus enumStatus = null;
         if (status != null && !status.isBlank()) {
-            ListingStatus enumStatus = ListingStatus.valueOf(status.toUpperCase());
+            enumStatus = ListingStatus.valueOf(status.toUpperCase());
+        }
+
+        String cleanKeyword = keyword == null ? "" : keyword.trim();
+        if (!cleanKeyword.isBlank()) {
+            listingPage = listingRepository.searchForAdmin(enumStatus, cleanKeyword, pageable);
+        } else if (enumStatus != null) {
             listingPage = listingRepository.findByStatus(enumStatus, pageable);
         } else {
             listingPage = listingRepository.findAll(pageable);

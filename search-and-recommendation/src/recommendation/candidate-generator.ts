@@ -58,6 +58,26 @@ export class CandidateGenerator {
     );
   }
 
+  async generateComplexes(limit: number = 120) {
+    return this.complexRepo.findAll(limit);
+  }
+
+  async generateComplexesByLandmark(
+    landmarkId: string,
+    radiusMeters: number = 5000,
+    limit: number = 12,
+  ) {
+    const landmark = await this.landmarkRepo.findById(landmarkId);
+    if (!landmark) return [];
+
+    return this.complexRepo.findNearby(
+      landmark.latitude,
+      landmark.longitude,
+      radiusMeters,
+      limit,
+    );
+  }
+
   async generateByComplex(complexId: string, limit: number = 200) {
     return this.listingRepo.search({
       category: 'ALL',

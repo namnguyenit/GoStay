@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.math.BigDecimal;
 
 @Repository
 public interface PaymentRequestRepository extends JpaRepository<PaymentRequest, UUID> {
@@ -29,4 +30,11 @@ public interface PaymentRequestRepository extends JpaRepository<PaymentRequest, 
 
     Page<PaymentRequest> findByUserIdOrderByCreatedAtDesc(UUID userId, Pageable pageable);
     List<PaymentRequest> findByStatusAndExpiresAtBefore(PaymentStatus status, LocalDateTime dateTime);
+    long countByStatus(PaymentStatus status);
+
+    @Query("select coalesce(sum(paymentRequest.amount), 0) from PaymentRequest paymentRequest")
+    BigDecimal sumAmount();
+
+    @Query("select coalesce(sum(paymentRequest.amount), 0) from PaymentRequest paymentRequest where paymentRequest.status = :status")
+    BigDecimal sumAmountByStatus(@Param("status") PaymentStatus status);
 }

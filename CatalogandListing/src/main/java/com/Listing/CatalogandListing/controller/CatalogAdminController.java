@@ -24,6 +24,11 @@ public class CatalogAdminController {
     final LandmarkService landmarkService;
     final com.Listing.CatalogandListing.service.ListingService listingService;
 
+    @GetMapping("/summary")
+    public ResponseEntity<ApiResponse<com.Listing.CatalogandListing.dto.response.AdminCatalogSummaryResponse>> getSummary() {
+        return ResponseEntity.ok(ApiResponse.success("Lấy thống kê catalog thành công.", landmarkService.getAdminSummary()));
+    }
+
     /**
      * 3.4.1. Xem danh sách Đề xuất Địa danh (Landmark Suggestions)
      * Phương thức: GET
@@ -129,9 +134,10 @@ public class CatalogAdminController {
     @GetMapping("/listings")
     public ResponseEntity<ApiResponse<PaginationResponse<com.Listing.CatalogandListing.dto.response.ListingDetailResponse>>> getListings(
             @RequestParam(required = false) String status,
+            @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        PaginationResponse<com.Listing.CatalogandListing.dto.response.ListingDetailResponse> response = listingService.getAllListings(status, page, size);
+        PaginationResponse<com.Listing.CatalogandListing.dto.response.ListingDetailResponse> response = listingService.getAllListings(status, page, size, keyword);
         return ResponseEntity.ok(ApiResponse.success("Lấy danh sách dịch vụ thành công.", response));
     }
 

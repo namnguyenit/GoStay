@@ -33,6 +33,10 @@ let RecommendationController = class RecommendationController {
     async getProvinceDestinations(province) {
         return this.recommendationService.getProvinceDestinations(province);
     }
+    async getComplexes(limit) {
+        const parsedLimit = Number(limit);
+        return this.recommendationService.getComplexes(Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : 120);
+    }
     async getComplexRecommendations(id) {
         return this.recommendationService.recommendByComplex(id);
     }
@@ -77,6 +81,13 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], RecommendationController.prototype, "getProvinceDestinations", null);
+__decorate([
+    (0, common_1.Get)('complexes'),
+    __param(0, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], RecommendationController.prototype, "getComplexes", null);
 __decorate([
     (0, common_1.Get)('complexes/:id'),
     __param(0, (0, common_1.Param)('id')),

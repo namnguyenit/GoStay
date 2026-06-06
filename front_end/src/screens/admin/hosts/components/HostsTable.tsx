@@ -42,21 +42,25 @@ export function HostsTable({ loading, displayed, tab, onViewDetail, onApprove }:
 
               return (
                 <tr key={host.id} className="transition-colors hover:bg-slate-50/30">
-                  <td className="px-5 py-3.5 text-[13.5px] font-semibold text-slate-800">{host.username || "—"}</td>
-                  <td className="px-5 py-3.5 text-xs font-medium text-slate-455">{host.email || "—"}</td>
+                  <td className="px-5 py-3.5 text-[13.5px] font-semibold text-slate-800">
+                    <div className="max-w-[220px] truncate">{host.username || "—"}</div>
+                  </td>
+                  <td className="px-5 py-3.5 text-xs font-medium text-slate-455">
+                    <div className="max-w-[260px] truncate">{host.email || "—"}</div>
+                  </td>
                   <td className="px-5 py-3.5">
                     <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-bold ${
                       status === "PENDING"
-                        ? "border-amber-100/50 bg-amber-50 text-amber-600"
+                        ? "border-slate-300 bg-white text-slate-800"
                         : status === "APPROVED"
-                        ? "border-emerald-100/50 bg-emerald-50 text-emerald-600"
-                        : "border-rose-100/50 bg-rose-50 text-rose-600"
+                        ? "border-slate-200 bg-slate-100 text-slate-900"
+                        : "border-slate-300 bg-white text-slate-500"
                     }`}>
                       {status}
                     </span>
                   </td>
                   <td className="px-5 py-3.5 text-right">
-                    <div className="flex items-center justify-end gap-2">
+                    <div className="flex flex-wrap items-center justify-end gap-2">
                       <button
                         type="button"
                         onClick={() => onViewDetail(host.id)}
@@ -69,14 +73,14 @@ export function HostsTable({ loading, displayed, tab, onViewDetail, onApprove }:
                           <button
                             type="button"
                             onClick={() => onApprove(host.id, true)}
-                            className="rounded-lg border border-emerald-100/40 bg-emerald-50 px-2.5 py-1.5 text-[11px] font-bold text-emerald-600 transition-colors hover:bg-emerald-100/60"
+                            className="rounded-lg border border-slate-900 bg-slate-900 px-2.5 py-1.5 text-[11px] font-bold text-white transition-colors hover:bg-slate-950"
                           >
                             Duyệt
                           </button>
                           <button
                             type="button"
                             onClick={() => onApprove(host.id, false)}
-                            className="rounded-lg border border-rose-100/40 bg-rose-50 px-2.5 py-1.5 text-[11px] font-bold text-rose-650 transition-colors hover:bg-rose-100/60"
+                            className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-[11px] font-bold text-slate-700 transition-colors hover:bg-slate-100"
                           >
                             Từ chối
                           </button>

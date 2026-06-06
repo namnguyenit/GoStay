@@ -13,4 +13,5 @@ import java.util.List;
 public interface HostProfileRepository extends JpaRepository<HostProfile, String> {
     List<HostProfile> findByApprovalStatus(Approval_status approvalStatus);
     Page<HostProfile> findAllByApprovalStatus(Approval_status approvalStatus, Pageable pageable);
+    long countByApprovalStatus(Approval_status approvalStatus);
 }

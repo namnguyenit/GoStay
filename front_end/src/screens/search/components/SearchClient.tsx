@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 
 import { FilterService } from "@/services/filter";
 import { SearchInfoSection } from "@/shared/components";
+import { ComplexCarouselSections } from "@/shared/components";
 import ListingGridCard from "@/shared/components/ListingGridCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import { format } from "date-fns";
 import { useSafeContext } from "@/shared/hooks";
 import { AppContext } from "@/features/app/providers/app.provider";
 import type { Filter } from "@/modules/filter";
+import type { ComplexOffering } from "@/services/complex";
 
 type ListItem =
   | {
@@ -35,6 +37,7 @@ interface SearchClientProps {
   places: ListItem[];
   experiences: ListItem[];
   services: ListItem[];
+  complexes?: ComplexOffering[];
   searchParamsRaw: Record<string, string | string[] | undefined>;
 }
 
@@ -42,6 +45,7 @@ export default function SearchClient({
   places = [],
   experiences = [],
   services = [],
+  complexes = [],
 }: SearchClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -231,6 +235,12 @@ export default function SearchClient({
         </div>
 
         {/* Results Grid */}
+        <ComplexCarouselSections
+          complexes={complexes}
+          title={`Khu du lịch & tổ hợp gợi ý tại ${filter?.place || "mọi địa điểm"}`}
+          maxItemsPerGroup={12}
+        />
+
         {filteredItems.length > 0 ? (
           <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
             {filteredItems.map((item, index) => {

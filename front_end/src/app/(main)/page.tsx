@@ -1,9 +1,10 @@
 import HomeClient from "@/screens/home/components/HomeClient";
-import { ExperienceServices, PlaceServices, ServiceServices } from "@/services";
+import { ComplexServices, ExperienceServices, PlaceServices, ServiceServices } from "@/services";
 import HomeProvider from "@/screens/home/providers/home.provider";
 import type { Experiences } from "@/modules/experience";
 import type { Places } from "@/modules/place";
 import type { Services } from "@/modules/service";
+import type { ComplexOffering } from "@/services/complex";
 
 const fallbackExperiences = [
   {
@@ -107,33 +108,41 @@ export default async function Page() {
   let places: Places = fallbackPlaces;
   let services: Services = fallbackServices;
   let landmarks = fallbackLandmarks;
+  let complexes: ComplexOffering[] = [];
 
   try {
     const data = await PlaceServices.getLandmarks();
     landmarks = data || [];
-  } catch (err) {
+  } catch {
     console.warn("Could not load landmarks from API, using fallback landmarks.");
   }
 
   try {
     const data = await ExperienceServices.getAll();
     experiences = data || [];
-  } catch (err) {
+  } catch {
     console.warn("Could not load experiences from API, using premium fallback mock data.");
   }
 
   try {
     const data = await PlaceServices.getAll();
     places = data || [];
-  } catch (err) {
+  } catch {
     console.warn("Could not load places from API, using premium fallback mock data.");
   }
 
   try {
     const data = await ServiceServices.getAll();
     services = data || [];
-  } catch (err) {
+  } catch {
     console.warn("Could not load services from API, using premium fallback mock data.");
+  }
+
+  try {
+    const data = await ComplexServices.getAll();
+    complexes = data || [];
+  } catch {
+    console.warn("Could not load complexes from API.");
   }
 
   return (
@@ -142,6 +151,7 @@ export default async function Page() {
       initPlace={places}
       initServices={services}
       initLandmarks={landmarks}
+      initComplexes={complexes}
     >
       <HomeClient />
     </HomeProvider>

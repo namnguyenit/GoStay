@@ -1,7 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { CarouselSection, OfferingCarouselItem } from "@/shared/components";
+import CarouselSection from "./CarouselSection";
+import ComplexCarouselSections from "./ComplexCarouselSections";
+import OfferingCarouselItem from "./OfferingCarouselItem";
+import type { ComplexOffering } from "@/services/complex";
 
 type GroupedOfferingItem =
   | {
@@ -22,9 +25,15 @@ interface GroupedOfferingLayoutProps {
   items: GroupedOfferingItem[];
   type: "place" | "experience" | "service";
   titlePrefix: string;
+  complexes?: ComplexOffering[];
 }
 
-export default function GroupedOfferingLayout({ items, type, titlePrefix }: GroupedOfferingLayoutProps) {
+export default function GroupedOfferingLayout({
+  items,
+  type,
+  titlePrefix,
+  complexes = [],
+}: GroupedOfferingLayoutProps) {
   const router = useRouter();
   const unit = type === "place" ? "/ đêm" : type === "experience" ? "/ nhóm" : "/ dịch vụ";
 
@@ -57,6 +66,15 @@ export default function GroupedOfferingLayout({ items, type, titlePrefix }: Grou
 
   return (
     <div className="min-h-screen w-full bg-white pt-8 pb-20 md:pt-10">
+      {type === "experience" && complexes.length > 0 && (
+        <ComplexCarouselSections
+          complexes={complexes}
+          grouped
+          maxGroups={3}
+          titlePrefix="Khu du lịch tại"
+        />
+      )}
+
       {topGroups.map((group) => (
         <div key={group.name}>
           <CarouselSection title={`${titlePrefix} ${group.name}`}>

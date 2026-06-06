@@ -37,8 +37,15 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     public ApiRequest<PageResponse<UserResponse>> getAllUser(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        return ApiRequest.success(SuccessCode.GET_USERS_SUCCESS, userService.getAllUsers(page, size));
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String keyword) {
+        return ApiRequest.success(SuccessCode.GET_USERS_SUCCESS, userService.getAllUsers(page, size, keyword));
+    }
+
+    @GetMapping("/admin/summary")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiRequest<AdminIdentitySummaryResponse> getAdminSummary() {
+        return ApiRequest.success(SuccessCode.GET_USERS_SUCCESS, userService.getAdminSummary());
     }
 
     @GetMapping("/hosts")
@@ -113,7 +120,7 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    @PreAuthorize("hasAnyRole('USER')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ApiRequest<UserResponse> getMyInfo() {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         log.info(SecurityContextHolder.getContext().getAuthentication().toString());
@@ -121,7 +128,7 @@ public class UserController {
     }
 
     @PutMapping("/me")
-    @PreAuthorize("hasAnyRole('USER')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ApiRequest<UserResponse> updateMyInfo(@RequestBody UserUpdateRequest userUpdateRequest) {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         return ApiRequest.success(SuccessCode.UPDATE_MY_INFO_SUCCESS, userService.updateUser(userId, userUpdateRequest));

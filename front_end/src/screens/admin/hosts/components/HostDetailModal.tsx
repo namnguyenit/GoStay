@@ -67,8 +67,8 @@ export function HostDetailModal({ isOpen, hostData, isLoading, onClose }: HostDe
             ))}
           </div>
         ) : hostData ? (
-          <div className="space-y-5 p-6">
-            <div className="flex items-center gap-4">
+          <div className="space-y-5 p-5 sm:p-6">
+            <div className="flex min-w-0 items-center gap-4">
               {hostData.avatarUrl ? (
                 <Image
                   unoptimized
@@ -83,9 +83,9 @@ export function HostDetailModal({ isOpen, hostData, isLoading, onClose }: HostDe
                   {(hostData.fullName ?? "H").charAt(0).toUpperCase()}
                 </div>
               )}
-              <div>
-                <h4 className="text-base font-semibold text-slate-850">{hostData.fullName || "Host chưa có tên"}</h4>
-                <p className="mt-1 text-xs font-medium text-slate-400">{hostData.accountId}</p>
+              <div className="min-w-0">
+                <h4 className="truncate text-base font-semibold text-slate-850">{hostData.fullName || "Host chưa có tên"}</h4>
+                <p className="mt-1 break-all text-xs font-medium text-slate-400">{hostData.accountId}</p>
               </div>
             </div>
 

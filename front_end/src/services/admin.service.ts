@@ -159,14 +159,104 @@ export type AdminPayout = {
   createdAt?: string | number | number[] | Date;
 };
 
+export type AdminIdentitySummary = {
+  totalAccounts?: number;
+  totalUsers?: number;
+  activeAccounts?: number;
+  bannedAccounts?: number;
+  deletedAccounts?: number;
+  totalHosts?: number;
+  pendingHosts?: number;
+  approvedHosts?: number;
+  rejectedHosts?: number;
+  totalEnterprises?: number;
+  pendingEnterprises?: number;
+  approvedEnterprises?: number;
+  rejectedEnterprises?: number;
+};
+
+export type AdminCatalogSummary = {
+  totalListings?: number;
+  activeListings?: number;
+  pendingListings?: number;
+  hiddenListings?: number;
+  deletedListings?: number;
+  totalLandmarks?: number;
+  activeLandmarks?: number;
+  hiddenLandmarks?: number;
+  maintenanceLandmarks?: number;
+  featuredLandmarks?: number;
+  totalLandmarkSuggestions?: number;
+  pendingLandmarkSuggestions?: number;
+  resolvedLandmarkSuggestions?: number;
+  rejectedLandmarkSuggestions?: number;
+};
+
+export type AdminOrderSummary = {
+  totalOrders?: number;
+  pendingOrders?: number;
+  paymentPendingOrders?: number;
+  confirmedOrders?: number;
+  completedOrders?: number;
+  cancelledOrders?: number;
+  totalOrderAmount?: number;
+  confirmedOrderAmount?: number;
+  completedOrderAmount?: number;
+  cancelledOrderAmount?: number;
+};
+
+export type AdminPaymentSummary = {
+  totalPaymentRequests?: number;
+  pendingPayments?: number;
+  completedPayments?: number;
+  failedPayments?: number;
+  expiredPayments?: number;
+  totalRequestedAmount?: number;
+  completedPaymentAmount?: number;
+  totalTransactionAmount?: number;
+  totalPayouts?: number;
+  pendingPayouts?: number;
+  requestedPayouts?: number;
+  paidPayouts?: number;
+  cancelledPayouts?: number;
+  totalPayoutAmount?: number;
+  totalHostAmount?: number;
+  totalCommissionAmount?: number;
+  pendingHostAmount?: number;
+  requestedHostAmount?: number;
+  paidHostAmount?: number;
+  paidCommissionAmount?: number;
+};
+
+export type AdminRevenueReport = {
+  startDate?: string;
+  endDate?: string;
+  totalAmount?: number;
+  hostAmount?: number;
+  commissionAmount?: number;
+  payoutCount?: number;
+  daily?: Array<{
+    date?: string;
+    totalAmount?: number;
+    hostAmount?: number;
+    commissionAmount?: number;
+    payoutCount?: number;
+  }>;
+};
+
 const pageQuery = (page: number, size: number) => `page=${page}&size=${size}`;
 
 const AdminService = {
   // ==========================================
   // USERS (Identity Admin)
   // ==========================================
-  getUsers: async (page = 0, size = 20): Promise<AdminApiResponse<AdminPage<AdminUser>>> => {
-    return await Api.get(`/v1/admin/users?page=${page}&size=${size}`);
+  getUsers: async (page = 0, size = 20, keyword = ""): Promise<AdminApiResponse<AdminPage<AdminUser>>> => {
+    const keywordQuery = keyword.trim() ? `&keyword=${encodeURIComponent(keyword.trim())}` : "";
+    return await Api.get(`/v1/admin/users?page=${page}&size=${size}${keywordQuery}`);
+  },
+
+  getIdentitySummary: async (): Promise<AdminApiResponse<AdminIdentitySummary>> => {
+    return await Api.get(`/v1/admin/users/summary`);
   },
 
   deleteUser: async (id: string) => {
@@ -305,11 +395,17 @@ const AdminService = {
   getListings: async (
     status?: ListingStatus | "",
     page = 0,
-    size = 20
+    size = 20,
+    keyword = ""
   ): Promise<AdminApiResponse<AdminPage<AdminListing>>> => {
     // GET /api/v1/catalog/admin/listings
     const statusQuery = status ? `&status=${encodeURIComponent(status)}` : "";
-    return await Api.get(`/v1/catalog/admin/listings?${pageQuery(page, size)}${statusQuery}`);
+    const keywordQuery = keyword.trim() ? `&keyword=${encodeURIComponent(keyword.trim())}` : "";
+    return await Api.get(`/v1/catalog/admin/listings?${pageQuery(page, size)}${statusQuery}${keywordQuery}`);
+  },
+
+  getCatalogSummary: async (): Promise<AdminApiResponse<AdminCatalogSummary>> => {
+    return await Api.get(`/v1/catalog/admin/summary`);
   },
 
   changeListingStatus: async (listingId: string, status: ListingStatus) => {
@@ -345,6 +441,22 @@ const AdminService = {
   getAllPayouts: async (page = 0, size = 10): Promise<AdminApiResponse<AdminPage<AdminPayout>>> => {
     // GET /api/v1/payouts/all
     return await Api.get(`/v1/payouts/all?page=${page}&size=${size}`);
+  },
+
+  getPaymentSummary: async (): Promise<AdminApiResponse<AdminPaymentSummary>> => {
+    return await Api.get(`/v1/payouts/admin/summary`);
+  },
+
+  getRevenueReport: async (startDate?: string, endDate?: string): Promise<AdminApiResponse<AdminRevenueReport>> => {
+    const params = new URLSearchParams();
+    if (startDate) params.set("startDate", startDate);
+    if (endDate) params.set("endDate", endDate);
+    const query = params.toString();
+    return await Api.get(`/v1/payouts/admin/revenue-report${query ? `?${query}` : ""}`);
+  },
+
+  getOrderSummary: async (): Promise<AdminApiResponse<AdminOrderSummary>> => {
+    return await Api.get(`/v1/orders/admin/summary`);
   },
 
   markPayoutPaid: async (payoutId: string) => {

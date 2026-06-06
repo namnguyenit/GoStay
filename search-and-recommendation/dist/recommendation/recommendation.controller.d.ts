@@ -7,6 +7,7 @@ export declare class RecommendationController {
     getHomeFeed(dto: HomeFeedQueryDto): Promise<any>;
     getProvinces(): Promise<any[]>;
     getProvinceDestinations(province: string): Promise<any[]>;
+    getComplexes(limit?: string): Promise<any[]>;
     getComplexRecommendations(id: string): Promise<any[]>;
     getHomeRecommendations(province?: string): Promise<any[]>;
     getNearbyRecommendations(dto: NearbyRecommendationQueryDto): Promise<any>;

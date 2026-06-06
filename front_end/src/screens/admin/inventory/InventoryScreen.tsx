@@ -76,12 +76,12 @@ export function InventoryScreen() {
 
   // Helper to color-code availability cards
   const getAvailabilityColor = (avail: number, total: number, status: string) => {
-    if (!isAvailableStatus(status)) return "bg-red-50 border-red-200 text-red-800";
-    if (avail === 0) return "bg-red-50 border-red-200 text-red-800";
+    if (!isAvailableStatus(status)) return "bg-white border-slate-300 text-slate-700";
+    if (avail === 0) return "bg-white border-slate-300 text-slate-700";
     if (total <= 0) return "bg-slate-50 border-slate-200 text-slate-700";
     const percent = (avail / total) * 100;
-    if (percent < 50) return "bg-amber-50 border-amber-200 text-amber-800";
-    return "bg-green-50 border-green-200 text-green-800";
+    if (percent < 50) return "bg-slate-50 border-slate-300 text-slate-700";
+    return "bg-slate-100 border-slate-300 text-slate-900";
   };
 
   const formatDateLabel = (dateStr: string) => {
@@ -94,7 +94,7 @@ export function InventoryScreen() {
   };
 
   return (
-    <div className="space-y-6 max-w-6xl animate-smooth-appear">
+    <div className="min-w-0 max-w-6xl space-y-6 animate-smooth-appear">
       <div>
         <h2 className="text-xl font-semibold text-slate-800">Quản lý tồn kho (Inventory)</h2>
         <p className="text-xs text-slate-400 mt-1">Đồng bộ, khóa ngày khẩn cấp và cập nhật trạng thái kho phòng của các dịch vụ.</p>
@@ -104,8 +104,8 @@ export function InventoryScreen() {
         <div
           className={`p-3.5 rounded-xl text-xs border flex items-center gap-2 ${
             actionResult.type === "success"
-              ? "bg-emerald-50/60 border-emerald-100 text-emerald-800"
-              : "bg-red-50/60 border-red-100 text-red-800"
+              ? "bg-white border-slate-200 text-slate-800"
+              : "bg-slate-50 border-slate-200 text-slate-700"
           }`}
         >
           {actionResult.type === "success" ? "✅" : "❌"} {actionResult.message}
@@ -204,11 +204,11 @@ export function InventoryScreen() {
 
           {/* Force Update Panel */}
           <div className="bg-white rounded-[20px] border border-slate-100 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-            <h3 className="font-semibold text-red-650 text-xs uppercase tracking-wider mb-4 border-b border-slate-50 pb-2">Can thiệp khẩn cấp (Force Update)</h3>
+            <h3 className="font-semibold text-slate-800 text-xs uppercase tracking-wider mb-4 border-b border-slate-50 pb-2">Can thiệp khẩn cấp (Force Update)</h3>
             <form onSubmit={handleForceUpdate} className="space-y-4 text-xs">
               <div>
                 <label className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1.5">
-                  Trạng thái mới <span className="text-red-500">*</span>
+                  Trạng thái mới <span className="text-slate-500">*</span>
                 </label>
                 <select
                   value={forceUpdateData.status}
@@ -224,7 +224,7 @@ export function InventoryScreen() {
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">
-                    Từ ngày <span className="text-red-500">*</span>
+                    Từ ngày <span className="text-slate-500">*</span>
                   </label>
                   <input
                     type="date"
@@ -235,7 +235,7 @@ export function InventoryScreen() {
                 </div>
                 <div>
                   <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">
-                    Đến ngày <span className="text-red-500">*</span>
+                    Đến ngày <span className="text-slate-500">*</span>
                   </label>
                   <input
                     type="date"
@@ -262,7 +262,7 @@ export function InventoryScreen() {
               <button
                 type="submit"
                 disabled={loading || !listingId || !forceUpdateData.status || !forceUpdateData.startDate || !forceUpdateData.endDate}
-                className="w-full px-4 py-2 bg-red-600 text-white rounded-full text-xs font-semibold hover:bg-red-750 disabled:opacity-50 transition-colors shadow-sm"
+                className="w-full px-4 py-2 bg-slate-900 text-white rounded-full text-xs font-semibold hover:bg-slate-950 disabled:opacity-50 transition-colors shadow-sm"
               >
                 {loading ? "Đang xử lý..." : "⚠️ Thực thi Force Update"}
               </button>
@@ -274,7 +274,7 @@ export function InventoryScreen() {
             <div className="bg-white rounded-[20px] border border-slate-100 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-4">
               <h3 className="font-semibold text-slate-800 border-b border-slate-50 pb-2 flex items-center justify-between text-xs">
                 <span className="flex items-center gap-1">🔒 Ngày đang phong tỏa</span>
-                <span className="text-[10px] bg-red-50 text-red-750 px-2 py-0.5 rounded-full font-semibold border border-red-100/30">
+                <span className="text-[10px] bg-slate-50 text-slate-700 px-2 py-0.5 rounded-full font-semibold border border-slate-200">
                   {blockedRanges.length} khoảng
                 </span>
               </h3>
@@ -289,7 +289,7 @@ export function InventoryScreen() {
                     const startFmt = new Date(range.startDate).toLocaleDateString("vi-VN", { day: '2-digit', month: '2-digit' });
                     const endFmt = new Date(range.endDate).toLocaleDateString("vi-VN", { day: '2-digit', month: '2-digit' });
                     return (
-                      <div key={idx} className="p-3 bg-red-50/20 rounded-[14px] border border-red-100/30 flex flex-col justify-between gap-2.5">
+                      <div key={idx} className="p-3 bg-slate-50/70 rounded-[14px] border border-slate-200 flex flex-col justify-between gap-2.5">
                         <div className="flex justify-between items-start">
                           <div>
                             <span className="font-bold text-slate-800 text-xs">
@@ -299,7 +299,7 @@ export function InventoryScreen() {
                               Tổng cộng: {range.count} ngày bị đóng
                             </span>
                           </div>
-                          <span className="text-[9px] px-2 py-0.5 rounded bg-red-100 text-red-800 font-bold tracking-wider uppercase">
+                          <span className="text-[9px] px-2 py-0.5 rounded bg-white text-slate-700 border border-slate-300 font-bold tracking-wider uppercase">
                             LOCKED
                           </span>
                         </div>
@@ -308,7 +308,7 @@ export function InventoryScreen() {
                           type="button"
                           onClick={() => handleQuickRangeUnlock(range.startDate, range.endDate)}
                           disabled={loading}
-                          className="w-full py-1.5 bg-white border border-red-200 hover:bg-red-50 text-red-700 rounded-lg text-[10px] font-semibold transition-all shadow-sm"
+                          className="w-full py-1.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 rounded-lg text-[10px] font-semibold transition-all shadow-sm"
                         >
                           {loading ? "Đang xử lý..." : "🔓 Mở khóa nhanh khoảng này"}
                         </button>
@@ -351,13 +351,13 @@ export function InventoryScreen() {
                 {/* Visual Legend */}
                 <div className="flex gap-4 text-[10px] text-slate-450 font-semibold uppercase tracking-wider">
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Còn trống nhiều
+                    <span className="w-2 h-2 rounded-full bg-slate-900"></span> Còn trống nhiều
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-amber-500"></span> Còn ít chỗ (&lt;50%)
+                    <span className="w-2 h-2 rounded-full bg-slate-500"></span> Còn ít chỗ (&lt;50%)
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-red-500"></span> Hết chỗ / Khóa
+                    <span className="w-2 h-2 rounded-full bg-slate-300"></span> Hết chỗ / Khóa
                   </div>
                 </div>
 
@@ -388,8 +388,8 @@ export function InventoryScreen() {
                           <span
                             className={`text-[8px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ${
                               item.status === "ACTIVE" || item.status === "AVAILABLE"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
+                                ? "bg-slate-100 text-slate-900"
+                                : "bg-white text-slate-600 border border-slate-300"
                             }`}
                           >
                             {item.status}
@@ -410,10 +410,10 @@ export function InventoryScreen() {
                             <div
                               className={`h-full rounded-full ${
                                 isFull
-                                  ? "bg-red-500"
+                                  ? "bg-slate-300"
                                   : safeTotal > 0 && item.availableQuantity / safeTotal < 0.5
-                                  ? "bg-amber-500"
-                                  : "bg-green-500"
+                                  ? "bg-slate-500"
+                                  : "bg-slate-900"
                               }`}
                               style={{
                                 width: `${fillPercent}%`,
@@ -455,8 +455,8 @@ export function InventoryScreen() {
                   <span className="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">Trạng thái</span>
                   <span className={`inline-block text-[9px] px-1.5 py-0.5 rounded font-bold mt-1 ${
                     selectedDateDetail.status === "ACTIVE" || selectedDateDetail.status === "AVAILABLE"
-                      ? "bg-green-50 text-green-800 border border-green-100/30"
-                      : "bg-red-50 text-red-800 border border-red-100/30"
+                      ? "bg-slate-100 text-slate-900 border border-slate-200"
+                      : "bg-white text-slate-600 border border-slate-300"
                   }`}>
                     {selectedDateDetail.status}
                   </span>
@@ -475,14 +475,14 @@ export function InventoryScreen() {
                 </div>
                 <div>
                   <span className="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">Còn trống</span>
-                  <span className="font-semibold text-emerald-600 block mt-1">
+                  <span className="font-semibold text-slate-800 block mt-1">
                     {selectedDateDetail.availableQuantity} / {selectedDateDetail.totalQuantity ?? "chưa có tổng"} chỗ
                   </span>
                 </div>
               </div>
 
               <div className="border-t border-slate-100 pt-3.5 space-y-2">
-                <h4 className="text-[9px] font-bold uppercase tracking-wider text-red-500">Can thiệp khẩn cấp (Emergency Lock)</h4>
+                <h4 className="text-[9px] font-bold uppercase tracking-wider text-slate-700">Can thiệp khẩn cấp (Emergency Lock)</h4>
                 <p className="text-[9px] text-slate-400 leading-relaxed">
                   Thay đổi trạng thái cưỡng chế trực tiếp đối với ngày này trên hệ thống. Lịch hiển thị của khách hàng sẽ được cập nhật ngay lập tức.
                 </p>
@@ -491,7 +491,7 @@ export function InventoryScreen() {
                     <button
                       onClick={() => handleQuickForceUpdate(selectedDateDetail.date, "BLOCKED")}
                       disabled={loading}
-                      className="flex-1 py-2 bg-red-600 text-white rounded-full text-[10px] font-semibold hover:bg-red-750 disabled:opacity-50 transition-colors shadow-sm"
+                      className="flex-1 py-2 bg-slate-900 text-white rounded-full text-[10px] font-semibold hover:bg-slate-950 disabled:opacity-50 transition-colors shadow-sm"
                     >
                       {loading ? "Đang xử lý..." : "🔒 Khóa khẩn cấp"}
                     </button>
@@ -499,7 +499,7 @@ export function InventoryScreen() {
                     <button
                       onClick={() => handleQuickForceUpdate(selectedDateDetail.date, "AVAILABLE")}
                       disabled={loading}
-                      className="flex-1 py-2 bg-emerald-600 text-white rounded-full text-[10px] font-semibold hover:bg-emerald-700 disabled:opacity-50 transition-colors shadow-sm"
+                      className="flex-1 py-2 bg-slate-900 text-white rounded-full text-[10px] font-semibold hover:bg-slate-950 disabled:opacity-50 transition-colors shadow-sm"
                     >
                       {loading ? "Đang xử lý..." : "🔓 Mở kho hoạt động"}
                     </button>

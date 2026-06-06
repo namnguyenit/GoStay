@@ -85,7 +85,7 @@ export function PayoutsScreen() {
   };
 
   return (
-    <div className="space-y-6 animate-smooth-appear min-h-screen">
+    <div className="min-h-screen min-w-0 space-y-6 animate-smooth-appear">
       
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -108,32 +108,32 @@ export function PayoutsScreen() {
         <div
           className={`p-3.5 rounded-[12px] text-xs font-medium border flex items-center gap-2.5 ${
             actionResult.type === "success"
-              ? "bg-emerald-50/60 border-emerald-100 text-emerald-800"
-              : "bg-red-50/60 border-red-100 text-red-800"
+              ? "bg-white border-slate-200 text-slate-800"
+              : "bg-slate-50 border-slate-200 text-slate-700"
           }`}
         >
           {actionResult.type === "success" ? (
-            <svg className="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+            <svg className="w-4 h-4 text-slate-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
           ) : (
-            <svg className="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg>
+            <svg className="w-4 h-4 text-slate-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg>
           )}
           {actionResult.message}
         </div>
       )}
 
       {/* Stats Dashboard */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div className="bg-white p-5 rounded-[20px] border border-slate-100 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+        <div className="flex min-w-0 flex-col justify-between rounded-[20px] border border-slate-100 bg-white p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
           <div className="flex justify-between items-start mb-4">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Cần Thanh Toán</span>
-            <div className="p-2 bg-orange-50 text-orange-500 rounded-xl">
+            <div className="p-2 bg-slate-100 text-slate-600 rounded-xl">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             </div>
           </div>
           <div>
-            <h3 className="text-2xl font-semibold text-slate-800 tracking-tight">{stats.totalPending.toLocaleString()}đ</h3>
-            <p className="text-[11px] font-medium text-slate-400 mt-1 flex items-center gap-1">
-              <span className="text-orange-500 font-semibold flex items-center">
+            <h3 className="break-words text-[clamp(1.15rem,3vw,1.5rem)] font-semibold leading-tight tracking-tight text-slate-800 tabular-nums">{stats.totalPending.toLocaleString()}đ</h3>
+            <p className="mt-1 flex flex-wrap items-center gap-1 text-[11px] font-medium text-slate-400">
+              <span className="flex items-center font-semibold text-slate-600">
                 <svg className="w-3.5 h-3.5 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 Chờ xử lý
               </span>
@@ -142,17 +142,17 @@ export function PayoutsScreen() {
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-[20px] border border-slate-100 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+        <div className="flex min-w-0 flex-col justify-between rounded-[20px] border border-slate-100 bg-white p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
           <div className="flex justify-between items-start mb-4">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Đã Thanh Toán</span>
-            <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
+            <div className="p-2 bg-slate-100 text-slate-600 rounded-xl">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             </div>
           </div>
           <div>
-            <h3 className="text-2xl font-semibold text-slate-800 tracking-tight">{stats.totalPaid.toLocaleString()}đ</h3>
-            <p className="text-[11px] font-medium text-slate-400 mt-1 flex items-center gap-1">
-              <span className="text-emerald-600 font-semibold flex items-center">
+            <h3 className="break-words text-[clamp(1.15rem,3vw,1.5rem)] font-semibold leading-tight tracking-tight text-slate-800 tabular-nums">{stats.totalPaid.toLocaleString()}đ</h3>
+            <p className="mt-1 flex flex-wrap items-center gap-1 text-[11px] font-medium text-slate-400">
+              <span className="flex items-center font-semibold text-slate-600">
                 <svg className="w-3 h-3 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                 Đã hoàn tất
               </span>
@@ -161,17 +161,17 @@ export function PayoutsScreen() {
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-[20px] border border-slate-100 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+        <div className="flex min-w-0 flex-col justify-between rounded-[20px] border border-slate-100 bg-white p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
           <div className="flex justify-between items-start mb-4">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Hoa Hồng Theo API</span>
-            <div className="p-2 bg-blue-50 text-blue-500 rounded-xl">
+            <div className="p-2 bg-slate-100 text-slate-600 rounded-xl">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             </div>
           </div>
           <div>
-            <h3 className="text-2xl font-semibold text-slate-800 tracking-tight">{stats.totalCommission.toLocaleString()}đ</h3>
-            <p className="text-[11px] font-medium text-slate-400 mt-1 flex items-center gap-1">
-              <span className="text-blue-500 font-semibold flex items-center">
+            <h3 className="break-words text-[clamp(1.15rem,3vw,1.5rem)] font-semibold leading-tight tracking-tight text-slate-800 tabular-nums">{stats.totalCommission.toLocaleString()}đ</h3>
+            <p className="mt-1 flex flex-wrap items-center gap-1 text-[11px] font-medium text-slate-400">
+              <span className="flex items-center font-semibold text-slate-600">
                 <svg className="w-3.5 h-3.5 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 Doanh thu
               </span>
@@ -183,7 +183,7 @@ export function PayoutsScreen() {
 
       {/* Tabs & Search Area */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-6">
-        <div className="inline-flex bg-slate-100/80 p-0.5 rounded-full self-start">
+        <div className="inline-flex max-w-full flex-wrap self-start rounded-full bg-slate-100/80 p-0.5">
           <button
             onClick={() => setActiveTab("PENDING")}
             className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
@@ -227,7 +227,7 @@ export function PayoutsScreen() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
+            <table className="w-full min-w-[820px] border-collapse text-left text-xs">
               {activeTab === "PENDING" ? (
                 // VIEW GỘP THEO HOST CHO PENDING
                 <>
@@ -245,7 +245,7 @@ export function PayoutsScreen() {
                       <tr><td colSpan={5} className="p-10 text-center text-slate-400 text-xs">Không có khoản chờ xử lý nào.</td></tr>
                     ) : (
                       groupedPendingPayouts.map((batch) => (
-                        <tr key={batch.hostId} className={`hover:bg-slate-50/60 transition-colors group ${batch.hasRequested ? "bg-red-50/10 hover:bg-red-50/20" : ""}`}>
+                        <tr key={batch.hostId} className={`hover:bg-slate-50/60 transition-colors group ${batch.hasRequested ? "bg-slate-50/80 hover:bg-slate-100/70" : ""}`}>
                           <td className="px-5 py-3.5 font-mono text-slate-800 font-semibold" title={batch.hostId}>
                             <div className="flex items-center gap-2">
                               <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] text-slate-500 font-sans">
@@ -259,13 +259,13 @@ export function PayoutsScreen() {
                               {batch.count} đơn
                             </span>
                           </td>
-                          <td className="px-5 py-3.5 font-semibold text-slate-800 text-right">
+                          <td className="px-5 py-3.5 text-right font-semibold text-slate-800 tabular-nums">
                             {batch.totalAmount.toLocaleString()}đ
                           </td>
                           <td className="px-5 py-3.5 text-center">
                             {batch.hasRequested ? (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-red-50 text-red-600 border border-red-100/50">
-                                <span className="w-1 h-1 rounded-full bg-red-500 animate-pulse"></span>
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-white text-slate-800 border border-slate-300">
+                                <span className="w-1 h-1 rounded-full bg-slate-700 animate-pulse"></span>
                                 Yêu cầu rút
                               </span>
                             ) : (
@@ -319,15 +319,15 @@ export function PayoutsScreen() {
                           <td className="px-5 py-3.5 font-mono text-[11px] text-slate-500" title={payout.hostId}>
                             {payout.hostId?.substring(0, 8)}...
                           </td>
-                          <td className="px-5 py-3.5 text-slate-600">
+                          <td className="px-5 py-3.5 text-slate-600 tabular-nums">
                             {payout.totalAmount?.toLocaleString()}đ
                           </td>
-                          <td className="px-5 py-3.5 font-semibold text-slate-800 text-right">
+                          <td className="px-5 py-3.5 text-right font-semibold text-slate-800 tabular-nums">
                             {payout.hostAmount?.toLocaleString()}đ
                           </td>
                           <td className="px-5 py-3.5 text-center">
-                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100/30">
-                                <svg className="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-50 text-slate-700 border border-slate-200">
+                                <svg className="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
                                 {safeFormatDate(payout.paidAt, "dd/MM HH:mm")}
                              </span>
                           </td>
@@ -354,20 +354,20 @@ export function PayoutsScreen() {
       {(selectedPayout || selectedBatch) && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm animate-fade-in" onClick={closePaymentModal}></div>
-          <div className="bg-white rounded-[20px] w-full max-w-sm overflow-hidden shadow-xl border border-slate-100 relative z-10 animate-scale-up">
+          <div className="relative z-10 flex max-h-[92vh] w-full max-w-sm flex-col overflow-hidden rounded-[20px] border border-slate-100 bg-white shadow-xl animate-scale-up">
             <div className="px-5 py-4 border-b border-slate-50 flex justify-between items-center">
               <h3 className="font-semibold text-slate-800 text-sm">Chuyển khoản thanh toán</h3>
               <button onClick={closePaymentModal} className="w-6 h-6 flex items-center justify-center rounded-full text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-colors">✕</button>
             </div>
             
-            <div className="p-6">
+            <div className="flex-1 overflow-y-auto p-5 sm:p-6">
               <div className="text-center mb-5">
                 <div className="text-[10px] font-bold text-slate-400 mb-1 tracking-wider uppercase">Số tiền thanh toán</div>
-                <div className="text-2xl font-semibold text-slate-800 tracking-tight leading-none">
+                <div className="break-words text-[clamp(1.35rem,7vw,1.5rem)] font-semibold leading-tight tracking-tight text-slate-800 tabular-nums">
                   {selectedBatch ? selectedBatch.totalAmount.toLocaleString() : selectedPayout?.hostAmount?.toLocaleString()}<span className="text-base text-slate-400 ml-0.5">đ</span>
                 </div>
                 {selectedBatch && (
-                  <div className="text-[10px] font-semibold text-blue-600 mt-2 inline-flex items-center gap-1 bg-blue-50 px-2 py-0.5 rounded-full">
+                  <div className="text-[10px] font-semibold text-slate-700 mt-2 inline-flex items-center gap-1 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-full">
                     Gộp thanh toán {selectedBatch.count} đơn hàng
                   </div>
                 )}
@@ -381,17 +381,17 @@ export function PayoutsScreen() {
               ) : selectedHostBank ? (
                 <div className="space-y-4">
                   <div className="bg-slate-50/50 p-4 rounded-[12px] text-xs border border-slate-100 space-y-2">
-                    <div className="flex justify-between items-center">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="text-slate-400">Ngân hàng</span>
                       <span className="font-semibold text-slate-700">{selectedHostBank.bankName}</span>
                     </div>
-                    <div className="flex justify-between items-center">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="text-slate-400">Số tài khoản</span>
-                      <span className="font-semibold text-slate-800 font-mono">{selectedHostBank.accountNumber}</span>
+                      <span className="break-all font-mono font-semibold text-slate-800">{selectedHostBank.accountNumber}</span>
                     </div>
-                    <div className="flex justify-between items-center">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="text-slate-400">Chủ tài khoản</span>
-                      <span className="font-semibold text-slate-800 uppercase">{selectedHostBank.accountName}</span>
+                      <span className="break-words text-right font-semibold uppercase text-slate-800">{selectedHostBank.accountName}</span>
                     </div>
                   </div>
 
@@ -412,13 +412,13 @@ export function PayoutsScreen() {
                   )}
                 </div>
               ) : (
-                <div className="py-4 text-center text-xs text-red-500 font-medium bg-red-50 rounded-xl">
+                <div className="py-4 text-center text-xs text-slate-600 font-medium bg-slate-50 rounded-xl">
                   Không lấy được thông tin ngân hàng của Host này.
                 </div>
               )}
             </div>
 
-            <div className="p-4 bg-slate-50/50 border-t border-slate-100 flex gap-2">
+            <div className="flex flex-col gap-2 border-t border-slate-100 bg-slate-50/50 p-4 sm:flex-row">
               <button 
                 onClick={closePaymentModal}
                 className="flex-1 py-2 bg-white border border-slate-200 rounded-full text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors"

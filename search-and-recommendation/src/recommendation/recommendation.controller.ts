@@ -31,6 +31,14 @@ export class RecommendationController {
     return this.recommendationService.getProvinceDestinations(province);
   }
 
+  @Get('complexes')
+  async getComplexes(@Query('limit') limit?: string) {
+    const parsedLimit = Number(limit);
+    return this.recommendationService.getComplexes(
+      Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : 120,
+    );
+  }
+
   @Get('complexes/:id')
   async getComplexRecommendations(@Param('id') id: string) {
     return this.recommendationService.recommendByComplex(id);

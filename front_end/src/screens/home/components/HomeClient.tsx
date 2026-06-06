@@ -1,17 +1,14 @@
 "use client";
 
-import { useEffect, Suspense } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
-import { Button } from "@/components/ui/button";
 import ImageNavigation from "./ImageNavigation";
 import { useSafeContext } from "@/shared/hooks";
 import { HomeContext } from "../providers/home.provider";
-import { CarouselSection, SearchInfoSection } from "@/shared/components";
+import { CarouselSection, ComplexCarouselSections } from "@/shared/components";
 import { OfferingCarouselItem } from "@/shared/components";
-import { AppContext } from "@/features/app/providers/app.provider";
-import { FilterService } from "@/services/filter";
 
 type HomeOffering = {
   id?: string;
@@ -32,10 +29,8 @@ type LandmarkOffering = HomeOffering & {
 export default function HomeClient() {
   const router = useRouter();
   // Giữ landmarks từ TestSystem cho background
-  const { imageIndex, clock, setClock, experiences, places, services, landmarks } =
+  const { imageIndex, clock, setClock, experiences, places, services, landmarks, complexes } =
     useSafeContext(HomeContext);
-
-  const { filter } = useSafeContext(AppContext);
 
   useEffect(() => {
     setClock(6000);
@@ -122,7 +117,7 @@ export default function HomeClient() {
 
   return (
     <>
-      <div className="relative w-full h-[450px] md:h-[640px] bg-zinc-950 overflow-hidden flex items-center">
+      <div className="relative w-full h-[450px] md:h-[640px] bg-zinc-950 flex items-center">
         {/* BG — giữ landmarks làm background như TestSystem */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="size-full scale-115 bg-zinc-950">
@@ -228,21 +223,8 @@ export default function HomeClient() {
             <ImageNavigation />
           </div>
         </div>
-
-        {/* Search Info — cải tiến từ frontend với FilterService */}
-        <div className="pos-center-x bottom-[-30] w-6/10 z-30">
-          <Suspense fallback={<div className="h-[70] w-full rounded-full bg-white dark:bg-zinc-900 border animate-pulse" />}>
-            <SearchInfoSection
-              onClickSearch={(value) => {
-                const params = FilterService.set(value);
-                router.push(`/search?${params.toString()}`);
-              }}
-              filter={filter}
-            />
-          </Suspense>
-        </div>
       </div>
-      <div className="h-18" />
+      <div className="h-10" />
 
       {/* Top Địa Danh Nổi Tiếng */}
       {landmarkList.length > 0 && (
@@ -266,6 +248,15 @@ export default function HomeClient() {
           </CarouselSection>
           <div className="h-10" />
         </>
+      )}
+
+      {complexes.length > 0 && (
+        <ComplexCarouselSections
+          complexes={complexes}
+          grouped
+          maxGroups={3}
+          titlePrefix="Khu du lịch tại"
+        />
       )}
 
       {/* Top 3 locations with popular hotels */}

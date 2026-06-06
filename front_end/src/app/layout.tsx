@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "@/styles/globals.css";
 import { AppProvider } from "../features/app/providers/app.provider";
 import { AuthModalProvider } from "@/shared/context/AuthModalContext";
@@ -13,11 +12,6 @@ export const metadata: Metadata = {
   },
 };
 
-const fontSans = Inter({
-  variable: "--font-sans",
-  subsets: ["latin"],
-});
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -26,7 +20,7 @@ export default function RootLayout({
   return (
     <AppProvider>
       <AuthModalProvider>
-        <html lang="vi" className={`${fontSans.variable}`}>
+        <html lang="vi">
           <body className="">
             {children}
             <AuthModal />

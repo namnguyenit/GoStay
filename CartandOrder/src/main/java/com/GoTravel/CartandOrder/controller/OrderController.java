@@ -2,6 +2,7 @@ package com.GoTravel.CartandOrder.controller;
 
 import com.GoTravel.CartandOrder.dto.request.BookNowRequest;
 import com.GoTravel.CartandOrder.dto.request.CheckoutCartRequest;
+import com.GoTravel.CartandOrder.dto.response.AdminOrderSummaryResponse;
 import com.GoTravel.CartandOrder.dto.response.ApiResponse;
 import com.GoTravel.CartandOrder.dto.response.OrderResponse;
 import com.GoTravel.CartandOrder.entity.Order;
@@ -36,6 +37,12 @@ public class OrderController {
             @RequestHeader("X-User-Id") UUID userId,
             @RequestBody @Valid BookNowRequest request) {
         return ResponseEntity.ok(ApiResponse.success("Đặt dịch vụ thành công, đang chuyển đến thanh toán", orderService.bookNow(userId, request)));
+    }
+
+    @GetMapping("/admin/summary")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<AdminOrderSummaryResponse>> getAdminSummary() {
+        return ResponseEntity.ok(ApiResponse.success("Lấy thống kê đơn hàng thành công", orderService.getAdminSummary()));
     }
 
     @GetMapping("/{orderId}")

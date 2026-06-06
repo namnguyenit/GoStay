@@ -17,4 +17,5 @@ public interface LandmarkSuggestionRepository extends JpaRepository<LandmarkSugg
     List<LandmarkSuggestion> findByStatus(SuggestionStatus status);
     List<LandmarkSuggestion> findBySuggestedProvince(String province);
     Page<LandmarkSuggestion> findByStatus(SuggestionStatus status, Pageable pageable);
+    long countByStatus(SuggestionStatus status);
 }

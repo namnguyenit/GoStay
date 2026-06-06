@@ -101,13 +101,41 @@ public class UserService {
      * @return list người dùng
      */
     public PageResponse<UserResponse> getAllUsers(int page, int size) {
+        return getAllUsers(page, size, null);
+    }
+
+    public PageResponse<UserResponse> getAllUsers(int page, int size, String keyword) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<User> userPage = userRepository.findAllByRoles_Name("USER",pageable);
+        String cleanKeyword = keyword == null ? "" : keyword.trim();
+        Page<User> userPage = cleanKeyword.isBlank()
+                ? userRepository.findAllByRoles_Name("USER", pageable)
+                : userRepository.searchByRoleNameAndKeyword("USER", cleanKeyword, pageable);
 
         return PageResponse.<UserResponse>builder()
                 .content(userPage.getContent().stream().map(userMapper::userToUserResponse).toList())
                 .totalPages(userPage.getTotalPages())
                 .totalElements(userPage.getTotalElements())
+                .build();
+    }
+
+    public AdminIdentitySummaryResponse getAdminSummary() {
+        long totalHosts = hostProfileRepository.count();
+        long totalEnterprises = enterpriseProfileRepository.count();
+
+        return AdminIdentitySummaryResponse.builder()
+                .totalAccounts(userRepository.count())
+                .totalUsers(userRepository.countByRoleName("USER"))
+                .activeAccounts(userRepository.countByIsActive(true))
+                .bannedAccounts(userRepository.countByIsActive(false))
+                .deletedAccounts(userRepository.countByIsDeleted(true))
+                .totalHosts(totalHosts)
+                .pendingHosts(hostProfileRepository.countByApprovalStatus(Approval_status.PENDING))
+                .approvedHosts(hostProfileRepository.countByApprovalStatus(Approval_status.APPROVED))
+                .rejectedHosts(hostProfileRepository.countByApprovalStatus(Approval_status.REJECTED))
+                .totalEnterprises(totalEnterprises)
+                .pendingEnterprises(enterpriseProfileRepository.countByApprovalStatus(Approval_status.PENDING))
+                .approvedEnterprises(enterpriseProfileRepository.countByApprovalStatus(Approval_status.APPROVED))
+                .rejectedEnterprises(enterpriseProfileRepository.countByApprovalStatus(Approval_status.REJECTED))
                 .build();
     }
 

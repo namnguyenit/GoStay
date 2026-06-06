@@ -11,4 +11,13 @@ export const endpoint = {
   service: {
     getAll: "/v1/search/listings?category=SVC&limit=500",
   },
+  complex: {
+    getAll: "/v1/recommendations/complexes?limit=200",
+    suggestLocations: (query: string) =>
+      `/v1/search/locations/suggest?q=${encodeURIComponent(query)}`,
+    getByLandmark: (id: string) =>
+      `/v1/recommendations/landmarks/${id}?radius=5000`,
+    getByProvince: (province: string) =>
+      `/v1/recommendations/provinces/${encodeURIComponent(province)}/destinations`,
+  },
 };

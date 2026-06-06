@@ -25,6 +25,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [adminName, setAdminName] = useState("");
   const [authMessage, setAuthMessage] = useState("Authenticating...");
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     partners: true,
@@ -58,7 +59,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f8f9fa]">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-12 h-12 border-4 border-slate-800 border-t-transparent rounded-full animate-spin"></div>
           <p className="text-gray-500 text-sm font-semibold">{authMessage}</p>
         </div>
       </div>
@@ -103,21 +104,41 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   return (
-    <div className="flex min-h-screen bg-[#f8f9fa] text-gray-900 font-sans selection:bg-blue-100 selection:text-blue-900">
+    <div className="min-h-screen overflow-x-hidden bg-[#f8f9fa] font-sans text-gray-900 selection:bg-slate-200 selection:text-slate-950">
+      {mobileNavOpen && (
+        <button
+          type="button"
+          aria-label="Đóng menu admin"
+          className="fixed inset-0 z-30 bg-slate-900/30 backdrop-blur-[2px] lg:hidden"
+          onClick={() => setMobileNavOpen(false)}
+        />
+      )}
       
       {/* Sidebar - CrewMate Style */}
-      <aside className="w-[280px] bg-white flex flex-col fixed top-0 left-0 h-screen z-20 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+      <aside
+        className={`fixed top-0 left-0 z-40 flex h-screen w-[280px] max-w-[86vw] flex-col bg-white shadow-[4px_0_24px_rgba(0,0,0,0.04)] transition-transform duration-300 lg:translate-x-0 ${
+          mobileNavOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
         
         {/* Brand */}
-        <div className="h-[90px] flex items-center px-8 border-b border-slate-100/50">
+        <div className="flex h-[76px] items-center justify-between border-b border-slate-100/50 px-6 lg:h-[90px] lg:px-8">
           <div className="flex items-center gap-3 cursor-pointer">
-            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-[15px] tracking-tighter border border-blue-100/30">
-              G<span className="text-blue-400">S</span>
+            <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-900 flex items-center justify-center font-bold text-[15px] tracking-tighter border border-slate-200/70">
+              G<span className="text-slate-500">S</span>
             </div>
             <span className="font-semibold text-[20px] tracking-tight text-slate-800">
               GoStay
             </span>
           </div>
+          <button
+            type="button"
+            onClick={() => setMobileNavOpen(false)}
+            className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition-colors hover:bg-slate-50 hover:text-slate-700 lg:hidden"
+            aria-label="Đóng menu admin"
+          >
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
         </div>
 
         {/* Navigation */}
@@ -129,9 +150,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           <Link
             href="/admin"
+            onClick={() => setMobileNavOpen(false)}
             className={`flex items-center px-4 py-2.5 mb-1.5 rounded-xl text-[13.5px] font-semibold transition-all ${
               pathname === "/admin"
-                ? "bg-[#f4f7fe] text-blue-600 font-bold"
+                ? "bg-slate-100 text-slate-950 font-bold"
                 : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
             }`}
           >
@@ -141,9 +163,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           <Link
             href="/admin/users"
+            onClick={() => setMobileNavOpen(false)}
             className={`flex items-center px-4 py-2.5 mb-1.5 rounded-xl text-[13.5px] font-semibold transition-all ${
               pathname.startsWith("/admin/users")
-                ? "bg-[#f4f7fe] text-blue-600 font-bold"
+                ? "bg-slate-100 text-slate-950 font-bold"
                 : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
             }`}
           >
@@ -153,9 +176,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           <Link
             href="/admin/payouts"
+            onClick={() => setMobileNavOpen(false)}
             className={`flex items-center px-4 py-2.5 mb-6 rounded-xl text-[13.5px] font-semibold transition-all ${
               pathname.startsWith("/admin/payouts")
-                ? "bg-[#f4f7fe] text-blue-600 font-bold"
+                ? "bg-slate-100 text-slate-950 font-bold"
                 : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
             }`}
           >
@@ -184,13 +208,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         <Link
                           key={item.href}
                           href={item.href}
+                          onClick={() => setMobileNavOpen(false)}
                           className={`flex items-center px-4 py-2 rounded-xl text-[13px] font-semibold transition-all ${
                             isActive
-                              ? "bg-[#f4f7fe] text-blue-600 font-bold"
+                              ? "bg-slate-100 text-slate-950 font-bold"
                               : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
                           }`}
                         >
-                          {item.icon ? item.icon : <span className={`w-1.5 h-1.5 rounded-full mr-3.5 ${isActive ? 'bg-blue-500' : 'bg-transparent'}`}></span>}
+                          {item.icon ? item.icon : <span className={`w-1.5 h-1.5 rounded-full mr-3.5 ${isActive ? 'bg-slate-900' : 'bg-transparent'}`}></span>}
                           {item.label}
                         </Link>
                       );
@@ -216,7 +241,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               />
               <div>
                 <p className="text-[13px] font-semibold text-slate-800 capitalize">{adminName || "Admin"}</p>
-                <p className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">System Admin</p>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">System Admin</p>
               </div>
             </div>
             <button
@@ -224,7 +249,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 AuthService.logout();
                 router.push("/");
               }}
-              className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+              className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all"
               title="Logout"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
@@ -234,44 +259,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* Main Area */}
-      <div className="flex-1 ml-[280px] flex flex-col min-h-screen">
+      <div className="flex min-h-screen min-w-0 flex-1 flex-col lg:ml-[280px]">
         
         {/* Topbar */}
-        <header className="h-[90px] flex items-center justify-between px-10 sticky top-0 z-10 bg-[#f8f9fa]/80 backdrop-blur-md">
+        <header className="sticky top-0 z-10 flex min-h-[72px] items-center justify-between gap-4 bg-[#f8f9fa]/85 px-4 py-4 backdrop-blur-md sm:px-6 lg:h-[90px] lg:px-10 lg:py-0">
           
           {/* Breadcrumb / Title */}
-          <div>
-            <h1 className="text-[20px] font-semibold text-slate-800 tracking-tight">
+          <div className="flex min-w-0 items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setMobileNavOpen(true)}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-slate-100 bg-white text-slate-500 shadow-[0_2px_8px_rgba(0,0,0,0.02)] lg:hidden"
+              aria-label="Mở menu admin"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M4 6h16M4 12h16M4 18h16" /></svg>
+            </button>
+            <h1 className="truncate text-[18px] font-semibold tracking-tight text-slate-800 sm:text-[20px]">
               {getActiveItemLabel()}
             </h1>
-          </div>
-
-          {/* Right Tools */}
-          <div className="flex items-center gap-4">
-            
-            {/* Search Topbar */}
-            <div className="hidden lg:flex items-center relative">
-              <svg className="w-3.5 h-3.5 absolute left-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-              <input type="text" placeholder="Tìm kiếm tác vụ..." className="pl-9 pr-4 py-2 bg-white border border-slate-100 shadow-[0_2px_8px_rgba(0,0,0,0.02)] rounded-full text-[12px] font-semibold text-slate-700 w-52 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-slate-200 transition-all" />
-            </div>
-
-            <button className="w-9 h-9 bg-white border border-slate-100 rounded-full flex items-center justify-center text-slate-400 shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:text-slate-700 transition-colors">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
-            </button>
-            
-            <button className="w-9 h-9 bg-white border border-slate-100 rounded-full flex items-center justify-center text-slate-400 shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:text-slate-700 transition-colors relative">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
-              <span className="absolute top-2 right-2.5 w-1.5 h-1.5 bg-red-500 rounded-full border border-white"></span>
-            </button>
-            
-            <button className="w-9 h-9 bg-white border border-slate-100 rounded-full flex items-center justify-center text-slate-400 shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:text-slate-700 transition-colors">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            </button>
           </div>
         </header>
 
         {/* Content Wrapper */}
-        <main className="px-10 pb-10 flex-1">
+        <main className="min-w-0 flex-1 px-4 pb-8 sm:px-6 lg:px-10 lg:pb-10">
           {children}
         </main>
       </div>

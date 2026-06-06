@@ -1,12 +1,17 @@
 package com.gotravel.PaymentandWallet.service;
 
+import com.gotravel.PaymentandWallet.dto.response.AdminPaymentSummaryResponse;
+import com.gotravel.PaymentandWallet.dto.response.AdminRevenueReportResponse;
 import com.gotravel.PaymentandWallet.dto.response.HostPayoutResponse;
 import com.gotravel.PaymentandWallet.entity.HostPayout;
+import com.gotravel.PaymentandWallet.enums.PaymentStatus;
 import com.gotravel.PaymentandWallet.enums.PayoutStatus;
 import com.gotravel.PaymentandWallet.exeption.AppException;
 import com.gotravel.PaymentandWallet.exeption.PaymentErrorCode;
 import com.gotravel.PaymentandWallet.mapper.PaymentMapper;
 import com.gotravel.PaymentandWallet.repository.HostPayoutRepository;
+import com.gotravel.PaymentandWallet.repository.PaymentRequestRepository;
+import com.gotravel.PaymentandWallet.repository.PaymentTransactionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -14,7 +19,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.sql.Date;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -27,6 +37,8 @@ import java.util.UUID;
 public class HostPayoutService {
 
     private final HostPayoutRepository hostPayoutRepository;
+    private final PaymentRequestRepository paymentRequestRepository;
+    private final PaymentTransactionRepository paymentTransactionRepository;
     private final PaymentMapper paymentMapper;
 
     /**
@@ -44,6 +56,85 @@ public class HostPayoutService {
                 .map(paymentMapper::toHostPayoutResponse);
     }
 
+    @Transactional(readOnly = true)
+    public AdminPaymentSummaryResponse getAdminSummary() {
+        return AdminPaymentSummaryResponse.builder()
+                .totalPaymentRequests(paymentRequestRepository.count())
+                .pendingPayments(paymentRequestRepository.countByStatus(PaymentStatus.PENDING))
+                .completedPayments(paymentRequestRepository.countByStatus(PaymentStatus.COMPLETED))
+                .failedPayments(paymentRequestRepository.countByStatus(PaymentStatus.FAILED))
+                .expiredPayments(paymentRequestRepository.countByStatus(PaymentStatus.EXPIRED))
+                .totalRequestedAmount(paymentRequestRepository.sumAmount())
+                .completedPaymentAmount(paymentRequestRepository.sumAmountByStatus(PaymentStatus.COMPLETED))
+                .totalTransactionAmount(paymentTransactionRepository.sumAmount())
+                .totalPayouts(hostPayoutRepository.count())
+                .pendingPayouts(hostPayoutRepository.countByStatus(PayoutStatus.PENDING))
+                .requestedPayouts(hostPayoutRepository.countByStatus(PayoutStatus.REQUESTED))
+                .paidPayouts(hostPayoutRepository.countByStatus(PayoutStatus.PAID))
+                .cancelledPayouts(hostPayoutRepository.countByStatus(PayoutStatus.CANCELLED))
+                .totalPayoutAmount(hostPayoutRepository.sumTotalAmount())
+                .totalHostAmount(hostPayoutRepository.sumHostAmount())
+                .totalCommissionAmount(hostPayoutRepository.sumCommissionAmount())
+                .pendingHostAmount(hostPayoutRepository.sumHostAmountByStatus(PayoutStatus.PENDING))
+                .requestedHostAmount(hostPayoutRepository.sumHostAmountByStatus(PayoutStatus.REQUESTED))
+                .paidHostAmount(hostPayoutRepository.sumHostAmountByStatus(PayoutStatus.PAID))
+                .paidCommissionAmount(hostPayoutRepository.sumCommissionAmountByStatus(PayoutStatus.PAID))
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public AdminRevenueReportResponse getRevenueReport(LocalDate startDate, LocalDate endDate) {
+        LocalDate safeStart = startDate != null ? startDate : LocalDate.now().minusDays(29);
+        LocalDate safeEnd = endDate != null ? endDate : LocalDate.now();
+        if (safeEnd.isBefore(safeStart)) {
+            LocalDate tmp = safeStart;
+            safeStart = safeEnd;
+            safeEnd = tmp;
+        }
+
+        List<Object[]> rows = hostPayoutRepository.getDailyRevenueReport(
+                safeStart.atStartOfDay(),
+                safeEnd.plusDays(1).atStartOfDay()
+        );
+
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        BigDecimal hostAmount = BigDecimal.ZERO;
+        BigDecimal commissionAmount = BigDecimal.ZERO;
+        long payoutCount = 0;
+        List<AdminRevenueReportResponse.DailyRevenue> daily = new ArrayList<>();
+
+        for (Object[] row : rows) {
+            LocalDate date = toLocalDate(row[0]);
+            BigDecimal rowTotal = toBigDecimal(row[1]);
+            BigDecimal rowHost = toBigDecimal(row[2]);
+            BigDecimal rowCommission = toBigDecimal(row[3]);
+            long rowCount = ((Number) row[4]).longValue();
+
+            totalAmount = totalAmount.add(rowTotal);
+            hostAmount = hostAmount.add(rowHost);
+            commissionAmount = commissionAmount.add(rowCommission);
+            payoutCount += rowCount;
+
+            daily.add(AdminRevenueReportResponse.DailyRevenue.builder()
+                    .date(date)
+                    .totalAmount(rowTotal)
+                    .hostAmount(rowHost)
+                    .commissionAmount(rowCommission)
+                    .payoutCount(rowCount)
+                    .build());
+        }
+
+        return AdminRevenueReportResponse.builder()
+                .startDate(safeStart)
+                .endDate(safeEnd)
+                .totalAmount(totalAmount)
+                .hostAmount(hostAmount)
+                .commissionAmount(commissionAmount)
+                .payoutCount(payoutCount)
+                .daily(daily)
+                .build();
+    }
+
     @Transactional
     public void markAsPaid(UUID payoutId) {
         HostPayout payout = hostPayoutRepository.findById(payoutId)
@@ -54,6 +145,19 @@ public class HostPayoutService {
         hostPayoutRepository.save(payout);
 
         log.info("Payout {} marked as PAID. Host {} receives {}", payoutId, payout.getHostId(), payout.getHostAmount());
+    }
+
+    private LocalDate toLocalDate(Object value) {
+        if (value instanceof Date sqlDate) return sqlDate.toLocalDate();
+        if (value instanceof java.sql.Timestamp timestamp) return timestamp.toLocalDateTime().toLocalDate();
+        if (value instanceof LocalDate localDate) return localDate;
+        return LocalDate.parse(String.valueOf(value));
+    }
+
+    private BigDecimal toBigDecimal(Object value) {
+        if (value instanceof BigDecimal bigDecimal) return bigDecimal;
+        if (value instanceof Number number) return BigDecimal.valueOf(number.doubleValue());
+        return new BigDecimal(String.valueOf(value));
     }
 
     @Transactional

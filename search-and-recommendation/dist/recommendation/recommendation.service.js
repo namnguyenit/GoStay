@@ -97,6 +97,18 @@ let RecommendationService = RecommendationService_1 = class RecommendationServic
         await this.cacheService.set(cacheKey, data, 3600);
         return data;
     }
+    async getComplexes(limit = 120) {
+        const safeLimit = Number.isFinite(limit)
+            ? Math.max(1, Math.min(Math.floor(limit), 200))
+            : 120;
+        const cacheKey = `recommend:complexes:limit:${safeLimit}`;
+        const cached = await this.cacheService.get(cacheKey);
+        if (cached)
+            return cached;
+        const data = await this.candidateGenerator.generateComplexes(safeLimit);
+        await this.cacheService.set(cacheKey, data, 300);
+        return data;
+    }
     async recommendByComplex(complexId) {
         const cacheKey = `recommend:complex:${complexId}`;
         const cached = await this.cacheService.get(cacheKey);
@@ -123,7 +135,10 @@ let RecommendationService = RecommendationService_1 = class RecommendationServic
         const cached = await this.cacheService.get(cacheKey);
         if (cached)
             return cached;
-        const candidates = await this.candidateGenerator.generateByLandmark(landmarkId, 200, safeRadiusMeters);
+        const [candidates, complexes] = await Promise.all([
+            this.candidateGenerator.generateByLandmark(landmarkId, 200, safeRadiusMeters),
+            this.candidateGenerator.generateComplexesByLandmark(landmarkId, safeRadiusMeters, 12),
+        ]);
         const scored = this.scoringService.score(candidates, {});
         const finalRanked = this.diversityService.diversifyAndRank(scored, 15);
         const grouped = {
@@ -132,6 +147,7 @@ let RecommendationService = RecommendationService_1 = class RecommendationServic
             STAY: finalRanked.filter((item) => item.category === 'STAY'),
             EXP: finalRanked.filter((item) => item.category === 'EXP'),
             SVC: finalRanked.filter((item) => item.category === 'SVC'),
+            COMPLEX: complexes,
         };
         await this.cacheService.set(cacheKey, grouped, 300);
         return grouped;

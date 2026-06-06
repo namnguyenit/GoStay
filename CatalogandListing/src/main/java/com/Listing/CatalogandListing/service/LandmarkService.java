@@ -7,6 +7,7 @@ import com.Listing.CatalogandListing.dto.request.landmark.UpdateSuggestionStatus
 import com.Listing.CatalogandListing.entity.Landmark;
 import com.Listing.CatalogandListing.entity.LandmarkSuggestion;
 import com.Listing.CatalogandListing.enums.SuggestionStatus;
+import com.Listing.CatalogandListing.dto.response.AdminCatalogSummaryResponse;
 import com.Listing.CatalogandListing.dto.response.PaginationResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +15,7 @@ import com.Listing.CatalogandListing.mapper.LandmarkMapper;
 import com.Listing.CatalogandListing.mapper.LandmarkSuggestionMapper;
 import com.Listing.CatalogandListing.repository.LandmarkRepository;
 import com.Listing.CatalogandListing.repository.LandmarkSuggestionRepository;
+import com.Listing.CatalogandListing.repository.ListingRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -31,6 +33,7 @@ public class LandmarkService {
     final LandmarkSuggestionRepository landmarkSuggestionRepository;
     final LandmarkMapper landmarkMapper;
     final LandmarkRepository landmarkRepository;
+    final ListingRepository listingRepository;
 
     public PaginationResponse<LandmarkSuggestion> getLandmarkSuggestions(String status, int page, int size) {
         Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
@@ -127,5 +130,32 @@ public class LandmarkService {
 
      public java.util.List<Landmark> getPublicLandmarks() {
          return landmarkRepository.findActiveOrderByNearbyListingCount();
+     }
+
+     public AdminCatalogSummaryResponse getAdminSummary() {
+         return AdminCatalogSummaryResponse.builder()
+                 .totalListings(listingCount())
+                 .activeListings(countListingStatus(com.Listing.CatalogandListing.enums.ListingStatus.ACTIVE))
+                 .pendingListings(countListingStatus(com.Listing.CatalogandListing.enums.ListingStatus.PENDING))
+                 .hiddenListings(countListingStatus(com.Listing.CatalogandListing.enums.ListingStatus.HIDDEN))
+                 .deletedListings(countListingStatus(com.Listing.CatalogandListing.enums.ListingStatus.DELETED))
+                 .totalLandmarks(landmarkRepository.count())
+                 .activeLandmarks(landmarkRepository.countByStatus(com.Listing.CatalogandListing.enums.LandmarkStatus.ACTIVE))
+                 .hiddenLandmarks(landmarkRepository.countByStatus(com.Listing.CatalogandListing.enums.LandmarkStatus.HIDDEN))
+                 .maintenanceLandmarks(landmarkRepository.countByStatus(com.Listing.CatalogandListing.enums.LandmarkStatus.MAINTENANCE))
+                 .featuredLandmarks(landmarkRepository.countByIsFeaturedTrue())
+                 .totalLandmarkSuggestions(landmarkSuggestionRepository.count())
+                 .pendingLandmarkSuggestions(landmarkSuggestionRepository.countByStatus(SuggestionStatus.PENDING))
+                 .resolvedLandmarkSuggestions(landmarkSuggestionRepository.countByStatus(SuggestionStatus.RESOLVED))
+                 .rejectedLandmarkSuggestions(landmarkSuggestionRepository.countByStatus(SuggestionStatus.REJECTED))
+                 .build();
+     }
+
+     private long listingCount() {
+         return listingRepository.count();
+     }
+
+     private long countListingStatus(com.Listing.CatalogandListing.enums.ListingStatus status) {
+         return listingRepository.countByStatus(status);
      }
 }

@@ -7,61 +7,63 @@ export function ApprovedHostsScreen() {
   const { hosts, loading, feedback, detailModal, setDetailModal } = useApprovedHosts();
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-        <div>
+    <div className="min-w-0 space-y-6">
+      <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <h2 className="text-lg font-semibold text-slate-800 tracking-tight">Đối tác Host đã duyệt</h2>
           <p className="text-xs text-slate-400 mt-0.5 font-medium">Danh sách các đối tác hoạt động cung cấp dịch vụ lưu trú</p>
         </div>
-        <span className="text-xs font-semibold text-slate-400 bg-slate-50 border border-slate-100 px-3 py-1.5 rounded-full">{hosts.length} hosts</span>
+        <span className="w-fit rounded-full border border-slate-100 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-400">{hosts.length} hosts</span>
       </div>
 
       {feedback && (
-        <div className="rounded-xl border border-red-100 bg-red-50/70 px-4 py-3 text-xs font-medium text-red-700">
+        <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-medium text-slate-700">
           {feedback.message}
         </div>
       )}
 
       <div className="bg-white rounded-[20px] border border-slate-100 overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-        <table className="w-full text-sm">
-          <thead>
-            <tr>
-              <th className="text-left px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 bg-slate-50/50">Username</th>
-              <th className="text-left px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 bg-slate-50/50">Email</th>
-              <th className="text-left px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 bg-slate-50/50">Họ tên Host</th>
-              <th className="text-left px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 bg-slate-50/50">SĐT</th>
-              <th className="text-left px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 bg-slate-50/50">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-50">
-            {loading ? (
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[760px] text-sm">
+            <thead>
               <tr>
-                <td colSpan={5} className="px-5 py-8 text-center text-xs text-slate-400 font-medium">Đang tải dữ liệu...</td>
+                <th className="text-left px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 bg-slate-50/50">Username</th>
+                <th className="text-left px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 bg-slate-50/50">Email</th>
+                <th className="text-left px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 bg-slate-50/50">Họ tên Host</th>
+                <th className="text-left px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 bg-slate-50/50">SĐT</th>
+                <th className="text-left px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 bg-slate-50/50">Thao tác</th>
               </tr>
-            ) : hosts.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-5 py-8 text-center text-xs text-slate-400 font-medium">Chưa có Host nào được duyệt.</td>
-              </tr>
-            ) : (
-              hosts.map((user) => (
-                <tr key={user.id} className="hover:bg-slate-50/30 transition-colors">
-                  <td className="px-5 py-3.5 font-semibold text-slate-800 text-[13.5px]">{user.username}</td>
-                  <td className="px-5 py-3.5 text-slate-455 text-xs font-medium">{user.email}</td>
-                  <td className="px-5 py-3.5 text-slate-650 text-xs font-semibold">{user.userProfile?.fullName || "—"}</td>
-                  <td className="px-5 py-3.5 text-slate-455 text-xs font-medium">{user.userProfile?.phoneNumber || "—"}</td>
-                  <td className="px-5 py-3.5">
-                    <button
-                      onClick={() => setDetailModal({ open: true, user })}
-                      className="text-[11px] px-2.5 py-1.5 rounded-lg border font-bold bg-white text-slate-650 border-slate-200/70 hover:bg-slate-50 transition-colors"
-                    >
-                      Chi tiết
-                    </button>
-                  </td>
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {loading ? (
+                <tr>
+                  <td colSpan={5} className="px-5 py-8 text-center text-xs text-slate-400 font-medium">Đang tải dữ liệu...</td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : hosts.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-5 py-8 text-center text-xs text-slate-400 font-medium">Chưa có Host nào được duyệt.</td>
+                </tr>
+              ) : (
+                hosts.map((user) => (
+                  <tr key={user.id} className="hover:bg-slate-50/30 transition-colors">
+                    <td className="px-5 py-3.5 font-semibold text-slate-800 text-[13.5px]">{user.username}</td>
+                    <td className="px-5 py-3.5 text-slate-455 text-xs font-medium">{user.email}</td>
+                    <td className="px-5 py-3.5 text-slate-650 text-xs font-semibold">{user.userProfile?.fullName || "—"}</td>
+                    <td className="px-5 py-3.5 text-slate-455 text-xs font-medium">{user.userProfile?.phoneNumber || "—"}</td>
+                    <td className="px-5 py-3.5">
+                      <button
+                        onClick={() => setDetailModal({ open: true, user })}
+                        className="text-[11px] px-2.5 py-1.5 rounded-lg border font-bold bg-white text-slate-650 border-slate-200/70 hover:bg-slate-50 transition-colors"
+                      >
+                        Chi tiết
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* User Details Modal (Minimal version) */}
@@ -76,8 +78,8 @@ export function ApprovedHostsScreen() {
               >✕</button>
             </div>
             
-            <div className="p-6 overflow-y-auto flex-1 space-y-6">
-              <div className="flex gap-4 items-center">
+            <div className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-6">
+              <div className="flex min-w-0 gap-4 items-center">
                 {detailModal.user.userProfile?.avatarUrl ? (
                   <Image
                     unoptimized
@@ -92,22 +94,22 @@ export function ApprovedHostsScreen() {
                     {detailModal.user.username?.charAt(0).toUpperCase()}
                   </div>
                 )}
-                <div>
-                  <h4 className="text-base font-semibold text-slate-800 leading-none">{detailModal.user.username}</h4>
-                  <p className="text-xs text-slate-400 mt-1 font-medium">{detailModal.user.email}</p>
-                  <p className="text-[10px] mt-2 text-emerald-600 font-bold bg-emerald-50 border border-emerald-100/50 px-2.5 py-0.5 rounded-full inline-block">ĐÃ DUYỆT HOẠT ĐỘNG</p>
+                <div className="min-w-0">
+                  <h4 className="truncate text-base font-semibold leading-none text-slate-800">{detailModal.user.username}</h4>
+                  <p className="mt-1 break-all text-xs font-medium text-slate-400">{detailModal.user.email}</p>
+                  <p className="text-[10px] mt-2 text-slate-700 font-bold bg-slate-50 border border-slate-200 px-2.5 py-0.5 rounded-full inline-block">ĐÃ DUYỆT HOẠT ĐỘNG</p>
                 </div>
               </div>
 
               {detailModal.user.hostProfile && (
                 <div>
                   <h4 className="font-semibold text-xs text-slate-400 uppercase tracking-wider mb-3 pb-1 border-b border-slate-50">Hồ sơ đối tác Host</h4>
-                  <div className="grid grid-cols-2 gap-4 text-xs font-medium">
+                  <div className="grid grid-cols-1 gap-4 text-xs font-medium sm:grid-cols-2">
                     <div><span className="text-slate-400">Họ tên:</span> <span className="text-slate-700">{detailModal.user.userProfile?.fullName || "—"}</span></div>
                     <div><span className="text-slate-400">SĐT liên hệ:</span> <span className="text-slate-700">{detailModal.user.userProfile?.phoneNumber || "—"}</span></div>
                     <div><span className="text-slate-400">Số CCCD/Passport:</span> <span className="text-slate-700">{detailModal.user.hostProfile.cccdNumber || "—"}</span></div>
                     <div><span className="text-slate-400">Số tài khoản ngân hàng:</span> <span className="text-slate-700">{detailModal.user.hostProfile.bankAccount || "—"}</span></div>
-                    <div className="col-span-2"><span className="text-slate-400">Ngân hàng thụ hưởng:</span> <span className="text-slate-700">{detailModal.user.hostProfile.bankName || "—"}</span></div>
+                    <div className="sm:col-span-2"><span className="text-slate-400">Ngân hàng thụ hưởng:</span> <span className="text-slate-700">{detailModal.user.hostProfile.bankName || "—"}</span></div>
                   </div>
                 </div>
               )}

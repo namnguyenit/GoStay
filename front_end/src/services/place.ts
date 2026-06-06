@@ -3,6 +3,16 @@ import { endpoint } from "@/config";
 import { getAllPlacesResponseDtoSchema } from "@/dto/responses/place/get-all-places";
 import { mapPlaces } from "@/modules/place/mappers/map-places";
 
+type RawListing = {
+  id?: string;
+  title?: string;
+  basePrice?: string | number;
+  averageRating?: string | number;
+  thumbnailUrl?: string;
+  province?: string;
+  category?: string;
+};
+
 const PlaceServices = {
   getAll: async () => {
     const res = await Api.get(endpoint.place.getAll);
@@ -16,7 +26,7 @@ const PlaceServices = {
     if (items && Array.isArray(items)) {
       adaptedRes = {
         ...res,
-        data: items.map((item: any) => ({
+        data: (items as RawListing[]).map((item) => ({
           id: item.id,
           title: item.title,
           price: item.basePrice ? Number(item.basePrice) : undefined,
@@ -55,9 +65,10 @@ const PlaceServices = {
 
       if (Array.isArray(data)) {
         return {
-          STAY: data.filter((item: any) => item?.category === "STAY"),
-          EXP: data.filter((item: any) => item?.category === "EXP"),
-          SVC: data.filter((item: any) => item?.category === "SVC"),
+          STAY: (data as RawListing[]).filter((item) => item?.category === "STAY"),
+          EXP: (data as RawListing[]).filter((item) => item?.category === "EXP"),
+          SVC: (data as RawListing[]).filter((item) => item?.category === "SVC"),
+          COMPLEX: [],
         };
       }
 
@@ -65,10 +76,11 @@ const PlaceServices = {
         STAY: data?.STAY ?? [],
         EXP: data?.EXP ?? [],
         SVC: data?.SVC ?? [],
+        COMPLEX: data?.COMPLEX ?? [],
       };
     } catch (err) {
       console.error("Failed to fetch nearby listings:", err);
-      return { STAY: [], EXP: [], SVC: [] };
+      return { STAY: [], EXP: [], SVC: [], COMPLEX: [] };
     }
   },
   getLandmarks: async () => {

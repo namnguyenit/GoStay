@@ -56,9 +56,9 @@ export function EnterprisesTable({
               return (
                 <tr key={user.id} className="transition-colors hover:bg-slate-50/60">
                   <td className="px-5 py-3.5">
-                    <div>
-                      <div className="font-semibold text-slate-800">{user.username || "—"}</div>
-                      <div className="mt-0.5 text-[10px] text-slate-400">{user.email || "—"}</div>
+                    <div className="min-w-0">
+                      <div className="max-w-[220px] truncate font-semibold text-slate-800">{user.username || "—"}</div>
+                      <div className="mt-0.5 max-w-[240px] truncate text-[10px] text-slate-400">{user.email || "—"}</div>
                     </div>
                   </td>
                   <td className="px-5 py-3.5 text-slate-650">
@@ -71,17 +71,17 @@ export function EnterprisesTable({
                     <span
                       className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${
                         status === "PENDING"
-                          ? "border border-amber-100/50 bg-amber-50 text-amber-700"
+                          ? "border border-slate-300 bg-white text-slate-800"
                           : status === "APPROVED"
-                          ? "border border-emerald-100/50 bg-emerald-50 text-emerald-700"
-                          : "border border-red-100/50 bg-red-50 text-red-700"
+                          ? "border border-slate-200 bg-slate-100 text-slate-900"
+                          : "border border-slate-300 bg-white text-slate-500"
                       }`}
                     >
                       {status}
                     </span>
                   </td>
                   <td className="px-5 py-3.5 pr-6 text-right">
-                    <div className="flex justify-end gap-2">
+                    <div className="flex flex-wrap justify-end gap-2">
                       <button
                         type="button"
                         onClick={() => onViewDetail(user)}
@@ -95,14 +95,14 @@ export function EnterprisesTable({
                           <button
                             type="button"
                             onClick={() => onApprove(user.id, true)}
-                            className="rounded-full bg-emerald-600 px-2.5 py-1 text-[11px] font-medium text-white transition-colors hover:bg-emerald-700"
+                            className="rounded-full bg-slate-900 px-2.5 py-1 text-[11px] font-medium text-white transition-colors hover:bg-slate-950"
                           >
                             Duyệt
                           </button>
                           <button
                             type="button"
                             onClick={() => onApprove(user.id, false)}
-                            className="rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-medium text-red-600 transition-colors hover:bg-red-100"
+                            className="rounded-full border border-slate-300 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 transition-colors hover:bg-slate-100"
                           >
                             Từ chối
                           </button>

@@ -15,6 +15,8 @@ public interface LandmarkRepository extends JpaRepository<Landmark, UUID> {
     List<Landmark> findByIsFeaturedTrue();
     List<Landmark> findByStatus(LandmarkStatus status);
     org.springframework.data.domain.Page<Landmark> findByStatus(LandmarkStatus status, org.springframework.data.domain.Pageable pageable);
+    long countByStatus(LandmarkStatus status);
+    long countByIsFeaturedTrue();
 
     @Query(value = """
             SELECT lm.*

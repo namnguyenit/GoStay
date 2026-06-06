@@ -69,8 +69,8 @@ export function AdminConfirmDialog({
             disabled={loading || disabled}
             className={cn(
               "rounded-full px-4 text-xs text-white",
-              intent === "danger" && "bg-rose-600 hover:bg-rose-700",
-              intent === "success" && "bg-emerald-600 hover:bg-emerald-700",
+              intent === "danger" && "bg-slate-900 hover:bg-slate-950",
+              intent === "success" && "bg-slate-900 hover:bg-slate-950",
               intent === "default" && "bg-slate-850 hover:bg-slate-950"
             )}
           >

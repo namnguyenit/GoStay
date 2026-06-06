@@ -24,11 +24,11 @@ export function AdminPagination({
   const end = Math.min((page + 1) * pageSize, totalElements);
 
   return (
-    <div className="flex flex-col gap-3 border-t border-slate-100 bg-slate-50/60 px-5 py-3 text-xs font-medium text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-      <span>
+    <div className="flex min-w-0 flex-col gap-3 border-t border-slate-100 bg-slate-50/60 px-4 py-3 text-xs font-medium text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+      <span className="break-words">
         Hiển thị {start}-{end} / {totalElements} bản ghi
       </span>
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <Button
           type="button"
           variant="outline"
@@ -39,7 +39,7 @@ export function AdminPagination({
         >
           Trước
         </Button>
-        <span className="min-w-24 text-center text-[11px] font-bold text-slate-650">
+        <span className="min-w-20 text-center text-[11px] font-bold text-slate-650 sm:min-w-24">
           Trang {page + 1}/{safeTotalPages}
         </span>
         <Button

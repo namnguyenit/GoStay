@@ -31,9 +31,9 @@ export function EnterprisesScreen() {
   } = useAdminEnterprises();
 
   return (
-    <div className="space-y-6 animate-smooth-appear">
-      <div className="flex items-center justify-between">
-        <div>
+    <div className="min-w-0 space-y-6 animate-smooth-appear">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <h2 className="text-xl font-semibold text-slate-800">Xét duyệt doanh nghiệp</h2>
           <p className="text-xs text-slate-400 mt-1">Xét duyệt các yêu cầu đăng ký tài khoản doanh nghiệp (Enterprise).</p>
         </div>
@@ -43,8 +43,8 @@ export function EnterprisesScreen() {
         <div
           className={`rounded-2xl border px-4 py-3 text-xs font-semibold ${
             feedback.type === "success"
-              ? "border-emerald-100 bg-emerald-50 text-emerald-700"
-              : "border-rose-100 bg-rose-50 text-rose-700"
+              ? "border-slate-200 bg-white text-slate-800"
+              : "border-slate-200 bg-slate-50 text-slate-700"
           }`}
         >
           {feedback.message}
@@ -52,7 +52,7 @@ export function EnterprisesScreen() {
       )}
 
       {/* Tabs */}
-      <div className="inline-flex bg-slate-100/80 p-0.5 rounded-full">
+      <div className="inline-flex max-w-full flex-wrap rounded-full bg-slate-100/80 p-0.5">
         {(["pending", "all"] as Tab[]).map((t) => (
           <button
             key={t}

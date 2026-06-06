@@ -14,6 +14,7 @@ export declare class RecommendationService {
     getHomeFeed(dto: HomeFeedQueryDto): Promise<any>;
     getProvinces(): Promise<any[]>;
     getProvinceDestinations(province: string): Promise<any[]>;
+    getComplexes(limit?: number): Promise<any[]>;
     recommendByComplex(complexId: string): Promise<any[]>;
     recommendNearby(lat: number | string, lng: number | string, category?: any): Promise<any>;
     recommendForHome(province?: string): Promise<any[]>;

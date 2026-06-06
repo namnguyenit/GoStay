@@ -7,6 +7,7 @@ import com.GoTravel.CartandOrder.dto.request.BookNowRequest;
 import com.GoTravel.CartandOrder.dto.request.CheckoutCartRequest;
 import com.GoTravel.CartandOrder.dto.request.CartItemRequest;
 import com.GoTravel.CartandOrder.dto.response.ApiResponse;
+import com.GoTravel.CartandOrder.dto.response.AdminOrderSummaryResponse;
 import com.GoTravel.CartandOrder.dto.response.BatchLockResponse;
 import com.GoTravel.CartandOrder.dto.response.CatalogListingResponse;
 import com.GoTravel.CartandOrder.dto.response.OrderPaymentSummaryResponse;
@@ -218,6 +219,22 @@ public class OrderService {
     public Page<OrderResponse> getHostOrders(UUID hostId, Pageable pageable) {
         return orderRepository.findByHostIdOrderByCreatedAtDesc(hostId, pageable)
                 .map(orderMapper::toOrderResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public AdminOrderSummaryResponse getAdminSummary() {
+        return AdminOrderSummaryResponse.builder()
+                .totalOrders(orderRepository.count())
+                .pendingOrders(orderRepository.countByStatus(OrderStatus.PENDING))
+                .paymentPendingOrders(orderRepository.countByStatus(OrderStatus.PAYMENT_PENDING))
+                .confirmedOrders(orderRepository.countByStatus(OrderStatus.CONFIRMED))
+                .completedOrders(orderRepository.countByStatus(OrderStatus.COMPLETED))
+                .cancelledOrders(orderRepository.countByStatus(OrderStatus.CANCELLED))
+                .totalOrderAmount(orderRepository.sumTotalAmount())
+                .confirmedOrderAmount(orderRepository.sumTotalAmountByStatus(OrderStatus.CONFIRMED))
+                .completedOrderAmount(orderRepository.sumTotalAmountByStatus(OrderStatus.COMPLETED))
+                .cancelledOrderAmount(orderRepository.sumTotalAmountByStatus(OrderStatus.CANCELLED))
+                .build();
     }
 
     @Transactional

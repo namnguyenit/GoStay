@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import AdminService, { AdminListing, ListingStatus } from "@/services/admin.service";
 import {
   ConfirmState,
@@ -32,7 +32,7 @@ export function useAdminListings() {
   const fetchListings = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await AdminService.getListings(statusFilter, page, DEFAULT_ADMIN_PAGE_SIZE);
+      const res = await AdminService.getListings(statusFilter, page, DEFAULT_ADMIN_PAGE_SIZE, search);
       setListings(res?.data?.content ?? []);
       setTotalPages(Math.max(res?.data?.totalPages ?? 1, 1));
       setTotalElements(res?.data?.totalElements ?? 0);
@@ -44,26 +44,16 @@ export function useAdminListings() {
     } finally {
       setLoading(false);
     }
-  }, [page, statusFilter]);
+  }, [page, search, statusFilter]);
 
   useEffect(() => {
     fetchListings();
   }, [fetchListings]);
 
-  const filteredListings = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return listings;
-
-    return listings.filter((item) => {
-      return (
-        item.title?.toLowerCase().includes(q) ||
-        item.province?.toLowerCase().includes(q) ||
-        item.category?.toLowerCase().includes(q) ||
-        item.subCategory?.toLowerCase().includes(q) ||
-        item.hostId?.toLowerCase().includes(q)
-      );
-    });
-  }, [listings, search]);
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    setPage(0);
+  };
 
   const runConfirm = async () => {
     if (!confirm.open) return;
@@ -109,23 +99,23 @@ export function useAdminListings() {
 
   const getStatusBadge = (status?: string) => {
     const map: Record<string, string> = {
-      PENDING: "bg-blue-50 text-blue-700 border border-blue-100",
-      ACTIVE: "bg-green-50 text-green-700 border border-green-100",
-      HIDDEN: "bg-amber-50 text-amber-700 border border-amber-100",
-      DELETED: "bg-red-50 text-red-700 border border-red-100",
+      PENDING: "bg-white text-slate-800 border border-slate-300",
+      ACTIVE: "bg-slate-100 text-slate-900 border border-slate-200",
+      HIDDEN: "bg-slate-50 text-slate-600 border border-slate-200",
+      DELETED: "bg-white text-slate-500 border border-slate-300",
     };
     return map[status ?? ""] ?? "bg-gray-100 text-gray-600 border border-gray-200";
   };
 
   return {
-    listings: filteredListings,
+    listings,
     rawListings: listings,
     loading,
     actionLoading,
     statusFilter,
     setStatusFilter,
     search,
-    setSearch,
+    setSearch: handleSearchChange,
     page,
     setPage,
     totalPages,

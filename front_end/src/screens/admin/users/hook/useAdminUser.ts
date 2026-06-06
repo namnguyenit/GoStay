@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import AdminService, { AdminRoleName, AdminUser } from "@/services/admin.service";
 import {
   ConfirmState,
@@ -47,7 +47,7 @@ export function useAdminUser() {
   const fetchUsers = useCallback(async (pageToLoad = page) => {
     setLoading(true);
     try {
-      const res = await AdminService.getUsers(pageToLoad, DEFAULT_ADMIN_PAGE_SIZE);
+      const res = await AdminService.getUsers(pageToLoad, DEFAULT_ADMIN_PAGE_SIZE, search);
       setUsers(res?.data?.content ?? []);
       setTotalPages(Math.max(res?.data?.totalPages ?? 1, 1));
       setTotalElements(res?.data?.totalElements ?? 0);
@@ -59,23 +59,16 @@ export function useAdminUser() {
     } finally {
       setLoading(false);
     }
-  }, [page]);
+  }, [page, search]);
 
   useEffect(() => {
     fetchUsers(page);
   }, [fetchUsers, page]);
 
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return users;
-
-    return users.filter(
-      (user) =>
-        user.username?.toLowerCase().includes(q) ||
-        user.email?.toLowerCase().includes(q) ||
-        user.userProfile?.fullName?.toLowerCase().includes(q)
-    );
-  }, [search, users]);
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    setPage(0);
+  };
 
   const refreshCurrentPage = async () => {
     await fetchUsers(page);
@@ -177,12 +170,12 @@ export function useAdminUser() {
   };
 
   return {
-    users: filtered,
+    users,
     rawUsers: users,
     loading,
     actionLoading,
     search,
-    setSearch,
+    setSearch: handleSearchChange,
     page,
     setPage,
     totalPages,

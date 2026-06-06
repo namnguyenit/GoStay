@@ -9,6 +9,8 @@ export declare class CandidateGenerator {
     generateByCoordinate(lat: number, lng: number, radiusMeters?: number, limit?: number, category?: string): Promise<any[]>;
     generateForHome(province?: string, limit?: number, category?: string): Promise<any[]>;
     generateByLandmark(landmarkId: string, limit?: number, radiusMeters?: number): Promise<any[]>;
+    generateComplexes(limit?: number): Promise<any[]>;
+    generateComplexesByLandmark(landmarkId: string, radiusMeters?: number, limit?: number): Promise<any[]>;
     generateByComplex(complexId: string, limit?: number): Promise<any[]>;
     generateSimilar(listingId: string, limit?: number): Promise<any[]>;
     generateCrossSell(sourceListingId: string, cartIds?: string[], limit?: number): Promise<any[]>;

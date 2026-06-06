@@ -10,4 +10,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface EnterpriseProfileRepository extends JpaRepository<EnterpriseProfile, String> {
     Page<EnterpriseProfile> findAllByApprovalStatus(Approval_status approvalStatus, Pageable pageable);
+    long countByApprovalStatus(Approval_status approvalStatus);
 }

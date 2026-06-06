@@ -48,6 +48,15 @@ let CandidateGenerator = class CandidateGenerator {
             return [];
         return this.generateByCoordinate(landmark.latitude, landmark.longitude, radiusMeters, limit);
     }
+    async generateComplexes(limit = 120) {
+        return this.complexRepo.findAll(limit);
+    }
+    async generateComplexesByLandmark(landmarkId, radiusMeters = 5000, limit = 12) {
+        const landmark = await this.landmarkRepo.findById(landmarkId);
+        if (!landmark)
+            return [];
+        return this.complexRepo.findNearby(landmark.latitude, landmark.longitude, radiusMeters, limit);
+    }
     async generateByComplex(complexId, limit = 200) {
         return this.listingRepo.search({
             category: 'ALL',

@@ -17,9 +17,9 @@ export function HostsScreen() {
   } = useAdminHosts();
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-        <div>
+    <div className="min-w-0 space-y-6">
+      <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <h2 className="text-lg font-semibold text-slate-800 tracking-tight">Quản lý đối tác Host</h2>
           <p className="text-xs text-slate-400 mt-0.5 font-medium">Phê duyệt và theo dõi các đối tác lưu trú</p>
         </div>
@@ -29,8 +29,8 @@ export function HostsScreen() {
         <div
           className={`rounded-2xl border px-4 py-3 text-xs font-semibold ${
             feedback.type === "success"
-              ? "border-emerald-100 bg-emerald-50 text-emerald-700"
-              : "border-rose-100 bg-rose-50 text-rose-700"
+              ? "border-slate-200 bg-white text-slate-800"
+              : "border-slate-200 bg-slate-50 text-slate-700"
           }`}
         >
           {feedback.message}
@@ -38,7 +38,7 @@ export function HostsScreen() {
       )}
 
       {/* Tabs Layout */}
-      <div className="inline-flex bg-slate-100/85 p-1 rounded-full border border-slate-150 mb-2">
+      <div className="mb-2 inline-flex max-w-full flex-wrap rounded-full border border-slate-150 bg-slate-100/85 p-1">
         {(["pending", "all"] as Tab[]).map((t) => (
           <button
             key={t}

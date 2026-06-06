@@ -98,6 +98,87 @@ let ComplexRepository = ComplexRepository_1 = class ComplexRepository {
             throw error;
         }
     }
+    async findAll(limit = 120) {
+        try {
+            const sql = `
+        SELECT
+          c.id,
+          c.name,
+          c.description,
+          c.province,
+          c.latitude,
+          c.longitude,
+          c.thumbnail_url AS "thumbnailUrl",
+          c.gallery_urls AS "galleryUrls",
+          c.created_at AS "createdAt",
+          c.updated_at AS "updatedAt",
+          COUNT(l.id)::int AS "listingCount"
+        FROM public.complexes c
+        LEFT JOIN public.listings l
+          ON l.complex_id = c.id
+          AND l.status = 'ACTIVE'
+        WHERE c.status = 'ACTIVE'
+        GROUP BY c.id
+        ORDER BY
+          "listingCount" DESC,
+          c.updated_at DESC NULLS LAST,
+          c.created_at DESC NULLS LAST,
+          c.name ASC
+        LIMIT $1;
+      `;
+            const result = await this.pool.query(sql, [limit]);
+            return result.rows;
+        }
+        catch (error) {
+            this.logger.error(`Error finding complexes: ${error.message}`);
+            throw error;
+        }
+    }
+    async findNearby(lat, lng, radiusMeters = 5000, limit = 12) {
+        try {
+            const sql = `
+        WITH geo AS (
+          SELECT ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography AS point
+        )
+        SELECT
+          c.id,
+          c.name,
+          c.description,
+          c.province,
+          c.latitude,
+          c.longitude,
+          c.thumbnail_url AS "thumbnailUrl",
+          c.gallery_urls AS "galleryUrls",
+          ST_Distance(c.location::geography, geo.point) AS "distanceMeters",
+          COUNT(l.id)::int AS "listingCount"
+        FROM public.complexes c
+        CROSS JOIN geo
+        LEFT JOIN public.listings l
+          ON l.complex_id = c.id
+          AND l.status = 'ACTIVE'
+        WHERE c.status = 'ACTIVE'
+          AND c.location IS NOT NULL
+          AND ST_DWithin(c.location::geography, geo.point, $3)
+        GROUP BY c.id, geo.point
+        ORDER BY
+          "distanceMeters" ASC,
+          "listingCount" DESC,
+          c.name ASC
+        LIMIT $4;
+      `;
+            const result = await this.pool.query(sql, [
+                lng,
+                lat,
+                radiusMeters,
+                limit,
+            ]);
+            return result.rows;
+        }
+        catch (error) {
+            this.logger.error(`Error finding nearby complexes: ${error.message}`);
+            throw error;
+        }
+    }
     async findProvinceCounts(limit = 50) {
         try {
             const sql = `

@@ -4,9 +4,8 @@ import { createContext, ReactNode } from "react";
 import type { Experiences } from "@/modules/experience";
 import type { Places } from "@/modules/place";
 import type { Services } from "@/modules/service";
-import { useHome, UseHome } from "../hooks/useHome";
-import type { Filter } from "@/modules/filter";
-import { FilterService } from "@/services/filter";
+import { HomeLandmark, useHome, UseHome } from "../hooks/useHome";
+import type { ComplexOffering } from "@/services/complex";
 
 type HomeProviderProp = {
   children: ReactNode;
@@ -14,7 +13,8 @@ type HomeProviderProp = {
   initPlace: Places;
   initServices: Services;
   // Giữ lại initLandmarks từ TestSystem
-  initLandmarks?: any[];
+  initLandmarks?: HomeLandmark[];
+  initComplexes?: ComplexOffering[];
 };
 
 export const HomeContext = createContext<UseHome | undefined>(undefined);
@@ -25,8 +25,15 @@ export default function HomeProvider({
   initPlace,
   initServices,
   initLandmarks = [],
+  initComplexes = [],
 }: HomeProviderProp) {
-  const home = useHome(initExperiences, initPlace, initServices, initLandmarks);
+  const home = useHome(
+    initExperiences,
+    initPlace,
+    initServices,
+    initLandmarks,
+    initComplexes,
+  );
 
   return <HomeContext.Provider value={home}>{children}</HomeContext.Provider>;
 }

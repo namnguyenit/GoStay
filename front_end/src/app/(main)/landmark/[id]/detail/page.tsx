@@ -5,7 +5,42 @@ import PlaceServices from "@/services/place";
 import { Star, MapPin, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-function ListingCard({ listing, onClick }: { listing: any; onClick: () => void }) {
+type LandmarkDetail = {
+  id?: string;
+  name?: string;
+  description?: string;
+  province?: string;
+  thumbnailUrl?: string;
+  galleryUrls?: string[];
+};
+
+type NearbyListing = {
+  id: string;
+  title?: string;
+  thumbnailUrl?: string;
+  province?: string;
+  basePrice?: number;
+  averageRating?: number;
+};
+
+type NearbyComplex = {
+  id: string;
+  name?: string;
+  thumbnailUrl?: string;
+  image?: string;
+  province?: string;
+  listingCount?: number;
+  distanceMeters?: number;
+};
+
+type NearbyState = {
+  STAY: NearbyListing[];
+  EXP: NearbyListing[];
+  SVC: NearbyListing[];
+  COMPLEX: NearbyComplex[];
+};
+
+function ListingCard({ listing, onClick }: { listing: NearbyListing; onClick: () => void }) {
   const formatMoney = (amount: number) =>
     new Intl.NumberFormat("vi-VN").format(amount);
 
@@ -43,7 +78,50 @@ function ListingCard({ listing, onClick }: { listing: any; onClick: () => void }
   );
 }
 
-function Section({ title, items, onItemClick }: { title: string; items: any[]; onItemClick: (id: string) => void }) {
+function ComplexCard({ complex, onClick }: { complex: NearbyComplex; onClick: () => void }) {
+  const distanceKm =
+    typeof complex.distanceMeters === "number"
+      ? `${(complex.distanceMeters / 1000).toFixed(1)}km`
+      : null;
+
+  return (
+    <div
+      onClick={onClick}
+      className="cursor-pointer rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-xl transition-all hover:-translate-y-1 duration-200"
+    >
+      <div className="relative w-full aspect-[4/3] overflow-hidden">
+        <img
+          src={complex.thumbnailUrl || complex.image || "/images/placeholder.jpg"}
+          alt={complex.name}
+          className="w-full h-full object-cover"
+        />
+      </div>
+      <div className="p-3">
+        <div className="font-semibold text-gray-800 line-clamp-1 text-sm">
+          {complex.name}
+        </div>
+        <div className="flex items-center gap-1 mt-1 text-gray-500 text-xs">
+          <MapPin size={12} />
+          <span className="line-clamp-1">{complex.province || "Việt Nam"}</span>
+        </div>
+        <div className="mt-2 flex flex-wrap gap-2 text-xs text-gray-500">
+          {distanceKm && (
+            <span className="rounded-full bg-gray-100 px-2 py-1">
+              Cách {distanceKm}
+            </span>
+          )}
+          {complex.listingCount ? (
+            <span className="rounded-full bg-gray-100 px-2 py-1">
+              {complex.listingCount} dịch vụ
+            </span>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Section({ title, items, onItemClick }: { title: string; items: NearbyListing[]; onItemClick: (id: string) => void }) {
   if (!items?.length) return null;
   return (
     <section>
@@ -61,12 +139,30 @@ function Section({ title, items, onItemClick }: { title: string; items: any[]; o
   );
 }
 
+function ComplexSection({ title, items, onItemClick }: { title: string; items: NearbyComplex[]; onItemClick: (item: NearbyComplex) => void }) {
+  if (!items?.length) return null;
+  return (
+    <section>
+      <h2 className="text-2xl font-bold mb-5 text-gray-800">{title}</h2>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        {items.map((complex) => (
+          <ComplexCard
+            key={complex.id}
+            complex={complex}
+            onClick={() => onItemClick(complex)}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export default function LandmarkDetailPage() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
-  const [landmark, setLandmark] = useState<any>(null);
-  const [nearby, setNearby] = useState<any>({ STAY: [], EXP: [], SVC: [] });
+  const [landmark, setLandmark] = useState<LandmarkDetail | null>(null);
+  const [nearby, setNearby] = useState<NearbyState>({ STAY: [], EXP: [], SVC: [], COMPLEX: [] });
   const [loading, setLoading] = useState(true);
   const [imageIndex, setImageIndex] = useState(0);
 
@@ -89,13 +185,14 @@ export default function LandmarkDetailPage() {
           PlaceServices.getLandmarks(),
           PlaceServices.getNearbyListings(id, 5000),
         ]);
-        const found = landmarksRes?.find((l: any) => l.id === id);
+        const found = (landmarksRes as LandmarkDetail[])?.find((l) => l.id === id);
         if (found) setLandmark(found);
         if (nearbyRes) {
           setNearby({
             STAY: nearbyRes.STAY ?? [],
             EXP: nearbyRes.EXP ?? [],
             SVC: nearbyRes.SVC ?? [],
+            COMPLEX: nearbyRes.COMPLEX ?? [],
           });
         }
       } catch (e) {
@@ -126,7 +223,7 @@ export default function LandmarkDetailPage() {
     );
   }
 
-  const hasAny = nearby.STAY?.length || nearby.EXP?.length || nearby.SVC?.length;
+  const hasAny = nearby.STAY?.length || nearby.EXP?.length || nearby.SVC?.length || nearby.COMPLEX?.length;
 
   return (
     <div className="w-full pb-20">
@@ -200,6 +297,15 @@ export default function LandmarkDetailPage() {
           title="🍜 Dịch vụ tiện ích"
           items={nearby.SVC ?? []}
           onItemClick={(id) => router.push(`/service/${id}/detail`)}
+        />
+        <ComplexSection
+          title="🏝️ Khu du lịch quanh đây (5km)"
+          items={nearby.COMPLEX ?? []}
+          onItemClick={(complex) => {
+            if (!complex?.name) return;
+            const params = new URLSearchParams({ place: complex.name, type: "" });
+            router.push(`/search?${params.toString()}`);
+          }}
         />
 
         {!hasAny && (

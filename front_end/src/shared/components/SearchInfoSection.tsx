@@ -6,303 +6,441 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { format, isValid } from "date-fns";
-import { Search, X } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
 import type { Filter } from "@/modules/filter";
+import {
+  ConciergeBell,
+  Home,
+  LocateFixed,
+  MapPin,
+  PartyPopper,
+  Search,
+} from "lucide-react";
+import { format, isValid } from "date-fns";
+import { useEffect, useState } from "react";
+import type { DateRange } from "react-day-picker";
 
-type FieldState = "place" | "date" | "service";
+type SearchPanel = "place" | "date" | "type";
 
-export type Type = "place" | "exp" | "service";
-type DisplayType = "Nơi cư chú" | "Trải nghiệm" | "Dịch vụ";
+type SearchInfoSectionProps = {
+  onClickSearch?: (value: Filter) => void;
+  filter: Filter;
+  initialOpen?: SearchPanel;
+  className?: string;
+};
 
-type PlaceOptions = {
-  id: string;
-  name: string;
-}[];
-
-const placeOptions: PlaceOptions = [
+const DESTINATION_OPTIONS = [
   {
-    id: "0",
-    name: "Hà Nội",
+    id: "nearby",
+    name: "Gần tôi",
+    description: "Tìm dịch vụ xung quanh vị trí hiện tại",
+    icon: LocateFixed,
   },
   {
-    id: "1",
-    name: "Lào Cai",
+    id: "hue",
+    name: "Thành phố Huế",
+    description: "Di sản, nghỉ dưỡng và trải nghiệm văn hóa",
+    icon: MapPin,
+  },
+  {
+    id: "danang",
+    name: "Đà Nẵng",
+    description: "Biển, khách sạn và dịch vụ du lịch",
+    icon: MapPin,
+  },
+  {
+    id: "hoian",
+    name: "Hội An",
+    description: "Phố cổ, homestay và trải nghiệm địa phương",
+    icon: MapPin,
+  },
+  {
+    id: "dalat",
+    name: "Đà Lạt",
+    description: "Villa, tour thiên nhiên và dịch vụ nghỉ dưỡng",
+    icon: MapPin,
+  },
+  {
+    id: "hcm",
+    name: "TP. Hồ Chí Minh",
+    description: "Lưu trú, ăn uống và dịch vụ đô thị",
+    icon: MapPin,
   },
 ];
+
+const TYPE_OPTIONS = [
+  {
+    value: "place",
+    label: "Nơi lưu trú",
+    description: "Khách sạn, resort, homestay, villa",
+    icon: Home,
+  },
+  {
+    value: "exp",
+    label: "Trải nghiệm",
+    description: "Tour, workshop, văn hóa, hoạt động địa phương",
+    icon: PartyPopper,
+  },
+  {
+    value: "service",
+    label: "Dịch vụ",
+    description: "Spa, ăn uống, thuê xe, makeup, catering",
+    icon: ConciergeBell,
+  },
+];
+
+const FLEXIBLE_DATE_OPTIONS = [
+  "Ngày chính xác",
+  "±1 ngày",
+  "±2 ngày",
+  "±3 ngày",
+  "±7 ngày",
+  "±14 ngày",
+];
+
+const formatDateRange = (date?: DateRange) => {
+  if (!date?.from || !isValid(date.from)) return "Thêm ngày";
+  if (!date.to || !isValid(date.to)) return format(date.from, "dd/MM/yyyy");
+  return `${format(date.from, "dd/MM/yyyy")} - ${format(date.to, "dd/MM/yyyy")}`;
+};
 
 export default function SearchInfoSection({
   onClickSearch,
   filter,
-}: {
-  onClickSearch?: (value: Filter) => void;
-  filter: Filter;
-}) {
+  initialOpen,
+  className,
+}: SearchInfoSectionProps) {
   const [searchInfo, setSearchInfo] = useState<Filter>(filter);
-  const [hover, setHover] = useState<FieldState>();
-  const [searchButtonHover, setSearchButtonHover] = useState(false);
-  const [open, setOpen] = useState<FieldState>();
-  const searchButton = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState<SearchPanel | undefined>(initialOpen);
+  const [dateMode, setDateMode] = useState<"date" | "flexible">("date");
 
   useEffect(() => {
     setSearchInfo(filter);
   }, [filter]);
 
   useEffect(() => {
-    const el = searchButton.current;
-    if (!el) return;
+    setOpen(initialOpen);
+  }, [initialOpen]);
 
-    const h = el.offsetHeight;
-    el.style.width = `${h}px`;
-  }, []);
+  const updateSearchInfo = (patch: Partial<NonNullable<Filter>>) => {
+    setSearchInfo((current) => ({
+      ...(current ?? {}),
+      ...patch,
+    }));
+  };
 
-  //   useEffect(() => {
-  //     console.log(searchInfo);
-  //   }, [searchInfo]);
-  const searchParams = useSearchParams();
-  const router = useRouter();
+  const submitSearch = () => {
+    setOpen(undefined);
+    onClickSearch?.(searchInfo);
+  };
+
+  const typeLabel =
+    TYPE_OPTIONS.find((item) => item.value === searchInfo?.type)?.label ??
+    "Tất cả loại hình";
+  const dateLabel = formatDateRange(searchInfo?.date);
+
+  const activeSegmentClass =
+    "bg-white shadow-[0_3px_12px_rgba(0,0,0,.10),0_1px_2px_rgba(0,0,0,.08)]";
+  const idleSegmentClass = open
+    ? "bg-transparent hover:bg-[#dddddd]"
+    : "hover:bg-[#f7f7f7]";
+
+  const dividerClass = (left: SearchPanel, right: SearchPanel) =>
+    cn(
+      "hidden h-8 w-px bg-[#dddddd] transition-opacity md:block",
+      (open === left || open === right) && "opacity-0",
+    );
 
   return (
-    <div className="bg-app-bg center-y shadow-app-secondary h-[70] w-full rounded-full shadow">
-      {/* SLIDE LINE */}
-      <div></div>
-      {/* Chọn địa điểm */}
-      <Select
-        open={open == "place" ? true : false}
-        onOpenChange={(e) => {
-          setOpen(e ? "place" : undefined);
-        }}
-        onValueChange={(value) => {
-          if (value === "all") {
-            setSearchInfo({ ...searchInfo, place: "" });
-            return;
-          }
-          const place = placeOptions.find((e) => e.id == value)?.name;
-          setSearchInfo({ ...searchInfo, place });
-        }}
-      >
-        <SelectTrigger
-          className="hover:bg-app-muted col ba h-full! w-1/3 items-start justify-evenly gap-0 rounded-full border-none p-0 pr-4 pl-6 whitespace-normal focus-visible:ring-0 [&>svg]:hidden"
-          onMouseEnter={() => {
-            setHover("place");
-          }}
-          onMouseLeave={() => {
-            setHover(undefined);
-          }}
-        >
-          <div className="text-app-fg text-xs font-semibold">Địa điểm</div>
-
-          <div className="flex items-center gap-1.5 max-w-full">
-            {searchInfo?.place ? (
-              <>
-                <span className="line-clamp-1 text-sm font-medium">{searchInfo.place}</span>
-                <span
-                  role="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    setSearchInfo({ ...searchInfo, place: "" });
-                  }}
-                  className="hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 rounded-full p-0.5 transition-colors flex-shrink-0 cursor-pointer"
-                  title="Xóa địa điểm"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </span>
-              </>
-            ) : (
-              <span className="text-app-muted-fg line-clamp-1 text-xs">
-                Tất cả địa điểm
-              </span>
-            )}
-          </div>
-        </SelectTrigger>
-        <SelectContent side="bottom" sideOffset={4} position="popper">
-          <SelectGroup>
-            <SelectLabel>Địa điểm</SelectLabel>
-            <SelectItem value="all">Tất cả địa điểm</SelectItem>
-            {placeOptions.map((e) => (
-              <SelectItem key={e.id} value={e.id}>
-                {e.name}
-              </SelectItem>
-            ))}
-          </SelectGroup>
-        </SelectContent>
-      </Select>
+    <div
+      className={cn(
+        "relative z-50 mx-auto flex w-full max-w-[850px] flex-col rounded-[34px] border border-[#dddddd] transition-all duration-300 md:h-[66px] md:flex-row md:items-center md:rounded-full",
+        open
+          ? "bg-[#ebebeb] shadow-none"
+          : "bg-white shadow-[0_3px_12px_rgba(0,0,0,.08),0_1px_2px_rgba(0,0,0,.05)]",
+        className,
+      )}
+      role="search"
+      aria-label="Tìm kiếm dịch vụ GoStay"
+    >
       <div
         className={cn(
-          "bg-app-muted-fg/50 h-7/10 w-[0.5] rounded-full transition-colors duration-300",
-          (hover == "place" || hover == "date") && "bg-transparent",
+          "relative z-30 flex min-h-[66px] min-w-0 flex-1 items-center rounded-[32px] transition-all duration-200 md:min-h-0 md:basis-[280px]",
+          open === "place" ? activeSegmentClass : idleSegmentClass,
         )}
-      />
-      {/* Chọn ngày */}
-      <Popover
-        open={open == "date" ? true : false}
-        onOpenChange={(e) => {
-          setOpen(e ? "date" : undefined);
-        }}
       >
-        <PopoverTrigger asChild className="w-1/3 border-none whitespace-normal">
-          <div
-            className="col hover:bg-app-muted size-full items-start justify-evenly gap-0 rounded-full px-4"
-            onMouseEnter={() => {
-              setHover("date");
-            }}
-            onMouseLeave={() => {
-              setHover(undefined);
-            }}
+        <Popover
+          open={open === "place"}
+          onOpenChange={(nextOpen) => setOpen(nextOpen ? "place" : undefined)}
+        >
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              className="flex h-full min-w-0 flex-1 flex-col items-start justify-center gap-1 rounded-[32px] px-6 text-left outline-none md:px-8"
+            >
+              <span className="text-xs font-semibold text-[#222222]">Địa điểm</span>
+              <span
+                className={cn(
+                  "truncate text-sm",
+                  searchInfo?.place
+                    ? "font-medium text-[#222222]"
+                    : "font-normal text-[#6a6a6a]",
+                )}
+              >
+                {searchInfo?.place || "Tìm kiếm điểm đến"}
+              </span>
+            </button>
+          </PopoverTrigger>
+          <PopoverContent
+            side="bottom"
+            align="start"
+            sideOffset={12}
+            className="z-[70] w-[calc(100vw-32px)] max-w-[425px] rounded-[32px] border-none bg-white p-4 shadow-[0_8px_28px_rgba(0,0,0,.12)] md:p-6"
           >
-            <span className="text-xs">Thời gian</span>
-            {searchInfo?.date?.from && isValid(searchInfo?.date?.from) ? (
-              searchInfo?.date?.to && isValid(searchInfo?.date?.to) ? (
-                <span className="line-clamp-1 text-sm">
-                  {format(searchInfo.date.from, "dd/MM/yyyy")} -{" "}
-                  {format(searchInfo.date.to, "dd/MM/yyyy")}
-                </span>
-              ) : (
-                <span className="line-clamp-1 text-sm">
-                  {format(searchInfo.date.from, "dd/MM/yyyy")}
-                </span>
-              )
-            ) : (
-              <span className="text-app-muted-fg line-clamp-1 text-xs">
-                Chọn ngày
-              </span>
-            )}
-          </div>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            mode="range"
-            selected={searchInfo?.date}
-            onSelect={(e) => {
-              // Nếu chưa có from hoặc đã có đủ range → bắt đầu lại
-              if (!searchInfo?.date?.from || searchInfo?.date?.to) {
-                setSearchInfo({
-                  ...searchInfo,
-                  date: { from: e?.from, to: undefined },
-                });
-                return;
-              }
-              // Nếu đã có from → set to
-              setSearchInfo({ ...searchInfo, date: e });
-            }}
-            numberOfMonths={2}
-          />
-        </PopoverContent>
-      </Popover>
-      <div
-        className={cn(
-          "bg-app-muted-fg/50 h-7/10 w-[0.5] rounded-full transition-colors duration-300",
-          (hover == "service" || hover == "date") &&
-            !searchButtonHover &&
-            "bg-transparent",
-        )}
-      />
-      {/* Chọn Loại hình */}
-      <Select
-        // defaultValue={"place"}
-        open={open == "service" ? true : false}
-        onOpenChange={(e) => {
-          if (searchButtonHover) {
-            return;
-          }
-          setOpen(e ? "service" : undefined);
-        }}
-        onValueChange={(value) => setSearchInfo({ ...searchInfo, type: value === "all" ? "" : value })}
-      >
-        <SelectTrigger
-          className={cn(
-            "row h-full! w-1/3 min-w-0 gap-0 rounded-full border-none p-0 pr-3 pl-4 break-all whitespace-normal focus-visible:ring-0 [&>svg]:hidden",
-            searchButtonHover || "hover:bg-app-muted",
-          )}
-          onMouseEnter={() => {
-            setHover("service");
-          }}
-          onMouseLeave={() => {
-            setHover(undefined);
-          }}
-        >
-          <div className="flex h-full flex-1 flex-col items-start justify-evenly min-w-0">
-            <div className="text-app-fg line-clamp-1 text-xs font-semibold">Loại hình</div>
-            <div className="flex items-center gap-1.5 max-w-full">
-              {searchInfo?.type && searchInfo.type !== "all" ? (
-                <>
-                  <span className="line-clamp-1 text-sm font-medium">
-                    {searchInfo.type === "place" && "Nơi cư trú"}
-                    {searchInfo.type === "exp" && "Trải nghiệm"}
-                    {searchInfo.type === "service" && "Dịch vụ"}
-                  </span>
-                  <span
-                    role="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      setSearchInfo({ ...searchInfo, type: "" });
+            <div className="space-y-2">
+              <div className="px-2 pb-2 text-xs font-semibold text-[#222222]">
+                Điểm đến được đề xuất
+              </div>
+              {DESTINATION_OPTIONS.map((option) => {
+                const Icon = option.icon;
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    className="flex w-full items-center gap-4 rounded-2xl p-3 text-left transition-colors hover:bg-[#f7f7f7]"
+                    onClick={() => {
+                      updateSearchInfo({ place: option.name });
+                      setOpen("date");
                     }}
-                    className="hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 rounded-full p-0.5 transition-colors flex-shrink-0 cursor-pointer"
-                    title="Xóa loại hình"
                   >
-                    <X className="h-3.5 w-3.5" />
-                  </span>
-                </>
-              ) : (
-                <div className="text-app-muted-fg line-clamp-1 w-full text-xs">
-                  Tất cả loại hình
-                </div>
-              )}
+                    <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-[#f7f7f7] text-[#222222]">
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block truncate text-[15px] font-semibold text-[#222222]">
+                        {option.name}
+                      </span>
+                      <span className="mt-0.5 block truncate text-sm text-[#717171]">
+                        {option.description}
+                      </span>
+                    </span>
+                  </button>
+                );
+              })}
             </div>
-          </div>
-          {/* SEARCH BUTTON */}
-          <div
-            ref={searchButton}
-            className="row bg-app-primary h-[calc(100%-12px)] items-center overflow-hidden rounded-full transition-[width] duration-500"
-            onMouseEnter={(e) => {
-              const el = e.currentTarget;
-              const h = el.offsetHeight;
-              el.style.width = `${h * 2.5}px`;
-              setSearchButtonHover(true);
-            }}
-            onMouseLeave={(e) => {
-              const el = e.currentTarget;
-              const h = el.offsetHeight;
-              el.style.width = `${h}px`;
-              setSearchButtonHover(false);
-            }}
-            onPointerDown={(e) => {
-              e.stopPropagation();
-              setOpen(undefined);
-              onClickSearch?.(searchInfo);
-            }}
+          </PopoverContent>
+        </Popover>
+      </div>
+
+      <div className={dividerClass("place", "date")} />
+
+      <div
+        className={cn(
+          "relative z-30 flex min-h-[66px] min-w-0 flex-1 items-center rounded-[32px] transition-all duration-200 md:min-h-0 md:basis-[240px]",
+          open === "date" ? activeSegmentClass : idleSegmentClass,
+        )}
+      >
+        <Popover
+          open={open === "date"}
+          onOpenChange={(nextOpen) => setOpen(nextOpen ? "date" : undefined)}
+        >
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              className="flex h-full min-w-0 flex-1 flex-col items-start justify-center gap-1 rounded-[32px] px-6 text-left outline-none"
+            >
+              <span className="text-xs font-semibold text-[#222222]">Thời gian</span>
+              <span
+                className={cn(
+                  "truncate text-sm",
+                  searchInfo?.date?.from
+                    ? "font-medium text-[#222222]"
+                    : "font-normal text-[#6a6a6a]",
+                )}
+              >
+                {dateLabel}
+              </span>
+            </button>
+          </PopoverTrigger>
+          <PopoverContent
+            side="bottom"
+            align="center"
+            sideOffset={12}
+            className="z-[70] w-[calc(100vw-32px)] max-w-[850px] rounded-[32px] border-none bg-white p-4 shadow-[0_8px_28px_rgba(0,0,0,.12)] md:p-6"
           >
-            <div className="center aspect-square h-full w-auto">
-              <Search className="text-app-primary-fg" />
+            <div className="flex flex-col items-center gap-5">
+              <div className="rounded-full bg-[#f7f7f7] p-1">
+                <button
+                  type="button"
+                  className={cn(
+                    "rounded-full px-5 py-2 text-sm font-semibold transition-colors",
+                    dateMode === "date" ? "bg-white text-[#222222] shadow-sm" : "text-[#717171]",
+                  )}
+                  onClick={() => setDateMode("date")}
+                >
+                  Ngày
+                </button>
+                <button
+                  type="button"
+                  className={cn(
+                    "rounded-full px-5 py-2 text-sm font-semibold transition-colors",
+                    dateMode === "flexible" ? "bg-white text-[#222222] shadow-sm" : "text-[#717171]",
+                  )}
+                  onClick={() => setDateMode("flexible")}
+                >
+                  Linh hoạt
+                </button>
+              </div>
+
+              <Calendar
+                mode="range"
+                numberOfMonths={2}
+                selected={searchInfo?.date}
+                onSelect={(date) => updateSearchInfo({ date })}
+                disabled={{ before: new Date() }}
+                className="rounded-3xl bg-white"
+              />
+
+              <div className="flex w-full flex-wrap justify-center gap-2">
+                {FLEXIBLE_DATE_OPTIONS.map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    className="rounded-full border border-[#dddddd] px-4 py-2 text-sm font-medium text-[#222222] transition-colors hover:border-[#222222]"
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex w-full items-center justify-between border-t border-[#eeeeee] pt-4">
+                <button
+                  type="button"
+                  className="rounded-full px-4 py-2 text-sm font-semibold text-[#222222] underline transition-colors hover:bg-[#f7f7f7]"
+                  onClick={() => updateSearchInfo({ date: undefined })}
+                >
+                  Xóa
+                </button>
+                <button
+                  type="button"
+                  className="rounded-full bg-[#222222] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-black"
+                  onClick={() => setOpen("type")}
+                >
+                  Áp dụng
+                </button>
+              </div>
             </div>
-            <div className="">
-              <div className="text-app-primary-fg line-clamp-1">Tìm kiếm</div>
+          </PopoverContent>
+        </Popover>
+      </div>
+
+      <div className={dividerClass("date", "type")} />
+
+      <div
+        className={cn(
+          "relative z-30 flex min-h-[66px] min-w-0 flex-1 items-center rounded-[32px] transition-all duration-200 md:min-h-0 md:basis-[278px]",
+          open === "type" ? activeSegmentClass : idleSegmentClass,
+        )}
+      >
+        <Popover
+          open={open === "type"}
+          onOpenChange={(nextOpen) => setOpen(nextOpen ? "type" : undefined)}
+        >
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              className="flex h-full min-w-0 flex-1 flex-col items-start justify-center gap-1 rounded-[32px] px-6 text-left outline-none"
+            >
+              <span className="text-xs font-semibold text-[#222222]">Loại hình</span>
+              <span
+                className={cn(
+                  "truncate text-sm",
+                  searchInfo?.type
+                    ? "font-medium text-[#222222]"
+                    : "font-normal text-[#6a6a6a]",
+                )}
+              >
+                {typeLabel}
+              </span>
+            </button>
+          </PopoverTrigger>
+          <PopoverContent
+            side="bottom"
+            align="end"
+            sideOffset={12}
+            className="z-[70] w-[calc(100vw-32px)] max-w-[425px] rounded-[32px] border-none bg-white p-4 shadow-[0_8px_28px_rgba(0,0,0,.12)] md:p-6"
+          >
+            <div className="space-y-2">
+              <div className="px-2 pb-2 text-xs font-semibold text-[#222222]">
+                Chọn loại hình dịch vụ
+              </div>
+              {TYPE_OPTIONS.map((option) => {
+                const Icon = option.icon;
+                const selected = searchInfo?.type === option.value;
+
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    className="flex w-full items-center justify-between gap-4 rounded-2xl p-3 text-left transition-colors hover:bg-[#f7f7f7]"
+                    onClick={() => {
+                      updateSearchInfo({ type: option.value });
+                      setOpen(undefined);
+                    }}
+                  >
+                    <span className="flex min-w-0 items-center gap-4">
+                      <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border border-[#dddddd] bg-[#f7f7f7] text-[#222222]">
+                        <Icon className="h-5 w-5" />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block truncate text-[15px] font-semibold text-[#222222]">
+                          {option.label}
+                        </span>
+                        <span className="mt-0.5 block truncate text-sm text-[#717171]">
+                          {option.description}
+                        </span>
+                      </span>
+                    </span>
+                    <span
+                      className={cn(
+                        "flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border transition-colors",
+                        selected ? "border-[#222222]" : "border-[#b0b0b0]",
+                      )}
+                    >
+                      {selected && (
+                        <span className="h-3.5 w-3.5 rounded-full bg-[#222222]" />
+                      )}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
-          </div>
-        </SelectTrigger>
-        <SelectContent side="bottom" sideOffset={4} position="popper">
-          <SelectGroup>
-            <SelectLabel>Loại hình</SelectLabel>
-            <SelectItem value="all">Tất cả loại hình</SelectItem>
-            <SelectItem value="place">Nơi cư trú</SelectItem>
-            <SelectItem value="exp">Trải nghiệm</SelectItem>
-            <SelectItem value="service">Dịch vụ</SelectItem>
-          </SelectGroup>
-        </SelectContent>
-      </Select>
+          </PopoverContent>
+        </Popover>
+
+        <button
+          type="button"
+          className={cn(
+            "mr-2 flex h-12 flex-shrink-0 items-center justify-center rounded-full bg-[#ff385c] text-sm font-semibold text-white shadow-md transition-all duration-200 hover:bg-[#e61e4d] hover:shadow-lg active:scale-95",
+            open ? "gap-2 px-5" : "w-12 px-0",
+          )}
+          onClick={(event) => {
+            event.stopPropagation();
+            submitSearch();
+          }}
+          aria-label="Tìm kiếm"
+        >
+          <Search className="h-4 w-4" />
+          <span
+            className={cn(
+              "hidden whitespace-nowrap transition-all md:inline",
+              open ? "max-w-24 opacity-100" : "max-w-0 overflow-hidden opacity-0",
+            )}
+          >
+            Tìm kiếm
+          </span>
+        </button>
+      </div>
     </div>
   );
 }
