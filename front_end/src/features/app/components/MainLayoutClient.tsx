@@ -57,6 +57,74 @@ type CurrentUser = {
   avatarUrl?: string;
 } | null;
 
+function HeaderTabButton({
+  icon: Icon,
+  label,
+  active,
+  onClick,
+}: {
+  icon: (typeof NAV_ITEMS)[number]["icon"];
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={clsx(
+        "group relative flex h-12 items-center gap-2.5 rounded-full px-4 text-sm font-semibold transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#222222]",
+        active
+          ? "bg-[#F7F7F7] text-[#222222] shadow-[inset_0_0_0_1px_#EBEBEB]"
+          : "text-[#717171] hover:bg-[#F7F7F7] hover:text-[#222222]",
+      )}
+    >
+      <span
+        className={clsx(
+          "flex h-8 w-8 items-center justify-center rounded-full transition-colors",
+          active ? "bg-white text-[#222222] shadow-sm" : "bg-transparent text-[#717171] group-hover:bg-white group-hover:text-[#222222]",
+        )}
+      >
+        <Icon className="h-[18px] w-[18px]" strokeWidth={2} />
+      </span>
+      <span>{label}</span>
+      <span
+        className={clsx(
+          "absolute inset-x-5 -bottom-1 h-0.5 rounded-full bg-[#222222] transition-opacity",
+          active ? "opacity-100" : "opacity-0",
+        )}
+      />
+    </button>
+  );
+}
+
+function HeaderIconButton({
+  children,
+  label,
+  onClick,
+  className,
+}: {
+  children: ReactNode;
+  label: string;
+  onClick?: () => void;
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+      className={clsx(
+        "relative flex h-11 w-11 items-center justify-center rounded-full text-[#222222] transition-all duration-200 hover:bg-[#F7F7F7] hover:shadow-[inset_0_0_0_1px_#EBEBEB] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#222222]",
+        className,
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
 export default function MainLayoutClient({
   children,
 }: {
@@ -198,39 +266,20 @@ export default function MainLayoutClient({
           {/* Center Column: service tabs in large mode, compact search after scroll */}
           {showLargeSearch ? (
             <nav
-              className="absolute left-1/2 flex -translate-x-1/2 items-center gap-8"
+              className="absolute left-1/2 flex -translate-x-1/2 items-center gap-2"
               aria-label="Loại hình dịch vụ"
             >
               {NAV_ITEMS.map((item) => {
-                const Icon = item.icon;
                 const isActive = tab === item.value;
 
                 return (
-                  <button
+                  <HeaderTabButton
                     key={item.value}
-                    type="button"
+                    icon={item.icon}
+                    label={item.label}
+                    active={isActive}
                     onClick={() => goToTab(item.value)}
-                    className={clsx(
-                      "group relative flex items-center gap-2 px-1 py-2 text-base transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#222222]",
-                      isActive
-                        ? "font-semibold text-[#222222]"
-                        : "font-normal text-[#717171] hover:text-[#222222]",
-                    )}
-                  >
-                    <Icon
-                      className={clsx(
-                        "h-5 w-5 transition-colors",
-                        isActive ? "text-[#222222]" : "text-[#717171]",
-                      )}
-                    />
-                    <span>{item.label}</span>
-                    <span
-                      className={clsx(
-                        "absolute inset-x-0 -bottom-1 h-0.5 rounded-full bg-[#222222] transition-opacity",
-                        isActive ? "opacity-100" : "opacity-0 group-hover:opacity-50",
-                      )}
-                    />
-                  </button>
+                  />
                 );
               })}
             </nav>
@@ -275,39 +324,20 @@ export default function MainLayoutClient({
             </div>
           ) : (
             <nav
-              className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 lg:flex"
+              className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-2 lg:flex"
               aria-label="Loại hình dịch vụ"
             >
               {NAV_ITEMS.map((item) => {
-                const Icon = item.icon;
                 const isActive = tab === item.value;
 
                 return (
-                  <button
+                  <HeaderTabButton
                     key={item.value}
-                    type="button"
+                    icon={item.icon}
+                    label={item.label}
+                    active={isActive}
                     onClick={() => goToTab(item.value)}
-                    className={clsx(
-                      "group relative flex items-center gap-2 px-1 py-2 text-base transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#222222]",
-                      isActive
-                        ? "font-semibold text-[#222222]"
-                        : "font-normal text-[#717171] hover:text-[#222222]",
-                    )}
-                  >
-                    <Icon
-                      className={clsx(
-                        "h-5 w-5 transition-colors",
-                        isActive ? "text-[#222222]" : "text-[#717171]",
-                      )}
-                    />
-                    <span>{item.label}</span>
-                    <span
-                      className={clsx(
-                        "absolute inset-x-0 -bottom-1 h-0.5 rounded-full bg-[#222222] transition-opacity",
-                        isActive ? "opacity-100" : "opacity-0 group-hover:opacity-50",
-                      )}
-                    />
-                  </button>
+                  />
                 );
               })}
             </nav>
@@ -318,61 +348,48 @@ export default function MainLayoutClient({
               <div className="hidden items-center gap-2 xl:flex">
                 {isHost && (
                   <Link href="/host">
-                    <Button
-                      variant="ghost"
-                      className="h-10 rounded-full px-4 text-sm font-semibold text-[#222222] hover:bg-[#F7F7F7]"
+                    <span
+                      className="inline-flex h-11 items-center rounded-full px-4 text-sm font-bold text-[#222222] transition-all hover:bg-[#F7F7F7] hover:shadow-[inset_0_0_0_1px_#EBEBEB]"
                     >
                       Kênh Chủ Nhà
-                    </Button>
+                    </span>
                   </Link>
                 )}
                 {isEnterprise && (
                   <Link href="/enterprise">
-                    <Button
-                      variant="ghost"
-                      className="h-10 rounded-full px-4 text-sm font-semibold text-[#222222] hover:bg-[#F7F7F7]"
+                    <span
+                      className="inline-flex h-11 items-center rounded-full px-4 text-sm font-bold text-[#222222] transition-all hover:bg-[#F7F7F7] hover:shadow-[inset_0_0_0_1px_#EBEBEB]"
                     >
                       Kênh Doanh Nghiệp
-                    </Button>
+                    </span>
                   </Link>
                 )}
               </div>
             )}
 
-            <Button
-              variant="ghost"
-              size="icon"
-              className="hidden h-10 w-10 rounded-full text-[#222222] hover:bg-[#F7F7F7] md:inline-flex"
-              title="Ngôn ngữ"
-            >
-              <Globe2 className="h-5 w-5" />
-            </Button>
+            <HeaderIconButton label="Ngôn ngữ" className="hidden md:flex">
+              <Globe2 className="h-5 w-5" strokeWidth={2} />
+            </HeaderIconButton>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative h-10 w-10 rounded-full text-[#222222] hover:bg-[#F7F7F7]"
-              onClick={() => setIsDrawerOpen(true)}
-              title="Giỏ hàng"
-            >
-              <ShoppingCart className="h-5 w-5" />
+            <HeaderIconButton label="Giỏ hàng" onClick={() => setIsDrawerOpen(true)}>
+              <ShoppingCart className="h-5 w-5" strokeWidth={2} />
               {itemCount > 0 && (
                 <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#FF385C] px-1 text-[10px] font-bold text-white ring-2 ring-white">
                   {itemCount}
                 </span>
               )}
-            </Button>
+            </HeaderIconButton>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="outline"
-                  className="h-11 rounded-full border-[#DDDDDD] bg-white py-1 pl-3 pr-1.5 text-[#222222] shadow-sm hover:shadow-md"
+                  className="h-12 gap-2 rounded-full border-[#DDDDDD] bg-white py-1 pl-4 pr-1.5 text-[#222222] shadow-[0_2px_10px_rgba(0,0,0,.08)] transition-all hover:border-[#B0B0B0] hover:shadow-[0_4px_16px_rgba(0,0,0,.12)]"
                   aria-label="Mở menu tài khoản"
                 >
-                  <Menu className="h-5 w-5" />
+                  <Menu className="h-5 w-5" strokeWidth={2} />
                   {currentUser ? (
-                    <Avatar className="h-8 w-8">
+                    <Avatar className="h-9 w-9 border border-[#EBEBEB]">
                       <AvatarImage
                         src={
                           currentUser.avatarUrl ||
@@ -384,7 +401,9 @@ export default function MainLayoutClient({
                       </AvatarFallback>
                     </Avatar>
                   ) : (
-                    <UserCircle className="h-8 w-8 text-[#717171]" />
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F7F7F7] text-[#717171]">
+                      <UserCircle className="h-6 w-6" strokeWidth={2} />
+                    </span>
                   )}
                 </Button>
               </DropdownMenuTrigger>
