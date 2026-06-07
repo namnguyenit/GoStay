@@ -130,7 +130,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               G<span className="text-white/75">S</span>
             </div>
             <span className="font-semibold text-[20px] tracking-tight text-sky-600">
-              GoStay
+              GoTravel
             </span>
           </div>
           <button

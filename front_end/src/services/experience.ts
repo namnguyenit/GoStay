@@ -37,7 +37,7 @@ const getListingGallery = (item: RawListing) => {
 };
 
 const withSearchParams = (baseEndpoint: string, options: ListingSearchOptions = {}) => {
-  const url = new URL(baseEndpoint, "http://gostay.local");
+  const url = new URL(baseEndpoint, "http://gotravel.local");
 
   if (options.locationQuery?.trim()) {
     url.searchParams.set("locationQuery", options.locationQuery.trim());

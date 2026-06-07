@@ -312,7 +312,7 @@ function CompletedOrdersContent() {
                                 />
                               ) : (
                                 <div className="flex size-full items-center justify-center text-xs font-bold text-zinc-400">
-                                  GoStay
+                                  GoTravel
                                 </div>
                               )}
                             </div>

@@ -158,7 +158,7 @@ export default function OfferingCarouselItem({
               className="line-clamp-1 text-[15px] font-semibold leading-[19px] text-[#222222] hover:underline"
               onClick={() => onSelect?.(item)}
             >
-              {item?.name || "Điểm đến GoStay"}
+              {item?.name || "Điểm đến GoTravel"}
             </h3>
             {item?.rating != null && (
               <div className="flex shrink-0 items-center gap-1 text-sm leading-[18px] text-[#222222]">

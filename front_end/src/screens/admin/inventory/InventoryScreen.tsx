@@ -156,7 +156,7 @@ export function InventoryScreen() {
                     />
                   ) : (
                     <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-500 text-[10px] font-bold">
-                      GoStay
+                      GoTravel
                     </div>
                   )}
                   <div className="min-w-0 flex-1">

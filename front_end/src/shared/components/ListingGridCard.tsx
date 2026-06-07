@@ -147,7 +147,7 @@ export default function ListingGridCard({
             className="line-clamp-1 text-[15px] font-semibold leading-[19px] text-[#222222]"
             onClick={onSelect}
           >
-            {item.name || "Dịch vụ GoStay"}
+            {item.name || "Dịch vụ GoTravel"}
           </h3>
           <div className="flex shrink-0 items-center gap-1 text-sm leading-[18px] text-[#222222]">
             <Star className="h-3.5 w-3.5 fill-[#222222] text-[#222222]" />

@@ -321,7 +321,7 @@ export default function AuthModal() {
               {error && <p className="text-sm text-red-500">{error}</p>}
 
               <p className="text-[11px] leading-relaxed text-[#717171]">
-                Bằng cách chọn Đồng ý và tiếp tục, tôi đồng ý với các <Link href="#" className="font-semibold text-[#222] underline">Điều khoản</Link> của GoStay.
+                Bằng cách chọn Đồng ý và tiếp tục, tôi đồng ý với các <Link href="#" className="font-semibold text-[#222] underline">Điều khoản</Link> của GoTravel.
               </p>
 
               <Button disabled={loading} type="submit" className="mt-2 h-12 w-full rounded-lg bg-[#FF5A5F] text-base font-semibold text-white transition-colors hover:bg-[#E35054] active:scale-[0.98]">

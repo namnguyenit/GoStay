@@ -7,28 +7,27 @@ const footerColumns = [
   {
     title: "Hỗ trợ",
     links: [
-      "Trung tâm trợ giúp",
-      "AirCover cho khách",
-      "Chính sách hủy",
-      "Báo cáo vấn đề khu dân cư",
+      { label: "Trung tâm trợ giúp", href: "/help-center" },
+      { label: "Chính sách hủy", href: "/cancellation-policy" },
+      { label: "Báo cáo vấn đề", href: "/report-issue" },
     ],
   },
   {
     title: "Đón tiếp khách",
     links: [
-      "Cho thuê chỗ ở trên GoStay",
-      "Tài nguyên cho chủ nhà",
-      "Diễn đàn cộng đồng",
-      "Đón tiếp khách có trách nhiệm",
+      { label: "Đăng dịch vụ trên GoTravel", href: "/host" },
+      { label: "Tài nguyên cho chủ nhà", href: "/help-center" },
+      { label: "Kênh doanh nghiệp", href: "/enterprise" },
+      { label: "Đón tiếp khách có trách nhiệm", href: "/help-center" },
     ],
   },
   {
-    title: "GoStay",
+    title: "GoTravel",
     links: [
-      "Trang tin tức",
-      "Tính năng mới",
-      "Cơ hội nghề nghiệp",
-      "Nhà đầu tư",
+      { label: "Trang tin tức", href: "/help-center" },
+      { label: "Tính năng mới", href: "/help-center" },
+      { label: "Cơ hội nghề nghiệp", href: "/help-center" },
+      { label: "Nhà đầu tư", href: "/help-center" },
     ],
   },
 ];
@@ -45,12 +44,12 @@ export default function Footer() {
               </h2>
               <ul className="mt-4 space-y-4">
                 {column.links.map((link) => (
-                  <li key={link}>
+                  <li key={link.label}>
                     <Link
-                      href="#"
+                      href={link.href}
                       className="text-sm font-normal leading-[18px] text-[#717171] transition hover:text-[#222222] hover:underline"
                     >
-                      {link}
+                      {link.label}
                     </Link>
                   </li>
                 ))}
@@ -61,17 +60,17 @@ export default function Footer() {
 
         <div className="mt-12 flex flex-col gap-4 border-t border-[#DDDDDD] pt-6 text-sm text-[#717171] md:flex-row md:items-center md:justify-between">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span>© 2026 GoStay, Inc.</span>
+            <span>© 2026 GoTravel, Inc.</span>
             <span>·</span>
-            <Link href="#" className="hover:text-[#222222] hover:underline">
+            <Link href="/privacy" className="hover:text-[#222222] hover:underline">
               Quyền riêng tư
             </Link>
             <span>·</span>
-            <Link href="#" className="hover:text-[#222222] hover:underline">
+            <Link href="/terms" className="hover:text-[#222222] hover:underline">
               Điều khoản
             </Link>
             <span>·</span>
-            <Link href="#" className="hover:text-[#222222] hover:underline">
+            <Link href="/sitemap" className="hover:text-[#222222] hover:underline">
               Sơ đồ trang web
             </Link>
           </div>

@@ -126,7 +126,7 @@ export default function ComplexDetailScreen({
             </div>
 
             <h1 className="text-[clamp(2rem,4vw,3rem)] font-bold leading-tight tracking-[-0.03em]">
-              {complex.name || "Khu du lịch GoStay"}
+              {complex.name || "Khu du lịch GoTravel"}
             </h1>
 
             <div className="my-6 h-px bg-[#eeeeee]" />
@@ -162,7 +162,7 @@ export default function ComplexDetailScreen({
               {listings.map((item) => {
                 const type = getCategoryType(item);
                 const image = item.thumbnailUrl || item.image || "/images/placeholder.jpg";
-                const name = item.name || item.title || "Dịch vụ GoStay";
+                const name = item.name || item.title || "Dịch vụ GoTravel";
                 const rating = item.rating ?? item.averageRating;
 
                 return (

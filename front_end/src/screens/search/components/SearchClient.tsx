@@ -326,7 +326,7 @@ export default function SearchClient({
                         />
                       ) : (
                         <div className="flex size-full items-center justify-center text-sm font-semibold text-[#717171]">
-                          GoStay
+                          GoTravel
                         </div>
                       )}
                     </div>

@@ -74,7 +74,7 @@ export default function HostLayout({ children }: { children: React.ReactNode }) 
           </div>
           <div className="hidden md:block">
             <h2 className="text-sm font-bold text-gray-900 tracking-wide">KÊNH CHỦ NHÀ</h2>
-            <p className="text-[10px] text-gray-500 font-medium">GoStay Host Portal</p>
+            <p className="text-[10px] text-gray-500 font-medium">GoTravel Host Portal</p>
           </div>
         </div>
 
@@ -111,7 +111,7 @@ export default function HostLayout({ children }: { children: React.ReactNode }) 
           <Link href="/">
             <button className="flex items-center gap-2 text-xs font-semibold text-gray-500 hover:text-gray-900 hover:bg-gray-100 h-10 px-4 rounded-full transition-all">
               <ArrowLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">Về GoStay</span>
+              <span className="hidden sm:inline">Về GoTravel</span>
             </button>
           </Link>
           

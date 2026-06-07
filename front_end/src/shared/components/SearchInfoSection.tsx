@@ -282,7 +282,7 @@ export default function SearchInfoSection({
         )}
         onMouseLeave={() => setHoveredSegment(undefined)}
         role="search"
-        aria-label="Tìm kiếm dịch vụ GoStay"
+        aria-label="Tìm kiếm dịch vụ GoTravel"
       >
       <div
         className={cn(
@@ -397,7 +397,7 @@ export default function SearchInfoSection({
                       <span className="mt-0.5 block truncate text-sm text-[#717171]">
                         {[option.type, option.province || option.description]
                           .filter(Boolean)
-                          .join(" · ") || "Địa danh GoStay"}
+                          .join(" · ") || "Địa danh GoTravel"}
                       </span>
                     </span>
                   </button>

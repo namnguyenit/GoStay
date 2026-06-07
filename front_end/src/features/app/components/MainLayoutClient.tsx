@@ -185,13 +185,13 @@ export default function MainLayoutClient({
             type="button"
             onClick={goHome}
             className="flex items-center gap-2 rounded-full text-[#FF385C] transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#222222]"
-            aria-label="Về trang chủ GoStay"
+            aria-label="Về trang chủ GoTravel"
           >
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#FF385C] text-white">
               <Home className="h-5 w-5" />
             </span>
             <span className="hidden text-2xl font-bold tracking-normal sm:block">
-              GoStay
+              GoTravel
             </span>
           </button>
 
@@ -442,7 +442,10 @@ export default function MainLayoutClient({
                     <DropdownMenuItem className="cursor-pointer">
                       Đón tiếp khách
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="cursor-pointer">
+                    <DropdownMenuItem
+                      onClick={() => router.push("/help-center")}
+                      className="cursor-pointer"
+                    >
                       Trung tâm trợ giúp
                     </DropdownMenuItem>
                   </>

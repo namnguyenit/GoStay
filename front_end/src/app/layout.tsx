@@ -5,7 +5,7 @@ import { AuthModalProvider } from "@/shared/context/AuthModalContext";
 import AuthModal from "@/shared/components/AuthModal";
 
 export const metadata: Metadata = {
-  title: "Go Travel",
+  title: "GoTravel",
   description: "Du lịch không chỉ là đi, mà là thuộc về nơi bạn đến.",
   icons: {
     icon: "/favicon.ico",

@@ -69,10 +69,10 @@ export function PayoutsScreen() {
     
     if (selectedBatch) {
       amount = selectedBatch.totalAmount;
-      content = `Thanh toan gop GoStay Host ${selectedBatch.hostId.substring(0, 8)}`;
+      content = `Thanh toan gop GoTravel Host ${selectedBatch.hostId.substring(0, 8)}`;
     } else if (selectedPayout) {
       amount = selectedPayout.hostAmount || 0;
-      content = `Thanh toan GoStay ${selectedPayout.orderId?.substring(0, 8)}`;
+      content = `Thanh toan GoTravel ${selectedPayout.orderId?.substring(0, 8)}`;
     } else {
       return null;
     }

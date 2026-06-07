@@ -130,7 +130,7 @@ export default function ServiceCategoryLanding({
                       />
                     ) : (
                       <div className="flex size-full items-center justify-center text-sm font-semibold text-[#717171]">
-                        GoStay
+                        GoTravel
                       </div>
                     )}
                   </div>

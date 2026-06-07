@@ -311,7 +311,7 @@ export default function CategoryDetailScreen({
                     />
                   ) : (
                     <div className="flex size-full items-center justify-center text-sm font-semibold text-zinc-400">
-                      GoStay
+                      GoTravel
                     </div>
                   )}
                 </div>
@@ -643,7 +643,7 @@ export default function CategoryDetailScreen({
                         />
                       ) : (
                         <div className="flex size-full items-center justify-center text-[10px] font-semibold text-zinc-400">
-                          GoStay
+                          GoTravel
                         </div>
                       )}
                     </div>
