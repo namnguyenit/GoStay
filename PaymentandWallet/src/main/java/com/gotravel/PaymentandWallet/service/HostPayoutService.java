@@ -1,14 +1,18 @@
 package com.gotravel.PaymentandWallet.service;
 
+import com.gotravel.PaymentandWallet.dto.request.UpdateCommissionConfigRequest;
 import com.gotravel.PaymentandWallet.dto.response.AdminPaymentSummaryResponse;
 import com.gotravel.PaymentandWallet.dto.response.AdminRevenueReportResponse;
+import com.gotravel.PaymentandWallet.dto.response.CommissionConfigResponse;
 import com.gotravel.PaymentandWallet.dto.response.HostPayoutResponse;
+import com.gotravel.PaymentandWallet.entity.CommissionConfig;
 import com.gotravel.PaymentandWallet.entity.HostPayout;
 import com.gotravel.PaymentandWallet.enums.PaymentStatus;
 import com.gotravel.PaymentandWallet.enums.PayoutStatus;
 import com.gotravel.PaymentandWallet.exeption.AppException;
 import com.gotravel.PaymentandWallet.exeption.PaymentErrorCode;
 import com.gotravel.PaymentandWallet.mapper.PaymentMapper;
+import com.gotravel.PaymentandWallet.repository.CommissionConfigRepository;
 import com.gotravel.PaymentandWallet.repository.HostPayoutRepository;
 import com.gotravel.PaymentandWallet.repository.PaymentRequestRepository;
 import com.gotravel.PaymentandWallet.repository.PaymentTransactionRepository;
@@ -37,9 +41,12 @@ import java.util.UUID;
 public class HostPayoutService {
 
     private final HostPayoutRepository hostPayoutRepository;
+    private final CommissionConfigRepository commissionConfigRepository;
     private final PaymentRequestRepository paymentRequestRepository;
     private final PaymentTransactionRepository paymentTransactionRepository;
     private final PaymentMapper paymentMapper;
+    private static final String DEFAULT_COMMISSION_CONFIG_ID = "DEFAULT";
+    private static final BigDecimal DEFAULT_COMMISSION_RATE = new BigDecimal("0.05");
 
     /**
      * Host xem danh sách các khoản tiền sẽ nhận (phân trang).
@@ -135,6 +142,21 @@ public class HostPayoutService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
+    public CommissionConfigResponse getCommissionConfig() {
+        CommissionConfig config = getOrCreateDefaultCommissionConfig();
+        return toCommissionConfigResponse(config);
+    }
+
+    @Transactional
+    public CommissionConfigResponse updateCommissionConfig(UUID adminId, UpdateCommissionConfigRequest request) {
+        CommissionConfig config = getOrCreateDefaultCommissionConfig();
+        config.setRate(request.getRate());
+        config.setReason(request.getReason());
+        config.setUpdatedBy(adminId);
+        return toCommissionConfigResponse(commissionConfigRepository.save(config));
+    }
+
     @Transactional
     public void markAsPaid(UUID payoutId) {
         HostPayout payout = hostPayoutRepository.findById(payoutId)
@@ -158,6 +180,25 @@ public class HostPayoutService {
         if (value instanceof BigDecimal bigDecimal) return bigDecimal;
         if (value instanceof Number number) return BigDecimal.valueOf(number.doubleValue());
         return new BigDecimal(String.valueOf(value));
+    }
+
+    private CommissionConfig getOrCreateDefaultCommissionConfig() {
+        return commissionConfigRepository.findById(DEFAULT_COMMISSION_CONFIG_ID)
+                .orElseGet(() -> commissionConfigRepository.save(CommissionConfig.builder()
+                        .id(DEFAULT_COMMISSION_CONFIG_ID)
+                        .rate(DEFAULT_COMMISSION_RATE)
+                        .reason("Default GoStay commission rate")
+                        .build()));
+    }
+
+    private CommissionConfigResponse toCommissionConfigResponse(CommissionConfig config) {
+        return CommissionConfigResponse.builder()
+                .rate(config.getRate())
+                .percent(config.getRate().multiply(BigDecimal.valueOf(100)))
+                .updatedBy(config.getUpdatedBy())
+                .reason(config.getReason())
+                .updatedAt(config.getUpdatedAt())
+                .build();
     }
 
     @Transactional

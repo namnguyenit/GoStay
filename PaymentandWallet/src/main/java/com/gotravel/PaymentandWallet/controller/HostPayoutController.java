@@ -1,9 +1,12 @@
 package com.gotravel.PaymentandWallet.controller;
 
+import com.gotravel.PaymentandWallet.dto.request.UpdateCommissionConfigRequest;
 import com.gotravel.PaymentandWallet.dto.response.ApiResponse;
 import com.gotravel.PaymentandWallet.dto.response.AdminPaymentSummaryResponse;
 import com.gotravel.PaymentandWallet.dto.response.AdminRevenueReportResponse;
+import com.gotravel.PaymentandWallet.dto.response.CommissionConfigResponse;
 import com.gotravel.PaymentandWallet.dto.response.HostPayoutResponse;
+import jakarta.validation.Valid;
 import com.gotravel.PaymentandWallet.service.HostPayoutService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -52,6 +55,20 @@ public class HostPayoutController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         return ResponseEntity.ok(ApiResponse.success("Lấy báo cáo doanh thu thành công", hostPayoutService.getRevenueReport(startDate, endDate)));
+    }
+
+    @GetMapping("/admin/commission")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<CommissionConfigResponse>> getCommissionConfig() {
+        return ResponseEntity.ok(ApiResponse.success("Lấy cấu hình hoa hồng thành công", hostPayoutService.getCommissionConfig()));
+    }
+
+    @PutMapping("/admin/commission")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<CommissionConfigResponse>> updateCommissionConfig(
+            @RequestHeader("X-User-Id") UUID adminId,
+            @RequestBody @Valid UpdateCommissionConfigRequest request) {
+        return ResponseEntity.ok(ApiResponse.success("Cập nhật cấu hình hoa hồng thành công", hostPayoutService.updateCommissionConfig(adminId, request)));
     }
 
     @PutMapping("/{payoutId}/mark-paid")

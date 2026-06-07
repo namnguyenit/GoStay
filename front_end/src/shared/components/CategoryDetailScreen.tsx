@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Star, Heart, Share2, Check, Users, Home, Clock, Info, CheckCircle2, XCircle, Languages, Sparkles, ShoppingCart } from "lucide-react";
+import { Star, Heart, Share2, Check, Users, Home, Clock, Info, CheckCircle2, XCircle, Languages, Sparkles, ShoppingCart, MapPin, ExternalLink } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { formatMoney } from "@/shared/utils";
@@ -22,6 +22,8 @@ type CategoryItem =
       description?: string;
       address?: string;
       province?: string;
+      latitude?: number | string;
+      longitude?: number | string;
       rating?: number;
       averageRating?: number;
       image?: string;
@@ -84,7 +86,10 @@ type ListingDetailData = {
   thumbnailUrl?: string;
   averageRating?: number;
   totalReviews?: number;
+  address?: string;
   province?: string;
+  latitude?: number | string;
+  longitude?: number | string;
   attributes?: DetailAttributes;
 };
 
@@ -124,6 +129,27 @@ export default function CategoryDetailScreen({
   const activeImage = detailImages[activeImageIndex] || selectedItem?.image;
   const ratingValue = selectedItem?.rating ?? detailData?.averageRating;
   const locationText = detailData?.province || selectedItem?.address;
+  const latitude = Number(detailData?.latitude ?? selectedItem?.latitude);
+  const longitude = Number(detailData?.longitude ?? selectedItem?.longitude);
+  const hasValidCoordinates =
+    Number.isFinite(latitude) &&
+    Number.isFinite(longitude) &&
+    latitude >= -90 &&
+    latitude <= 90 &&
+    longitude >= -180 &&
+    longitude <= 180;
+  const mapAddressText = [
+    selectedItem?.address || detailData?.address || detailData?.province || selectedItem?.province,
+    "Việt Nam",
+  ]
+    .filter(Boolean)
+    .join(", ");
+  const googleMapEmbedUrl = hasValidCoordinates
+    ? `https://www.google.com/maps?q=${latitude},${longitude}&z=15&output=embed`
+    : "";
+  const googleMapOpenUrl = hasValidCoordinates
+    ? `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`
+    : "";
   const sidebarItems = (recommendations.length > 0 ? recommendations : items)
     .filter((item) => Boolean(item?.id && item.id !== activeId))
     .sort(
@@ -668,8 +694,52 @@ export default function CategoryDetailScreen({
           </div>
         </div>
         
+        {/* --- Location Map Section --- */}
+        <section className="mt-16 w-full border-t border-zinc-100 pt-10 dark:border-zinc-800">
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-2xl font-bold tracking-[-0.02em] text-app-fg">
+                Nơi bạn sẽ đến
+              </h2>
+              <div className="mt-3 flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                <MapPin className="h-4 w-4 text-[#e61e4d]" />
+                <span>{mapAddressText || "Chưa cập nhật địa chỉ"}</span>
+              </div>
+            </div>
+
+            {hasValidCoordinates && (
+              <a
+                href={googleMapOpenUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-app-fg underline underline-offset-4 transition-colors hover:text-[#e61e4d]"
+              >
+                Mở Google Maps
+                <ExternalLink className="h-4 w-4" />
+              </a>
+            )}
+          </div>
+
+          {hasValidCoordinates ? (
+            <div className="relative h-[360px] overflow-hidden rounded-3xl border border-zinc-100 bg-zinc-100 shadow-[0_18px_45px_rgba(15,23,42,0.08)] sm:h-[430px] dark:border-zinc-800 dark:bg-zinc-900">
+              <iframe
+                title={`Bản đồ vị trí ${selectedItem.name ?? "dịch vụ"}`}
+                src={googleMapEmbedUrl}
+                className="h-full w-full"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                allowFullScreen
+              />
+            </div>
+          ) : (
+            <div className="rounded-3xl border border-dashed border-zinc-200 bg-zinc-50 p-8 text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-300">
+              Chưa có tọa độ hợp lệ cho dịch vụ này nên chưa thể hiển thị bản đồ. Cần cập nhật vĩ độ và kinh độ trong listing.
+            </div>
+          )}
+        </section>
+
         {/* --- Review Section --- */}
-        <div className="mt-16 w-full">
+        <div className="mt-12 w-full">
           {selectedItem.id && <ReviewSection listingId={selectedItem.id} />}
         </div>
       </div>

@@ -12,6 +12,7 @@ export type ListingStatus = "PENDING" | "ACTIVE" | "HIDDEN" | "DELETED";
 export type LandmarkStatus = "ACTIVE" | "HIDDEN" | "MAINTENANCE";
 export type SuggestionStatus = "PENDING" | "RESOLVED" | "REJECTED";
 export type PayoutStatus = "PENDING" | "REQUESTED" | "PAID" | string;
+export type AdminDisputeStatus = "OPEN" | "IN_REVIEW" | "RESOLVED" | "REJECTED" | "REFUNDED" | string;
 
 export type AdminApiResponse<T> = {
   data: T;
@@ -244,6 +245,50 @@ export type AdminRevenueReport = {
   }>;
 };
 
+export type AdminOrder = {
+  orderId?: string;
+  userId?: string;
+  hostId?: string;
+  orderNumber?: string;
+  status?: string;
+  totalAmount?: number;
+  currency?: string;
+  customerInfo?: {
+    fullName?: string;
+    email?: string;
+    phone?: string;
+  };
+  createdAt?: string;
+};
+
+export type AdminDispute = {
+  disputeId?: string;
+  orderId?: string;
+  userId?: string;
+  orderNumber?: string;
+  orderStatus?: string;
+  orderAmount?: number;
+  customerName?: string;
+  customerEmail?: string;
+  customerPhone?: string;
+  reason?: string;
+  description?: string;
+  status?: AdminDisputeStatus;
+  adminNote?: string;
+  resolvedBy?: string;
+  resolvedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type CommissionConfig = {
+  rate?: number;
+  percent?: number;
+  updatedBy?: string;
+  reason?: string;
+  updatedAt?: string;
+};
+
 const pageQuery = (page: number, size: number) => `page=${page}&size=${size}`;
 
 const AdminService = {
@@ -457,6 +502,35 @@ const AdminService = {
 
   getOrderSummary: async (): Promise<AdminApiResponse<AdminOrderSummary>> => {
     return await Api.get(`/v1/orders/admin/summary`);
+  },
+
+  getAdminOrders: async (page = 0, size = 20): Promise<AdminApiResponse<AdminPage<AdminOrder>>> => {
+    return await Api.get(`/v1/orders/admin?page=${page}&size=${size}`);
+  },
+
+  forceCancelOrder: async (orderId: string, reason?: string) => {
+    return await Api.put(`/v1/orders/admin/${orderId}/force-cancel`, { reason });
+  },
+
+  getDisputes: async (
+    status?: AdminDisputeStatus | "",
+    page = 0,
+    size = 20
+  ): Promise<AdminApiResponse<AdminPage<AdminDispute>>> => {
+    const statusQuery = status ? `&status=${encodeURIComponent(status)}` : "";
+    return await Api.get(`/v1/orders/admin/disputes?page=${page}&size=${size}${statusQuery}`);
+  },
+
+  resolveDispute: async (disputeId: string, action: "REFUND" | "REJECT" | "RESOLVE", adminNote?: string) => {
+    return await Api.put(`/v1/orders/admin/disputes/${disputeId}/resolve`, { action, adminNote });
+  },
+
+  getCommissionConfig: async (): Promise<AdminApiResponse<CommissionConfig>> => {
+    return await Api.get(`/v1/payouts/admin/commission`);
+  },
+
+  updateCommissionConfig: async (rate: number, reason?: string): Promise<AdminApiResponse<CommissionConfig>> => {
+    return await Api.put(`/v1/payouts/admin/commission`, { rate, reason });
   },
 
   markPayoutPaid: async (payoutId: string) => {

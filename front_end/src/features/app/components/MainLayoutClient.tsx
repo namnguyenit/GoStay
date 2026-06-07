@@ -19,6 +19,7 @@ import {
   LogIn,
   LogOutIcon,
   Menu,
+  MessageSquareWarning,
   PartyPopper,
   Search,
   SettingsIcon,
@@ -99,7 +100,8 @@ export default function MainLayoutClient({
     pathName.startsWith("/settings") ||
     pathName.startsWith("/checkout") ||
     pathName.startsWith("/payment") ||
-    pathName.startsWith("/orders");
+    pathName.startsWith("/orders") ||
+    pathName.startsWith("/disputes");
 
   const handleLogout = () => {
     AuthService.logout();
@@ -404,6 +406,13 @@ export default function MainLayoutClient({
                     >
                       <TicketCheck className="h-4 w-4" />
                       Đơn hàng đã hoàn tất
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => router.push("/disputes")}
+                      className="cursor-pointer gap-2"
+                    >
+                      <MessageSquareWarning className="h-4 w-4" />
+                      Khiếu nại của tôi
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => router.push("/settings")}

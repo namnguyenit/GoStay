@@ -221,6 +221,12 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
+    public Page<OrderResponse> getAdminOrders(Pageable pageable) {
+        return orderRepository.findAll(pageable)
+                .map(orderMapper::toOrderResponse);
+    }
+
+    @Transactional(readOnly = true)
     public AdminOrderSummaryResponse getAdminSummary() {
         return AdminOrderSummaryResponse.builder()
                 .totalOrders(orderRepository.count())

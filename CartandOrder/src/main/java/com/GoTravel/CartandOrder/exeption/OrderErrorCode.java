@@ -13,6 +13,7 @@ public enum OrderErrorCode implements ErrorCode {
     LISTING_NOT_AVAILABLE(400, "LISTING_NOT_AVAILABLE", "Dịch vụ không tồn tại hoặc không còn khả dụng", HttpStatus.BAD_REQUEST),
     INVENTORY_LOCK_FAILED(409, "INVENTORY_LOCK_FAILED", "Phòng/Dịch vụ bạn chọn đã hết chỗ hoặc đang bảo trì", HttpStatus.CONFLICT),
     INVALID_ORDER_STATE(400, "INVALID_ORDER_STATE", "Trạng thái đơn hàng không hợp lệ cho thao tác này", HttpStatus.BAD_REQUEST),
+    DISPUTE_ALREADY_OPEN(409, "DISPUTE_ALREADY_OPEN", "Đơn hàng này đang có khiếu nại chưa xử lý", HttpStatus.CONFLICT),
     CART_IS_EMPTY(400, "CART_IS_EMPTY", "Giỏ hàng trống", HttpStatus.BAD_REQUEST);
 
     private final boolean success = false;

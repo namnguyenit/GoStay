@@ -17,6 +17,28 @@ export interface BookNowPayload {
   phone: string;
 }
 
+export type OrderDisputeStatus = "OPEN" | "IN_REVIEW" | "RESOLVED" | "REJECTED" | "REFUNDED" | string;
+
+export type OrderDispute = {
+  disputeId?: string;
+  orderId?: string;
+  userId?: string;
+  orderNumber?: string;
+  orderStatus?: string;
+  orderAmount?: number;
+  customerName?: string;
+  customerEmail?: string;
+  customerPhone?: string;
+  reason?: string;
+  description?: string;
+  status?: OrderDisputeStatus;
+  adminNote?: string;
+  resolvedBy?: string;
+  resolvedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 const OrderService = {
   bookNow: async (payload: BookNowPayload) => {
     return await Api.post("/v1/orders/book-now", payload);
@@ -29,6 +51,12 @@ const OrderService = {
   },
   getUserOrders: async (page = 0, size = 10) => {
     return await Api.get(`/v1/orders?page=${page}&size=${size}`);
+  },
+  createDispute: async (payload: { orderId: string; reason: string; description?: string }) => {
+    return await Api.post("/v1/orders/disputes", payload);
+  },
+  getMyDisputes: async (page = 0, size = 20) => {
+    return await Api.get(`/v1/orders/disputes?page=${page}&size=${size}`);
   },
   cancelOrder: async (orderId: string) => {
     return await Api.put(`/v1/orders/${orderId}/cancel`, {});

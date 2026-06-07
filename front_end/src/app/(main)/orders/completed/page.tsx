@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import { CalendarDays, CheckCircle2, QrCode, TicketCheck } from "lucide-react";
+import { AlertTriangle, CalendarDays, CheckCircle2, QrCode, TicketCheck, X } from "lucide-react";
 import OrderService from "@/services/order";
 
 type CompletedOrderItem = {
@@ -78,6 +78,11 @@ function CompletedOrdersContent() {
   const [orders, setOrders] = useState<CompletedOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedDisputeOrder, setSelectedDisputeOrder] = useState<CompletedOrder | null>(null);
+  const [disputeReason, setDisputeReason] = useState("");
+  const [disputeDescription, setDisputeDescription] = useState("");
+  const [disputeLoading, setDisputeLoading] = useState(false);
+  const [disputeMessage, setDisputeMessage] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -112,6 +117,32 @@ function CompletedOrdersContent() {
       return 0;
     });
   }, [highlightedOrderId, orders]);
+
+  const submitDispute = async () => {
+    if (!selectedDisputeOrder?.orderId) return;
+    if (!disputeReason.trim()) {
+      setDisputeMessage("Vui lòng nhập lý do khiếu nại.");
+      return;
+    }
+
+    setDisputeLoading(true);
+    setDisputeMessage("");
+    try {
+      await OrderService.createDispute({
+        orderId: selectedDisputeOrder.orderId,
+        reason: disputeReason.trim(),
+        description: disputeDescription.trim() || undefined,
+      });
+      setDisputeMessage("Đã gửi khiếu nại. Admin sẽ kiểm tra và phản hồi.");
+      setDisputeReason("");
+      setDisputeDescription("");
+      setSelectedDisputeOrder(null);
+    } catch (error) {
+      setDisputeMessage(error instanceof Error ? error.message : "Không gửi được khiếu nại.");
+    } finally {
+      setDisputeLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-zinc-50 px-4 pb-16 pt-10 text-[#222222]">
@@ -150,6 +181,11 @@ function CompletedOrdersContent() {
           </div>
         ) : (
           <div className="space-y-5">
+            {disputeMessage && (
+              <div className="rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm font-semibold text-zinc-700">
+                {disputeMessage}
+              </div>
+            )}
             {completedOrders.map((order) => {
               const ticketCode = order.orderNumber || order.orderId || "GOSTAY";
               return (
@@ -172,6 +208,17 @@ function CompletedOrdersContent() {
                           <CheckCircle2 className="h-4 w-4" />
                           {order.status === "COMPLETED" ? "Hoàn tất" : "Đã xác nhận"}
                         </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedDisputeOrder(order);
+                            setDisputeMessage("");
+                          }}
+                          className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-3 py-1 text-xs font-bold text-rose-700 transition hover:bg-rose-100"
+                        >
+                          <AlertTriangle className="h-4 w-4" />
+                          Khiếu nại
+                        </button>
                       </div>
 
                       <div className="mb-5 grid gap-3 rounded-2xl bg-zinc-50 p-4 text-sm sm:grid-cols-3">
@@ -240,6 +287,52 @@ function CompletedOrdersContent() {
           </div>
         )}
       </div>
+
+      {selectedDisputeOrder && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <button className="absolute inset-0 bg-rose-500/20 backdrop-blur-sm" onClick={() => setSelectedDisputeOrder(null)} />
+          <div className="relative w-full max-w-lg rounded-[28px] bg-white p-6 shadow-xl">
+            <button
+              type="button"
+              onClick={() => setSelectedDisputeOrder(null)}
+              className="absolute right-4 top-4 rounded-full p-2 text-zinc-500 hover:bg-zinc-100"
+              aria-label="Đóng"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700">
+              <AlertTriangle className="h-4 w-4" />
+              Gửi khiếu nại
+            </div>
+            <h2 className="text-xl font-bold">Báo cáo vấn đề đơn hàng</h2>
+            <p className="mt-1 text-sm text-zinc-500">Mã đơn: {selectedDisputeOrder.orderNumber || selectedDisputeOrder.orderId}</p>
+
+            <label className="mt-5 block text-xs font-bold uppercase tracking-wider text-zinc-500">Lý do *</label>
+            <input
+              value={disputeReason}
+              onChange={(event) => setDisputeReason(event.target.value)}
+              className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-3 text-sm outline-none focus:border-rose-300"
+              placeholder="VD: Không có phòng khi đến nơi"
+            />
+            <label className="mt-4 block text-xs font-bold uppercase tracking-wider text-zinc-500">Mô tả chi tiết</label>
+            <textarea
+              value={disputeDescription}
+              onChange={(event) => setDisputeDescription(event.target.value)}
+              rows={5}
+              className="mt-2 w-full rounded-2xl border border-zinc-200 p-4 text-sm outline-none focus:border-rose-300"
+              placeholder="Mô tả sự việc, bằng chứng, yêu cầu hoàn tiền..."
+            />
+            <button
+              type="button"
+              onClick={submitDispute}
+              disabled={disputeLoading}
+              className="mt-5 w-full rounded-2xl bg-[#ff385c] px-5 py-3 text-sm font-bold text-white hover:bg-[#e61e4d] disabled:opacity-60"
+            >
+              {disputeLoading ? "Đang gửi..." : "Gửi khiếu nại"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

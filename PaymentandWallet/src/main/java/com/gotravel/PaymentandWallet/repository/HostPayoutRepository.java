@@ -19,6 +19,7 @@ public interface HostPayoutRepository extends JpaRepository<HostPayout, UUID> {
     Page<HostPayout> findByHostIdOrderByCreatedAtDesc(UUID hostId, Pageable pageable);
     Page<HostPayout> findAllByOrderByCreatedAtDesc(Pageable pageable);
     List<HostPayout> findByStatus(PayoutStatus status);
+    List<HostPayout> findByOrderId(UUID orderId);
     boolean existsByOrderIdAndHostId(UUID orderId, UUID hostId);
     long countByStatus(PayoutStatus status);
 

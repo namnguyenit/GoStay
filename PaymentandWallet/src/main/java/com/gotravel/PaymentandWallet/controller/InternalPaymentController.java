@@ -1,5 +1,6 @@
 package com.gotravel.PaymentandWallet.controller;
 
+import com.gotravel.PaymentandWallet.dto.request.RefundOrderRequest;
 import com.gotravel.PaymentandWallet.dto.response.ApiResponse;
 import com.gotravel.PaymentandWallet.dto.response.PaymentResponse;
 import com.gotravel.PaymentandWallet.service.PaymentService;
@@ -23,5 +24,13 @@ public class InternalPaymentController {
     @GetMapping("/order/{orderId}/status")
     public ResponseEntity<ApiResponse<PaymentResponse>> getPaymentStatus(@PathVariable UUID orderId) {
         return ResponseEntity.ok(ApiResponse.success(paymentService.getPaymentStatusByOrderId(orderId)));
+    }
+
+    @PutMapping("/order/{orderId}/refund")
+    public ResponseEntity<ApiResponse<Void>> refundOrder(
+            @PathVariable UUID orderId,
+            @RequestBody(required = false) RefundOrderRequest request) {
+        paymentService.refundOrder(orderId, request);
+        return ResponseEntity.ok(ApiResponse.success("Đã ghi nhận hoàn tiền cho đơn hàng"));
     }
 }

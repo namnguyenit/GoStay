@@ -3,11 +3,13 @@ package com.gotravel.PaymentandWallet.service;
 import com.gotravel.PaymentandWallet.client.OrderClient;
 import com.gotravel.PaymentandWallet.configuration.SepayConfig;
 import com.gotravel.PaymentandWallet.dto.request.CreatePaymentRequest;
+import com.gotravel.PaymentandWallet.dto.request.RefundOrderRequest;
 import com.gotravel.PaymentandWallet.dto.request.SepayWebhookRequest;
 import com.gotravel.PaymentandWallet.dto.response.ApiResponse;
 import com.gotravel.PaymentandWallet.dto.response.HostPayoutResponse;
 import com.gotravel.PaymentandWallet.dto.response.OrderPaymentSummaryResponse;
 import com.gotravel.PaymentandWallet.dto.response.PaymentResponse;
+import com.gotravel.PaymentandWallet.entity.CommissionConfig;
 import com.gotravel.PaymentandWallet.entity.HostPayout;
 import com.gotravel.PaymentandWallet.entity.PaymentRequest;
 import com.gotravel.PaymentandWallet.entity.PaymentTransaction;
@@ -16,6 +18,7 @@ import com.gotravel.PaymentandWallet.enums.PayoutStatus;
 import com.gotravel.PaymentandWallet.exeption.AppException;
 import com.gotravel.PaymentandWallet.exeption.PaymentErrorCode;
 import com.gotravel.PaymentandWallet.mapper.PaymentMapper;
+import com.gotravel.PaymentandWallet.repository.CommissionConfigRepository;
 import com.gotravel.PaymentandWallet.repository.HostPayoutRepository;
 import com.gotravel.PaymentandWallet.repository.PaymentRequestRepository;
 import com.gotravel.PaymentandWallet.repository.PaymentTransactionRepository;
@@ -44,11 +47,13 @@ public class PaymentService {
     private final PaymentRequestRepository paymentRequestRepository;
     private final PaymentTransactionRepository paymentTransactionRepository;
     private final HostPayoutRepository hostPayoutRepository;
+    private final CommissionConfigRepository commissionConfigRepository;
     private final OrderClient orderClient;
     private final SepayConfig sepayConfig;
     private final PaymentMapper paymentMapper;
 
-    private static final BigDecimal COMMISSION_RATE = new BigDecimal("0.05"); // 5% hoa hồng GoStay
+    private static final String DEFAULT_COMMISSION_CONFIG_ID = "DEFAULT";
+    private static final BigDecimal DEFAULT_COMMISSION_RATE = new BigDecimal("0.05"); // 5% hoa hồng GoStay
     private static final Pattern PAYMENT_CODE_PATTERN = Pattern.compile("(GS[A-Z0-9]{10})");
 
     /**
@@ -189,6 +194,36 @@ public class PaymentService {
         PaymentRequest paymentRequest = paymentRequestRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
         return paymentMapper.toPaymentResponse(paymentRequest);
+    }
+
+    @Transactional
+    public void refundOrder(UUID orderId, RefundOrderRequest request) {
+        PaymentRequest paymentRequest = paymentRequestRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
+
+        if (paymentRequest.getStatus() == PaymentStatus.REFUNDED) {
+            return;
+        }
+
+        if (paymentRequest.getStatus() != PaymentStatus.COMPLETED) {
+            throw new AppException(PaymentErrorCode.REFUND_NOT_ALLOWED);
+        }
+
+        List<HostPayout> payouts = hostPayoutRepository.findByOrderId(orderId);
+        boolean hasPaidPayout = payouts.stream().anyMatch(payout -> payout.getStatus() == PayoutStatus.PAID);
+        if (hasPaidPayout) {
+            throw new AppException(PaymentErrorCode.REFUND_NOT_ALLOWED);
+        }
+
+        for (HostPayout payout : payouts) {
+            payout.setStatus(PayoutStatus.CANCELLED);
+            hostPayoutRepository.save(payout);
+        }
+
+        paymentRequest.setStatus(PaymentStatus.REFUNDED);
+        paymentRequestRepository.save(paymentRequest);
+
+        log.info("Refund simulated for order {}. Reason: {}", orderId, request == null ? null : request.getReason());
     }
 
     private OrderPaymentSummaryResponse getTrustedOrderPaymentSummary(UUID userId, UUID orderId) {
@@ -353,7 +388,8 @@ public class PaymentService {
             }
 
             BigDecimal providerTotal = breakdown.getTotalAmount();
-            BigDecimal commissionAmount = providerTotal.multiply(COMMISSION_RATE);
+            BigDecimal commissionRate = getCurrentCommissionRate();
+            BigDecimal commissionAmount = providerTotal.multiply(commissionRate);
             BigDecimal hostAmount = providerTotal.subtract(commissionAmount);
 
             HostPayout payout = HostPayout.builder()
@@ -361,12 +397,19 @@ public class PaymentService {
                     .orderId(paymentRequest.getOrderId())
                     .hostId(breakdown.getHostId())
                     .totalAmount(providerTotal)
-                    .commissionRate(COMMISSION_RATE)
+                    .commissionRate(commissionRate)
                     .commissionAmount(commissionAmount)
                     .hostAmount(hostAmount)
                     .status(PayoutStatus.PENDING)
                     .build();
             hostPayoutRepository.save(payout);
         }
+    }
+
+    private BigDecimal getCurrentCommissionRate() {
+        return commissionConfigRepository.findById(DEFAULT_COMMISSION_CONFIG_ID)
+                .map(CommissionConfig::getRate)
+                .filter(rate -> rate != null && rate.compareTo(BigDecimal.ZERO) >= 0)
+                .orElse(DEFAULT_COMMISSION_RATE);
     }
 }
