@@ -388,44 +388,77 @@ export default function MainLayoutClient({
                   )}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-64 rounded-xl p-2">
+              <DropdownMenuContent
+                align="end"
+                sideOffset={10}
+                className="w-[320px] overflow-hidden rounded-[24px] border border-[#DDDDDD] bg-white p-0 text-[#222222] shadow-[0_18px_50px_rgba(0,0,0,.16)]"
+              >
                 {currentUser ? (
                   <>
-                    <div className="px-2 py-2">
-                      <div className="text-sm font-semibold text-[#222222]">
-                        {currentUser.lastName} {currentUser.firstName}
-                      </div>
-                      <div className="mt-0.5 text-xs text-[#717171]">
-                        {roles.join(", ")}
+                    <div className="flex items-center gap-3 px-5 py-4">
+                      <Avatar className="h-11 w-11 border border-[#DDDDDD]">
+                        <AvatarImage
+                          src={
+                            currentUser.avatarUrl ||
+                            "https://github.com/shadcn.png"
+                          }
+                        />
+                        <AvatarFallback className="bg-[#222222] text-sm font-bold text-white">
+                          {currentUser.firstName?.[0] || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <div className="truncate text-sm font-bold text-[#222222]">
+                          {[currentUser.lastName, currentUser.firstName].filter(Boolean).join(" ") || "Tài khoản GoTravel"}
+                        </div>
+                        <div className="mt-1 flex flex-wrap gap-1.5">
+                          {roles.map((role) => (
+                            <span
+                              key={role}
+                              className="rounded-full bg-[#F7F7F7] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#717171]"
+                            >
+                              {role}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                    <DropdownMenuSeparator />
+                    <DropdownMenuSeparator className="mx-0 my-0 bg-[#EBEBEB]" />
                     <DropdownMenuItem
                       onClick={() => router.push("/orders/completed")}
-                      className="cursor-pointer gap-2"
+                      className="mx-2 mt-2 cursor-pointer gap-3 rounded-2xl px-3 py-3 text-sm font-semibold text-[#222222] transition-colors focus:bg-[#F7F7F7]"
                     >
-                      <TicketCheck className="h-4 w-4" />
+                      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F7F7F7] text-[#222222]">
+                        <TicketCheck className="h-4 w-4" />
+                      </span>
                       Đơn hàng đã hoàn tất
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => router.push("/disputes")}
-                      className="cursor-pointer gap-2"
+                      className="mx-2 cursor-pointer gap-3 rounded-2xl px-3 py-3 text-sm font-semibold text-[#222222] transition-colors focus:bg-[#F7F7F7]"
                     >
-                      <MessageSquareWarning className="h-4 w-4" />
+                      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F7F7F7] text-[#222222]">
+                        <MessageSquareWarning className="h-4 w-4" />
+                      </span>
                       Khiếu nại của tôi
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => router.push("/settings")}
-                      className="cursor-pointer gap-2"
+                      className="mx-2 cursor-pointer gap-3 rounded-2xl px-3 py-3 text-sm font-semibold text-[#222222] transition-colors focus:bg-[#F7F7F7]"
                     >
-                      <SettingsIcon className="h-4 w-4" />
+                      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F7F7F7] text-[#222222]">
+                        <SettingsIcon className="h-4 w-4" />
+                      </span>
                       Cài đặt tài khoản
                     </DropdownMenuItem>
+                    <DropdownMenuSeparator className="mx-0 my-2 bg-[#EBEBEB]" />
                     <DropdownMenuItem
                       onClick={handleLogout}
-                      className="cursor-pointer gap-2 text-[#E61E4F]"
+                      className="mx-2 mb-2 cursor-pointer gap-3 rounded-2xl px-3 py-3 text-sm font-bold text-[#E61E4F] transition-colors focus:bg-[#FFF1F4] focus:text-[#E61E4F]"
                     >
-                      <LogOutIcon className="h-4 w-4" />
+                      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#FFF1F4] text-[#E61E4F]">
+                        <LogOutIcon className="h-4 w-4" />
+                      </span>
                       Đăng xuất
                     </DropdownMenuItem>
                   </>
@@ -433,18 +466,20 @@ export default function MainLayoutClient({
                   <>
                     <DropdownMenuItem
                       onClick={openLogin}
-                      className="cursor-pointer gap-2 font-semibold"
+                      className="mx-2 mt-2 cursor-pointer gap-3 rounded-2xl px-3 py-3 text-sm font-bold text-[#222222] focus:bg-[#F7F7F7]"
                     >
-                      <LogIn className="h-4 w-4" />
+                      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F7F7F7] text-[#222222]">
+                        <LogIn className="h-4 w-4" />
+                      </span>
                       Đăng nhập
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem className="cursor-pointer">
+                    <DropdownMenuSeparator className="mx-0 my-2 bg-[#EBEBEB]" />
+                    <DropdownMenuItem className="mx-2 cursor-pointer rounded-2xl px-3 py-3 text-sm font-semibold text-[#222222] focus:bg-[#F7F7F7]">
                       Đón tiếp khách
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => router.push("/help-center")}
-                      className="cursor-pointer"
+                      className="mx-2 mb-2 cursor-pointer rounded-2xl px-3 py-3 text-sm font-semibold text-[#222222] focus:bg-[#F7F7F7]"
                     >
                       Trung tâm trợ giúp
                     </DropdownMenuItem>
