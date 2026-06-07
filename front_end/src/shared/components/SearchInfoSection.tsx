@@ -17,8 +17,10 @@ import {
   Search,
 } from "lucide-react";
 import { format, isValid } from "date-fns";
-import { useEffect, useState } from "react";
+import { LayoutGroup, motion } from "framer-motion";
+import { useEffect, useId, useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
+import { Api } from "@/shared/api";
 
 type SearchPanel = "place" | "date" | "type";
 
@@ -27,6 +29,16 @@ type SearchInfoSectionProps = {
   filter: Filter;
   initialOpen?: SearchPanel;
   className?: string;
+};
+
+type LandmarkOption = {
+  id?: string;
+  name?: string;
+  province?: string;
+  description?: string;
+  type?: string;
+  thumbnailUrl?: string;
+  referenceImageUrl?: string;
 };
 
 const DESTINATION_OPTIONS = [
@@ -104,6 +116,13 @@ const formatDateRange = (date?: DateRange) => {
   return `${format(date.from, "dd/MM/yyyy")} - ${format(date.to, "dd/MM/yyyy")}`;
 };
 
+const normalizeText = (value?: string) =>
+  (value ?? "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+
 export default function SearchInfoSection({
   onClickSearch,
   filter,
@@ -113,14 +132,61 @@ export default function SearchInfoSection({
   const [searchInfo, setSearchInfo] = useState<Filter>(filter);
   const [open, setOpen] = useState<SearchPanel | undefined>(initialOpen);
   const [dateMode, setDateMode] = useState<"date" | "flexible">("date");
+  const [locationInput, setLocationInput] = useState(filter?.place ?? "");
+  const [landmarks, setLandmarks] = useState<LandmarkOption[]>([]);
+  const [loadingLandmarks, setLoadingLandmarks] = useState(false);
+  const [hoveredSegment, setHoveredSegment] = useState<SearchPanel>();
+  const layoutGroupId = useId();
 
   useEffect(() => {
     setSearchInfo(filter);
+    setLocationInput(filter?.place ?? "");
   }, [filter]);
 
   useEffect(() => {
     setOpen(initialOpen);
   }, [initialOpen]);
+
+  useEffect(() => {
+    if (open !== "place") return;
+
+    let cancelled = false;
+    const query = locationInput.trim();
+
+    if (!query) {
+      queueMicrotask(() => {
+        if (!cancelled) {
+          setLandmarks([]);
+          setLoadingLandmarks(false);
+        }
+      });
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const timeout = window.setTimeout(() => {
+      setLoadingLandmarks(true);
+
+      Api.get(`/v1/search/locations/suggest?q=${encodeURIComponent(query)}`)
+        .then((res) => {
+          if (cancelled) return;
+          const data = (res as { data?: unknown })?.data ?? res;
+          setLandmarks(Array.isArray(data) ? (data as LandmarkOption[]) : []);
+        })
+        .catch(() => {
+          if (!cancelled) setLandmarks([]);
+        })
+        .finally(() => {
+          if (!cancelled) setLoadingLandmarks(false);
+        });
+    }, 250);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeout);
+    };
+  }, [locationInput, open]);
 
   const updateSearchInfo = (patch: Partial<NonNullable<Filter>>) => {
     setSearchInfo((current) => ({
@@ -134,41 +200,80 @@ export default function SearchInfoSection({
     onClickSearch?.(searchInfo);
   };
 
+  const landmarkSuggestions = useMemo(() => {
+    const query = normalizeText(locationInput);
+    const source = landmarks.filter((item) => item?.name);
+
+    if (!query) return [];
+
+    return source
+      .filter((item) => {
+        const haystack = normalizeText(
+          `${item.name ?? ""} ${item.province ?? ""} ${item.description ?? ""}`,
+        );
+        return haystack.includes(query);
+      })
+      .slice(0, 8);
+  }, [landmarks, locationInput]);
+
   const typeLabel =
     TYPE_OPTIONS.find((item) => item.value === searchInfo?.type)?.label ??
     "Tất cả loại hình";
   const dateLabel = formatDateRange(searchInfo?.date);
+  const highlightedSegment = open ?? hoveredSegment;
 
   const activeSegmentClass =
-    "bg-white shadow-[0_3px_12px_rgba(0,0,0,.10),0_1px_2px_rgba(0,0,0,.08)]";
+    "bg-white shadow-[0_4px_16px_rgba(0,0,0,.11),0_1px_3px_rgba(0,0,0,.08)]";
+  const hoverSegmentClass = "bg-[#f7f7f7]";
   const idleSegmentClass = open
     ? "bg-transparent hover:bg-[#dddddd]"
-    : "hover:bg-[#f7f7f7]";
+    : "bg-transparent";
 
   const dividerClass = (left: SearchPanel, right: SearchPanel) =>
     cn(
-      "hidden h-8 w-px bg-[#dddddd] transition-opacity md:block",
-      (open === left || open === right) && "opacity-0",
+      "hidden h-8 w-px bg-[#dddddd] transition-opacity duration-150 md:block",
+      (highlightedSegment === left || highlightedSegment === right) && "opacity-0",
     );
 
+  const renderSegmentHighlight = (segment: SearchPanel) =>
+    highlightedSegment === segment ? (
+      <motion.span
+        layoutId="search-segment-highlight"
+        className={cn(
+          "absolute inset-0 rounded-full",
+          open === segment ? activeSegmentClass : hoverSegmentClass,
+        )}
+        transition={{
+          type: "spring",
+          stiffness: 460,
+          damping: 38,
+          mass: 0.85,
+        }}
+      />
+    ) : null;
+
   return (
-    <div
-      className={cn(
-        "relative z-50 mx-auto flex w-full max-w-[850px] flex-col rounded-[34px] border border-[#dddddd] transition-all duration-300 md:h-[66px] md:flex-row md:items-center md:rounded-full",
-        open
-          ? "bg-[#ebebeb] shadow-none"
-          : "bg-white shadow-[0_3px_12px_rgba(0,0,0,.08),0_1px_2px_rgba(0,0,0,.05)]",
-        className,
-      )}
-      role="search"
-      aria-label="Tìm kiếm dịch vụ GoStay"
-    >
+    <LayoutGroup id={layoutGroupId}>
       <div
         className={cn(
-          "relative z-30 flex min-h-[66px] min-w-0 flex-1 items-center rounded-[32px] transition-all duration-200 md:min-h-0 md:basis-[280px]",
-          open === "place" ? activeSegmentClass : idleSegmentClass,
+          "relative z-50 mx-auto flex w-full max-w-[850px] flex-col rounded-[36px] border border-[#dddddd] p-1 transition-all duration-200 md:grid md:h-[68px] md:grid-cols-[minmax(260px,1.35fr)_1px_minmax(210px,0.95fr)_1px_minmax(240px,1fr)_64px] md:items-center md:rounded-full",
+          open
+            ? "bg-[#ebebeb] shadow-[0_10px_32px_rgba(15,23,42,0.08)]"
+            : "bg-white shadow-[0_3px_12px_rgba(0,0,0,.08),0_1px_2px_rgba(0,0,0,.05)]",
+          className,
         )}
+        onMouseLeave={() => setHoveredSegment(undefined)}
+        role="search"
+        aria-label="Tìm kiếm dịch vụ GoStay"
       >
+      <div
+        className={cn(
+          "relative z-30 flex min-h-[66px] min-w-0 items-center overflow-hidden rounded-full transition-colors duration-200 md:h-full md:min-h-0",
+          open === "place" ? "" : idleSegmentClass,
+        )}
+        onMouseEnter={() => setHoveredSegment("place")}
+      >
+        {renderSegmentHighlight("place")}
         <Popover
           open={open === "place"}
           onOpenChange={(nextOpen) => setOpen(nextOpen ? "place" : undefined)}
@@ -176,7 +281,7 @@ export default function SearchInfoSection({
           <PopoverTrigger asChild>
             <button
               type="button"
-              className="flex h-full min-w-0 flex-1 flex-col items-start justify-center gap-1 rounded-[32px] px-6 text-left outline-none md:px-8"
+              className="relative z-10 flex h-full min-w-0 flex-1 flex-col items-start justify-center gap-1 rounded-full px-7 text-left outline-none md:pl-9 md:pr-8 lg:pl-10"
             >
               <span className="text-xs font-semibold text-[#222222]">Địa điểm</span>
               <span
@@ -199,9 +304,94 @@ export default function SearchInfoSection({
           >
             <div className="space-y-2">
               <div className="px-2 pb-2 text-xs font-semibold text-[#222222]">
-                Điểm đến được đề xuất
+                Bạn muốn đi đâu?
               </div>
-              {DESTINATION_OPTIONS.map((option) => {
+              <div className="px-2 pb-3">
+                <input
+                  value={locationInput}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setLocationInput(value);
+                    updateSearchInfo({ place: value });
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      setOpen("date");
+                    }
+                  }}
+                  placeholder="Gõ tên địa danh, tỉnh thành hoặc khu vực"
+                  className="h-12 w-full rounded-2xl border border-[#dddddd] bg-white px-4 text-sm font-medium text-[#222222] outline-none transition-colors placeholder:text-[#717171] focus:border-[#222222]"
+                  autoFocus
+                />
+              </div>
+
+              {locationInput.trim() && (
+                <button
+                  type="button"
+                  className="flex w-full items-center gap-4 rounded-2xl p-3 text-left transition-colors hover:bg-[#f7f7f7]"
+                  onClick={() => {
+                    updateSearchInfo({ place: locationInput.trim() });
+                    setOpen("date");
+                  }}
+                >
+                  <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-[#f7f7f7] text-[#222222]">
+                    <Search className="h-5 w-5" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block truncate text-[15px] font-semibold text-[#222222]">
+                      Tìm &quot;{locationInput.trim()}&quot;
+                    </span>
+                    <span className="mt-0.5 block truncate text-sm text-[#717171]">
+                      Dùng địa điểm bạn vừa nhập
+                    </span>
+                  </span>
+                </button>
+              )}
+
+              <div className="px-2 pt-2 pb-1 text-xs font-semibold text-[#222222]">
+                {locationInput.trim() ? "Địa danh phù hợp" : "Địa danh từ hệ thống"}
+              </div>
+
+              {loadingLandmarks ? (
+                <div className="px-3 py-4 text-sm text-[#717171]">
+                  Đang tải địa danh...
+                </div>
+              ) : landmarkSuggestions.length > 0 ? (
+                landmarkSuggestions.map((option) => (
+                  <button
+                    key={option.id ?? option.name}
+                    type="button"
+                    className="flex w-full items-center gap-4 rounded-2xl p-3 text-left transition-colors hover:bg-[#f7f7f7]"
+                    onClick={() => {
+                      updateSearchInfo({ place: option.name });
+                      setLocationInput(option.name ?? "");
+                      setOpen("date");
+                    }}
+                  >
+                    <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-[#f7f7f7] text-[#222222]">
+                      <MapPin className="h-5 w-5" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block truncate text-[15px] font-semibold text-[#222222]">
+                        {option.name}
+                      </span>
+                      <span className="mt-0.5 block truncate text-sm text-[#717171]">
+                        {[option.type, option.province || option.description]
+                          .filter(Boolean)
+                          .join(" · ") || "Địa danh GoStay"}
+                      </span>
+                    </span>
+                  </button>
+                ))
+              ) : locationInput.trim() ? (
+                <div className="px-3 py-4 text-sm text-[#717171]">
+                  Chưa có địa danh khớp trong hệ thống, bạn vẫn có thể tìm theo
+                  text đã nhập.
+                </div>
+              ) : null}
+
+              {!locationInput.trim() && DESTINATION_OPTIONS.map((option) => {
                 const Icon = option.icon;
                 return (
                   <button
@@ -210,6 +400,7 @@ export default function SearchInfoSection({
                     className="flex w-full items-center gap-4 rounded-2xl p-3 text-left transition-colors hover:bg-[#f7f7f7]"
                     onClick={() => {
                       updateSearchInfo({ place: option.name });
+                      setLocationInput(option.name);
                       setOpen("date");
                     }}
                   >
@@ -236,10 +427,12 @@ export default function SearchInfoSection({
 
       <div
         className={cn(
-          "relative z-30 flex min-h-[66px] min-w-0 flex-1 items-center rounded-[32px] transition-all duration-200 md:min-h-0 md:basis-[240px]",
-          open === "date" ? activeSegmentClass : idleSegmentClass,
+          "relative z-30 flex min-h-[66px] min-w-0 items-center overflow-hidden rounded-full transition-colors duration-200 md:h-full md:min-h-0",
+          open === "date" ? "" : idleSegmentClass,
         )}
+        onMouseEnter={() => setHoveredSegment("date")}
       >
+        {renderSegmentHighlight("date")}
         <Popover
           open={open === "date"}
           onOpenChange={(nextOpen) => setOpen(nextOpen ? "date" : undefined)}
@@ -247,7 +440,7 @@ export default function SearchInfoSection({
           <PopoverTrigger asChild>
             <button
               type="button"
-              className="flex h-full min-w-0 flex-1 flex-col items-start justify-center gap-1 rounded-[32px] px-6 text-left outline-none"
+              className="relative z-10 flex h-full min-w-0 flex-1 flex-col items-start justify-center gap-1 rounded-full px-7 text-left outline-none md:px-8 lg:px-9"
             >
               <span className="text-xs font-semibold text-[#222222]">Thời gian</span>
               <span
@@ -338,10 +531,12 @@ export default function SearchInfoSection({
 
       <div
         className={cn(
-          "relative z-30 flex min-h-[66px] min-w-0 flex-1 items-center rounded-[32px] transition-all duration-200 md:min-h-0 md:basis-[278px]",
-          open === "type" ? activeSegmentClass : idleSegmentClass,
+          "relative z-30 flex min-h-[66px] min-w-0 items-center overflow-hidden rounded-full transition-colors duration-200 md:h-full md:min-h-0",
+          open === "type" ? "" : idleSegmentClass,
         )}
+        onMouseEnter={() => setHoveredSegment("type")}
       >
+        {renderSegmentHighlight("type")}
         <Popover
           open={open === "type"}
           onOpenChange={(nextOpen) => setOpen(nextOpen ? "type" : undefined)}
@@ -349,7 +544,7 @@ export default function SearchInfoSection({
           <PopoverTrigger asChild>
             <button
               type="button"
-              className="flex h-full min-w-0 flex-1 flex-col items-start justify-center gap-1 rounded-[32px] px-6 text-left outline-none"
+              className="relative z-10 flex h-full min-w-0 flex-1 flex-col items-start justify-center gap-1 rounded-full px-7 text-left outline-none md:pl-8 md:pr-5 lg:pl-9"
             >
               <span className="text-xs font-semibold text-[#222222]">Loại hình</span>
               <span
@@ -417,13 +612,12 @@ export default function SearchInfoSection({
             </div>
           </PopoverContent>
         </Popover>
+      </div>
 
+      <div className="relative z-30 flex min-h-[58px] items-center justify-end px-2 md:h-full md:min-h-0 md:justify-center md:px-0">
         <button
           type="button"
-          className={cn(
-            "mr-2 flex h-12 flex-shrink-0 items-center justify-center rounded-full bg-[#ff385c] text-sm font-semibold text-white shadow-md transition-all duration-200 hover:bg-[#e61e4d] hover:shadow-lg active:scale-95",
-            open ? "gap-2 px-5" : "w-12 px-0",
-          )}
+          className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-[#ff385c] text-sm font-semibold text-white shadow-md transition-all duration-200 hover:bg-[#e61e4d] hover:shadow-lg active:scale-95"
           onClick={(event) => {
             event.stopPropagation();
             submitSearch();
@@ -431,16 +625,9 @@ export default function SearchInfoSection({
           aria-label="Tìm kiếm"
         >
           <Search className="h-4 w-4" />
-          <span
-            className={cn(
-              "hidden whitespace-nowrap transition-all md:inline",
-              open ? "max-w-24 opacity-100" : "max-w-0 overflow-hidden opacity-0",
-            )}
-          >
-            Tìm kiếm
-          </span>
         </button>
       </div>
-    </div>
+      </div>
+    </LayoutGroup>
   );
 }

@@ -1,4 +1,5 @@
 import { RedisCacheService } from '../cache/redis-cache.service';
+import { InventoryClient } from '../inventory/inventory.client';
 import { CandidateGenerator } from './candidate-generator';
 import { DiversityService } from './diversity.service';
 import { ScoringService } from './scoring.service';
@@ -8,8 +9,11 @@ export declare class RecommendationService {
     private readonly scoringService;
     private readonly diversityService;
     private readonly cacheService;
+    private readonly inventoryClient;
     private readonly logger;
-    constructor(candidateGenerator: CandidateGenerator, scoringService: ScoringService, diversityService: DiversityService, cacheService: RedisCacheService);
+    constructor(candidateGenerator: CandidateGenerator, scoringService: ScoringService, diversityService: DiversityService, cacheService: RedisCacheService, inventoryClient: InventoryClient);
+    private getTodayIso;
+    private filterAvailableListings;
     getHeroLandmarks(): Promise<any[]>;
     getHomeFeed(dto: HomeFeedQueryDto): Promise<any>;
     getProvinces(): Promise<any[]>;
@@ -20,5 +24,5 @@ export declare class RecommendationService {
     recommendForHome(province?: string): Promise<any[]>;
     recommendByLandmark(landmarkId: string): Promise<any>;
     recommendByLandmarkGrouped(landmarkId: string, radiusMeters?: number): Promise<any>;
-    recommendSimilar(listingId: string): Promise<any[]>;
+    recommendSimilar(listingId: string, limit?: number): Promise<any[]>;
 }

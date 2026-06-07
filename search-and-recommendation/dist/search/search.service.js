@@ -33,6 +33,11 @@ let SearchService = SearchService_1 = class SearchService {
         this.inventoryClient = inventoryClient;
         this.cacheService = cacheService;
     }
+    getTodayIso() {
+        const now = new Date();
+        const local = new Date(now.getTime() - now.getTimezoneOffset() * 60_000);
+        return local.toISOString().slice(0, 10);
+    }
     async suggestLocations(query) {
         if (!query)
             return [];
@@ -136,15 +141,17 @@ let SearchService = SearchService_1 = class SearchService {
         });
         this.logger.debug(`DB Query duration (search): ${Date.now() - startTime}ms, found ${candidates.length} items.`);
         let finalItems = candidates;
-        if (dto.checkIn && dto.checkOut) {
+        const availabilityStart = dto.checkIn || this.getTodayIso();
+        const availabilityEnd = dto.checkOut || availabilityStart;
+        if (availabilityStart && availabilityEnd) {
             const listingIds = candidates.map((c) => c.id);
             if (listingIds.length > 0) {
                 try {
                     const invStartTime = Date.now();
                     const inventoryRes = await this.inventoryClient.checkBatchAvailability({
                         listingIds,
-                        startDate: dto.checkIn,
-                        endDate: dto.checkOut,
+                        startDate: availabilityStart,
+                        endDate: availabilityEnd,
                         requiredQuantity: dto.guests || 1,
                     });
                     this.logger.debug(`Inventory check duration: ${Date.now() - invStartTime}ms`);

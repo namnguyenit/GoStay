@@ -1,32 +1,45 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import Image from "next/image";
+import React, { useCallback, useEffect, useState } from "react";
 import { X, Trash2, ShoppingCart, Loader2 } from "lucide-react";
 import { useCart, CartItem } from "@/shared/context/CartContext";
 import { useRouter } from "next/navigation";
 import CartService from "@/services/cart";
 
+type CalendarSlot = {
+  timeSlot?: string;
+  availableQuantity?: number;
+  status?: string;
+};
+
+const getAvailabilityRows = (res: unknown): CalendarSlot[] => {
+  const data = (res as { data?: unknown })?.data;
+  if (Array.isArray(data)) return data as CalendarSlot[];
+  if (data && Array.isArray((data as { data?: unknown }).data)) {
+    return (data as { data: CalendarSlot[] }).data;
+  }
+  return [];
+};
+
 export default function CartDrawer() {
-  const { isDrawerOpen, setIsDrawerOpen, items, cartTotal, removeFromCart, loading } = useCart();
+  const { isDrawerOpen, setIsDrawerOpen, items, removeFromCart, loading } = useCart();
   const router = useRouter();
   const [availabilityMap, setAvailabilityMap] = useState<Record<string, boolean>>({});
   const [checking, setChecking] = useState(false);
+  const [selectedItemIds, setSelectedItemIds] = useState<string[]>([]);
 
-  useEffect(() => {
-    if (isDrawerOpen && items.length > 0) {
-      checkItemsAvailability();
-    }
-  }, [isDrawerOpen, items.length]);
-
-  const checkItemsAvailability = async () => {
+  const checkItemsAvailability = useCallback(async () => {
+    await Promise.resolve();
     setChecking(true);
     const newMap: Record<string, boolean> = {};
     
     for (const item of items) {
       try {
-        const res: any = await CartService.checkAvailability(item.listingId, item.startDate, item.endDate);
-        if (res?.data && Array.isArray(res.data)) {
-          let calendars: any[] = res.data;
+        const res = await CartService.checkAvailability(item.listingId, item.startDate, item.endDate);
+        const availabilityRows = getAvailabilityRows(res);
+        if (availabilityRows.length > 0) {
+          let calendars = availabilityRows;
           
           if (item.timeSlot) {
              calendars = calendars.filter(c => c.timeSlot === item.timeSlot);
@@ -40,20 +53,49 @@ export default function CartDrawer() {
             newMap[item.itemId] = false; // Không tìm thấy lịch trống cho ngày/giờ này
           } else {
             // Check if ANY day within the period has availableQuantity < requested quantity
-            const isOutOfStock = calendars.some((day) => day.availableQuantity < item.quantity || day.status === "BLOCKED");
+            const isOutOfStock = calendars.some((day) => (day.availableQuantity ?? 0) < item.quantity || day.status === "BLOCKED");
             newMap[item.itemId] = !isOutOfStock;
           }
         } else {
           newMap[item.itemId] = false;
         }
-      } catch (err) {
+      } catch {
         newMap[item.itemId] = false;
       }
     }
     
     setAvailabilityMap(newMap);
     setChecking(false);
-  };
+  }, [items]);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (isDrawerOpen && items.length > 0) {
+      queueMicrotask(() => {
+        if (!cancelled) void checkItemsAvailability();
+      });
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [checkItemsAvailability, isDrawerOpen, items.length]);
+
+  useEffect(() => {
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setSelectedItemIds((current) => {
+        const existingIds = new Set(items.map((item) => item.itemId));
+        const kept = current.filter((itemId) => existingIds.has(itemId));
+        return kept.length > 0 ? kept : items.map((item) => item.itemId);
+      });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [items]);
 
   const groupedItems = items.reduce((acc, item) => {
     if (!acc[item.hostId]) acc[item.hostId] = [];
@@ -61,11 +103,38 @@ export default function CartDrawer() {
     return acc;
   }, {} as Record<string, CartItem[]>);
 
-  const handleCheckout = (hostId: string) => {
-    const hostItems = groupedItems[hostId];
-    if (hostItems.some(item => availabilityMap[item.itemId] === false)) return;
-    
-    const itemIds = hostItems.map(item => item.itemId).join(",");
+  const selectedItems = items.filter((item) => selectedItemIds.includes(item.itemId));
+  const selectedAvailableItems = selectedItems.filter((item) => availabilityMap[item.itemId] !== false);
+  const selectedTotal = selectedAvailableItems.reduce((sum, item) => sum + item.totalPrice, 0);
+  const hasUnavailableSelected = selectedItems.some((item) => availabilityMap[item.itemId] === false);
+  const canCheckout =
+    selectedAvailableItems.length > 0 &&
+    !hasUnavailableSelected &&
+    !loading &&
+    !checking;
+
+  const toggleSelected = (itemId: string) => {
+    setSelectedItemIds((current) =>
+      current.includes(itemId)
+        ? current.filter((id) => id !== itemId)
+        : [...current, itemId],
+    );
+  };
+
+  const toggleAllAvailable = () => {
+    const availableIds = items
+      .filter((item) => availabilityMap[item.itemId] !== false)
+      .map((item) => item.itemId);
+    const selectedAvailableIds = selectedItemIds.filter((itemId) => availableIds.includes(itemId));
+
+    setSelectedItemIds(
+      selectedAvailableIds.length === availableIds.length ? [] : availableIds,
+    );
+  };
+
+  const handleCheckoutSelected = () => {
+    if (!canCheckout) return;
+    const itemIds = selectedAvailableItems.map(item => item.itemId).join(",");
     setIsDrawerOpen(false);
     router.push(`/checkout?type=cart&itemIds=${itemIds}`);
   };
@@ -108,19 +177,39 @@ export default function CartDrawer() {
           ) : (
             Object.entries(groupedItems).map(([hostId, hostItems]) => {
               const hostTotal = hostItems.reduce((sum, item) => sum + item.totalPrice, 0);
-              const hasUnavailableInGroup = hostItems.some(item => availabilityMap[item.itemId] === false);
 
               return (
                 <div key={hostId} className="bg-white border rounded-2xl overflow-hidden shadow-sm">
                   <div className="p-3 bg-zinc-50 border-b flex items-center justify-between">
                     <span className="font-semibold text-sm text-zinc-700">🛒 Đơn hàng của Chủ nhà</span>
+                    <span className="text-xs font-semibold text-app-primary">{hostTotal?.toLocaleString()} đ</span>
                   </div>
                   <div className="p-3 space-y-3">
                     {hostItems.map((item) => {
                       const isAvail = availabilityMap[item.itemId] !== false; // true by default until checked
+                      const selected = selectedItemIds.includes(item.itemId);
                       return (
-                        <div key={item.itemId} className={`flex gap-3 p-2 rounded-xl border ${!isAvail ? 'border-red-300 bg-red-50' : 'border-zinc-100'}`}>
-                          <img src={item.thumbnailUrl || "/images/placeholder.jpg"} alt={item.listingTitle} className="w-20 h-20 object-cover rounded-lg" />
+                        <div key={item.itemId} className={`flex gap-3 p-2 rounded-xl border ${!isAvail ? 'border-red-300 bg-red-50' : selected ? 'border-app-primary/50 bg-app-primary/5' : 'border-zinc-100'}`}>
+                          <label className="pt-7">
+                            <input
+                              type="checkbox"
+                              checked={selected}
+                              disabled={!isAvail}
+                              onChange={() => toggleSelected(item.itemId)}
+                              className="h-4 w-4 rounded border-zinc-300 accent-app-primary disabled:opacity-40"
+                              aria-label={`Chọn ${item.listingTitle}`}
+                            />
+                          </label>
+                          <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-zinc-100">
+                            <Image
+                              unoptimized
+                              src={item.thumbnailUrl || "/images/placeholder.jpg"}
+                              alt={item.listingTitle}
+                              fill
+                              className="object-cover"
+                              sizes="80px"
+                            />
+                          </div>
                           <div className="flex-1 min-w-0">
                             <h4 className="font-semibold text-app-fg truncate text-sm">{item.listingTitle}</h4>
                             <p className="text-xs text-zinc-500 mt-1">Từ {item.startDate} đến {item.endDate}</p>
@@ -146,31 +235,45 @@ export default function CartDrawer() {
                       );
                     })}
                   </div>
-                  
-                  <div className="p-3 border-t bg-zinc-50">
-                    <div className="flex justify-between items-center mb-3">
-                      <span className="text-zinc-600 font-medium text-sm">Tổng đơn này:</span>
-                      <span className="text-lg font-bold text-app-primary">{hostTotal?.toLocaleString()} đ</span>
-                    </div>
-                    
-                    <button
-                      onClick={() => handleCheckout(hostId)}
-                      disabled={loading || checking || hasUnavailableInGroup}
-                      className="w-full bg-app-primary hover:bg-app-primary/90 text-white rounded-xl py-2.5 text-sm font-semibold transition-colors disabled:opacity-50 cursor-pointer"
-                    >
-                      Thanh toán
-                    </button>
-                    {hasUnavailableInGroup && (
-                      <p className="text-xs text-red-600 mt-1.5 text-center">
-                        Vui lòng xoá các dịch vụ hết chỗ để tiếp tục.
-                      </p>
-                    )}
-                  </div>
                 </div>
               );
             })
           )}
         </div>
+
+        {items.length > 0 && (
+          <div className="border-t bg-white p-4 shadow-[0_-8px_24px_rgba(15,23,42,.08)]">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={toggleAllAvailable}
+                className="text-sm font-semibold text-app-primary hover:underline"
+              >
+                {selectedAvailableItems.length === items.filter((item) => availabilityMap[item.itemId] !== false).length
+                  ? "Bỏ chọn tất cả"
+                  : "Chọn tất cả còn hàng"}
+              </button>
+              <div className="text-right">
+                <p className="text-xs text-zinc-500">Đã chọn {selectedAvailableItems.length} dịch vụ</p>
+                <p className="text-lg font-bold text-app-primary">{selectedTotal.toLocaleString()} đ</p>
+              </div>
+            </div>
+
+            <button
+              onClick={handleCheckoutSelected}
+              disabled={!canCheckout}
+              className="w-full rounded-xl bg-app-primary py-3 text-sm font-semibold text-white transition-colors hover:bg-app-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Thanh toán dịch vụ đã chọn
+            </button>
+
+            {hasUnavailableSelected && (
+              <p className="mt-2 text-center text-xs text-red-600">
+                Bỏ chọn hoặc xoá dịch vụ hết chỗ trước khi thanh toán.
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </>
   );

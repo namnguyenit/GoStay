@@ -30,7 +30,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -118,7 +120,7 @@ public class OrderService {
     }
 
     private Order createOrderFromSelectedCartItems(Cart cart, List<CartItem> selectedItems, Order.CustomerInfo customerInfo) {
-        UUID hostId = resolveSingleHostId(selectedItems);
+        UUID hostId = resolvePrimaryHostId(selectedItems);
         BigDecimal totalAmount = selectedItems.stream()
                 .map(CartItem::getTotalPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -195,10 +197,6 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new AppException(OrderErrorCode.ORDER_NOT_FOUND));
 
-        if (order.getHostId() == null) {
-            throw new AppException(OrderErrorCode.INVALID_ORDER_STATE);
-        }
-
         return OrderPaymentSummaryResponse.builder()
                 .orderId(order.getId())
                 .userId(order.getUserId())
@@ -206,6 +204,7 @@ public class OrderService {
                 .totalAmount(order.getTotalAmount())
                 .currency(order.getCurrency())
                 .status(order.getStatus().name())
+                .providerBreakdowns(buildProviderBreakdowns(order))
                 .build();
     }
 
@@ -217,7 +216,7 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public Page<OrderResponse> getHostOrders(UUID hostId, Pageable pageable) {
-        return orderRepository.findByHostIdOrderByCreatedAtDesc(hostId, pageable)
+        return orderRepository.findByAnyItemHostIdOrderByCreatedAtDesc(hostId, pageable)
                 .map(orderMapper::toOrderResponse);
     }
 
@@ -360,7 +359,7 @@ public class OrderService {
         }
     }
 
-    private UUID resolveSingleHostId(List<CartItem> items) {
+    private UUID resolvePrimaryHostId(List<CartItem> items) {
         UUID hostId = null;
         for (CartItem item : items) {
             if (item.getHostId() == null) {
@@ -369,11 +368,28 @@ public class OrderService {
 
             if (hostId == null) {
                 hostId = item.getHostId();
-            } else if (!hostId.equals(item.getHostId())) {
-                throw new AppException(OrderErrorCode.MULTIPLE_HOSTS_NOT_SUPPORTED);
             }
         }
 
         return hostId;
+    }
+
+    private List<OrderPaymentSummaryResponse.ProviderBreakdown> buildProviderBreakdowns(Order order) {
+        Map<UUID, BigDecimal> totalsByHost = new LinkedHashMap<>();
+
+        for (OrderItem item : order.getItems()) {
+            if (item.getHostId() == null) {
+                throw new AppException(OrderErrorCode.LISTING_NOT_AVAILABLE);
+            }
+
+            totalsByHost.merge(item.getHostId(), item.getTotalPrice(), BigDecimal::add);
+        }
+
+        return totalsByHost.entrySet().stream()
+                .map(entry -> OrderPaymentSummaryResponse.ProviderBreakdown.builder()
+                        .hostId(entry.getKey())
+                        .totalAmount(entry.getValue())
+                        .build())
+                .toList();
     }
 }

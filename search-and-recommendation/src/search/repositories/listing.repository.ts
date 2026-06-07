@@ -174,6 +174,7 @@ export class ListingRepository {
         SELECT
           l.id,
           l.title,
+          l.description,
           l.category,
           l.sub_category AS "subCategory",
           l.province,

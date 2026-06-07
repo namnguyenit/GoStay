@@ -1,8 +1,8 @@
 import { Api } from "@/shared/api";
 
 const PaymentService = {
-  createPayment: async (orderId: string, amount?: number, hostId?: string) => {
-    return await Api.post("/v1/payments/create", { orderId, amount, hostId });
+  createPayment: async (orderId: string) => {
+    return await Api.post("/v1/payments/create", { orderId });
   },
   getPayment: async (paymentId: string) => {
     return await Api.get(`/v1/payments/${paymentId}`);

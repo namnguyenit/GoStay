@@ -3,7 +3,7 @@
 import { CarouselItem } from "@/components/ui/carousel";
 import { formatMoney } from "@/shared/utils";
 import { ChevronLeft, ChevronRight, Heart, Star } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 type Offering =
   | {
@@ -12,6 +12,11 @@ type Offering =
       description?: string;
       address?: string;
       image?: string;
+      thumbnailUrl?: string;
+      referenceImageUrl?: string;
+      galleryUrls?: string[];
+      images?: string[];
+      imageUrls?: string[];
       price?: number;
       rating?: number;
     }
@@ -30,7 +35,33 @@ export default function OfferingCarouselItem({
   unit = "/ đêm",
 }: OfferingCarouselItemProp) {
   const [liked, setLiked] = useState(false);
-  const image = item?.image ?? undefined;
+  const [imageIndex, setImageIndex] = useState(0);
+  const images = useMemo(() => {
+    const urls = [
+      item?.image,
+      item?.thumbnailUrl,
+      item?.referenceImageUrl,
+      ...(item?.galleryUrls ?? []),
+      ...(item?.images ?? []),
+      ...(item?.imageUrls ?? []),
+    ];
+
+    return Array.from(
+      new Set(urls.filter((url): url is string => Boolean(url?.trim()))),
+    );
+  }, [item]);
+
+  const safeImageIndex = images.length > 0 ? Math.min(imageIndex, images.length - 1) : 0;
+  const image = images[safeImageIndex] ?? "/images/placeholder.jpg";
+  const hasMultipleImages = images.length > 1;
+  const dotCount = Math.min(images.length, 4);
+  const moveImage = (direction: "prev" | "next") => {
+    if (!hasMultipleImages) return;
+    setImageIndex((current) => {
+      const next = direction === "next" ? current + 1 : current - 1;
+      return (next + images.length) % images.length;
+    });
+  };
   const hasCommercialInfo = item?.price != null || item?.rating != null;
   const metaText =
     item?.address ||
@@ -71,29 +102,54 @@ export default function OfferingCarouselItem({
             />
           </button>
 
-          <button
-            type="button"
-            onClick={(event) => event.stopPropagation()}
-            className="absolute left-3 top-1/2 hidden h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-black/5 bg-white/90 text-[#222222] opacity-0 shadow-sm transition-opacity group-hover:opacity-100 md:flex"
-            aria-label="Hình ảnh trước"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            onClick={(event) => event.stopPropagation()}
-            className="absolute right-3 top-1/2 hidden h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-black/5 bg-white/90 text-[#222222] opacity-0 shadow-sm transition-opacity group-hover:opacity-100 md:flex"
-            aria-label="Hình ảnh tiếp theo"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
+          {hasMultipleImages && (
+            <>
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  moveImage("prev");
+                }}
+                className="absolute left-3 top-1/2 hidden h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-black/5 bg-white/90 text-[#222222] opacity-0 shadow-sm transition-opacity group-hover:opacity-100 md:flex"
+                aria-label="Hình ảnh trước"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  moveImage("next");
+                }}
+                className="absolute right-3 top-1/2 hidden h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-black/5 bg-white/90 text-[#222222] opacity-0 shadow-sm transition-opacity group-hover:opacity-100 md:flex"
+                aria-label="Hình ảnh tiếp theo"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </>
+          )}
 
-          <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-white" />
-            <span className="h-1.5 w-1.5 rounded-full bg-white/65" />
-            <span className="h-1.5 w-1.5 rounded-full bg-white/45" />
-            <span className="h-1.5 w-1.5 rounded-full bg-white/35" />
-          </div>
+          {hasMultipleImages && (
+            <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-1.5">
+              {Array.from({ length: dotCount }).map((_, index) => {
+                const isActive = index === Math.min(safeImageIndex, dotCount - 1);
+                return (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setImageIndex(index);
+                    }}
+                    className={`h-1.5 rounded-full transition-all ${
+                      isActive ? "w-3 bg-white" : "w-1.5 bg-white/55"
+                    }`}
+                    aria-label={`Xem ảnh ${index + 1}`}
+                  />
+                );
+              })}
+            </div>
+          )}
         </div>
 
         <div className="mt-3 flex flex-col gap-1">

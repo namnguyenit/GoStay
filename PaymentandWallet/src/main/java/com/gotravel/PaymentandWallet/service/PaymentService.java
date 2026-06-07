@@ -31,6 +31,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -77,7 +78,7 @@ public class PaymentService {
         PaymentRequest paymentRequest = PaymentRequest.builder()
                 .orderId(order.getOrderId())
                 .userId(userId)
-                .hostId(order.getHostId())
+                .hostId(resolvePaymentRequestHostId(order))
                 .paymentCode(paymentCode)
                 .amount(order.getTotalAmount())
                 .status(PaymentStatus.PENDING)
@@ -150,26 +151,11 @@ public class PaymentService {
         paymentRequest.setPaidAt(LocalDateTime.now());
         paymentRequestRepository.save(paymentRequest);
 
-        // Tính hoa hồng 5% cho GoStay, 95% cho Host
-        BigDecimal commissionAmount = paymentRequest.getAmount().multiply(COMMISSION_RATE);
-        BigDecimal hostAmount = paymentRequest.getAmount().subtract(commissionAmount);
+        OrderPaymentSummaryResponse order = getInternalOrderPaymentSummary(paymentRequest.getOrderId());
+        createProviderPayouts(paymentRequest, order);
 
-        HostPayout payout = HostPayout.builder()
-                .paymentRequestId(paymentRequest.getId())
-                .orderId(paymentRequest.getOrderId())
-                .hostId(paymentRequest.getHostId())
-                .totalAmount(paymentRequest.getAmount())
-                .commissionRate(COMMISSION_RATE)
-                .commissionAmount(commissionAmount)
-                .hostAmount(hostAmount)
-                .status(PayoutStatus.PENDING)
-                .build();
-
-        hostPayoutRepository.save(payout);
-
-        log.info("Payment {} completed for order {}. Total: {}, Commission(5%): {}, Host receives: {}",
-                paymentCode, paymentRequest.getOrderId(),
-                paymentRequest.getAmount(), commissionAmount, hostAmount);
+        log.info("Payment {} completed for order {}. Total: {}",
+                paymentCode, paymentRequest.getOrderId(), paymentRequest.getAmount());
 
         try {
             orderClient.notifyPaymentSuccess(paymentRequest.getOrderId());
@@ -210,7 +196,7 @@ public class PaymentService {
             ApiResponse<OrderPaymentSummaryResponse> response = orderClient.getPaymentSummary(orderId);
             OrderPaymentSummaryResponse order = response == null ? null : response.getData();
             if (order == null || order.getOrderId() == null || order.getUserId() == null
-                    || order.getHostId() == null || order.getTotalAmount() == null) {
+                    || order.getTotalAmount() == null) {
                 throw new AppException(PaymentErrorCode.INVALID_ORDER_FOR_PAYMENT);
             }
 
@@ -222,6 +208,8 @@ public class PaymentService {
                     || order.getTotalAmount().compareTo(BigDecimal.ZERO) <= 0) {
                 throw new AppException(PaymentErrorCode.INVALID_ORDER_FOR_PAYMENT);
             }
+
+            validateProviderBreakdowns(order);
 
             return order;
         } catch (AppException e) {
@@ -297,25 +285,88 @@ public class PaymentService {
         paymentRequest.setPaidAt(LocalDateTime.now());
         paymentRequestRepository.save(paymentRequest);
 
-        BigDecimal commissionAmount = paymentRequest.getAmount().multiply(COMMISSION_RATE);
-        BigDecimal hostAmount = paymentRequest.getAmount().subtract(commissionAmount);
-
-        HostPayout payout = HostPayout.builder()
-                .paymentRequestId(paymentRequest.getId())
-                .orderId(paymentRequest.getOrderId())
-                .hostId(paymentRequest.getHostId())
-                .totalAmount(paymentRequest.getAmount())
-                .commissionRate(COMMISSION_RATE)
-                .commissionAmount(commissionAmount)
-                .hostAmount(hostAmount)
-                .status(PayoutStatus.PENDING)
-                .build();
-        hostPayoutRepository.save(payout);
+        OrderPaymentSummaryResponse order = getInternalOrderPaymentSummary(paymentRequest.getOrderId());
+        createProviderPayouts(paymentRequest, order);
 
         try {
             orderClient.notifyPaymentSuccess(paymentRequest.getOrderId());
         } catch (Exception e) {
             log.error("Failed to notify order service for mock payment success", e);
+        }
+    }
+
+    private OrderPaymentSummaryResponse getInternalOrderPaymentSummary(UUID orderId) {
+        try {
+            ApiResponse<OrderPaymentSummaryResponse> response = orderClient.getPaymentSummary(orderId);
+            OrderPaymentSummaryResponse order = response == null ? null : response.getData();
+            if (order == null || order.getOrderId() == null || order.getTotalAmount() == null) {
+                throw new AppException(PaymentErrorCode.INVALID_ORDER_FOR_PAYMENT);
+            }
+            validateProviderBreakdowns(order);
+            return order;
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            log.warn("Cannot load provider breakdowns for order {}", orderId, e);
+            throw new AppException(PaymentErrorCode.INVALID_ORDER_FOR_PAYMENT);
+        }
+    }
+
+    private void validateProviderBreakdowns(OrderPaymentSummaryResponse order) {
+        if (order.getProviderBreakdowns() == null || order.getProviderBreakdowns().isEmpty()) {
+            throw new AppException(PaymentErrorCode.INVALID_ORDER_FOR_PAYMENT);
+        }
+
+        BigDecimal breakdownTotal = order.getProviderBreakdowns().stream()
+                .map(OrderPaymentSummaryResponse.ProviderBreakdown::getTotalAmount)
+                .filter(amount -> amount != null && amount.compareTo(BigDecimal.ZERO) > 0)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        if (breakdownTotal.compareTo(order.getTotalAmount()) != 0) {
+            throw new AppException(PaymentErrorCode.INVALID_ORDER_FOR_PAYMENT);
+        }
+
+        boolean hasInvalidProvider = order.getProviderBreakdowns().stream()
+                .anyMatch(item -> item.getHostId() == null
+                        || item.getTotalAmount() == null
+                        || item.getTotalAmount().compareTo(BigDecimal.ZERO) <= 0);
+        if (hasInvalidProvider) {
+            throw new AppException(PaymentErrorCode.INVALID_ORDER_FOR_PAYMENT);
+        }
+    }
+
+    private UUID resolvePaymentRequestHostId(OrderPaymentSummaryResponse order) {
+        if (order.getHostId() != null) {
+            return order.getHostId();
+        }
+
+        validateProviderBreakdowns(order);
+        return order.getProviderBreakdowns().get(0).getHostId();
+    }
+
+    private void createProviderPayouts(PaymentRequest paymentRequest, OrderPaymentSummaryResponse order) {
+        validateProviderBreakdowns(order);
+
+        for (OrderPaymentSummaryResponse.ProviderBreakdown breakdown : order.getProviderBreakdowns()) {
+            if (hostPayoutRepository.existsByOrderIdAndHostId(paymentRequest.getOrderId(), breakdown.getHostId())) {
+                continue;
+            }
+
+            BigDecimal providerTotal = breakdown.getTotalAmount();
+            BigDecimal commissionAmount = providerTotal.multiply(COMMISSION_RATE);
+            BigDecimal hostAmount = providerTotal.subtract(commissionAmount);
+
+            HostPayout payout = HostPayout.builder()
+                    .paymentRequestId(paymentRequest.getId())
+                    .orderId(paymentRequest.getOrderId())
+                    .hostId(breakdown.getHostId())
+                    .totalAmount(providerTotal)
+                    .commissionRate(COMMISSION_RATE)
+                    .commissionAmount(commissionAmount)
+                    .hostAmount(hostAmount)
+                    .status(PayoutStatus.PENDING)
+                    .build();
+            hostPayoutRepository.save(payout);
         }
     }
 }

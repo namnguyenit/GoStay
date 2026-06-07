@@ -72,7 +72,14 @@ export class RecommendationController {
   }
 
   @Get('listings/:listingId/similar')
-  async getSimilar(@Param('listingId') listingId: string) {
-    return this.recommendationService.recommendSimilar(listingId);
+  async getSimilar(
+    @Param('listingId') listingId: string,
+    @Query('limit') limit?: string,
+  ) {
+    const parsedLimit = Number(limit);
+    return this.recommendationService.recommendSimilar(
+      listingId,
+      Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : 30,
+    );
   }
 }

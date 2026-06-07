@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { RedisCacheService } from '../cache/redis-cache.service';
+import { InventoryClient } from '../inventory/inventory.client';
 import { CandidateGenerator } from './candidate-generator';
 import { DiversityService } from './diversity.service';
 import { ScoringService } from './scoring.service';
@@ -14,7 +15,43 @@ export class RecommendationService {
     private readonly scoringService: ScoringService,
     private readonly diversityService: DiversityService,
     private readonly cacheService: RedisCacheService,
+    private readonly inventoryClient: InventoryClient,
   ) {}
+
+  private getTodayIso() {
+    const now = new Date();
+    const local = new Date(now.getTime() - now.getTimezoneOffset() * 60_000);
+    return local.toISOString().slice(0, 10);
+  }
+
+  private async filterAvailableListings(candidates: any[]) {
+    if (!Array.isArray(candidates) || candidates.length === 0) return [];
+
+    try {
+      const today = this.getTodayIso();
+      const listingIds = candidates.map((item) => item.id).filter(Boolean);
+      const inventoryRes = await this.inventoryClient.checkBatchAvailability({
+        listingIds,
+        startDate: today,
+        endDate: today,
+        requiredQuantity: 1,
+      });
+      const availableSet = new Set(inventoryRes.availableListingIds || []);
+
+      return candidates
+        .filter((item) => availableSet.has(item.id))
+        .map((item) => ({
+          ...item,
+          isAvailable: true,
+        }));
+    } catch (error) {
+      this.logger.error(
+        'Recommendation inventory check failed, returning no unavailable-risk listings',
+        error,
+      );
+      return [];
+    }
+  }
 
   async getHeroLandmarks() {
     const cacheKey = 'home:hero-landmarks:v1';
@@ -60,6 +97,8 @@ export class RecommendationService {
         dto.category,
       );
     }
+
+    candidates = await this.filterAvailableListings(candidates);
 
     const scored = this.scoringService.score(candidates, {
       targetCategory: cat === 'ALL' ? undefined : cat,
@@ -126,8 +165,9 @@ export class RecommendationService {
     const cached = await this.cacheService.get<any[]>(cacheKey);
     if (cached) return cached;
 
-    const candidates =
-      await this.candidateGenerator.generateByComplex(complexId);
+    const candidates = await this.filterAvailableListings(
+      await this.candidateGenerator.generateByComplex(complexId),
+    );
     const scored = this.scoringService.score(candidates, { complexId });
     const finalRanked = this.diversityService.diversifyAndRank(scored, 15);
 
@@ -145,7 +185,9 @@ export class RecommendationService {
   }
 
   async recommendForHome(province?: string) {
-    return this.candidateGenerator.generateForHome(province, 20);
+    return this.filterAvailableListings(
+      await this.candidateGenerator.generateForHome(province, 20),
+    );
   }
 
   async recommendByLandmark(landmarkId: string) {
@@ -174,7 +216,8 @@ export class RecommendationService {
         12,
       ),
     ]);
-    const scored = this.scoringService.score(candidates, {});
+    const availableCandidates = await this.filterAvailableListings(candidates);
+    const scored = this.scoringService.score(availableCandidates, {});
     const finalRanked = this.diversityService.diversifyAndRank(scored, 15);
     const grouped = {
       radiusMeters: safeRadiusMeters,
@@ -189,15 +232,26 @@ export class RecommendationService {
     return grouped;
   }
 
-  async recommendSimilar(listingId: string) {
-    const cacheKey = `recommend:similar:${listingId}`;
+  async recommendSimilar(listingId: string, limit: number = 30) {
+    const safeLimit = Number.isFinite(limit)
+      ? Math.max(1, Math.min(Math.floor(limit), 80))
+      : 30;
+    const cacheKey = `recommend:similar:${listingId}:nearby:v2:limit:${safeLimit}`;
     const cached = await this.cacheService.get<any[]>(cacheKey);
     if (cached) return cached;
 
-    const candidates = await this.candidateGenerator.generateSimilar(listingId);
-    const scored = this.scoringService.score(candidates, {});
-    const finalRanked = this.diversityService.diversifyAndRank(scored, 10);
-    await this.cacheService.set(cacheKey, finalRanked, 300);
-    return finalRanked;
+    const availableCandidates = await this.filterAvailableListings(
+      await this.candidateGenerator.generateSimilar(listingId, safeLimit * 2),
+    );
+    const rankedByDistance = availableCandidates
+      .sort(
+        (a, b) =>
+          Number(a.distanceMeters ?? Number.MAX_SAFE_INTEGER) -
+          Number(b.distanceMeters ?? Number.MAX_SAFE_INTEGER),
+      )
+      .slice(0, safeLimit);
+
+    await this.cacheService.set(cacheKey, rankedByDistance, 300);
+    return rankedByDistance;
   }
 }

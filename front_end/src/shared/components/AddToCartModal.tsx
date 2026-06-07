@@ -1,34 +1,108 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { X, Calendar, Users, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import CartService from "@/services/cart";
 
 interface AddToCartModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (payload: { startDate: string; endDate: string; quantity: number; timeSlot?: string }) => void;
+  onConfirm: (payload: { startDate: string; endDate: string; quantity: number; timeSlot?: string }) => void | Promise<void>;
   categoryType: "place" | "experience" | "service";
   itemName: string;
+  listingId: string;
+  loading?: boolean;
+  error?: string;
 }
 
-export default function AddToCartModal({ isOpen, onClose, onConfirm, categoryType, itemName }: AddToCartModalProps) {
+type CalendarSlot = {
+  date?: string;
+  timeSlot?: string;
+  availableQuantity?: number;
+  status?: string;
+};
+
+const getAvailabilityRows = (res: unknown): CalendarSlot[] => {
+  const data = (res as { data?: unknown })?.data;
+  if (Array.isArray(data)) return data as CalendarSlot[];
+  if (data && Array.isArray((data as { data?: unknown }).data)) {
+    return (data as { data: CalendarSlot[] }).data;
+  }
+  return [];
+};
+
+export default function AddToCartModal({
+  isOpen,
+  onClose,
+  onConfirm,
+  categoryType,
+  itemName,
+  listingId,
+  loading = false,
+  error = "",
+}: AddToCartModalProps) {
   const today = new Date().toISOString().split("T")[0];
-  const nextDay = new Date(Date.now() + 86400000).toISOString().split("T")[0];
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const nextDay = tomorrow.toISOString().split("T")[0];
 
   const [startDate, setStartDate] = useState(today);
   const [endDate, setEndDate] = useState(nextDay);
   const [date, setDate] = useState(today);
-  const [timeSlot, setTimeSlot] = useState("09:00");
+  const [timeSlot, setTimeSlot] = useState("");
   const [quantity, setQuantity] = useState(1);
+  const [slots, setSlots] = useState<CalendarSlot[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen || categoryType === "place" || !listingId || !date) return;
+
+    let cancelled = false;
+
+    queueMicrotask(() => {
+      if (!cancelled) setLoadingSlots(true);
+    });
+
+    CartService.checkAvailability(listingId, date, date)
+      .then((res) => {
+        if (cancelled) return;
+        const availableSlots = getAvailabilityRows(res)
+          .filter((slot) => (slot.availableQuantity ?? 0) > 0 && slot.status !== "BLOCKED")
+          .sort((a, b) => String(a.timeSlot ?? "").localeCompare(String(b.timeSlot ?? "")));
+
+        setSlots(availableSlots);
+        setTimeSlot((current) => {
+          if (current && availableSlots.some((slot) => slot.timeSlot === current)) return current;
+          return availableSlots[0]?.timeSlot ?? "";
+        });
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setSlots([]);
+          setTimeSlot("");
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingSlots(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [categoryType, date, isOpen, listingId]);
 
   if (!isOpen) return null;
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
+    if (loading) return;
+
     if (categoryType === "place") {
-      onConfirm({ startDate, endDate, quantity });
+      await onConfirm({ startDate, endDate, quantity });
     } else if (categoryType === "experience") {
-      onConfirm({ startDate: date, endDate: date, quantity });
+      if (!timeSlot) return;
+      await onConfirm({ startDate: date, endDate: date, quantity, timeSlot });
     } else {
-      onConfirm({ startDate: date, endDate: date, quantity, timeSlot });
+      if (!timeSlot) return;
+      await onConfirm({ startDate: date, endDate: date, quantity, timeSlot });
     }
   };
 
@@ -94,17 +168,29 @@ export default function AddToCartModal({ isOpen, onClose, onConfirm, categoryTyp
               </div>
             )}
 
-            {categoryType === "service" && (
+            {(categoryType === "experience" || categoryType === "service") && (
               <div>
                 <label className="block text-sm font-medium text-zinc-700 mb-1">Khung giờ</label>
                 <div className="relative">
                   <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-                  <input
-                    type="time"
+                  <select
                     value={timeSlot}
                     onChange={(e) => setTimeSlot(e.target.value)}
+                    disabled={loadingSlots || slots.length === 0}
                     className="w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-app-primary outline-none"
-                  />
+                  >
+                    {loadingSlots ? (
+                      <option value="">Đang tải khung giờ...</option>
+                    ) : slots.length === 0 ? (
+                      <option value="">Không còn khung giờ trống</option>
+                    ) : (
+                      slots.map((slot) => (
+                        <option key={slot.timeSlot} value={slot.timeSlot}>
+                          {slot.timeSlot} - còn {slot.availableQuantity} chỗ
+                        </option>
+                      ))
+                    )}
+                  </select>
                 </div>
               </div>
             )}
@@ -127,9 +213,18 @@ export default function AddToCartModal({ isOpen, onClose, onConfirm, categoryTyp
           </div>
 
           <div className="p-4 border-t bg-zinc-50 flex justify-end gap-3">
-            <Button variant="outline" onClick={onClose}>Huỷ</Button>
-            <Button onClick={handleConfirm} className="bg-app-primary text-white hover:bg-app-primary/90">
-              Xác nhận thêm
+            {error && (
+              <p className="mr-auto max-w-[220px] text-xs font-medium text-red-600">
+                {error}
+              </p>
+            )}
+            <Button variant="outline" onClick={onClose} disabled={loading}>Huỷ</Button>
+            <Button
+              onClick={handleConfirm}
+              disabled={loading || (categoryType !== "place" && (!timeSlot || loadingSlots))}
+              className="bg-app-primary text-white hover:bg-app-primary/90 disabled:opacity-50"
+            >
+              {loading ? "Đang thêm..." : "Xác nhận thêm"}
             </Button>
           </div>
         </div>

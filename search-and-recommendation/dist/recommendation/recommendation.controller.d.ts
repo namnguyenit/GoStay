@@ -12,5 +12,5 @@ export declare class RecommendationController {
     getHomeRecommendations(province?: string): Promise<any[]>;
     getNearbyRecommendations(dto: NearbyRecommendationQueryDto): Promise<any>;
     getByLandmark(landmarkId: string, radius?: string, radiusMeters?: string): Promise<any>;
-    getSimilar(listingId: string): Promise<any[]>;
+    getSimilar(listingId: string, limit?: string): Promise<any[]>;
 }

@@ -28,6 +28,8 @@ const toCarouselItem = (item: ComplexOffering) => ({
   id: item.id,
   name: item.name,
   image: item.image || item.thumbnailUrl,
+  thumbnailUrl: item.thumbnailUrl,
+  galleryUrls: item.galleryUrls,
   description: item.description,
   address: [
     item.province,

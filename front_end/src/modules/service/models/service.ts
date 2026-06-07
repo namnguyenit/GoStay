@@ -7,5 +7,10 @@ export type Service =
       address?: string;
       rating?: number;
       image?: string;
+      thumbnailUrl?: string;
+      referenceImageUrl?: string;
+      galleryUrls?: string[];
+      images?: string[];
+      imageUrls?: string[];
     }
   | undefined;

@@ -20,13 +20,17 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     Optional<Order> findByOrderNumber(String orderNumber);
     Optional<Order> findByIdAndUserId(UUID id, UUID userId);
     Page<Order> findByUserIdOrderByCreatedAtDesc(UUID userId, Pageable pageable);
-    Page<Order> findByHostIdOrderByCreatedAtDesc(UUID hostId, Pageable pageable);
+    @Query(
+            value = "select distinct o from Order o join o.items item where item.hostId = :hostId order by o.createdAt desc",
+            countQuery = "select count(distinct o) from Order o join o.items item where item.hostId = :hostId"
+    )
+    Page<Order> findByAnyItemHostIdOrderByCreatedAtDesc(@Param("hostId") UUID hostId, Pageable pageable);
     long countByStatus(OrderStatus status);
 
-    @Query("select coalesce(sum(order.totalAmount), 0) from Order order")
+    @Query("select coalesce(sum(o.totalAmount), 0) from Order o")
     BigDecimal sumTotalAmount();
 
-    @Query("select coalesce(sum(order.totalAmount), 0) from Order order where order.status = :status")
+    @Query("select coalesce(sum(o.totalAmount), 0) from Order o where o.status = :status")
     BigDecimal sumTotalAmountByStatus(@Param("status") OrderStatus status);
 
     @Query(value = """

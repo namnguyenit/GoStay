@@ -11,9 +11,15 @@ export const getAllPlacesResponseDtoSchema = z
           .object({
             id: z.string().optional(),
             title: z.string().optional(),
+            description: z.string().optional(),
             price: z.number().optional(),
             rating: z.number().optional(),
             img: z.string().optional(),
+            thumbnailUrl: z.string().optional(),
+            referenceImageUrl: z.string().optional(),
+            galleryUrls: z.array(z.string()).optional(),
+            images: z.array(z.string()).optional(),
+            imageUrls: z.array(z.string()).optional(),
             address: z.string().optional(),
           })
           .optional()

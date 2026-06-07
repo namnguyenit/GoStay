@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import OrderService from "@/services/order";
 import { useCart } from "@/shared/context/CartContext";
+import CartService from "@/services/cart";
 import { ShoppingCart } from "lucide-react";
 
 type OrderSubmitResponse = {
@@ -27,6 +28,10 @@ function getResponseOrderData(res: OrderSubmitResponse) {
 
 function getErrorMessage(error: unknown) {
   if (error instanceof Error) return error.message;
+  if (error && typeof error === "object" && "message" in error) {
+    const message = (error as { message?: unknown }).message;
+    if (typeof message === "string") return message;
+  }
   if (error && typeof error === "object" && "response" in error) {
     const response = (error as { response?: { data?: { message?: unknown } } }).response;
     if (typeof response?.data?.message === "string") return response.data.message;
@@ -34,10 +39,25 @@ function getErrorMessage(error: unknown) {
   return "Đặt dịch vụ thất bại.";
 }
 
+type CalendarSlot = {
+  timeSlot?: string;
+  availableQuantity?: number;
+  status?: string;
+};
+
+const getAvailabilityRows = (res: unknown): CalendarSlot[] => {
+  const data = (res as { data?: unknown })?.data;
+  if (Array.isArray(data)) return data as CalendarSlot[];
+  if (data && Array.isArray((data as { data?: unknown }).data)) {
+    return (data as { data: CalendarSlot[] }).data;
+  }
+  return [];
+};
+
 function CheckoutForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const { cartTotal, items, refreshCart } = useCart();
+  const { items, refreshCart } = useCart();
 
   const type = params.get("type") || "direct";
   
@@ -58,16 +78,52 @@ function CheckoutForm() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [timeSlot, setTimeSlot] = useState("");
+  const [slots, setSlots] = useState<CalendarSlot[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const nights = Math.max(1, Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / 86400000));
   const total = price * (category === "place" ? nights : quantity);
   
-  // Tính tổng số tiền theo các item được chọn
-  const selectedItemsTotal = items
-    .filter(item => selectedItemIds.includes(item.itemId))
+  const selectedCartItems = items.filter(item => selectedItemIds.includes(item.itemId));
+  const selectedItemsTotal = selectedCartItems
     .reduce((sum, item) => sum + item.totalPrice, 0);
+
+  useEffect(() => {
+    if (type !== "direct" || category === "place" || !listingId || !startDate) return;
+
+    let cancelled = false;
+    setLoadingSlots(true);
+
+    CartService.checkAvailability(listingId, startDate, startDate)
+      .then((res) => {
+        if (cancelled) return;
+        const availableSlots = getAvailabilityRows(res)
+          .filter((slot) => (slot.availableQuantity ?? 0) > 0 && slot.status !== "BLOCKED")
+          .sort((a, b) => String(a.timeSlot ?? "").localeCompare(String(b.timeSlot ?? "")));
+
+        setSlots(availableSlots);
+        setTimeSlot((current) => {
+          if (current && availableSlots.some((slot) => slot.timeSlot === current)) return current;
+          return availableSlots[0]?.timeSlot ?? "";
+        });
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setSlots([]);
+          setTimeSlot("");
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingSlots(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [category, listingId, startDate, type]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,12 +166,18 @@ function CheckoutForm() {
       } else {
         if (!listingId) { setError("Không tìm thấy dịch vụ."); setLoading(false); return; }
         if (new Date(endDate) < new Date(startDate)) { setError("Ngày kết thúc phải sau ngày bắt đầu."); setLoading(false); return; }
+        if (category !== "place" && !timeSlot) {
+          setError("Vui lòng chọn khung giờ còn trống để đặt dịch vụ.");
+          setLoading(false);
+          return;
+        }
         
         const res = await OrderService.bookNow({
           item: {
             listingId,
             startDate,
-            endDate,
+            endDate: category === "place" ? endDate : startDate,
+            timeSlot: category === "place" ? undefined : timeSlot,
             quantity,
             unitPrice: price,
             listingTitle: title,
@@ -163,14 +225,15 @@ function CheckoutForm() {
         <div className="bg-white border border-zinc-200 rounded-xl p-4 mb-6 shadow-sm">
           <div className="flex items-center gap-2 mb-3 border-b pb-3">
             <ShoppingCart className="w-5 h-5 text-app-fg" />
-            <h3 className="font-semibold text-app-fg">Danh sách sản phẩm ({items.length})</h3>
+            <h3 className="font-semibold text-app-fg">Dịch vụ đã chọn ({selectedCartItems.length})</h3>
           </div>
           <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
-            {items.map(item => (
+            {selectedCartItems.map(item => (
               <div key={item.itemId} className="flex justify-between items-start text-sm">
                 <div className="flex-1">
                   <p className="font-medium truncate pr-2">{item.listingTitle}</p>
                   <p className="text-xs text-zinc-500">Từ {item.startDate} - Đến {item.endDate} (x{item.quantity})</p>
+                  {item.timeSlot && <p className="text-xs text-zinc-500">Khung giờ: {item.timeSlot}</p>}
                 </div>
                 <span className="font-semibold">đ{item.totalPrice?.toLocaleString("vi-VN")}</span>
               </div>
@@ -186,11 +249,14 @@ function CheckoutForm() {
               <div>
                 <label className="block text-sm font-medium mb-1">Ngày bắt đầu *</label>
                 <input type="date" required value={startDate} min={today}
-                  onChange={e => setStartDate(e.target.value)}
+                  onChange={e => {
+                    setStartDate(e.target.value);
+                    if (category !== "place") setEndDate(e.target.value);
+                  }}
                   className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400"
                 />
               </div>
-              <div>
+              <div className={category === "place" ? "" : "hidden"}>
                 <label className="block text-sm font-medium mb-1">Ngày kết thúc *</label>
                 <input type="date" required value={endDate} min={startDate}
                   onChange={e => setEndDate(e.target.value)}
@@ -200,13 +266,37 @@ function CheckoutForm() {
             </div>
 
             {category !== "place" && (
-              <div>
-                <label className="block text-sm font-medium mb-1">Số lượng người *</label>
-                <input type="number" required min={1} value={quantity}
-                  onChange={e => setQuantity(Number(e.target.value))}
-                  className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400"
-                />
-              </div>
+              <>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Khung giờ còn trống *</label>
+                  <select
+                    required
+                    value={timeSlot}
+                    disabled={loadingSlots || slots.length === 0}
+                    onChange={e => setTimeSlot(e.target.value)}
+                    className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400 disabled:bg-zinc-100"
+                  >
+                    {loadingSlots ? (
+                      <option value="">Đang tải khung giờ...</option>
+                    ) : slots.length === 0 ? (
+                      <option value="">Không còn khung giờ trống trong ngày này</option>
+                    ) : (
+                      slots.map((slot) => (
+                        <option key={slot.timeSlot} value={slot.timeSlot}>
+                          {slot.timeSlot} - còn {slot.availableQuantity} chỗ
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Số lượng người *</label>
+                  <input type="number" required min={1} value={quantity}
+                    onChange={e => setQuantity(Number(e.target.value))}
+                    className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400"
+                  />
+                </div>
+              </>
             )}
           </>
         )}
@@ -228,14 +318,14 @@ function CheckoutForm() {
           <div className="flex justify-between font-bold text-lg">
             <span>Tổng thanh toán</span>
             <span className="text-rose-600">
-              đ{type === "cart" ? cartTotal.toLocaleString("vi-VN") : total.toLocaleString("vi-VN")}
+              đ{type === "cart" ? selectedItemsTotal.toLocaleString("vi-VN") : total.toLocaleString("vi-VN")}
             </span>
           </div>
         </div>
 
         {error && <p className="text-red-500 text-sm">{error}</p>}
 
-        <button type="submit" disabled={loading}
+        <button type="submit" disabled={loading || (type === "direct" && category !== "place" && (!timeSlot || loadingSlots))}
           className="w-full bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white font-bold py-4 rounded-xl transition-colors mt-2 text-lg"
         >
           {loading ? "Đang xử lý..." : "Tiến hành thanh toán →"}

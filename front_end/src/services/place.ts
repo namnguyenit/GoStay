@@ -6,16 +6,68 @@ import { mapPlaces } from "@/modules/place/mappers/map-places";
 type RawListing = {
   id?: string;
   title?: string;
+  description?: string;
   basePrice?: string | number;
   averageRating?: string | number;
   thumbnailUrl?: string;
+  referenceImageUrl?: string;
+  galleryUrls?: string[];
+  images?: string[];
+  imageUrls?: string[];
+  attributes?: {
+    galleryUrls?: string[];
+    images?: string[];
+    imageUrls?: string[];
+  };
   province?: string;
   category?: string;
 };
 
+const getListingGallery = (item: RawListing) => {
+  const urls = [
+    ...(item.galleryUrls ?? []),
+    ...(item.imageUrls ?? []),
+    ...(item.images ?? []),
+    ...(item.attributes?.galleryUrls ?? []),
+    ...(item.attributes?.imageUrls ?? []),
+    ...(item.attributes?.images ?? []),
+  ];
+
+  return urls.filter((url): url is string => typeof url === "string" && url.trim().length > 0);
+};
+
+const normalizeNearbyListing = (item: RawListing) => ({
+  ...item,
+  galleryUrls: getListingGallery(item),
+});
+
+export type ListingSearchOptions = {
+  locationQuery?: string;
+  checkIn?: string;
+  checkOut?: string;
+  limit?: number;
+};
+
+const withSearchParams = (baseEndpoint: string, options: ListingSearchOptions = {}) => {
+  const url = new URL(baseEndpoint, "http://gostay.local");
+
+  if (options.locationQuery?.trim()) {
+    url.searchParams.set("locationQuery", options.locationQuery.trim());
+  }
+  if (options.checkIn && options.checkOut) {
+    url.searchParams.set("checkIn", options.checkIn);
+    url.searchParams.set("checkOut", options.checkOut);
+  }
+  if (options.limit) {
+    url.searchParams.set("limit", String(options.limit));
+  }
+
+  return `${url.pathname}${url.search}`;
+};
+
 const PlaceServices = {
-  getAll: async () => {
-    const res = await Api.get(endpoint.place.getAll);
+  getAll: async (options?: ListingSearchOptions) => {
+    const res = await Api.get(withSearchParams(endpoint.place.getAll, options));
     // Parse DTO
     let adaptedRes = res;
     let items = res?.data?.content || res?.data?.data;
@@ -29,9 +81,13 @@ const PlaceServices = {
         data: (items as RawListing[]).map((item) => ({
           id: item.id,
           title: item.title,
+          description: item.description,
           price: item.basePrice ? Number(item.basePrice) : undefined,
           rating: item.averageRating ? Number(item.averageRating) : undefined,
           img: item.thumbnailUrl,
+          thumbnailUrl: item.thumbnailUrl,
+          referenceImageUrl: item.referenceImageUrl,
+          galleryUrls: getListingGallery(item),
           address: item.province,
         }))
       };
@@ -65,17 +121,17 @@ const PlaceServices = {
 
       if (Array.isArray(data)) {
         return {
-          STAY: (data as RawListing[]).filter((item) => item?.category === "STAY"),
-          EXP: (data as RawListing[]).filter((item) => item?.category === "EXP"),
-          SVC: (data as RawListing[]).filter((item) => item?.category === "SVC"),
+          STAY: (data as RawListing[]).filter((item) => item?.category === "STAY").map(normalizeNearbyListing),
+          EXP: (data as RawListing[]).filter((item) => item?.category === "EXP").map(normalizeNearbyListing),
+          SVC: (data as RawListing[]).filter((item) => item?.category === "SVC").map(normalizeNearbyListing),
           COMPLEX: [],
         };
       }
 
       return {
-        STAY: data?.STAY ?? [],
-        EXP: data?.EXP ?? [],
-        SVC: data?.SVC ?? [],
+        STAY: Array.isArray(data?.STAY) ? data.STAY.map(normalizeNearbyListing) : [],
+        EXP: Array.isArray(data?.EXP) ? data.EXP.map(normalizeNearbyListing) : [],
+        SVC: Array.isArray(data?.SVC) ? data.SVC.map(normalizeNearbyListing) : [],
         COMPLEX: data?.COMPLEX ?? [],
       };
     } catch (err) {

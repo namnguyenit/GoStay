@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import PlaceServices from "@/services/place";
-import { Star, MapPin, ArrowLeft } from "lucide-react";
+import { Star, MapPin, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 type LandmarkDetail = {
@@ -18,6 +18,9 @@ type NearbyListing = {
   id: string;
   title?: string;
   thumbnailUrl?: string;
+  galleryUrls?: string[];
+  imageUrls?: string[];
+  images?: string[];
   province?: string;
   basePrice?: number;
   averageRating?: number;
@@ -28,6 +31,9 @@ type NearbyComplex = {
   name?: string;
   thumbnailUrl?: string;
   image?: string;
+  galleryUrls?: string[];
+  imageUrls?: string[];
+  images?: string[];
   province?: string;
   listingCount?: number;
   distanceMeters?: number;
@@ -40,41 +46,119 @@ type NearbyState = {
   COMPLEX: NearbyComplex[];
 };
 
+function CardImageCarousel({ images, alt }: { images: Array<string | undefined>; alt?: string }) {
+  const [imageIndex, setImageIndex] = useState(0);
+  const imageList = React.useMemo(
+    () => Array.from(new Set(images.filter((url): url is string => Boolean(url?.trim())))),
+    [images],
+  );
+  const safeImageIndex = imageList.length > 0 ? Math.min(imageIndex, imageList.length - 1) : 0;
+  const image = imageList[safeImageIndex] ?? "/images/placeholder.jpg";
+  const hasMultipleImages = imageList.length > 1;
+  const dotCount = Math.min(imageList.length, 4);
+
+  const moveImage = (direction: "prev" | "next") => {
+    if (!hasMultipleImages) return;
+    setImageIndex((current) => {
+      const next = direction === "next" ? current + 1 : current - 1;
+      return (next + imageList.length) % imageList.length;
+    });
+  };
+
+  return (
+    <div className="relative aspect-[20/19] w-full overflow-hidden rounded-xl bg-[#f7f7f7]">
+      <img
+        src={image}
+        alt={alt || "Hình ảnh dịch vụ"}
+        className="h-full w-full object-cover transition-[filter,transform] duration-200 group-hover:scale-[1.015] group-hover:contrast-105"
+      />
+      {hasMultipleImages && (
+        <>
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              moveImage("prev");
+            }}
+            className="absolute left-3 top-1/2 hidden h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-black/5 bg-white/90 text-[#222222] opacity-0 shadow-sm transition-opacity group-hover:opacity-100 md:flex"
+            aria-label="Hình ảnh trước"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              moveImage("next");
+            }}
+            className="absolute right-3 top-1/2 hidden h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-black/5 bg-white/90 text-[#222222] opacity-0 shadow-sm transition-opacity group-hover:opacity-100 md:flex"
+            aria-label="Hình ảnh tiếp theo"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+          <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-1.5">
+            {Array.from({ length: dotCount }).map((_, index) => {
+              const isActive = index === Math.min(safeImageIndex, dotCount - 1);
+              return (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setImageIndex(index);
+                  }}
+                  className={`h-1.5 rounded-full transition-all ${
+                    isActive ? "w-3 bg-white" : "w-1.5 bg-white/55"
+                  }`}
+                  aria-label={`Xem ảnh ${index + 1}`}
+                />
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function ListingCard({ listing, onClick }: { listing: NearbyListing; onClick: () => void }) {
   const formatMoney = (amount: number) =>
     new Intl.NumberFormat("vi-VN").format(amount);
 
   return (
-    <div
+    <article
       onClick={onClick}
-      className="cursor-pointer rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-xl transition-all hover:-translate-y-1 duration-200"
+      className="group cursor-pointer"
     >
-      <div className="relative w-full aspect-[4/3] overflow-hidden">
-        <img
-          src={listing.thumbnailUrl || "/images/placeholder.jpg"}
-          alt={listing.title}
-          className="w-full h-full object-cover"
-        />
-      </div>
-      <div className="p-3">
-        <div className="font-semibold text-gray-800 line-clamp-1 text-sm">
-          {listing.title}
+      <CardImageCarousel
+        images={[
+          listing.thumbnailUrl,
+          ...(listing.galleryUrls ?? []),
+          ...(listing.imageUrls ?? []),
+          ...(listing.images ?? []),
+        ]}
+        alt={listing.title}
+      />
+      <div className="mt-3 flex flex-col gap-1">
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="line-clamp-1 text-[15px] font-semibold leading-[19px] text-[#222222] group-hover:underline">
+            {listing.title}
+          </h3>
+          <div className="flex shrink-0 items-center gap-1 text-sm leading-[18px] text-[#222222]">
+            <Star size={14} fill="currentColor" />
+            <span>{Number(listing.averageRating ?? 0).toFixed(1).replace(".", ",")}</span>
+          </div>
         </div>
-        <div className="flex items-center gap-1 mt-1 text-gray-500 text-xs">
-          <MapPin size={12} />
+        <div className="flex items-center gap-1 text-[15px] font-normal leading-[19px] text-[#717171]">
+          <MapPin size={13} />
           <span className="line-clamp-1">{listing.province}</span>
         </div>
-        <div className="flex justify-between items-center mt-2">
-          <div className="text-purple-600 font-bold text-sm">
-            {formatMoney(listing.basePrice ?? 0)}đ
-          </div>
-          <div className="flex items-center gap-0.5 text-amber-500 text-xs">
-            <Star size={12} fill="currentColor" />
-            <span>{listing.averageRating ?? 0}</span>
-          </div>
-        </div>
+        <p className="line-clamp-1 text-[15px] leading-[19px] text-[#222222]">
+          <span className="font-semibold">{formatMoney(listing.basePrice ?? 0)} ₫</span>
+          <span className="font-normal"> / dịch vụ</span>
+        </p>
       </div>
-    </div>
+    </article>
   );
 }
 
@@ -85,39 +169,42 @@ function ComplexCard({ complex, onClick }: { complex: NearbyComplex; onClick: ()
       : null;
 
   return (
-    <div
+    <article
       onClick={onClick}
-      className="cursor-pointer rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-xl transition-all hover:-translate-y-1 duration-200"
+      className="group cursor-pointer"
     >
-      <div className="relative w-full aspect-[4/3] overflow-hidden">
-        <img
-          src={complex.thumbnailUrl || complex.image || "/images/placeholder.jpg"}
-          alt={complex.name}
-          className="w-full h-full object-cover"
-        />
-      </div>
-      <div className="p-3">
-        <div className="font-semibold text-gray-800 line-clamp-1 text-sm">
+      <CardImageCarousel
+        images={[
+          complex.thumbnailUrl,
+          complex.image,
+          ...(complex.galleryUrls ?? []),
+          ...(complex.imageUrls ?? []),
+          ...(complex.images ?? []),
+        ]}
+        alt={complex.name}
+      />
+      <div className="mt-3 flex flex-col gap-1">
+        <h3 className="line-clamp-1 text-[15px] font-semibold leading-[19px] text-[#222222] group-hover:underline">
           {complex.name}
-        </div>
-        <div className="flex items-center gap-1 mt-1 text-gray-500 text-xs">
-          <MapPin size={12} />
+        </h3>
+        <div className="flex items-center gap-1 text-[15px] font-normal leading-[19px] text-[#717171]">
+          <MapPin size={13} />
           <span className="line-clamp-1">{complex.province || "Việt Nam"}</span>
         </div>
-        <div className="mt-2 flex flex-wrap gap-2 text-xs text-gray-500">
+        <div className="mt-1 flex flex-wrap gap-2 text-xs font-medium text-[#717171]">
           {distanceKm && (
-            <span className="rounded-full bg-gray-100 px-2 py-1">
+            <span className="rounded-full bg-[#f7f7f7] px-2.5 py-1">
               Cách {distanceKm}
             </span>
           )}
           {complex.listingCount ? (
-            <span className="rounded-full bg-gray-100 px-2 py-1">
+            <span className="rounded-full bg-[#f7f7f7] px-2.5 py-1">
               {complex.listingCount} dịch vụ
             </span>
           ) : null}
         </div>
       </div>
-    </div>
+    </article>
   );
 }
 
@@ -125,8 +212,8 @@ function Section({ title, items, onItemClick }: { title: string; items: NearbyLi
   if (!items?.length) return null;
   return (
     <section>
-      <h2 className="text-2xl font-bold mb-5 text-gray-800">{title}</h2>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+      <h2 className="mb-5 text-2xl font-bold text-[#222222]">{title}</h2>
+      <div className="grid grid-cols-2 gap-x-5 gap-y-9 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
         {items.map((listing) => (
           <ListingCard
             key={listing.id}
@@ -143,8 +230,8 @@ function ComplexSection({ title, items, onItemClick }: { title: string; items: N
   if (!items?.length) return null;
   return (
     <section>
-      <h2 className="text-2xl font-bold mb-5 text-gray-800">{title}</h2>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+      <h2 className="mb-5 text-2xl font-bold text-[#222222]">{title}</h2>
+      <div className="grid grid-cols-2 gap-x-5 gap-y-9 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
         {items.map((complex) => (
           <ComplexCard
             key={complex.id}
@@ -208,7 +295,7 @@ export default function LandmarkDetailPage() {
     return (
       <div className="h-screen w-full flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-purple-400 border-t-transparent rounded-full animate-spin" />
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#ff385c] border-t-transparent" />
           <span className="text-gray-500">Đang tải...</span>
         </div>
       </div>
@@ -276,7 +363,7 @@ export default function LandmarkDetailPage() {
       <div className="max-w-7xl mx-auto px-4 md:px-8 mt-10">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-2 text-gray-600 hover:text-purple-600 transition mb-10 group"
+          className="group mb-10 flex items-center gap-2 text-[#717171] transition hover:text-[#222222]"
         >
           <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
           <span className="text-base font-medium">Quay lại</span>

@@ -12,7 +12,6 @@ public enum OrderErrorCode implements ErrorCode {
     ORDER_NOT_FOUND(404, "ORDER_NOT_FOUND", "Không tìm thấy đơn hàng", HttpStatus.NOT_FOUND),
     LISTING_NOT_AVAILABLE(400, "LISTING_NOT_AVAILABLE", "Dịch vụ không tồn tại hoặc không còn khả dụng", HttpStatus.BAD_REQUEST),
     INVENTORY_LOCK_FAILED(409, "INVENTORY_LOCK_FAILED", "Phòng/Dịch vụ bạn chọn đã hết chỗ hoặc đang bảo trì", HttpStatus.CONFLICT),
-    MULTIPLE_HOSTS_NOT_SUPPORTED(400, "MULTIPLE_HOSTS_NOT_SUPPORTED", "Giỏ hàng chỉ được checkout các dịch vụ của cùng một host", HttpStatus.BAD_REQUEST),
     INVALID_ORDER_STATE(400, "INVALID_ORDER_STATE", "Trạng thái đơn hàng không hợp lệ cho thao tác này", HttpStatus.BAD_REQUEST),
     CART_IS_EMPTY(400, "CART_IS_EMPTY", "Giỏ hàng trống", HttpStatus.BAD_REQUEST);
 

@@ -19,6 +19,12 @@ export class SearchService {
     private readonly cacheService: RedisCacheService,
   ) {}
 
+  private getTodayIso() {
+    const now = new Date();
+    const local = new Date(now.getTime() - now.getTimezoneOffset() * 60_000);
+    return local.toISOString().slice(0, 10);
+  }
+
   async suggestLocations(query: string) {
     if (!query) return [];
     const normalizedQuery = query.toLowerCase().trim();
@@ -141,7 +147,9 @@ export class SearchService {
     );
 
     let finalItems = candidates;
-    if (dto.checkIn && dto.checkOut) {
+    const availabilityStart = dto.checkIn || this.getTodayIso();
+    const availabilityEnd = dto.checkOut || availabilityStart;
+    if (availabilityStart && availabilityEnd) {
       const listingIds = candidates.map((c) => c.id);
       if (listingIds.length > 0) {
         try {
@@ -149,8 +157,8 @@ export class SearchService {
           const inventoryRes =
             await this.inventoryClient.checkBatchAvailability({
               listingIds,
-              startDate: dto.checkIn,
-              endDate: dto.checkOut,
+              startDate: availabilityStart,
+              endDate: availabilityEnd,
               requiredQuantity: dto.guests || 1,
             });
           this.logger.debug(

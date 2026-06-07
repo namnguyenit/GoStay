@@ -7,8 +7,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import ImageNavigation from "./ImageNavigation";
 import { useSafeContext } from "@/shared/hooks";
 import { HomeContext } from "../providers/home.provider";
-import { CarouselSection, ComplexCarouselSections } from "@/shared/components";
+import { CarouselSection, ComplexCarouselSections, SearchInfoSection } from "@/shared/components";
 import { OfferingCarouselItem } from "@/shared/components";
+import { AppContext } from "@/features/app/providers/app.provider";
+import { FilterService } from "@/services/filter";
 
 type HomeOffering = {
   id?: string;
@@ -18,12 +20,15 @@ type HomeOffering = {
   address?: string;
   rating?: number;
   image?: string;
+  thumbnailUrl?: string;
+  referenceImageUrl?: string;
+  galleryUrls?: string[];
+  images?: string[];
+  imageUrls?: string[];
 };
 
 type LandmarkOffering = HomeOffering & {
   province?: string;
-  thumbnailUrl?: string;
-  referenceImageUrl?: string;
 };
 
 export default function HomeClient() {
@@ -31,6 +36,7 @@ export default function HomeClient() {
   // Giữ landmarks từ TestSystem cho background
   const { imageIndex, clock, setClock, experiences, places, services, landmarks, complexes } =
     useSafeContext(HomeContext);
+  const { filter } = useSafeContext(AppContext) ?? { filter: undefined };
 
   useEffect(() => {
     setClock(6000);
@@ -224,7 +230,19 @@ export default function HomeClient() {
           </div>
         </div>
       </div>
-      <div className="h-10" />
+
+      <section className="relative z-30 mx-auto mt-6 w-full max-w-[920px] px-4 sm:px-6">
+        <SearchInfoSection
+          filter={filter ?? {}}
+          className="border-transparent shadow-[0_18px_45px_rgba(15,23,42,0.16),0_4px_14px_rgba(15,23,42,0.08)]"
+          onClickSearch={(value) => {
+            const params = FilterService.set(value);
+            router.push(`/search?${params.toString()}`);
+          }}
+        />
+      </section>
+
+      <div className="h-14" />
 
       {/* Top Địa Danh Nổi Tiếng */}
       {landmarkList.length > 0 && (
@@ -237,6 +255,9 @@ export default function HomeClient() {
                   id: lm?.id,
                   name: lm?.name,
                   image: lm?.thumbnailUrl || lm?.referenceImageUrl,
+                  thumbnailUrl: lm?.thumbnailUrl,
+                  referenceImageUrl: lm?.referenceImageUrl,
+                  galleryUrls: lm?.galleryUrls,
                   description: lm?.description,
                 }}
                 onSelect={(item) => {

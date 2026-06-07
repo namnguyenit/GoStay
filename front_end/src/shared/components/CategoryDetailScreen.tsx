@@ -16,11 +16,19 @@ type CategoryItem =
   | {
       id?: string;
       name?: string;
+      title?: string;
       price?: number;
+      basePrice?: number;
       description?: string;
       address?: string;
+      province?: string;
       rating?: number;
+      averageRating?: number;
       image?: string;
+      thumbnailUrl?: string;
+      category?: string;
+      categoryType?: "place" | "experience" | "service";
+      distanceMeters?: number;
     }
   | undefined
   | null;
@@ -81,6 +89,7 @@ type ListingDetailData = {
 
 interface CategoryDetailScreenProps {
   items: CategoryItem[] | undefined;
+  recommendations?: CategoryItem[];
   activeId: string;
   categoryType: "place" | "experience" | "service";
   detailData?: ListingDetailData | null;
@@ -88,6 +97,7 @@ interface CategoryDetailScreenProps {
 
 export default function CategoryDetailScreen({
   items = [],
+  recommendations = [],
   activeId,
   categoryType,
   detailData,
@@ -95,6 +105,8 @@ export default function CategoryDetailScreen({
   const router = useRouter();
   const { addToCart } = useCart();
   const [isCartModalOpen, setIsCartModalOpen] = useState(false);
+  const [cartActionLoading, setCartActionLoading] = useState(false);
+  const [cartActionError, setCartActionError] = useState("");
   const [imageSelection, setImageSelection] = useState({ activeId: "", index: 0 });
 
   // Find the selected item or default to the first one if not found
@@ -111,6 +123,49 @@ export default function CategoryDetailScreen({
   const activeImage = detailImages[activeImageIndex] || selectedItem?.image;
   const ratingValue = selectedItem?.rating ?? detailData?.averageRating;
   const locationText = detailData?.province || selectedItem?.address;
+  const sidebarItems = (recommendations.length > 0 ? recommendations : items)
+    .filter((item) => Boolean(item?.id))
+    .sort(
+      (a, b) =>
+        Number(a?.distanceMeters ?? Number.MAX_SAFE_INTEGER) -
+        Number(b?.distanceMeters ?? Number.MAX_SAFE_INTEGER),
+    );
+
+  const getActionErrorMessage = (error: unknown) => {
+    if (error instanceof Error && error.message) return error.message;
+    if (error && typeof error === "object" && "message" in error) {
+      const message = (error as { message?: unknown }).message;
+      if (typeof message === "string" && message) return message;
+    }
+    return "Không thể thêm dịch vụ vào giỏ hàng. Vui lòng thử lại.";
+  };
+
+  const closeCartModal = () => {
+    if (cartActionLoading) return;
+    setCartActionError("");
+    setIsCartModalOpen(false);
+  };
+
+  const handleAddToCart = async (payload: { startDate: string; endDate: string; quantity: number; timeSlot?: string }) => {
+    if (!selectedItem?.id) {
+      setCartActionError("Không tìm thấy dịch vụ để thêm vào giỏ hàng.");
+      return;
+    }
+
+    setCartActionLoading(true);
+    setCartActionError("");
+    try {
+      await addToCart({
+        listingId: selectedItem.id,
+        ...payload,
+      });
+      setIsCartModalOpen(false);
+    } catch (error) {
+      setCartActionError(getActionErrorMessage(error));
+    } finally {
+      setCartActionLoading(false);
+    }
+  };
 
   // Helper to get category text suffix
   const getUnitSuffix = () => {
@@ -124,6 +179,34 @@ export default function CategoryDetailScreen({
       default:
         return "";
     }
+  };
+
+  const getItemCategoryType = (item: CategoryItem) => {
+    if (item?.categoryType) return item.categoryType;
+    if (item?.category === "STAY") return "place";
+    if (item?.category === "EXP") return "experience";
+    if (item?.category === "SVC") return "service";
+    return categoryType;
+  };
+
+  const getItemUnitSuffix = (item: CategoryItem) => {
+    const itemType = getItemCategoryType(item);
+    if (itemType === "place") return "/đêm";
+    if (itemType === "experience") return "/nhóm";
+    return "/dịch vụ";
+  };
+
+  const getItemCategoryLabel = (item: CategoryItem) => {
+    const itemType = getItemCategoryType(item);
+    if (itemType === "place") return "Nơi lưu trú";
+    if (itemType === "experience") return "Trải nghiệm";
+    return "Dịch vụ";
+  };
+
+  const formatDistance = (distanceMeters?: number) => {
+    if (distanceMeters === undefined || !Number.isFinite(distanceMeters)) return null;
+    if (distanceMeters < 1000) return `${Math.round(distanceMeters)}m`;
+    return `${(distanceMeters / 1000).toFixed(distanceMeters < 10000 ? 1 : 0)}km`;
   };
 
   // Helper to get label
@@ -234,7 +317,7 @@ export default function CategoryDetailScreen({
 
                 {/* Info Text block */}
                 <div className="mt-12 text-center md:text-left">
-                  <h1 className="text-2xl md:text-3xl font-extrabold text-app-fg leading-tight">
+                  <h1 className="text-[clamp(1.75rem,4vw,2.25rem)] font-bold leading-tight tracking-[-0.02em] text-app-fg">
                     {selectedItem.name}
                   </h1>
 
@@ -457,6 +540,8 @@ export default function CategoryDetailScreen({
                         className="border-[#e61e4d] text-[#e61e4d] hover:bg-[#e61e4d]/10 font-semibold rounded-2xl px-6 py-5 h-auto transition-transform hover:scale-101 active:scale-99 shadow-sm flex items-center gap-2 cursor-pointer"
                         onClick={() => {
                           if (!selectedItem.id) return;
+                          setCartActionError("");
+                          setCartActionLoading(false);
                           setIsCartModalOpen(true);
                         }}
                       >
@@ -487,19 +572,29 @@ export default function CategoryDetailScreen({
 
           {/* RIGHT SIDE: LIST OF OTHER ITEMS (Col Span 5) */}
           <div className="lg:col-span-5 border-t lg:border-t-0 lg:border-l border-zinc-100 dark:border-zinc-800 lg:pl-8 pt-8 lg:pt-0">
-            <h2 className="text-lg font-bold text-app-fg mb-4">Các lựa chọn khác</h2>
+            <div className="mb-4">
+              <h2 className="text-lg font-bold text-app-fg">Các lựa chọn quanh khu vực</h2>
+              <p className="mt-1 text-sm text-app-muted-fg">
+                Sắp xếp từ gần đến xa so với dịch vụ bạn đang xem.
+              </p>
+            </div>
             
             <div className="flex flex-col gap-4 max-h-[80vh] overflow-y-auto pr-2 scrollbar">
-              {items.map((item) => {
+              {sidebarItems.map((item) => {
                 if (!item) return null;
                 const isActive = item.id === selectedItem.id;
+                const itemCategoryType = getItemCategoryType(item);
+                const distanceText = formatDistance(item.distanceMeters);
+                const itemName = item.name || item.title;
+                const itemPrice = item.price ?? item.basePrice;
+                const itemRating = item.rating ?? item.averageRating;
                 
                 return (
                   <div
                     key={item.id}
                     onClick={() => {
                       if (!isActive) {
-                        router.push(`/${categoryType}/${item.id}/detail`);
+                        router.push(`/${itemCategoryType}/${item.id}/detail`);
                       }
                     }}
                     className={`flex gap-4 p-3 rounded-2xl cursor-pointer transition-all border ${
@@ -510,12 +605,12 @@ export default function CategoryDetailScreen({
                   >
                     {/* Item Image */}
                     <div className="relative w-28 h-20 sm:w-32 sm:h-24 rounded-xl overflow-hidden flex-shrink-0 bg-zinc-100">
-                      {item.image ? (
+                      {item.image || item.thumbnailUrl ? (
                         <Image
                           unoptimized
                           fill
-                          src={item.image}
-                          alt={item.name ?? "listing option"}
+                          src={item.image || item.thumbnailUrl || ""}
+                          alt={itemName ?? "listing option"}
                           className="object-cover"
                           sizes="128px"
                         />
@@ -531,11 +626,21 @@ export default function CategoryDetailScreen({
                       <div>
                         <div className="flex items-center justify-between gap-1">
                           <h3 className="font-bold text-sm sm:text-base text-app-fg line-clamp-1">
-                            {item.name}
+                            {itemName}
                           </h3>
                           {isActive && (
                             <span className="flex-shrink-0 bg-[#e61e4d] text-white p-0.5 rounded-full">
                               <Check className="h-3 w-3" />
+                            </span>
+                          )}
+                        </div>
+                        <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] font-semibold text-app-muted-fg">
+                          <span className="rounded-full bg-zinc-100 px-2 py-0.5 dark:bg-zinc-800">
+                            {getItemCategoryLabel(item)}
+                          </span>
+                          {distanceText && (
+                            <span className="rounded-full bg-zinc-100 px-2 py-0.5 dark:bg-zinc-800">
+                              Cách {distanceText}
                             </span>
                           )}
                         </div>
@@ -545,13 +650,13 @@ export default function CategoryDetailScreen({
                       <div className="flex items-center justify-between mt-1">
                         <div className="flex items-baseline gap-0.5">
                           <span className="font-bold text-xs sm:text-sm text-app-fg">
-                            đ{formatMoney(item.price ?? 0)}
+                            đ{formatMoney(itemPrice ?? 0)}
                           </span>
-                          <span className="text-caption text-[10px]">{getUnitSuffix()}</span>
+                          <span className="text-caption text-[10px]">{getItemUnitSuffix(item)}</span>
                         </div>
                         <div className="flex items-center text-amber-500 text-xs font-semibold gap-0.5">
                           <Star className="h-3.5 w-3.5 fill-amber-500" />
-                          <span>{item.rating ? item.rating.toFixed(1) : "Chưa có đánh giá"}</span>
+                          <span>{itemRating ? itemRating.toFixed(1) : "Chưa có đánh giá"}</span>
                         </div>
                       </div>
                     </div>
@@ -570,16 +675,13 @@ export default function CategoryDetailScreen({
 
       <AddToCartModal
         isOpen={isCartModalOpen}
-        onClose={() => setIsCartModalOpen(false)}
+        onClose={closeCartModal}
         itemName={selectedItem.name || ""}
+        listingId={selectedItem.id || ""}
         categoryType={categoryType}
-        onConfirm={(payload) => {
-          setIsCartModalOpen(false);
-          addToCart({
-            listingId: selectedItem.id!,
-            ...payload
-          });
-        }}
+        loading={cartActionLoading}
+        error={cartActionError}
+        onConfirm={handleAddToCart}
       />
     </div>
   );

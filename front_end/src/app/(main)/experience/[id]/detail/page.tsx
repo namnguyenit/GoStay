@@ -1,4 +1,4 @@
-import { ExperienceServices } from "@/services";
+import { ExperienceServices, RecommendationServices } from "@/services";
 import CategoryDetailScreen from "@/shared/components/CategoryDetailScreen";
 
 interface PageProps {
@@ -9,12 +9,16 @@ interface PageProps {
 
 export default async function Page({ params }: PageProps) {
   const { id } = await params;
-  const experiences = await ExperienceServices.getAll();
-  const detailData = await ExperienceServices.getById(id);
+  const [experiences, detailData, recommendations] = await Promise.all([
+    ExperienceServices.getAll(),
+    ExperienceServices.getById(id),
+    RecommendationServices.getNearbyForListing(id),
+  ]);
 
   return (
     <CategoryDetailScreen
       items={experiences}
+      recommendations={recommendations}
       activeId={id}
       categoryType="experience"
       detailData={detailData}

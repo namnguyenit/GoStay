@@ -286,13 +286,27 @@ public class InventoryInternalService {
             return new com.Gostay.BookingandInventory.dto.response.BatchCheckAvailabilityResponse(new ArrayList<>());
         }
 
+        if (request.getStartDate().isEqual(request.getEndDate())) {
+            List<UUID> availableIds = calendarRepository.findAvailableListingIdsOnDate(
+                    request.getListingIds(),
+                    request.getStartDate(),
+                    InventoryCalendarStatus.BLOCKED,
+                    request.getRequiredQuantity());
+            return new com.Gostay.BookingandInventory.dto.response.BatchCheckAvailabilityResponse(availableIds);
+        }
+
         List<UUID> availableIds = new ArrayList<>();
         for (UUID listingId : request.getListingIds()) {
             boolean isAvailable = true;
             LocalDate current = request.getStartDate();
             while (!current.isAfter(request.getEndDate())) {
-                Optional<InventoryCalendar> calOpt = calendarRepository.findByListingIdAndDateAndTimeSlot(listingId, current, "ALL_DAY");
-                if (calOpt.isEmpty() || calOpt.get().getStatus() == InventoryCalendarStatus.BLOCKED || calOpt.get().getAvailableQuantity() < request.getRequiredQuantity()) {
+                List<InventoryCalendar> calendars = calendarRepository.findByListingIdAndDate(listingId, current);
+                boolean hasAvailableSlot = calendars.stream()
+                        .anyMatch(calendar -> calendar.getStatus() != InventoryCalendarStatus.BLOCKED
+                                && calendar.getAvailableQuantity() != null
+                                && calendar.getAvailableQuantity() >= request.getRequiredQuantity());
+
+                if (!hasAvailableSlot) {
                     isAvailable = false;
                     break;
                 }

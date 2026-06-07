@@ -33,6 +33,13 @@ interface CartContextProps {
 
 const CartContext = createContext<CartContextProps | undefined>(undefined);
 
+type CartApiResponse = {
+  data?: {
+    items?: CartItem[];
+    cartTotal?: number;
+  };
+};
+
 import { useAuthModal } from "./AuthModalContext";
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -51,13 +58,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     setLoading(true);
     try {
-      const res: any = await CartService.getCart();
+      const res = await CartService.getCart() as CartApiResponse;
       if (res?.data) {
         setItems(res.data.items || []);
         setCartTotal(res.data.cartTotal || 0);
       }
-    } catch (error) {
-      console.error("Failed to fetch cart", error);
+    } catch {
+      setItems([]);
+      setCartTotal(0);
     } finally {
       setLoading(false);
     }

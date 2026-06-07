@@ -2,10 +2,60 @@ import { Api } from "@/shared/api";
 import { endpoint } from "@/config";
 import { getAllExperiencesResponseDtoSchema } from "@/dto/responses/experience";
 import { mapExperiences } from "@/modules/experience";
+import type { ListingSearchOptions } from "./place";
+
+type RawListing = {
+  id?: string;
+  title?: string;
+  description?: string;
+  basePrice?: string | number;
+  averageRating?: string | number;
+  thumbnailUrl?: string;
+  referenceImageUrl?: string;
+  galleryUrls?: string[];
+  images?: string[];
+  imageUrls?: string[];
+  attributes?: {
+    galleryUrls?: string[];
+    images?: string[];
+    imageUrls?: string[];
+  };
+  province?: string;
+};
+
+const getListingGallery = (item: RawListing) => {
+  const urls = [
+    ...(item.galleryUrls ?? []),
+    ...(item.imageUrls ?? []),
+    ...(item.images ?? []),
+    ...(item.attributes?.galleryUrls ?? []),
+    ...(item.attributes?.imageUrls ?? []),
+    ...(item.attributes?.images ?? []),
+  ];
+
+  return urls.filter((url): url is string => typeof url === "string" && url.trim().length > 0);
+};
+
+const withSearchParams = (baseEndpoint: string, options: ListingSearchOptions = {}) => {
+  const url = new URL(baseEndpoint, "http://gostay.local");
+
+  if (options.locationQuery?.trim()) {
+    url.searchParams.set("locationQuery", options.locationQuery.trim());
+  }
+  if (options.checkIn && options.checkOut) {
+    url.searchParams.set("checkIn", options.checkIn);
+    url.searchParams.set("checkOut", options.checkOut);
+  }
+  if (options.limit) {
+    url.searchParams.set("limit", String(options.limit));
+  }
+
+  return `${url.pathname}${url.search}`;
+};
 
 const ExperienceServices = {
-  getAll: async () => {
-    const res = await Api.get(endpoint.experience.getAll);
+  getAll: async (options?: ListingSearchOptions) => {
+    const res = await Api.get(withSearchParams(endpoint.experience.getAll, options));
     // Parse DTO
     let adaptedRes = res;
     let items = res?.data?.content || res?.data?.data;
@@ -16,12 +66,16 @@ const ExperienceServices = {
     if (items && Array.isArray(items)) {
       adaptedRes = {
         ...res,
-        data: items.map((item: any) => ({
+        data: (items as RawListing[]).map((item) => ({
           id: item.id,
           name: item.title,
+          description: item.description,
           price: item.basePrice ? Number(item.basePrice) : undefined,
           rating: item.averageRating ? Number(item.averageRating) : undefined,
           image: item.thumbnailUrl,
+          thumbnailUrl: item.thumbnailUrl,
+          referenceImageUrl: item.referenceImageUrl,
+          galleryUrls: getListingGallery(item),
           address: item.province,
         }))
       };

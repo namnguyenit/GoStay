@@ -50,8 +50,9 @@ let RecommendationController = class RecommendationController {
         const parsedRadius = Number(radiusMeters ?? radius);
         return this.recommendationService.recommendByLandmarkGrouped(landmarkId, Number.isFinite(parsedRadius) && parsedRadius > 0 ? parsedRadius : 5000);
     }
-    async getSimilar(listingId) {
-        return this.recommendationService.recommendSimilar(listingId);
+    async getSimilar(listingId, limit) {
+        const parsedLimit = Number(limit);
+        return this.recommendationService.recommendSimilar(listingId, Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : 30);
     }
 };
 exports.RecommendationController = RecommendationController;
@@ -121,8 +122,9 @@ __decorate([
 __decorate([
     (0, common_1.Get)('listings/:listingId/similar'),
     __param(0, (0, common_1.Param)('listingId')),
+    __param(1, (0, common_1.Query)('limit')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], RecommendationController.prototype, "getSimilar", null);
 exports.RecommendationController = RecommendationController = __decorate([

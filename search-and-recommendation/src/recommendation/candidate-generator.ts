@@ -91,23 +91,24 @@ export class CandidateGenerator {
   async generateSimilar(listingId: string, limit: number = 50) {
     const listing = await this.listingRepo.findById(listingId);
     if (!listing) return [];
-
-    const radiusMeters = 5000;
-    const minPrice = listing.base_price * 0.5;
-    const maxPrice = listing.base_price * 1.5;
+    if (listing.latitude == null || listing.longitude == null) return [];
 
     const candidates = await this.listingRepo.search({
       lat: listing.latitude,
       lng: listing.longitude,
-      radiusMeters,
-      category: listing.category,
-      minPrice,
-      maxPrice,
+      radiusMeters: 30000,
+      category: 'ALL',
       limit,
       offset: 0,
     });
 
-    return candidates.filter((c) => c.id !== listingId);
+    return candidates
+      .filter((c) => c.id !== listingId)
+      .sort(
+        (a, b) =>
+          Number(a.distanceMeters ?? Number.MAX_SAFE_INTEGER) -
+          Number(b.distanceMeters ?? Number.MAX_SAFE_INTEGER),
+      );
   }
 
   async generateCrossSell(

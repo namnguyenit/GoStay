@@ -122,9 +122,13 @@
     }
     body {
       @apply bg-background text-foreground;
+      font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
     html {
-      font-family: Circular, -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+      font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
     }
 }
 
@@ -132,36 +136,6 @@
 @import  "./app.css";
 
 @layer utilities {
-  @keyframes searchPillAppear {
-    0% {
-      opacity: 0;
-      transform: translateY(20px) scale(1.15);
-    }
-    100% {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
-  }
-
-  @keyframes navLinksAppear {
-    0% {
-      opacity: 0;
-      transform: translateY(-10px) scale(0.95);
-    }
-    100% {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
-  }
-
-  .animate-search-pill {
-    animation: searchPillAppear 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-  }
-
-  .animate-nav-links {
-    animation: navLinksAppear 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-  }
-
   @keyframes smoothAppear {
     0% {
       opacity: 0;

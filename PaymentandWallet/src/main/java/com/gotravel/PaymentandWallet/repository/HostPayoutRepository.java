@@ -12,7 +12,6 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -20,7 +19,7 @@ public interface HostPayoutRepository extends JpaRepository<HostPayout, UUID> {
     Page<HostPayout> findByHostIdOrderByCreatedAtDesc(UUID hostId, Pageable pageable);
     Page<HostPayout> findAllByOrderByCreatedAtDesc(Pageable pageable);
     List<HostPayout> findByStatus(PayoutStatus status);
-    Optional<HostPayout> findByOrderId(UUID orderId);
+    boolean existsByOrderIdAndHostId(UUID orderId, UUID hostId);
     long countByStatus(PayoutStatus status);
 
     @Query("select coalesce(sum(payout.totalAmount), 0) from HostPayout payout")

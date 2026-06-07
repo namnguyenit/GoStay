@@ -2,6 +2,12 @@ import { Filter } from "@/modules/filter";
 import { FilterQueryDtoSchema } from "@/dto/query/filter";
 import { mapFilter } from "@/modules/filter/mapper/map-filter";
 
+const toDateParam = (date?: Date) => {
+  if (!date || Number.isNaN(date.getTime())) return "";
+  const offsetMs = date.getTimezoneOffset() * 60_000;
+  return new Date(date.getTime() - offsetMs).toISOString().slice(0, 10);
+};
+
 export const FilterService = {
   get: (params: URLSearchParams): Filter => {
    
@@ -27,8 +33,8 @@ export const FilterService = {
 
     params.set("place", value?.place?.toString() ?? "");
     params.set("type", value?.type?.toString() ?? "");
-    params.set("from", value?.date?.from?.toString() ?? "");
-    params.set("to", value?.date?.to?.toString() ?? "");
+    params.set("from", toDateParam(value?.date?.from));
+    params.set("to", toDateParam(value?.date?.to));
 
     return params;
   },

@@ -12,6 +12,7 @@ export declare class SearchService {
     private readonly cacheService;
     private readonly logger;
     constructor(listingRepo: ListingRepository, landmarkRepo: LandmarkRepository, locationResolver: LocationResolver, inventoryClient: InventoryClient, cacheService: RedisCacheService);
+    private getTodayIso;
     suggestLocations(query: string): Promise<any[]>;
     searchListings(dto: SearchQueryDto): Promise<any>;
     searchMap(dto: SearchQueryDto): Promise<{
