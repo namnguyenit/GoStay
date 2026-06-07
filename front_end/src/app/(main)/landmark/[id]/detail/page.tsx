@@ -389,9 +389,8 @@ export default function LandmarkDetailPage() {
           title="🏝️ Khu du lịch quanh đây (5km)"
           items={nearby.COMPLEX ?? []}
           onItemClick={(complex) => {
-            if (!complex?.name) return;
-            const params = new URLSearchParams({ place: complex.name, type: "" });
-            router.push(`/search?${params.toString()}`);
+            if (!complex?.id) return;
+            router.push(`/complex/${complex.id}/detail`);
           }}
         />
 

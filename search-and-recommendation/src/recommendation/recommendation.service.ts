@@ -160,16 +160,31 @@ export class RecommendationService {
     return data;
   }
 
-  async recommendByComplex(complexId: string) {
-    const cacheKey = `recommend:complex:${complexId}`;
+  async getComplexDetail(complexId: string) {
+    const cacheKey = `recommend:complex:${complexId}:detail`;
+    const cached = await this.cacheService.get<any>(cacheKey);
+    if (cached) return cached;
+
+    const complex = await this.candidateGenerator.getComplexById(complexId);
+    if (!complex) return null;
+
+    await this.cacheService.set(cacheKey, complex, 300);
+    return complex;
+  }
+
+  async recommendByComplex(complexId: string, limit: number = 30) {
+    const safeLimit = Number.isFinite(limit)
+      ? Math.max(1, Math.min(Math.floor(limit), 100))
+      : 30;
+    const cacheKey = `recommend:complex:${complexId}:limit:${safeLimit}`;
     const cached = await this.cacheService.get<any[]>(cacheKey);
     if (cached) return cached;
 
     const candidates = await this.filterAvailableListings(
-      await this.candidateGenerator.generateByComplex(complexId),
+      await this.candidateGenerator.generateByComplex(complexId, safeLimit * 2),
     );
     const scored = this.scoringService.score(candidates, { complexId });
-    const finalRanked = this.diversityService.diversifyAndRank(scored, 15);
+    const finalRanked = this.diversityService.diversifyAndRank(scored, safeLimit);
 
     await this.cacheService.set(cacheKey, finalRanked, 300);
     return finalRanked;

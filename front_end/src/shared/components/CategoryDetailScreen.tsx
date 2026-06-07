@@ -80,6 +80,7 @@ type DetailAttributes = {
 
 type ListingDetailData = {
   id?: string;
+  complexId?: string;
   thumbnailUrl?: string;
   averageRating?: number;
   totalReviews?: number;
@@ -124,7 +125,7 @@ export default function CategoryDetailScreen({
   const ratingValue = selectedItem?.rating ?? detailData?.averageRating;
   const locationText = detailData?.province || selectedItem?.address;
   const sidebarItems = (recommendations.length > 0 ? recommendations : items)
-    .filter((item) => Boolean(item?.id))
+    .filter((item) => Boolean(item?.id && item.id !== activeId))
     .sort(
       (a, b) =>
         Number(a?.distanceMeters ?? Number.MAX_SAFE_INTEGER) -

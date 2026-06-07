@@ -62,6 +62,15 @@ const ComplexServices = {
 
     return items.map(mapComplex);
   },
+  getById: async (id: string) => {
+    if (!id) return null;
+
+    const res = await Api.get(`/v1/recommendations/complexes/${id}/detail`);
+    const data = res?.data ?? res ?? null;
+    if (!data) return null;
+
+    return mapComplex(data);
+  },
   getForLocation: async (place?: string) => {
     const query = place?.trim();
     if (!query) return ComplexServices.getAll();

@@ -37,8 +37,12 @@ let RecommendationController = class RecommendationController {
         const parsedLimit = Number(limit);
         return this.recommendationService.getComplexes(Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : 120);
     }
-    async getComplexRecommendations(id) {
-        return this.recommendationService.recommendByComplex(id);
+    async getComplexDetail(id) {
+        return this.recommendationService.getComplexDetail(id);
+    }
+    async getComplexRecommendations(id, limit) {
+        const parsedLimit = Number(limit);
+        return this.recommendationService.recommendByComplex(id, Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : 30);
     }
     async getHomeRecommendations(province) {
         return this.recommendationService.recommendForHome(province);
@@ -90,10 +94,18 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], RecommendationController.prototype, "getComplexes", null);
 __decorate([
-    (0, common_1.Get)('complexes/:id'),
+    (0, common_1.Get)('complexes/:id/detail'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], RecommendationController.prototype, "getComplexDetail", null);
+__decorate([
+    (0, common_1.Get)('complexes/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], RecommendationController.prototype, "getComplexRecommendations", null);
 __decorate([

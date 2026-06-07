@@ -88,9 +88,8 @@ export default function ComplexCarouselSections({
   }, [filteredComplexes, maxGroups, maxItemsPerGroup]);
 
   const openComplexSearch = (item: ComplexOffering | null | undefined) => {
-    if (!item?.name) return;
-    const params = new URLSearchParams({ place: item.name, type: "" });
-    router.push(`/search?${params.toString()}`);
+    if (!item?.id) return;
+    router.push(`/complex/${item.id}/detail`);
   };
 
   if (filteredComplexes.length === 0) return null;

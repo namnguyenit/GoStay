@@ -60,7 +60,28 @@ let ComplexRepository = ComplexRepository_1 = class ComplexRepository {
     }
     async findById(id) {
         try {
-            const sql = `SELECT * FROM public.complexes WHERE id = $1 AND status = 'ACTIVE' LIMIT 1`;
+            const sql = `
+        SELECT
+          c.id,
+          c.name,
+          c.description,
+          c.province,
+          c.latitude,
+          c.longitude,
+          c.thumbnail_url AS "thumbnailUrl",
+          c.gallery_urls AS "galleryUrls",
+          c.created_at AS "createdAt",
+          c.updated_at AS "updatedAt",
+          COUNT(l.id)::int AS "listingCount"
+        FROM public.complexes c
+        LEFT JOIN public.listings l
+          ON l.complex_id = c.id
+          AND l.status = 'ACTIVE'
+        WHERE c.id = $1
+          AND c.status = 'ACTIVE'
+        GROUP BY c.id
+        LIMIT 1;
+      `;
             const result = await this.pool.query(sql, [id]);
             return result.rows[0];
         }

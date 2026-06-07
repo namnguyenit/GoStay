@@ -8,7 +8,8 @@ export declare class RecommendationController {
     getProvinces(): Promise<any[]>;
     getProvinceDestinations(province: string): Promise<any[]>;
     getComplexes(limit?: string): Promise<any[]>;
-    getComplexRecommendations(id: string): Promise<any[]>;
+    getComplexDetail(id: string): Promise<any>;
+    getComplexRecommendations(id: string, limit?: string): Promise<any[]>;
     getHomeRecommendations(province?: string): Promise<any[]>;
     getNearbyRecommendations(dto: NearbyRecommendationQueryDto): Promise<any>;
     getByLandmark(landmarkId: string, radius?: string, radiusMeters?: string): Promise<any>;

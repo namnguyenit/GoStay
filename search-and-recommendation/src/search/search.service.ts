@@ -235,7 +235,7 @@ export class SearchService {
         priceUnit: item.priceUnit,
         averageRating: item.averageRating,
         thumbnailUrl: item.thumbnailUrl,
-        complexId: item.complex_id,
+        complexId: item.complexId || item.complex_id,
       }));
 
     return {

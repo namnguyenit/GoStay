@@ -51,6 +51,9 @@ let CandidateGenerator = class CandidateGenerator {
     async generateComplexes(limit = 120) {
         return this.complexRepo.findAll(limit);
     }
+    async getComplexById(complexId) {
+        return this.complexRepo.findById(complexId);
+    }
     async generateComplexesByLandmark(landmarkId, radiusMeters = 5000, limit = 12) {
         const landmark = await this.landmarkRepo.findById(landmarkId);
         if (!landmark)

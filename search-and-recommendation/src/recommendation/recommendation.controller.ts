@@ -39,9 +39,21 @@ export class RecommendationController {
     );
   }
 
+  @Get('complexes/:id/detail')
+  async getComplexDetail(@Param('id') id: string) {
+    return this.recommendationService.getComplexDetail(id);
+  }
+
   @Get('complexes/:id')
-  async getComplexRecommendations(@Param('id') id: string) {
-    return this.recommendationService.recommendByComplex(id);
+  async getComplexRecommendations(
+    @Param('id') id: string,
+    @Query('limit') limit?: string,
+  ) {
+    const parsedLimit = Number(limit);
+    return this.recommendationService.recommendByComplex(
+      id,
+      Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : 30,
+    );
   }
 
   // Keep old ones for backward compat with my own prior implementation

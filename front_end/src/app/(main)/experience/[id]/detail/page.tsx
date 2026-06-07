@@ -9,11 +9,13 @@ interface PageProps {
 
 export default async function Page({ params }: PageProps) {
   const { id } = await params;
-  const [experiences, detailData, recommendations] = await Promise.all([
+  const [experiences, detailData] = await Promise.all([
     ExperienceServices.getAll(),
     ExperienceServices.getById(id),
-    RecommendationServices.getNearbyForListing(id),
   ]);
+  const recommendations = detailData?.complexId
+    ? await RecommendationServices.getByComplex(detailData.complexId)
+    : await RecommendationServices.getNearbyForListing(id);
 
   return (
     <CategoryDetailScreen

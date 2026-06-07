@@ -16,6 +16,7 @@ export type RecommendedListing = {
   galleryUrls?: string[];
   category?: "STAY" | "EXP" | "SVC" | string;
   categoryType?: "place" | "experience" | "service";
+  complexId?: string;
   distanceMeters?: number;
 };
 
@@ -34,6 +35,8 @@ type RawRecommendedListing = {
   image?: string;
   galleryUrls?: string[];
   category?: string;
+  complexId?: string;
+  complex_id?: string;
   distanceMeters?: string | number;
 };
 
@@ -66,10 +69,26 @@ const mapRecommendedListing = (item: RawRecommendedListing): RecommendedListing 
   galleryUrls: item.galleryUrls ?? [],
   category: item.category,
   categoryType: toCategoryType(item.category),
+  complexId: item.complexId || item.complex_id,
   distanceMeters: toNumber(item.distanceMeters),
 });
 
 const RecommendationServices = {
+  getByComplex: async (complexId: string, limit = 30) => {
+    if (!complexId) return [];
+
+    try {
+      const res = await Api.get(
+        `/v1/recommendations/complexes/${complexId}?limit=${limit}`,
+      );
+      const data = res?.data ?? res ?? [];
+      if (!Array.isArray(data)) return [];
+      return (data as RawRecommendedListing[]).map(mapRecommendedListing);
+    } catch (error) {
+      console.error("Failed to fetch complex recommendations:", error);
+      return [];
+    }
+  },
   getNearbyForListing: async (listingId: string, limit = 30) => {
     if (!listingId) return [];
 

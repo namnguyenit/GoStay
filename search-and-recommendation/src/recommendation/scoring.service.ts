@@ -50,7 +50,8 @@ export class ScoringService {
 
       // 5. Complex boost (5%)
       let complexBoost = 0;
-      if (context.complexId && candidate.complex_id === context.complexId) {
+      const candidateComplexId = candidate.complexId || candidate.complex_id;
+      if (context.complexId && candidateComplexId === context.complexId) {
         complexBoost = 100;
         finalScore += 0.05 * complexBoost;
       }

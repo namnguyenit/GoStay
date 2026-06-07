@@ -139,8 +139,8 @@ let ListingRepository = ListingRepository_1 = class ListingRepository {
           l.latitude,
           l.longitude,
           l.thumbnail_url AS "thumbnailUrl",
-          l.complex_id,
-          l.host_id,
+          l.complex_id AS "complexId",
+          l.host_id AS "hostId",
           ${selectDistance},
           ${selectTextScore}
         FROM public.listings l

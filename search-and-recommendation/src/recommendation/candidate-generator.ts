@@ -62,6 +62,10 @@ export class CandidateGenerator {
     return this.complexRepo.findAll(limit);
   }
 
+  async getComplexById(complexId: string) {
+    return this.complexRepo.findById(complexId);
+  }
+
   async generateComplexesByLandmark(
     landmarkId: string,
     radiusMeters: number = 5000,
