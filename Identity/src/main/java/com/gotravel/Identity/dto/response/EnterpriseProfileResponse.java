@@ -3,6 +3,8 @@ package com.gotravel.Identity.dto.response;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDateTime;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,4 +20,6 @@ public class EnterpriseProfileResponse {
     String bankAccountName;
     String avatarUrl;
     String approvalStatus;
+    LocalDateTime createdAt;
+    LocalDateTime updatedAt;
 }

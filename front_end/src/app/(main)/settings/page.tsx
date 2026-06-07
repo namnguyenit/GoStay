@@ -1,28 +1,38 @@
 "use client";
 
 import { useEffect, useState, useRef, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import { 
   User, 
   Key, 
   Briefcase, 
   Upload, 
   CheckCircle, 
-  Building2, 
-  ShieldAlert, 
   AlertCircle,
   Phone,
   Calendar,
-  Mail,
-  UserCheck
+  Mail
 } from "lucide-react";
 import { UserServices } from "@/services";
 import AuthService from "@/services/auth.service";
 import { Button } from "@/components/ui/button";
+import UpgradeApplicationsPanel from "@/shared/components/UpgradeApplicationsPanel";
+
+type CurrentUser = {
+  username?: string;
+  email?: string;
+};
+
+type UserProfile = {
+  fullName?: string;
+  phoneNumber?: string;
+  dateOfBirth?: string;
+  avatarUrl?: string;
+};
 
 function SettingsContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Active Tab State
@@ -30,17 +40,13 @@ function SettingsContent() {
 
   // User State
   const [loading, setLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useState<any>(null);
-  const [profile, setProfile] = useState<any>({
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const [profile, setProfile] = useState<UserProfile>({
     fullName: "",
     phoneNumber: "",
     dateOfBirth: "",
     avatarUrl: "",
   });
-
-  // Profiles detail (if host/enterprise)
-  const [hostProfile, setHostProfile] = useState<any>(null);
-  const [enterpriseProfile, setEnterpriseProfile] = useState<any>(null);
 
   // Form states - Profile
   const [profileForm, setProfileForm] = useState({
@@ -54,25 +60,6 @@ function SettingsContent() {
     oldPassword: "",
     newPassword: "",
     confirmPassword: "",
-  });
-
-  // Form states - Host Upgrade
-  const [hostForm, setHostForm] = useState({
-    fullName: "",
-    phoneNumber: "",
-    cccdNumber: "",
-    bankAccount: "",
-    bankName: "",
-  });
-  const [frontImage, setFrontImage] = useState<File | null>(null);
-  const [backImage, setBackImage] = useState<File | null>(null);
-
-  // Form states - Enterprise Upgrade
-  const [entForm, setEntForm] = useState({
-    companyName: "",
-    companyAddress: "",
-    taxCode: "",
-    representativeName: "",
   });
 
   // Notification Banners
@@ -98,30 +85,6 @@ function SettingsContent() {
         });
       }
 
-      // 3. If user has HOST role, fetch host profile
-      const roles = AuthService.getUserRoles();
-      if (roles.includes("HOST")) {
-        try {
-          const hostRes = await UserServices.getHostProfile();
-          if (hostRes && hostRes.data) {
-            setHostProfile(hostRes.data);
-          }
-        } catch (e) {
-          console.error("Could not fetch Host profile", e);
-        }
-      }
-
-      // 4. If user has ENTERPRISE role, fetch enterprise profile
-      if (roles.includes("ENTERPRISE")) {
-        try {
-          const entRes = await UserServices.getEnterpriseProfile();
-          if (entRes && entRes.data) {
-            setEnterpriseProfile(entRes.data);
-          }
-        } catch (e) {
-          console.error("Could not fetch Enterprise profile", e);
-        }
-      }
     } catch (error) {
       console.error("Failed to load settings data", error);
     } finally {
@@ -171,7 +134,7 @@ function SettingsContent() {
 
       triggerBanner("success", "Cập nhật hồ sơ cá nhân thành công!");
       fetchData();
-    } catch (err: any) {
+    } catch {
       triggerBanner("error", "Lỗi cập nhật hồ sơ cá nhân.");
     } finally {
       setSubmitting(false);
@@ -195,7 +158,7 @@ function SettingsContent() {
         triggerBanner("success", "Đã cập nhật ảnh đại diện mới!");
         fetchData();
       }
-    } catch (err: any) {
+    } catch {
       triggerBanner("error", "Tải ảnh đại diện thất bại.");
     } finally {
       setSubmitting(false);
@@ -217,52 +180,8 @@ function SettingsContent() {
       });
       setPasswordForm({ oldPassword: "", newPassword: "", confirmPassword: "" });
       triggerBanner("success", "Đổi mật khẩu tài khoản thành công!");
-    } catch (err: any) {
+    } catch {
       triggerBanner("error", "Không thể cập nhật mật khẩu.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  // 4. Submit Host Upgrade Application
-  const handleApplyHost = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!frontImage || !backImage) {
-      triggerBanner("error", "Vui lòng tải lên cả ảnh mặt trước và mặt sau CCCD!");
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      const formData = new FormData();
-      formData.append("fullName", hostForm.fullName);
-      formData.append("phone", hostForm.phoneNumber);
-      formData.append("cccdNumber", hostForm.cccdNumber);
-      formData.append("bankAccount", hostForm.bankAccount);
-      formData.append("bankName", hostForm.bankName);
-      formData.append("frontImage", frontImage);
-      formData.append("backImage", backImage);
-
-      await UserServices.upgradeToHost(formData);
-      triggerBanner("success", "Yêu cầu nâng cấp lên HOST đã được gửi thành công!");
-      fetchData();
-    } catch (err: any) {
-      triggerBanner("error", "Không thể gửi yêu cầu nâng cấp HOST. Có thể bạn đang có hồ sơ chờ duyệt.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  // 5. Submit Enterprise Upgrade Application
-  const handleApplyEnterprise = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-    try {
-      await UserServices.upgradeToEnterprise(entForm);
-      triggerBanner("success", "Yêu cầu nâng cấp lên DOANH NGHIỆP đã gửi thành công!");
-      fetchData();
-    } catch (err: any) {
-      triggerBanner("error", "Gửi yêu cầu nâng cấp Enterprise thất bại.");
     } finally {
       setSubmitting(false);
     }
@@ -278,16 +197,6 @@ function SettingsContent() {
       </div>
     );
   }
-
-  const userRoles = AuthService.getUserRoles();
-  const hasHost = userRoles.includes("HOST");
-  const hasEnterprise = userRoles.includes("ENTERPRISE");
-
-  const hostApproval = currentUser?.hostProfile?.approvalStatus;
-  const enterpriseApproval = currentUser?.enterpriseProfile?.approvalStatus;
-
-  const isHostPending = hostApproval === "PENDING";
-  const isEnterprisePending = enterpriseApproval === "PENDING";
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 pt-28 pb-12 px-4 sm:px-6 lg:px-8 animate-smooth-appear">
@@ -378,10 +287,13 @@ function SettingsContent() {
                 <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-zinc-200 dark:border-white/5">
                   <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                     {profile.avatarUrl ? (
-                      <img 
-                        src={profile.avatarUrl} 
-                        alt="avatar" 
-                        className="w-24 h-24 rounded-full object-cover border border-zinc-200 dark:border-white/10 group-hover:opacity-85 transition-opacity" 
+                      <Image
+                        unoptimized
+                        src={profile.avatarUrl}
+                        alt="avatar"
+                        width={96}
+                        height={96}
+                        className="h-24 w-24 rounded-full border border-zinc-200 object-cover transition-opacity group-hover:opacity-85 dark:border-white/10"
                       />
                     ) : (
                       <div className="w-24 h-24 rounded-full bg-app-primary/10 border border-app-primary/20 flex items-center justify-center text-app-primary text-2xl font-bold group-hover:bg-app-primary/20 transition-all">
@@ -484,307 +396,7 @@ function SettingsContent() {
 
             {/* TAB 2: Upgrade Account Portal */}
             {activeTab === "upgrade" && (
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Nâng cấp Đối tác</h3>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Đăng ký trở thành đối tác cá nhân (HOST) hoặc đối tác doanh nghiệp (ENTERPRISE) để bắt đầu kinh doanh.</p>
-                </div>
-
-                {/* Case 1: Already a HOST */}
-                {hasHost && (
-                  <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-500/20 rounded-xl p-5 flex flex-col gap-4">
-                    <div className="flex items-center gap-3">
-                      <UserCheck className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-                      <div>
-                        <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Bạn đang là HOST của hệ thống</h4>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Hồ sơ đối tác cá nhân của bạn đã được kiểm duyệt hoạt động.</p>
-                      </div>
-                    </div>
-                    {hostProfile && (
-                      <div className="grid grid-cols-2 gap-3 text-xs bg-zinc-50 dark:bg-black/20 p-4 rounded-lg border border-zinc-200 dark:border-white/5 mt-2">
-                        <div><span className="text-zinc-500 dark:text-zinc-400">Họ và tên:</span> <span className="font-semibold text-zinc-900 dark:text-zinc-50">{hostProfile.fullName || "—"}</span></div>
-                        <div><span className="text-zinc-500 dark:text-zinc-400">Số CCCD:</span> <span className="font-semibold text-zinc-900 dark:text-zinc-50">{hostProfile.cccdNumber || "—"}</span></div>
-                        <div><span className="text-zinc-500 dark:text-zinc-400">Ngân hàng:</span> <span className="font-semibold text-zinc-900 dark:text-zinc-50">{hostProfile.bankName || "—"}</span></div>
-                        <div><span className="text-zinc-500 dark:text-zinc-400">Số tài khoản:</span> <span className="font-semibold text-zinc-900 dark:text-zinc-50">{hostProfile.bankAccount || "—"}</span></div>
-                      </div>
-                    )}
-                    
-                    <div className="bg-amber-50 dark:bg-yellow-950/20 border border-amber-200 dark:border-yellow-500/10 rounded-lg p-3.5 flex gap-2">
-                      <ShieldAlert className="h-4 w-4 text-amber-600 dark:text-yellow-500 shrink-0 mt-0.5" />
-                      <p className="text-[11px] text-amber-800 dark:text-yellow-200">
-                        <strong>Quy tắc loại trừ:</strong> Do đã là đối tác HOST (Cá nhân), bạn không được phép nâng cấp lên đối tác ENTERPRISE (Doanh nghiệp).
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Case 2: Already an ENTERPRISE */}
-                {hasEnterprise && (
-                  <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-500/20 rounded-xl p-5 flex flex-col gap-4">
-                    <div className="flex items-center gap-3">
-                      <Building2 className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-                      <div>
-                        <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Bạn đang là DOANH NGHIỆP của hệ thống</h4>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Hồ sơ đối tác pháp nhân doanh nghiệp đã được kiểm duyệt hoạt động.</p>
-                      </div>
-                    </div>
-                    {enterpriseProfile && (
-                      <div className="grid grid-cols-2 gap-3 text-xs bg-zinc-50 dark:bg-black/20 p-4 rounded-lg border border-zinc-200 dark:border-white/5 mt-2">
-                        <div><span className="text-zinc-500 dark:text-zinc-400">Tên doanh nghiệp:</span> <span className="font-semibold text-zinc-900 dark:text-zinc-50">{enterpriseProfile.companyName || "—"}</span></div>
-                        <div><span className="text-zinc-500 dark:text-zinc-400">Mã số thuế:</span> <span className="font-semibold text-zinc-900 dark:text-zinc-50">{enterpriseProfile.taxCode || "—"}</span></div>
-                        <div><span className="text-zinc-500 dark:text-zinc-400">Đại diện pháp luật:</span> <span className="font-semibold text-zinc-900 dark:text-zinc-50">{enterpriseProfile.representativeName || "—"}</span></div>
-                        <div className="col-span-2"><span className="text-zinc-500 dark:text-zinc-400">Địa chỉ trụ sở:</span> <span className="font-semibold text-zinc-900 dark:text-zinc-50">{enterpriseProfile.companyAddress || "—"}</span></div>
-                      </div>
-                    )}
-                    
-                    <div className="bg-amber-50 dark:bg-yellow-950/20 border border-amber-200 dark:border-yellow-500/10 rounded-lg p-3.5 flex gap-2">
-                      <ShieldAlert className="h-4 w-4 text-amber-600 dark:text-yellow-500 shrink-0 mt-0.5" />
-                      <p className="text-[11px] text-amber-800 dark:text-yellow-200">
-                        <strong>Quy tắc loại trừ:</strong> Do đã là đối tác ENTERPRISE (Doanh nghiệp), bạn không được phép nâng cấp lên đối tác HOST (Cá nhân).
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Case 3: Regular USER - Show both options or Pending states */}
-                {!hasHost && !hasEnterprise && (
-                  <div className="space-y-8">
-                    {/* Show Pending Host Notification */}
-                    {isHostPending && (
-                      <div className="bg-amber-50 dark:bg-yellow-950/30 border border-amber-200 dark:border-yellow-500/20 rounded-xl p-5 flex flex-col gap-3">
-                        <div className="flex items-center gap-3">
-                          <AlertCircle className="h-6 w-6 text-amber-600 dark:text-yellow-400" />
-                          <div>
-                            <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Yêu cầu nâng cấp HOST đang chờ phê duyệt</h4>
-                            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Chúng tôi đang xác minh thông tin giấy tờ tùy thân của bạn. Vui lòng quay lại sau.</p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Show Pending Enterprise Notification */}
-                    {isEnterprisePending && (
-                      <div className="bg-amber-50 dark:bg-yellow-950/30 border border-amber-200 dark:border-yellow-500/20 rounded-xl p-5 flex flex-col gap-3">
-                        <div className="flex items-center gap-3">
-                          <Building2 className="h-6 w-6 text-amber-600 dark:text-yellow-400" />
-                          <div>
-                            <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Yêu cầu nâng cấp DOANH NGHIỆP đang chờ phê duyệt</h4>
-                            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Hồ sơ pháp lý doanh nghiệp của bạn đang được kiểm duyệt.</p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {!isHostPending && !isEnterprisePending && (
-                      <>
-                        {/* HOST application form */}
-                        <div className="bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200 dark:border-white/5 rounded-xl p-5 sm:p-6 space-y-4">
-                          <div className="flex items-center gap-3 pb-3 border-b border-zinc-200 dark:border-white/5">
-                            <User className="h-5 w-5 text-app-primary" />
-                            <div>
-                              <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Đăng ký Đối tác cá nhân (HOST)</h4>
-                              <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Kinh doanh bất động sản, phòng nghỉ dưới tư cách cá nhân.</p>
-                            </div>
-                          </div>
-
-                          {hostApproval === "REJECTED" && (
-                            <div className="bg-rose-50 dark:bg-red-950/20 border border-rose-200 dark:border-red-500/20 rounded-lg p-3 flex gap-2">
-                              <AlertCircle className="h-4 w-4 text-rose-600 dark:text-red-500 shrink-0 mt-0.5" />
-                              <p className="text-xs text-rose-800 dark:text-red-200">
-                                Yêu cầu nâng cấp HOST trước đây của bạn đã bị từ chối. Vui lòng gửi lại hồ sơ chính xác.
-                              </p>
-                            </div>
-                          )}
-
-                          <form onSubmit={handleApplyHost} className="space-y-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                              <div>
-                                <label className="block text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-2">Họ tên trên CCCD</label>
-                                <input 
-                                  type="text" 
-                                  required 
-                                  placeholder="NGUYEN VAN A"
-                                  value={hostForm.fullName} 
-                                  onChange={e => setHostForm({...hostForm, fullName: e.target.value})}
-                                  className="w-full bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-app-primary transition-all"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-2">Số điện thoại liên hệ</label>
-                                <input 
-                                  type="text" 
-                                  required 
-                                  placeholder="09XXXXXXXX"
-                                  value={hostForm.phoneNumber} 
-                                  onChange={e => setHostForm({...hostForm, phoneNumber: e.target.value})}
-                                  className="w-full bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-app-primary transition-all"
-                                />
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                              <div>
-                                <label className="block text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-2">Số CCCD / Hộ chiếu</label>
-                                <input 
-                                  type="text" 
-                                  required 
-                                  placeholder="037XXXXXXXXX"
-                                  value={hostForm.cccdNumber} 
-                                  onChange={e => setHostForm({...hostForm, cccdNumber: e.target.value})}
-                                  className="w-full bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-app-primary transition-all"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-2">Tên ngân hàng thụ hưởng</label>
-                                <input 
-                                  type="text" 
-                                  required 
-                                  placeholder="Vietcombank, MB..."
-                                  value={hostForm.bankName} 
-                                  onChange={e => setHostForm({...hostForm, bankName: e.target.value})}
-                                  className="w-full bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-app-primary transition-all"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-2">Số tài khoản ngân hàng</label>
-                                <input 
-                                  type="text" 
-                                  required 
-                                  placeholder="102XXXXXXXX"
-                                  value={hostForm.bankAccount} 
-                                  onChange={e => setHostForm({...hostForm, bankAccount: e.target.value})}
-                                  className="w-full bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-app-primary transition-all"
-                                />
-                              </div>
-                            </div>
-
-                            {/* File Upload fields */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                              <div className="bg-zinc-50 dark:bg-zinc-950/50/50 p-4 rounded-xl border border-zinc-200 dark:border-white/5 flex flex-col items-center justify-center text-center">
-                                <Upload className="h-5 w-5 text-zinc-400 dark:text-zinc-500 mb-2" />
-                                <label className="block text-xs font-semibold text-zinc-600 dark:text-zinc-300 cursor-pointer">
-                                  {frontImage ? frontImage.name : "Tải ảnh CCCD mặt trước"}
-                                  <input 
-                                    type="file" 
-                                    className="hidden" 
-                                    accept="image/*" 
-                                    onChange={e => setFrontImage(e.target.files?.[0] || null)} 
-                                  />
-                                </label>
-                              </div>
-                              <div className="bg-zinc-50 dark:bg-zinc-950/50/50 p-4 rounded-xl border border-zinc-200 dark:border-white/5 flex flex-col items-center justify-center text-center">
-                                <Upload className="h-5 w-5 text-zinc-400 dark:text-zinc-500 mb-2" />
-                                <label className="block text-xs font-semibold text-zinc-600 dark:text-zinc-300 cursor-pointer">
-                                  {backImage ? backImage.name : "Tải ảnh CCCD mặt sau"}
-                                  <input 
-                                    type="file" 
-                                    className="hidden" 
-                                    accept="image/*" 
-                                    onChange={e => setBackImage(e.target.files?.[0] || null)} 
-                                  />
-                                </label>
-                              </div>
-                            </div>
-
-                            <div className="flex justify-end pt-2">
-                              <Button 
-                                type="submit" 
-                                className="bg-app-primary hover:bg-app-primary/90 text-xs px-5 py-2 h-auto"
-                                disabled={submitting}
-                              >
-                                Gửi yêu cầu HOST
-                              </Button>
-                            </div>
-                          </form>
-                        </div>
-
-                        {/* ENTERPRISE application form */}
-                        <div className="bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200 dark:border-white/5 rounded-xl p-5 sm:p-6 space-y-4">
-                          <div className="flex items-center gap-3 pb-3 border-b border-zinc-200 dark:border-white/5">
-                            <Building2 className="h-5 w-5 text-app-primary" />
-                            <div>
-                              <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Đăng ký Đối tác doanh nghiệp (ENTERPRISE)</h4>
-                              <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Kinh doanh phòng nghỉ, các gói trải nghiệm dưới tư cách pháp nhân công ty.</p>
-                            </div>
-                          </div>
-
-                          {enterpriseApproval === "REJECTED" && (
-                            <div className="bg-rose-50 dark:bg-red-950/20 border border-rose-200 dark:border-red-500/20 rounded-lg p-3 flex gap-2">
-                              <AlertCircle className="h-4 w-4 text-rose-600 dark:text-red-500 shrink-0 mt-0.5" />
-                              <p className="text-xs text-rose-800 dark:text-red-200">
-                                Yêu cầu nâng cấp DOANH NGHIỆP trước đây của bạn đã bị từ chối. Vui lòng gửi lại hồ sơ chính xác.
-                              </p>
-                            </div>
-                          )}
-
-                          <form onSubmit={handleApplyEnterprise} className="space-y-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                              <div>
-                                <label className="block text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-2">Tên công ty doanh nghiệp</label>
-                                <input 
-                                  type="text" 
-                                  required 
-                                  placeholder="CÔNG TY TNHH GOSTAY VIỆT NAM"
-                                  value={entForm.companyName} 
-                                  onChange={e => setEntForm({...entForm, companyName: e.target.value})}
-                                  className="w-full bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-app-primary transition-all"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-2">Người đại diện pháp luật</label>
-                                <input 
-                                  type="text" 
-                                  required 
-                                  placeholder="NGUYEN VAN A"
-                                  value={entForm.representativeName} 
-                                  onChange={e => setEntForm({...entForm, representativeName: e.target.value})}
-                                  className="w-full bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-app-primary transition-all"
-                                />
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                              <div className="sm:col-span-1">
-                                <label className="block text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-2">Mã số thuế Doanh nghiệp</label>
-                                <input 
-                                  type="text" 
-                                  required 
-                                  placeholder="MST-XXXXXXXX"
-                                  value={entForm.taxCode} 
-                                  onChange={e => setEntForm({...entForm, taxCode: e.target.value})}
-                                  className="w-full bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-app-primary transition-all"
-                                />
-                              </div>
-                              <div className="sm:col-span-2">
-                                <label className="block text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-2">Địa chỉ trụ sở chính</label>
-                                <input 
-                                  type="text" 
-                                  required 
-                                  placeholder="Số 1, Đường Trần Hưng Đạo, Hà Nội"
-                                  value={entForm.companyAddress} 
-                                  onChange={e => setEntForm({...entForm, companyAddress: e.target.value})}
-                                  className="w-full bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-app-primary transition-all"
-                                />
-                              </div>
-                            </div>
-
-                            <div className="flex justify-end pt-2">
-                              <Button 
-                                type="submit" 
-                                className="bg-app-primary hover:bg-app-primary/90 text-xs px-5 py-2 h-auto"
-                                disabled={submitting}
-                              >
-                                Gửi yêu cầu ENTERPRISE
-                              </Button>
-                            </div>
-                          </form>
-                        </div>
-                      </>
-                    )}
-
-                  </div>
-                )}
-              </div>
+              <UpgradeApplicationsPanel onChanged={fetchData} />
             )}
 
             {/* TAB 3: Security & Password */}

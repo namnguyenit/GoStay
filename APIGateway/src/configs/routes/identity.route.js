@@ -119,6 +119,7 @@ export const identityRoutes = [
             // --- Nâng cấp ---
             url = url.replace(/^\/api\/v1\/me\/upgrade-host$/, '/api/users/me/upgradetohost'); // POST, DELETE
             url = url.replace(/^\/api\/v1\/me\/upgrade-enterprise$/, '/api/users/me/upgradetoenterprise'); // POST
+            url = url.replace(/^\/api\/v1\/me\/upgrade-applications$/, '/api/users/me/upgrade-applications'); // GET
 
             // --- Hồ sơ đặc thù ---
             url = url.replace(/^\/api\/v1\/me\/host-profile$/, '/api/users/me/host-profile'); // GET, PUT

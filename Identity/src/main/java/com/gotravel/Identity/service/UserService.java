@@ -28,6 +28,7 @@ import com.gotravel.Identity.dto.request.*;
 import com.gotravel.Identity.dto.response.*;
 import com.gotravel.Identity.exception.*;
 import java.security.PublicKey;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -304,6 +305,36 @@ public class UserService {
                 .build();
     }
 
+    public UpgradeApplicationsResponse getMyUpgradeApplications(String userId) {
+        User user = findUserById(userId);
+        HostProfileResponse hostApplication = null;
+        EnterpriseProfileResponse enterpriseApplication = null;
+        List<UpgradeApplicationsResponse.ApplicationHistoryEntry> history = new ArrayList<>();
+
+        if (user.getHostProfile() != null) {
+            hostApplication = userMapper.toHostProfileResponse(user.getHostProfile());
+            hostApplication.setAvatarUrl(getAvatarUrl(user));
+            history.addAll(buildApplicationHistory("HOST", user.getHostProfile().getApprovalStatus(), user.getHostProfile().getCreatedAt(), user.getHostProfile().getUpdatedAt()));
+        }
+
+        if (user.getEnterpriseProfile() != null) {
+            enterpriseApplication = userMapper.toEnterpriseProfileResponse(user.getEnterpriseProfile());
+            enterpriseApplication.setAvatarUrl(getAvatarUrl(user));
+            history.addAll(buildApplicationHistory("ENTERPRISE", user.getEnterpriseProfile().getApprovalStatus(), user.getEnterpriseProfile().getCreatedAt(), user.getEnterpriseProfile().getUpdatedAt()));
+        }
+
+        history.sort(Comparator.comparing(
+                UpgradeApplicationsResponse.ApplicationHistoryEntry::getOccurredAt,
+                Comparator.nullsLast(Comparator.reverseOrder())
+        ));
+
+        return UpgradeApplicationsResponse.builder()
+                .hostApplication(hostApplication)
+                .enterpriseApplication(enterpriseApplication)
+                .history(history)
+                .build();
+    }
+
     /**
      * @Logic upgrade từ người dùng lên Host
      * @param userId
@@ -311,7 +342,11 @@ public class UserService {
      * @retuhostn UserReponse
      */
     @Transactional
-    public ApprovalStatusResponse updateProfileUpgradeToHost(String userId, HostProfileRequest hostProfileRequest) {
+    public ApprovalStatusResponse updateProfileUpgradeToHost(
+            String userId,
+            HostProfileRequest hostProfileRequest,
+            MultipartFile frontImage,
+            MultipartFile backImage) {
         User user = findUserById(userId);
         Boolean check = user.getRoles().stream()
                 .anyMatch(role -> role.getName().equals("HOST"));
@@ -333,6 +368,13 @@ public class UserService {
         }
 
         userMapper.updateHostProfileFromRequest(hostProfileRequest, existingProfile);
+        if (frontImage != null && !frontImage.isEmpty() && backImage != null && !backImage.isEmpty()) {
+            List<String> documentUrls = uploadSecureDocuments(userId, frontImage, backImage);
+            existingProfile.setFrontImageUrl(documentUrls.get(0));
+            existingProfile.setBackImageUrl(documentUrls.get(1));
+        } else if (existingProfile.getFrontImageUrl() == null || existingProfile.getBackImageUrl() == null) {
+            throw new AppException(UserErrorCode.UPLOAD_IMAGE_FAILED);
+        }
 
         // Revoke HOST role since profile is pending again
         user.getRoles().removeIf(r -> r.getName().equals("HOST"));
@@ -343,6 +385,31 @@ public class UserService {
                 .builder()
                 .approvalstatus("PENDING")
                 .build();
+    }
+
+    @Transactional
+    public UserResponse updateProfileUpgradeToEnterprise(String userId, EnterpriseProfileRequest enterpriseProfileRequest) {
+        User user = findUserById(userId);
+
+        Boolean check = user.getRoles().stream()
+                .anyMatch(role -> role.getName().equals("ENTERPRISE"));
+        if(check){
+            throw new AppException(UserErrorCode.ROLE_USER_ALREADY_EXISTS);
+        }
+
+        EnterpriseProfile existingProfile = user.getEnterpriseProfile();
+        if(existingProfile == null){
+            throw new AppException(EnterpriseErrorCode.ENTERPRISE_PROFILE_NOT_EXIST);
+        }
+
+        if(existingProfile.getApprovalStatus() == Approval_status.APPROVED){
+            throw new AppException(UserErrorCode.POFILE_USER_AWAITING_EXISTS);
+        }
+
+        userMapper.updateEnterpriseProfileFromRequest(enterpriseProfileRequest, existingProfile);
+        existingProfile.setApprovalStatus(Approval_status.PENDING);
+        userRepository.save(user);
+        return userMapper.userToUserResponse(user);
     }
 
     @Transactional
@@ -724,6 +791,55 @@ public class UserService {
                 .bankAccount(bankAccount)
                 .bankAccountName(bankAccountName)
                 .build();
+    }
+
+    private List<UpgradeApplicationsResponse.ApplicationHistoryEntry> buildApplicationHistory(
+            String type,
+            Approval_status status,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt) {
+        List<UpgradeApplicationsResponse.ApplicationHistoryEntry> entries = new ArrayList<>();
+        String statusValue = status != null ? status.toString() : "PENDING";
+
+        if (createdAt != null) {
+            entries.add(UpgradeApplicationsResponse.ApplicationHistoryEntry.builder()
+                    .type(type)
+                    .status("SUBMITTED")
+                    .title("Đã nộp hồ sơ " + type)
+                    .description("Hệ thống đã tiếp nhận hồ sơ nâng cấp.")
+                    .occurredAt(createdAt)
+                    .build());
+        }
+
+        if (updatedAt != null && (createdAt == null || updatedAt.isAfter(createdAt.plusSeconds(1)))) {
+            entries.add(UpgradeApplicationsResponse.ApplicationHistoryEntry.builder()
+                    .type(type)
+                    .status("UPDATED")
+                    .title("Đã cập nhật hồ sơ " + type)
+                    .description("Người dùng đã sửa hoặc nộp lại thông tin hồ sơ.")
+                    .occurredAt(updatedAt)
+                    .build());
+        }
+
+        entries.add(UpgradeApplicationsResponse.ApplicationHistoryEntry.builder()
+                .type(type)
+                .status(statusValue)
+                .title("Trạng thái hiện tại: " + statusValue)
+                .description(buildApplicationStatusDescription(type, status))
+                .occurredAt(updatedAt != null ? updatedAt : createdAt)
+                .build());
+
+        return entries;
+    }
+
+    private String buildApplicationStatusDescription(String type, Approval_status status) {
+        if (status == Approval_status.APPROVED) {
+            return "Hồ sơ " + type + " đã được admin phê duyệt.";
+        }
+        if (status == Approval_status.REJECTED) {
+            return "Hồ sơ " + type + " đã bị từ chối. Bạn có thể chỉnh sửa và nộp lại.";
+        }
+        return "Hồ sơ " + type + " đang chờ admin kiểm duyệt.";
     }
 
     /**

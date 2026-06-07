@@ -181,6 +181,26 @@ public class UserController {
         );
     }
 
+    @GetMapping("/me/upgrade-applications")
+    @PreAuthorize("hasAnyRole('USER', 'HOST', 'ENTERPRISE')")
+    public ApiRequest<UpgradeApplicationsResponse> getMyUpgradeApplications() {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ApiRequest.success(SuccessCode.GET_USER_PROFILE_SUCCESS, userService.getMyUpgradeApplications(userId));
+    }
+
+    @PutMapping(value = "/me/upgradetohost", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('USER')")
+    public ApiRequest<ApprovalStatusResponse> updateUpgradeToHost(
+            @ModelAttribute HostProfileRequest hostProfileRequest,
+            @RequestParam(value = "frontImage", required = false) MultipartFile frontImage,
+            @RequestParam(value = "backImage", required = false) MultipartFile backImage) {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ApiRequest.success(
+                SuccessCode.APPLICATION_SUBMITTED_SUCCESS,
+                userService.updateProfileUpgradeToHost(userId, hostProfileRequest, frontImage, backImage)
+        );
+    }
+
 
 
     @DeleteMapping("/me/upgradetohost")
@@ -211,6 +231,13 @@ public class UserController {
     public ApiRequest<UserResponse> upgradeToEnterprise(@RequestBody EnterpriseProfileRequest enterpriseProfileRequest) {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         return ApiRequest.success(SuccessCode.UPGRADE_TO_ENTERPRISE_SUCCESS, userService.upgradeToEnterprise(userId, enterpriseProfileRequest));
+    }
+
+    @PutMapping("/me/upgradetoenterprise")
+    @PreAuthorize("hasAnyRole('USER')")
+    public ApiRequest<UserResponse> updateUpgradeToEnterprise(@RequestBody EnterpriseProfileRequest enterpriseProfileRequest) {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ApiRequest.success(SuccessCode.UPGRADE_TO_ENTERPRISE_SUCCESS, userService.updateProfileUpgradeToEnterprise(userId, enterpriseProfileRequest));
     }
 
 

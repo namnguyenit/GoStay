@@ -33,14 +33,40 @@ const UserService = {
     return await Api.post("/v1/me/upgrade-host", formData);
   },
 
+  // View submitted HOST/ENTERPRISE applications and timeline
+  getUpgradeApplications: async () => {
+    return await Api.get("/v1/me/upgrade-applications");
+  },
+
+  // Update a pending/rejected HOST application (multipart)
+  updateUpgradeHost: async (formData: FormData) => {
+    return await Api.put("/v1/me/upgrade-host", formData);
+  },
+
   // Apply to become an ENTERPRISE
   upgradeToEnterprise: async (data: {
     companyName: string;
     companyAddress: string;
     taxCode: string;
     representativeName: string;
+    bankAccount?: string;
+    bankName?: string;
+    bankAccountName?: string;
   }) => {
     return await Api.post("/v1/me/upgrade-enterprise", data);
+  },
+
+  // Update a pending/rejected ENTERPRISE application
+  updateUpgradeEnterprise: async (data: {
+    companyName: string;
+    companyAddress: string;
+    taxCode: string;
+    representativeName: string;
+    bankAccount?: string;
+    bankName?: string;
+    bankAccountName?: string;
+  }) => {
+    return await Api.put("/v1/me/upgrade-enterprise", data);
   },
 
   // Get host profile

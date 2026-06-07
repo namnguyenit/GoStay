@@ -4,6 +4,10 @@ import com.gotravel.Identity.enums.Approval_status;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "enterprise_profiles")
@@ -35,4 +39,12 @@ public class EnterpriseProfile {
     String bankAccount;
     String bankName;
     String bankAccountName;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    LocalDateTime updatedAt;
 }
