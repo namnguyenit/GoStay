@@ -24,8 +24,10 @@ public interface UserMapper {
 
     @Mapping(target = "approvalStatus", expression = "java(hostProfile.getApprovalStatus() != null ? hostProfile.getApprovalStatus().toString() : null)")
     @Mapping(target = "avatarUrl", source = "avatar_url")
+    @Mapping(target = "bankAccountName", source = "bankNameAccont")
     HostProfileResponse toHostProfileResponse(HostProfile hostProfile);
 
+    @Mapping(target = "bankNameAccont", source = "bankAccountName")
     void updateHostProfileFromRequest(HostProfileRequest dto, @MappingTarget HostProfile profile);
 
     @Mapping(target = "approvalStatus", expression = "java(enterpriseProfile.getApprovalStatus() != null ? enterpriseProfile.getApprovalStatus().toString() : null)")

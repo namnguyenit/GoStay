@@ -623,6 +623,32 @@ public class UserService {
         return response;
     }
 
+    public BankAccountResponse getHostBankAccount(String userId) {
+        User user = findUserById(userId);
+        HostProfile profile = user.getHostProfile();
+        if (profile == null) {
+            throw new AppException(HostErrorCode.USER_NOT_HOST);
+        }
+
+        return toBankAccountResponse("HOST", profile.getApprovalStatus(), profile.getBankName(), profile.getBankAccount(), profile.getBankNameAccont());
+    }
+
+    @Transactional
+    public BankAccountResponse updateHostBankAccount(String userId, BankAccountRequest request) {
+        User user = findUserById(userId);
+        HostProfile profile = user.getHostProfile();
+        if (profile == null) {
+            throw new AppException(HostErrorCode.USER_NOT_HOST);
+        }
+
+        profile.setBankName(request.getBankName().trim());
+        profile.setBankAccount(request.getBankAccount().trim());
+        profile.setBankNameAccont(request.getBankAccountName().trim());
+        userRepository.save(user);
+
+        return toBankAccountResponse("HOST", profile.getApprovalStatus(), profile.getBankName(), profile.getBankAccount(), profile.getBankNameAccont());
+    }
+
     /**
      *
      * @param userId
@@ -660,8 +686,44 @@ public class UserService {
         return response;
     }
 
+    public BankAccountResponse getEnterpriseBankAccount(String userId) {
+        User user = findUserById(userId);
+        EnterpriseProfile profile = user.getEnterpriseProfile();
+        if (profile == null) {
+            throw new AppException(EnterpriseErrorCode.USER_NOT_ENTERPRISE);
+        }
+
+        return toBankAccountResponse("ENTERPRISE", profile.getApprovalStatus(), profile.getBankName(), profile.getBankAccount(), profile.getBankAccountName());
+    }
+
+    @Transactional
+    public BankAccountResponse updateEnterpriseBankAccount(String userId, BankAccountRequest request) {
+        User user = findUserById(userId);
+        EnterpriseProfile profile = user.getEnterpriseProfile();
+        if (profile == null) {
+            throw new AppException(EnterpriseErrorCode.USER_NOT_ENTERPRISE);
+        }
+
+        profile.setBankName(request.getBankName().trim());
+        profile.setBankAccount(request.getBankAccount().trim());
+        profile.setBankAccountName(request.getBankAccountName().trim());
+        userRepository.save(user);
+
+        return toBankAccountResponse("ENTERPRISE", profile.getApprovalStatus(), profile.getBankName(), profile.getBankAccount(), profile.getBankAccountName());
+    }
+
     private String getAvatarUrl(User user) {
         return user.getUserProfile() != null ? user.getUserProfile().getAvatarUrl() : null;
+    }
+
+    private BankAccountResponse toBankAccountResponse(String ownerType, Approval_status approvalStatus, String bankName, String bankAccount, String bankAccountName) {
+        return BankAccountResponse.builder()
+                .ownerType(ownerType)
+                .approvalStatus(approvalStatus != null ? approvalStatus.toString() : null)
+                .bankName(bankName)
+                .bankAccount(bankAccount)
+                .bankAccountName(bankAccountName)
+                .build();
     }
 
     /**

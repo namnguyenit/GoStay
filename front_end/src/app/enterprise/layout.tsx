@@ -12,7 +12,8 @@ import {
   TrendingUp,
   Building,
   Menu,
-  SlidersHorizontal
+  SlidersHorizontal,
+  CreditCard
 } from "lucide-react";
 import AuthService from "@/services/auth.service";
 
@@ -57,6 +58,7 @@ export default function HostLayout({ children }: { children: React.ReactNode }) 
     { name: "Khả dụng & sức chứa", href: "/enterprise/availability", icon: SlidersHorizontal, match: "/enterprise/availability" },
     { name: "Đơn hàng", href: "/enterprise/orders", icon: Calendar, match: "/enterprise/orders" },
     { name: "Thu nhập", href: "/enterprise/earnings", icon: DollarSign, match: "/enterprise/earnings" },
+    { name: "Tài khoản nhận tiền", href: "/enterprise/bank-account", icon: CreditCard, match: "/enterprise/bank-account" },
     { name: "Đề xuất địa danh", href: "/enterprise/landmark-suggestions", icon: Building, match: "/enterprise/landmark-suggestions" },
   ];
 

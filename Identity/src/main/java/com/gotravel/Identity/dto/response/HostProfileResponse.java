@@ -12,6 +12,7 @@ public class HostProfileResponse {
     String cccdNumber;
     String bankAccount;
     String bankName;
+    String bankAccountName;
     String avatarUrl;
     String approvalStatus;
 }

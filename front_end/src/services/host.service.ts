@@ -6,6 +6,22 @@ const HostService = {
     return await Api.get("/v1/me/host-profile");
   },
 
+  getMyHostBankAccount: async () => {
+    return await Api.get("/v1/me/host-bank-account");
+  },
+
+  updateMyHostBankAccount: async (data: { bankName: string; bankAccount: string; bankAccountName: string }) => {
+    return await Api.put("/v1/me/host-bank-account", data);
+  },
+
+  getMyEnterpriseBankAccount: async () => {
+    return await Api.get("/v1/me/enterprise-bank-account");
+  },
+
+  updateMyEnterpriseBankAccount: async (data: { bankName: string; bankAccount: string; bankAccountName: string }) => {
+    return await Api.put("/v1/me/enterprise-bank-account", data);
+  },
+
   // Get all listings of current Host (with pagination)
   getMyListings: async (page = 0, size = 10) => {
     return await Api.get(`/v1/catalog/host/listings?page=${page}&size=${size}`);

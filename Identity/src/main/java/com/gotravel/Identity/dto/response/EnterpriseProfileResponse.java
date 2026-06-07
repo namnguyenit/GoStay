@@ -13,6 +13,9 @@ public class EnterpriseProfileResponse {
     String taxCode;
     String companyAddress;
     String representativeName;
+    String bankAccount;
+    String bankName;
+    String bankAccountName;
     String avatarUrl;
     String approvalStatus;
 }

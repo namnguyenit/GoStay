@@ -127,6 +127,13 @@ public class OrderController {
         return ResponseEntity.ok(ApiResponse.success("Đã hủy đơn hàng thành công"));
     }
 
+    @PostMapping("/{orderId}/ticket-email/resend")
+    public ResponseEntity<ApiResponse<OrderResponse>> resendTicketEmail(
+            @RequestHeader("X-User-Id") UUID userId,
+            @PathVariable UUID orderId) {
+        return ResponseEntity.ok(ApiResponse.success("Đã gửi lại vé điện tử", orderService.resendTicketEmail(userId, orderId)));
+    }
+
     @GetMapping("/check-purchased/{listingId}")
     public ResponseEntity<ApiResponse<Boolean>> checkPurchased(
             @RequestHeader("X-User-Id") UUID userId,

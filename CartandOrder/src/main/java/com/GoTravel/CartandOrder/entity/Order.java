@@ -55,6 +55,20 @@ public class Order {
     @Column(name = "expires_at")
     private LocalDateTime expiresAt;
 
+    @Column(name = "ticket_email_sent")
+    @Builder.Default
+    private Boolean ticketEmailSent = false;
+
+    @Column(name = "ticket_email_sent_at")
+    private LocalDateTime ticketEmailSentAt;
+
+    @Column(name = "ticket_email_recipient")
+    private String ticketEmailRecipient;
+
+    @Column(name = "ticket_email_attempts")
+    @Builder.Default
+    private Integer ticketEmailAttempts = 0;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<OrderItem> items = new ArrayList<>();

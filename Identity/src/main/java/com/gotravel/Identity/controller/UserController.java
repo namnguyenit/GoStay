@@ -242,6 +242,20 @@ public class UserController {
         return ApiRequest.success(SuccessCode.UPDATE_HOST_PROFILE_SUCCESS, userService.updateHostProfile(userId, dto));
     }
 
+    @GetMapping("/me/host-bank-account")
+    @PreAuthorize("hasAnyRole('HOST')")
+    public ApiRequest<BankAccountResponse> getMyHostBankAccount() {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ApiRequest.success(SuccessCode.GET_HOST_PROFILE_SUCCESS, userService.getHostBankAccount(userId));
+    }
+
+    @PutMapping("/me/host-bank-account")
+    @PreAuthorize("hasAnyRole('HOST')")
+    public ApiRequest<BankAccountResponse> updateMyHostBankAccount(@RequestBody @Valid BankAccountRequest dto) {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ApiRequest.success(SuccessCode.UPDATE_HOST_PROFILE_SUCCESS, userService.updateHostBankAccount(userId, dto));
+    }
+
     @GetMapping("/me/enterprise-profile")
     @PreAuthorize("hasAnyRole('ENTERPRISE')")
     public ApiRequest<EnterpriseProfileResponse> getMyEnterpriseProfile() {
@@ -254,6 +268,20 @@ public class UserController {
     public ApiRequest<EnterpriseProfileResponse> updateMyEnterpriseProfile(@RequestBody EnterpriseProfileRequest dto) {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         return ApiRequest.success(SuccessCode.UPDATE_ENTERPRISE_PROFILE_SUCCESS, userService.updateEnterpriseProfile(userId, dto));
+    }
+
+    @GetMapping("/me/enterprise-bank-account")
+    @PreAuthorize("hasAnyRole('ENTERPRISE')")
+    public ApiRequest<BankAccountResponse> getMyEnterpriseBankAccount() {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ApiRequest.success(SuccessCode.GET_ENTERPRISE_PROFILE_SUCCESS, userService.getEnterpriseBankAccount(userId));
+    }
+
+    @PutMapping("/me/enterprise-bank-account")
+    @PreAuthorize("hasAnyRole('ENTERPRISE')")
+    public ApiRequest<BankAccountResponse> updateMyEnterpriseBankAccount(@RequestBody @Valid BankAccountRequest dto) {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ApiRequest.success(SuccessCode.UPDATE_ENTERPRISE_PROFILE_SUCCESS, userService.updateEnterpriseBankAccount(userId, dto));
     }
 
     // Endpoint: GET /api/users/internal/{userId}/status

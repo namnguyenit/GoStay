@@ -16,4 +16,5 @@ public class HostProfileRequest {
     String idCard;
     String bankAccount;
     String bankName;
+    String bankAccountName;
 }

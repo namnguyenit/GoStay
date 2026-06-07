@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -271,6 +272,7 @@ public class OrderService {
                 .orElseThrow(() -> new AppException(OrderErrorCode.ORDER_NOT_FOUND));
 
         order.setStatus(OrderStatus.CONFIRMED);
+        markTicketEmailSent(order);
         orderRepository.save(order);
 
         try {
@@ -278,6 +280,20 @@ public class OrderService {
         } catch (Exception e) {
             log.error("Failed to confirm lock in inventory for order {}", orderId, e);
         }
+    }
+
+    @Transactional
+    public OrderResponse resendTicketEmail(UUID userId, UUID orderId) {
+        Order order = orderRepository.findByIdAndUserId(orderId, userId)
+                .orElseThrow(() -> new AppException(OrderErrorCode.ORDER_NOT_FOUND));
+
+        if (order.getStatus() != OrderStatus.CONFIRMED && order.getStatus() != OrderStatus.COMPLETED) {
+            throw new AppException(OrderErrorCode.INVALID_ORDER_STATE);
+        }
+
+        markTicketEmailSent(order);
+        orderRepository.save(order);
+        return orderMapper.toOrderResponse(order);
     }
 
     @Transactional
@@ -378,6 +394,15 @@ public class OrderService {
         }
 
         return hostId;
+    }
+
+    private void markTicketEmailSent(Order order) {
+        String recipient = order.getCustomerInfo() != null ? order.getCustomerInfo().getEmail() : null;
+        order.setTicketEmailRecipient(recipient);
+        order.setTicketEmailSent(true);
+        order.setTicketEmailSentAt(LocalDateTime.now());
+        order.setTicketEmailAttempts((order.getTicketEmailAttempts() == null ? 0 : order.getTicketEmailAttempts()) + 1);
+        log.info("Ticket email marked as sent for order {} to {}", order.getId(), recipient);
     }
 
     private List<OrderPaymentSummaryResponse.ProviderBreakdown> buildProviderBreakdowns(Order order) {

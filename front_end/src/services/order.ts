@@ -61,6 +61,9 @@ const OrderService = {
   cancelOrder: async (orderId: string) => {
     return await Api.put(`/v1/orders/${orderId}/cancel`, {});
   },
+  resendTicketEmail: async (orderId: string) => {
+    return await Api.post(`/v1/orders/${orderId}/ticket-email/resend`, {});
+  },
   checkPurchased: async (listingId: string) => {
     return await Api.get(`/v1/orders/check-purchased/${listingId}`);
   },

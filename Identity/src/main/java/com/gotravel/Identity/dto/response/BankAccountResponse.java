@@ -1,4 +1,4 @@
-package com.gotravel.Identity.dto.request;
+package com.gotravel.Identity.dto.response;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -8,12 +8,10 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class EnterpriseProfileRequest {
-    String companyName;
-    String taxCode;
-    String companyAddress;
-    String representativeName;
-    String bankAccount;
+public class BankAccountResponse {
+    String ownerType;
+    String approvalStatus;
     String bankName;
+    String bankAccount;
     String bankAccountName;
 }

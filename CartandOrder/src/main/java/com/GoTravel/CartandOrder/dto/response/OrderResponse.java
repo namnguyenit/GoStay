@@ -25,6 +25,10 @@ public class OrderResponse {
     private String currency;
     private OrderCustomerInfo customerInfo;
     private LocalDateTime expiresAt;
+    private Boolean ticketEmailSent;
+    private LocalDateTime ticketEmailSentAt;
+    private String ticketEmailRecipient;
+    private Integer ticketEmailAttempts;
     private LocalDateTime createdAt;
     private List<OrderItemResponse> items;
 

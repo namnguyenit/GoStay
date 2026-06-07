@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import { AlertTriangle, CalendarDays, CheckCircle2, QrCode, TicketCheck, X } from "lucide-react";
+import { AlertTriangle, CalendarDays, CheckCircle2, Mail, QrCode, TicketCheck, X } from "lucide-react";
 import OrderService from "@/services/order";
 
 type CompletedOrderItem = {
@@ -24,6 +24,10 @@ type CompletedOrder = {
   status?: string;
   totalAmount?: number;
   createdAt?: string;
+  ticketEmailSent?: boolean;
+  ticketEmailSentAt?: string;
+  ticketEmailRecipient?: string;
+  ticketEmailAttempts?: number;
   customerInfo?: {
     fullName?: string;
     email?: string;
@@ -37,6 +41,12 @@ const unwrapOrders = (res: unknown): CompletedOrder[] => {
   const data = root?.data as { data?: unknown; content?: unknown } | undefined;
   const page = (data?.data ?? data) as { content?: unknown } | undefined;
   return Array.isArray(page?.content) ? (page.content as CompletedOrder[]) : [];
+};
+
+const unwrapOrder = (res: unknown): CompletedOrder | null => {
+  const root = res as { data?: unknown };
+  const data = root?.data as { data?: unknown } | undefined;
+  return ((data?.data ?? data) as CompletedOrder | undefined) ?? null;
 };
 
 const formatMoney = (value?: number) =>
@@ -83,6 +93,7 @@ function CompletedOrdersContent() {
   const [disputeDescription, setDisputeDescription] = useState("");
   const [disputeLoading, setDisputeLoading] = useState(false);
   const [disputeMessage, setDisputeMessage] = useState("");
+  const [resendingOrderId, setResendingOrderId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -141,6 +152,24 @@ function CompletedOrdersContent() {
       setDisputeMessage(error instanceof Error ? error.message : "Không gửi được khiếu nại.");
     } finally {
       setDisputeLoading(false);
+    }
+  };
+
+  const resendTicketEmail = async (orderId?: string) => {
+    if (!orderId) return;
+    setResendingOrderId(orderId);
+    setDisputeMessage("");
+    try {
+      const response = await OrderService.resendTicketEmail(orderId);
+      const updatedOrder = unwrapOrder(response);
+      if (updatedOrder?.orderId) {
+        setOrders((current) => current.map((order) => (order.orderId === updatedOrder.orderId ? updatedOrder : order)));
+      }
+      setDisputeMessage("Đã gửi lại vé điện tử đến email của khách.");
+    } catch (sendError) {
+      setDisputeMessage(sendError instanceof Error ? sendError.message : "Không gửi lại được vé điện tử.");
+    } finally {
+      setResendingOrderId(null);
     }
   };
 
@@ -233,6 +262,38 @@ function CompletedOrdersContent() {
                         <div>
                           <p className="text-xs text-zinc-500">Tổng thanh toán</p>
                           <p className="font-bold text-rose-600">{formatMoney(order.totalAmount)} đ</p>
+                        </div>
+                      </div>
+
+                      <div className="mb-5 rounded-2xl border border-sky-100 bg-sky-50/70 p-4">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                          <div className="flex min-w-0 items-start gap-3">
+                            <span className="rounded-full bg-white p-2 text-sky-600 shadow-sm">
+                              <Mail className="h-4 w-4" />
+                            </span>
+                            <div className="min-w-0">
+                              <p className="text-sm font-bold text-zinc-900">
+                                Vé điện tử qua email: {order.ticketEmailSent ? "Đã gửi" : "Chưa gửi"}
+                              </p>
+                              <p className="mt-1 break-all text-xs text-zinc-600">
+                                Người nhận: {order.ticketEmailRecipient || order.customerInfo?.email || "Chưa có email"}
+                              </p>
+                              <p className="mt-0.5 text-xs text-zinc-500">
+                                {order.ticketEmailSentAt
+                                  ? `Gửi lúc: ${new Date(order.ticketEmailSentAt).toLocaleString("vi-VN")}`
+                                  : "Vé sẽ được gửi sau khi thanh toán được xác nhận."}
+                                {typeof order.ticketEmailAttempts === "number" ? ` • Số lần gửi: ${order.ticketEmailAttempts}` : ""}
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => resendTicketEmail(order.orderId)}
+                            disabled={!order.orderId || resendingOrderId === order.orderId}
+                            className="rounded-full bg-white px-4 py-2 text-xs font-bold text-sky-700 shadow-sm ring-1 ring-sky-100 transition hover:bg-sky-100 disabled:opacity-60"
+                          >
+                            {resendingOrderId === order.orderId ? "Đang gửi..." : "Gửi lại email vé"}
+                          </button>
                         </div>
                       </div>
 

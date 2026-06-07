@@ -32,4 +32,7 @@ public class EnterpriseProfile {
     
     String companyAddress;
     String representativeName;
+    String bankAccount;
+    String bankName;
+    String bankAccountName;
 }

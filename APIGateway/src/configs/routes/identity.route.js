@@ -123,6 +123,8 @@ export const identityRoutes = [
             // --- Hồ sơ đặc thù ---
             url = url.replace(/^\/api\/v1\/me\/host-profile$/, '/api/users/me/host-profile'); // GET, PUT
             url = url.replace(/^\/api\/v1\/me\/enterprise-profile$/, '/api/users/me/enterprise-profile'); // GET, PUT
+            url = url.replace(/^\/api\/v1\/me\/host-bank-account$/, '/api/users/me/host-bank-account'); // GET, PUT
+            url = url.replace(/^\/api\/v1\/me\/enterprise-bank-account$/, '/api/users/me/enterprise-bank-account'); // GET, PUT
 
             return url + query;
         }
