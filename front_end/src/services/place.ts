@@ -46,6 +46,7 @@ export type ListingSearchOptions = {
   checkIn?: string;
   checkOut?: string;
   limit?: number;
+  subCategory?: string;
 };
 
 const withSearchParams = (baseEndpoint: string, options: ListingSearchOptions = {}) => {

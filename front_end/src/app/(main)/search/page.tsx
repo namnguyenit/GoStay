@@ -18,17 +18,25 @@ export default async function Page({ searchParams }: PageProps) {
     ? resolvedSearchParams.to[0]
     : resolvedSearchParams.to;
   const checkOut = checkOutRaw || checkIn;
+  const subCategory = Array.isArray(resolvedSearchParams.subCategory)
+    ? resolvedSearchParams.subCategory[0]
+    : resolvedSearchParams.subCategory;
   const searchOptions = {
     locationQuery: placeQuery,
     checkIn: checkIn || undefined,
     checkOut: checkOut || undefined,
     limit: 500,
   };
+  const serviceSearchOptions = {
+    ...searchOptions,
+    subCategory: subCategory || undefined,
+  };
 
   // Pre-fetch all lists from services
-  const [places, experiences, services, complexes] = await Promise.all([
+  const [places, experiences, services, serviceCategoryItems, complexes] = await Promise.all([
     PlaceServices.getAll(searchOptions) || [],
     ExperienceServices.getAll(searchOptions) || [],
+    ServiceServices.getAll(serviceSearchOptions) || [],
     ServiceServices.getAll(searchOptions) || [],
     ComplexServices.getForLocation(placeQuery) || [],
   ]);
@@ -39,6 +47,7 @@ export default async function Page({ searchParams }: PageProps) {
         places={places || []}
         experiences={experiences || []}
         services={services || []}
+        serviceCategoryItems={serviceCategoryItems || []}
         complexes={complexes || []}
         searchParamsRaw={resolvedSearchParams}
       />

@@ -12,6 +12,7 @@ export interface ListingSearchParams {
     province?: string;
     complexId?: string;
     category?: string;
+    subCategory?: string;
     limit: number;
     offset: number;
     minPrice?: number;

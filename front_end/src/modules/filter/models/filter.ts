@@ -5,5 +5,6 @@ export type Filter =
       place?: string;
       date?: DateRange;
       type?: string;
+      subCategory?: string;
     }
   | undefined;

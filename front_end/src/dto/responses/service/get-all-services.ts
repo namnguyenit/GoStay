@@ -16,6 +16,7 @@ export const getAllServicesResponseDtoSchema = z
             address: z.string().optional(),
             rating: z.number().optional(),
             image: z.string().optional(),
+            subCategory: z.string().optional(),
             thumbnailUrl: z.string().optional(),
             referenceImageUrl: z.string().optional(),
             galleryUrls: z.array(z.string()).optional(),

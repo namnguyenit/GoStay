@@ -134,6 +134,7 @@ export class SearchService {
       province,
       complexId,
       category,
+      subCategory: dto.subCategory,
       limit: dto.limit || 20,
       offset: dto.offset || 0,
       minPrice: dto.minPrice,

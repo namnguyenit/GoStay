@@ -32,6 +32,7 @@ class SearchQueryDto {
     locationQuery;
     landmarkId;
     category = CategoryMode.ALL;
+    subCategory;
     checkIn;
     checkOut;
     guests;
@@ -71,6 +72,11 @@ __decorate([
     (0, class_validator_1.IsEnum)(CategoryMode),
     __metadata("design:type", String)
 ], SearchQueryDto.prototype, "category", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], SearchQueryDto.prototype, "subCategory", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),

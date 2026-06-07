@@ -4,6 +4,7 @@ export const FilterQueryDtoSchema = z
   .object({
     place: z.string().catch(""),
     type: z.string().catch(""),
+    subCategory: z.string().catch(""),
     from: z.string().optional().catch(undefined),
     to: z.string().optional().catch(undefined),
   })

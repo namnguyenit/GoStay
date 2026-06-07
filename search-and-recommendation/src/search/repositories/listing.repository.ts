@@ -15,6 +15,7 @@ export interface ListingSearchParams {
   province?: string;
   complexId?: string;
   category?: string; // ALL, STAY, EXP, SVC
+  subCategory?: string;
   limit: number;
   offset: number;
   minPrice?: number;
@@ -103,6 +104,14 @@ export class ListingRepository {
       if (category !== 'ALL') {
         values.push(category);
         conditions.push(`l.category = $${values.length}`);
+      }
+
+      if (params.subCategory) {
+        const normalizedSubCategory = params.subCategory.startsWith('SVC_')
+          ? params.subCategory.slice(4)
+          : params.subCategory;
+        values.push(normalizedSubCategory);
+        conditions.push(`l.sub_category = $${values.length}`);
       }
 
       if (params.province) {

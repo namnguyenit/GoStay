@@ -21,6 +21,7 @@ type ListItem =
       address?: string;
       rating?: number;
       image?: string;
+      subCategory?: string;
       thumbnailUrl?: string;
       referenceImageUrl?: string;
       galleryUrls?: string[];
@@ -53,10 +54,12 @@ export default function CategoryGridClient({
   // Filter items by selected location (place)
   const filteredItems = useMemo(() => {
     const searchPlace = activeFilter?.place?.trim().toLowerCase();
-    if (!searchPlace) return items;
+    const subCategory = activeFilter?.subCategory?.trim();
 
     return items.filter((item) => {
       if (!item) return false;
+      if (subCategory && item.subCategory !== subCategory) return false;
+      if (!searchPlace) return true;
       const nameMatch = item.name?.toLowerCase().includes(searchPlace);
       const addressMatch = item.address?.toLowerCase().includes(searchPlace);
       const descMatch = item.description?.toLowerCase().includes(searchPlace);

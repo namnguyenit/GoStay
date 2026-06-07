@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Calendar, MapPin, Sparkles, X } from "lucide-react";
 import { motion } from "framer-motion";
 
 import { FilterService } from "@/services/filter";
-import { SearchInfoSection } from "@/shared/components";
 import { ComplexCarouselSections } from "@/shared/components";
 import ListingGridCard from "@/shared/components/ListingGridCard";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +31,7 @@ type ListItem =
       galleryUrls?: string[];
       images?: string[];
       imageUrls?: string[];
+      subCategory?: string;
       categoryType?: string;
       categoryLabel?: string;
       unit?: string;
@@ -42,14 +43,28 @@ interface SearchClientProps {
   places: ListItem[];
   experiences: ListItem[];
   services: ListItem[];
+  serviceCategoryItems?: ListItem[];
   complexes?: ComplexOffering[];
   searchParamsRaw: Record<string, string | string[] | undefined>;
 }
+
+const SERVICE_CATEGORY_OPTIONS = [
+  { value: "PHOTOGRAPHY", label: "Chụp ảnh" },
+  { value: "CHEF", label: "Đầu bếp" },
+  { value: "MASSAGE", label: "Massage" },
+  { value: "PREPARED_MEALS", label: "Đồ ăn chuẩn bị sẵn" },
+  { value: "TRAINING", label: "Đào tạo" },
+  { value: "MAKEUP", label: "Trang điểm" },
+  { value: "HAIR_STYLING", label: "Làm tóc" },
+  { value: "SPA", label: "Chăm sóc spa" },
+  { value: "CATERING", label: "Dịch vụ ăn uống" },
+];
 
 export default function SearchClient({
   places = [],
   experiences = [],
   services = [],
+  serviceCategoryItems = [],
   complexes = [],
 }: SearchClientProps) {
   const router = useRouter();
@@ -128,6 +143,31 @@ export default function SearchClient({
     });
   }, [currentItems, filter]);
 
+  const serviceCategoryStats = useMemo(() => {
+    const counts = new Map<string, { count: number; image?: string }>();
+
+    (serviceCategoryItems || []).forEach((item) => {
+      if (!item?.subCategory) return;
+      const current = counts.get(item.subCategory) ?? { count: 0, image: undefined };
+      counts.set(item.subCategory, {
+        count: current.count + 1,
+        image:
+          current.image ||
+          item.thumbnailUrl ||
+          item.image ||
+          item.galleryUrls?.[0] ||
+          item.images?.[0] ||
+          item.imageUrls?.[0],
+      });
+    });
+
+    return SERVICE_CATEGORY_OPTIONS.map((option) => ({
+      ...option,
+      count: counts.get(option.value)?.count ?? 0,
+      image: counts.get(option.value)?.image,
+    })).filter((option) => option.count > 0);
+  }, [serviceCategoryItems]);
+
   // Handle new search from the search bar
   const handleSearchSubmit = (newFilter: Filter) => {
     const params = FilterService.set(newFilter);
@@ -144,25 +184,28 @@ export default function SearchClient({
     return "border border-[#DDDDDD] bg-[#F7F7F7] text-[#222222]";
   };
 
+  const activeServiceCategory = SERVICE_CATEGORY_OPTIONS.find(
+    (item) => item.value === filter?.subCategory,
+  );
+  const isServiceSearch = categoryType === "service";
+  const serviceExploreTitle = activeServiceCategory
+    ? `Khám phá ${filteredItems.length} dịch vụ ${activeServiceCategory.label.toLowerCase()}`
+    : `Khám phá ${filteredItems.length} dịch vụ`;
+
+  const handleServiceCategoryClick = (subCategory: string) => {
+    handleSearchSubmit({
+      ...(filter ?? {}),
+      type: "service",
+      subCategory,
+    });
+  };
+
   return (
     <div className="min-h-screen bg-white pb-20 text-[#222222]">
       <div className="h-[70px]" />
-      {/* Top Search Bar Header */}
-      <div className="mb-8 border-b border-[#DDDDDD] bg-[#F7F7F7] px-4 py-6">
-        <div className="mx-auto flex max-w-[1760px] flex-col items-center gap-4 px-2 md:px-6 xl:px-16">
-          <div className="w-full max-w-3xl">
-            {filter && (
-              <SearchInfoSection
-                filter={filter}
-                onClickSearch={handleSearchSubmit}
-              />
-            )}
-          </div>
-        </div>
-      </div>
-
       <div className="mx-auto max-w-[1760px] px-6 md:px-10 xl:px-20">
         {/* Results Header */}
+        {!isServiceSearch && (
         <div className="mb-8 flex flex-col justify-between gap-4 border-b pb-4 md:flex-row md:items-center">
           <div>
             <div className="flex items-center gap-2">
@@ -238,13 +281,73 @@ export default function SearchClient({
             )}
           </div>
         </div>
+        )}
 
         {/* Results Grid */}
-        <ComplexCarouselSections
+        {!isServiceSearch && (
+          <ComplexCarouselSections
           complexes={complexes}
           title={`Khu du lịch & tổ hợp gợi ý tại ${filter?.place || "mọi địa điểm"}`}
           maxItemsPerGroup={12}
-        />
+          />
+        )}
+
+        {isServiceSearch && serviceCategoryStats.length > 0 && (
+          <section className="mb-10">
+            <h1 className="mb-4 text-[22px] font-bold leading-[26px] tracking-normal md:text-2xl">
+              Dịch vụ ở khu vực lân cận
+            </h1>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-9">
+              {serviceCategoryStats.map((category) => {
+                const selected = filter?.subCategory === category.value;
+
+                return (
+                  <button
+                    key={category.value}
+                    type="button"
+                    onClick={() => handleServiceCategoryClick(category.value)}
+                    className="group text-left"
+                  >
+                    <div
+                      className={`relative aspect-[4/3] overflow-hidden rounded-2xl bg-[#f7f7f7] transition ${
+                        selected
+                          ? "ring-2 ring-[#222222] ring-offset-2"
+                          : "group-hover:ring-1 group-hover:ring-[#222222]/30 group-hover:ring-offset-2"
+                      }`}
+                    >
+                      {category.image ? (
+                        <Image
+                          unoptimized
+                          fill
+                          src={category.image}
+                          alt={category.label}
+                          className="object-cover"
+                          sizes="180px"
+                        />
+                      ) : (
+                        <div className="flex size-full items-center justify-center text-sm font-semibold text-[#717171]">
+                          GoStay
+                        </div>
+                      )}
+                    </div>
+                    <div className="mt-2 text-sm font-semibold text-[#222222]">
+                      {category.label}
+                    </div>
+                    <div className="mt-0.5 text-sm text-[#717171]">
+                      Có {category.count} dịch vụ
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {isServiceSearch && (
+          <h2 className="mb-5 text-[22px] font-bold leading-[26px] tracking-normal md:text-2xl">
+            {serviceExploreTitle}
+          </h2>
+        )}
 
         {filteredItems.length > 0 ? (
           <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">

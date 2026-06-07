@@ -29,6 +29,7 @@ type SearchInfoSectionProps = {
   filter: Filter;
   initialOpen?: SearchPanel;
   className?: string;
+  categoryContext?: "place" | "experience" | "service";
 };
 
 type LandmarkOption = {
@@ -101,6 +102,18 @@ const TYPE_OPTIONS = [
   },
 ];
 
+const SERVICE_TYPE_OPTIONS = [
+  { value: "PHOTOGRAPHY", label: "Chụp ảnh" },
+  { value: "CHEF", label: "Đầu bếp" },
+  { value: "MASSAGE", label: "Massage" },
+  { value: "PREPARED_MEALS", label: "Đồ ăn chuẩn bị sẵn" },
+  { value: "TRAINING", label: "Đào tạo" },
+  { value: "MAKEUP", label: "Trang điểm" },
+  { value: "HAIR_STYLING", label: "Làm tóc" },
+  { value: "SPA", label: "Chăm sóc spa" },
+  { value: "CATERING", label: "Dịch vụ ăn uống" },
+];
+
 const FLEXIBLE_DATE_OPTIONS = [
   "Ngày chính xác",
   "±1 ngày",
@@ -128,6 +141,7 @@ export default function SearchInfoSection({
   filter,
   initialOpen,
   className,
+  categoryContext,
 }: SearchInfoSectionProps) {
   const [searchInfo, setSearchInfo] = useState<Filter>(filter);
   const [open, setOpen] = useState<SearchPanel | undefined>(initialOpen);
@@ -219,6 +233,10 @@ export default function SearchInfoSection({
   const typeLabel =
     TYPE_OPTIONS.find((item) => item.value === searchInfo?.type)?.label ??
     "Tất cả loại hình";
+  const serviceTypeLabel =
+    SERVICE_TYPE_OPTIONS.find((item) => item.value === searchInfo?.subCategory)
+      ?.label ?? "Thêm dịch vụ";
+  const isServiceContext = categoryContext === "service";
   const dateLabel = formatDateRange(searchInfo?.date);
   const highlightedSegment = open ?? hoveredSegment;
 
@@ -546,16 +564,18 @@ export default function SearchInfoSection({
               type="button"
               className="relative z-10 flex h-full min-w-0 flex-1 flex-col items-start justify-center gap-1 rounded-full px-7 text-left outline-none md:pl-8 md:pr-5 lg:pl-9"
             >
-              <span className="text-xs font-semibold text-[#222222]">Loại hình</span>
+              <span className="text-xs font-semibold text-[#222222]">
+                {isServiceContext ? "Loại dịch vụ" : "Loại hình"}
+              </span>
               <span
                 className={cn(
                   "truncate text-sm",
-                  searchInfo?.type
+                  isServiceContext ? searchInfo?.subCategory : searchInfo?.type
                     ? "font-medium text-[#222222]"
                     : "font-normal text-[#6a6a6a]",
                 )}
               >
-                {typeLabel}
+                {isServiceContext ? serviceTypeLabel : typeLabel}
               </span>
             </button>
           </PopoverTrigger>
@@ -567,9 +587,37 @@ export default function SearchInfoSection({
           >
             <div className="space-y-2">
               <div className="px-2 pb-2 text-xs font-semibold text-[#222222]">
-                Chọn loại hình dịch vụ
+                {isServiceContext ? "Chọn loại dịch vụ" : "Chọn loại hình dịch vụ"}
               </div>
-              {TYPE_OPTIONS.map((option) => {
+              {isServiceContext ? (
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {SERVICE_TYPE_OPTIONS.map((option) => {
+                    const selected = searchInfo?.subCategory === option.value;
+
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        className={cn(
+                          "flex items-center justify-center rounded-full border px-4 py-3 text-sm font-semibold transition-colors",
+                          selected
+                            ? "border-[#222222] bg-[#222222] text-white"
+                            : "border-[#dddddd] bg-white text-[#222222] hover:border-[#222222]",
+                        )}
+                        onClick={() => {
+                          updateSearchInfo({
+                            type: "service",
+                            subCategory: option.value,
+                          });
+                          setOpen(undefined);
+                        }}
+                      >
+                        {option.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : TYPE_OPTIONS.map((option) => {
                 const Icon = option.icon;
                 const selected = searchInfo?.type === option.value;
 

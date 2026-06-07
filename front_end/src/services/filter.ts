@@ -15,6 +15,7 @@ export const FilterService = {
     const parsed = FilterQueryDtoSchema.safeParse({
       place: params.get("place"),
       type: params.get("type"),
+      subCategory: params.get("subCategory"),
       from: params.get("from"),
       to: params.get("to"),
     });
@@ -33,6 +34,7 @@ export const FilterService = {
 
     params.set("place", value?.place?.toString() ?? "");
     params.set("type", value?.type?.toString() ?? "");
+    params.set("subCategory", value?.subCategory?.toString() ?? "");
     params.set("from", toDateParam(value?.date?.from));
     params.set("to", toDateParam(value?.date?.to));
 

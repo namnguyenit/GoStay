@@ -10,6 +10,7 @@ type RawListing = {
   description?: string;
   basePrice?: string | number;
   averageRating?: string | number;
+  subCategory?: string;
   thumbnailUrl?: string;
   referenceImageUrl?: string;
   galleryUrls?: string[];
@@ -49,6 +50,9 @@ const withSearchParams = (baseEndpoint: string, options: ListingSearchOptions = 
   if (options.limit) {
     url.searchParams.set("limit", String(options.limit));
   }
+  if (options.subCategory?.trim()) {
+    url.searchParams.set("subCategory", options.subCategory.trim());
+  }
 
   return `${url.pathname}${url.search}`;
 };
@@ -76,6 +80,7 @@ const ServiceServices = {
           thumbnailUrl: item.thumbnailUrl,
           referenceImageUrl: item.referenceImageUrl,
           galleryUrls: getListingGallery(item),
+          subCategory: item.subCategory,
           address: item.province,
         }))
       };

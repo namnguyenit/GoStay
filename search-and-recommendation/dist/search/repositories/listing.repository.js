@@ -73,6 +73,13 @@ let ListingRepository = ListingRepository_1 = class ListingRepository {
                 values.push(category);
                 conditions.push(`l.category = $${values.length}`);
             }
+            if (params.subCategory) {
+                const normalizedSubCategory = params.subCategory.startsWith('SVC_')
+                    ? params.subCategory.slice(4)
+                    : params.subCategory;
+                values.push(normalizedSubCategory);
+                conditions.push(`l.sub_category = $${values.length}`);
+            }
             if (params.province) {
                 values.push(params.province);
                 conditions.push(`l.province = $${values.length}`);

@@ -44,6 +44,10 @@ export class SearchQueryDto {
 
   @IsOptional()
   @IsString()
+  subCategory?: string;
+
+  @IsOptional()
+  @IsString()
   checkIn?: string;
 
   @IsOptional()

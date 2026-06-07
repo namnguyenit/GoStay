@@ -79,6 +79,13 @@ export default function MainLayoutClient({
   const isHost = roles.includes("HOST");
   const isEnterprise = roles.includes("ENTERPRISE");
   const isHomePage = pathName === "/";
+  const activeCategoryContext = pathName.startsWith("/service")
+    ? "service"
+    : pathName.startsWith("/experience")
+      ? "experience"
+      : pathName.startsWith("/place")
+        ? "place"
+        : undefined;
   const isCategoryRootPage = NAV_ITEMS.some((item) => pathName === `/${item.value}`);
   const isExpandedFromCompact =
     isSearchExpanded && searchExpandedPath === pathName && !isHomePage;
@@ -441,13 +448,24 @@ export default function MainLayoutClient({
           <div className="mx-auto w-full max-w-[1080px] px-6 pb-5">
             <SearchInfoSection
               onClickSearch={(value) => {
-                const params = FilterService.set(value);
+                const params = FilterService.set(
+                  activeCategoryContext
+                    ? {
+                        ...value,
+                        type:
+                          activeCategoryContext === "experience"
+                            ? "exp"
+                            : activeCategoryContext,
+                      }
+                    : value,
+                );
                 router.push(`/search?${params.toString()}`);
                 setIsSearchExpanded(false);
                 setSearchExpandedPath(null);
               }}
               filter={filter ?? {}}
               initialOpen={isExpandedFromCompact ? initialSearchPanel : undefined}
+              categoryContext={activeCategoryContext}
               className="max-w-[1080px]"
             />
           </div>

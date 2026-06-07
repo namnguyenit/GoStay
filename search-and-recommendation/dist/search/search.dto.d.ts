@@ -16,6 +16,7 @@ export declare class SearchQueryDto {
     locationQuery?: string;
     landmarkId?: string;
     category?: CategoryMode;
+    subCategory?: string;
     checkIn?: string;
     checkOut?: string;
     guests?: number;
