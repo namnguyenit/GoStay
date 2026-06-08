@@ -53,3 +53,16 @@ bieudo/
 Project Context.md
 BACKEND_REPORT_ALIGNMENT_REVIEW.md
 CATALOG_LISTING_SEED_DATA_PLAN.md
+
+# Root-level plan/docs/scripts (cleanup)
+CATALOG_LISTING_DB_RECOMMENDATION_PLAN.html
+NODE_SEARCH_RECOMMENDATION_SERVICE_PLAN.md
+PLAN.txt
+SETUP_GUIDE.md
+design.md
+setup-linux.sh
+start-all.ps1
+start-all.sh
+test_booking_flow.sh
+test_full_flow.sh
+test_payment_demo.sh
