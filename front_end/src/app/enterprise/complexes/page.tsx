@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowRight, Building, MapPin, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import EnterpriseService from "@/services/enterprise.service";
 import { formatDate, getErrorMessage } from "../_utils";
@@ -44,6 +45,7 @@ const EMPTY_EDIT: EditState = {
 };
 
 export default function EnterpriseComplexesPage() {
+  const router = useRouter();
   const [complexes, setComplexes] = useState<EnterpriseComplex[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -89,6 +91,10 @@ export default function EnterpriseComplexesPage() {
       longitude: complex.longitude?.toString() || "",
       thumbnailUrl: complex.thumbnailUrl || "",
     });
+  };
+
+  const openComplexServices = (complexId: string) => {
+    router.push(`/enterprise/complexes/${complexId}`);
   };
 
   const handleSaveEdit = async () => {
@@ -195,7 +201,19 @@ export default function EnterpriseComplexesPage() {
       ) : (
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
           {filtered.map((complex) => (
-            <article key={complex.id} className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all hover:border-gray-300 hover:shadow-md">
+            <article
+              key={complex.id}
+              role="button"
+              tabIndex={0}
+              onClick={() => openComplexServices(complex.id)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  openComplexServices(complex.id);
+                }
+              }}
+              className="cursor-pointer overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md"
+            >
               <div className="relative flex h-36 items-end overflow-hidden bg-gradient-to-br from-sky-100 via-cyan-50 to-white p-4">
                 <div className="absolute inset-0 opacity-60 [background-image:radial-gradient(circle_at_20%_20%,rgba(14,165,233,.25),transparent_30%),radial-gradient(circle_at_80%_10%,rgba(6,182,212,.2),transparent_35%)]" />
                 <span className={`absolute right-4 top-4 rounded-full border px-2.5 py-1 text-[10px] font-bold ${
@@ -216,13 +234,34 @@ export default function EnterpriseComplexesPage() {
                 <div className="flex items-center justify-between border-t border-gray-100 pt-4">
                   <span className="font-mono text-[10px] text-gray-400" title={complex.id}>ID: {complex.id.slice(0, 8)}...</span>
                   <div className="flex items-center gap-1">
-                    <button onClick={() => setSelected(complex)} className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900" title="Xem chi tiết">
+                    <button
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setSelected(complex);
+                      }}
+                      className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+                      title="Xem chi tiết"
+                    >
                       <ArrowRight className="h-4 w-4" />
                     </button>
-                    <button onClick={() => openEdit(complex)} className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900" title="Sửa">
+                    <button
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        openEdit(complex);
+                      }}
+                      className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+                      title="Sửa"
+                    >
                       <Pencil className="h-4 w-4" />
                     </button>
-                    <button onClick={() => setConfirmDelete(complex)} className="rounded-lg p-2 text-red-500 hover:bg-red-50" title="Ẩn">
+                    <button
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setConfirmDelete(complex);
+                      }}
+                      className="rounded-lg p-2 text-red-500 hover:bg-red-50"
+                      title="Ẩn"
+                    >
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>

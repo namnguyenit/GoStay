@@ -21,6 +21,7 @@ export type HostListing = {
   longitude?: number;
   averageRating?: number;
   totalReviews?: number;
+  complexId?: string;
   attributes?: Record<string, unknown>;
 };
 
