@@ -230,83 +230,6 @@ build_all() {
     log "All services built successfully"
 }
 
-# ─── 9. Start All Services (ordered by dependency) ────────────
-START_PIDS=()
-start_all() {
-    info "Starting services in dependency order..."
-
-    # Java services
-    info "Starting Identity (port 8080)..."
-    java -jar Identity/target/Identity-0.0.1-SNAPSHOT.jar --spring.profiles.active=dev &
-    START_PIDS+=($!)
-    sleep 15
-
-    info "Starting cloudinary-service (port 5001)..."
-    (cd cloudinary-service && node src/server.js) &
-    START_PIDS+=($!)
-    sleep 3
-
-    info "Starting CatalogandListing (port 8082)..."
-    java -jar CatalogandListing/target/CatalogandListing-0.0.1-SNAPSHOT.jar --spring.profiles.active=dev &
-    START_PIDS+=($!)
-    sleep 10
-
-    info "Starting BookingandInventory (port 8083)..."
-    java -jar BookingandInventory/target/BookingandInventory-0.0.1-SNAPSHOT.jar --spring.profiles.active=dev &
-    START_PIDS+=($!)
-    sleep 10
-
-    info "Starting CartandOrder (port 8084)..."
-    java -jar CartandOrder/target/CartandOrder-0.0.1-SNAPSHOT.jar --spring.profiles.active=dev &
-    START_PIDS+=($!)
-    sleep 10
-
-    info "Starting PaymentandWallet (port 8085)..."
-    java -jar PaymentandWallet/target/PaymentandWallet-0.0.1-SNAPSHOT.jar --spring.profiles.active=dev &
-    START_PIDS+=($!)
-    sleep 10
-
-    info "Starting search-and-recommendation (port 8086)..."
-    (cd search-and-recommendation && npm run start:prod) &
-    START_PIDS+=($!)
-    sleep 5
-
-    info "Starting APIGateway (port 5555)..."
-    (cd APIGateway && node src/server.js) &
-    START_PIDS+=($!)
-    sleep 3
-
-    info "Starting front_end (port 3000)..."
-    (cd front_end && npm start) &
-    START_PIDS+=($!)
-
-    log "All services started! PIDs: ${START_PIDS[*]}"
-    echo ""
-    echo "  APIGateway:       http://localhost:5555"
-    echo "  Identity:         http://localhost:8080"
-    echo "  Catalog&Listing:  http://localhost:8082"
-    echo "  Booking&Inventory: http://localhost:8083"
-    echo "  Cart&Order:       http://localhost:8084"
-    echo "  Payment&Wallet:   http://localhost:8085"
-    echo "  Search&Rec:       http://localhost:8086"
-    echo "  Cloudinary:       http://localhost:5001"
-    echo "  Frontend:         http://localhost:3000"
-    echo ""
-    warn "Press Ctrl+C to stop all services"
-
-    trap stop_all SIGINT SIGTERM
-    wait
-}
-
-stop_all() {
-    info "Stopping all services..."
-    for pid in "${START_PIDS[@]}"; do
-        kill "$pid" 2>/dev/null || true
-    done
-    log "All services stopped"
-    exit 0
-}
-
 # ─── Main ──────────────────────────────────────────────────────
 usage() {
     echo "Usage: $0 [command]"
@@ -318,7 +241,6 @@ usage() {
     echo "  keystore    Generate JWT keystore for Identity"
     echo "  env         Generate .env files"
     echo "  build       Build all services"
-    echo "  start       Start all services in order"
     echo "  all         Run everything (install, setup, build)"
     echo ""
     echo "  (no args)   Equivalent to 'all'"
@@ -347,12 +269,6 @@ case "${1:-all}" in
     build)
         build_all
         ;;
-    start)
-        start_all
-        ;;
-    stop)
-        stop_all
-        ;;
     all|"")
         install_system_packages
         install_java
@@ -366,7 +282,16 @@ case "${1:-all}" in
         echo ""
         echo "Next steps:"
         echo "  1. Edit cloudinary-service/.env with your Cloudinary credentials"
-        echo "  2. Run: $0 start"
+        echo "  2. Start services manually (each in its own terminal):"
+        echo "     java -jar Identity/target/*.jar"
+        echo "     cd cloudinary-service && node src/server.js"
+        echo "     java -jar CatalogandListing/target/*.jar"
+        echo "     java -jar BookingandInventory/target/*.jar"
+        echo "     java -jar CartandOrder/target/*.jar"
+        echo "     java -jar PaymentandWallet/target/*.jar"
+        echo "     cd search-and-recommendation && npm run start:prod"
+        echo "     cd APIGateway && node src/server.js"
+        echo "     cd front_end && npm run dev"
         ;;
     help|--help|-h)
         usage
