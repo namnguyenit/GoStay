@@ -60,7 +60,6 @@ NODE_SEARCH_RECOMMENDATION_SERVICE_PLAN.md
 PLAN.txt
 SETUP_GUIDE.md
 design.md
-setup-linux.sh
 start-all.ps1
 start-all.sh
 test_booking_flow.sh
