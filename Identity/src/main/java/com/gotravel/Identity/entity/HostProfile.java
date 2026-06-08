@@ -1,6 +1,5 @@
 package com.gotravel.Identity.entity;
 
-import com.gotravel.Identity.enums.Approval_status;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -31,7 +30,7 @@ public class HostProfile {
     User user;
 
     @Enumerated(EnumType.STRING)
-    Approval_status approvalStatus;
+    com.gotravel.Identity.enums.Approval_status approvalStatus;
 
     @Column(unique = true)
     String cccdNumber;

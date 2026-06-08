@@ -4,7 +4,8 @@ param(
     [switch]$SkipFrontend,
     [switch]$SkipSearch,
     [switch]$SkipMedia,
-    [switch]$SkipHealthCheck
+    [switch]$SkipHealthCheck,
+    [switch]$ProductionFrontend
 )
 
 $ErrorActionPreference = "Stop"
@@ -23,8 +24,8 @@ $Services = @(
     @{ Name = "PaymentandWallet"; Path = "PaymentandWallet"; Port = 8085; Type = "java"; Command = ".\mvnw.cmd '-Dmaven.test.skip=true' spring-boot:run"; HealthPath = "/actuator/health"; StartupWait = 20 },
     @{ Name = "APIGateway"; Path = "APIGateway"; Port = 5555; Type = "node"; Command = "npm start"; HealthPath = "/health"; StartupWait = 10 },
     @{ Name = "CloudinaryService"; Path = "cloudinary-service"; Port = 5001; Type = "node"; Command = "npm start"; Optional = $SkipMedia; HealthPath = "/health"; StartupWait = 10 },
-    @{ Name = "SearchRecommendation"; Path = "search-and-recommendation"; Port = 8086; Type = "node"; Command = "npm run start:dev"; Optional = $SkipSearch; HealthPath = "/health"; StartupWait = 15 },
-    @{ Name = "FrontEnd"; Path = "front_end"; Port = 3000; Type = "node"; Command = "npm run dev"; Optional = $SkipFrontend; HealthPath = ""; StartupWait = 15 }
+    @{ Name = "SearchRecommendation"; Path = "search-and-recommendation"; Port = 8086; Type = "node"; Command = "npm run start:dev"; Optional = $SkipSearch; HealthPath = "/health/live"; StartupWait = 15 },
+    @{ Name = "FrontEnd"; Path = "front_end"; Port = 3000; Type = "node"; Command = "npm run dev"; Optional = $SkipFrontend; HealthPath = ""; StartupWait = 15; ProdCommand = "npm run build && npm start" }
 )
 
 function Stop-PortOwner {
@@ -139,6 +140,11 @@ function Start-ServiceWindow {
         default { $javaEnv }
     }
 
+    $cmd = $Service.Command
+    if ($ProductionFrontend -and $Service.Name -eq "FrontEnd" -and $Service.ProdCommand) {
+        $cmd = $Service.ProdCommand
+    }
+
     $script = @"
 `$Host.UI.RawUI.WindowTitle = "GoStay - $($Service.Name)"
 Set-Location -LiteralPath "$serviceDir"
@@ -146,7 +152,7 @@ $envCommand
 Write-Host "Starting $($Service.Name) on port $($Service.Port)"
 Write-Host "Log: $logPath"
 $installCommand
-$($Service.Command) 2>&1 | Tee-Object -FilePath "$logPath"
+$cmd 2>&1 | Tee-Object -FilePath "$logPath"
 "@
 
     $proc = Start-Process powershell.exe -ArgumentList @(

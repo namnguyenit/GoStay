@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import { ComplexServices, PlaceServices, ExperienceServices, ServiceServices } from "@/services";
 import SearchClient from "@/screens/search/components/SearchClient";
 
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }

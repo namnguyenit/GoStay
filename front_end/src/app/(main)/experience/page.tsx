@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import { ComplexServices, ExperienceServices } from "@/services";
 import { GroupedOfferingLayout } from "@/shared/components";
 
+export const dynamic = "force-dynamic";
+
 export default async function Page() {
   const [experiences, complexes] = await Promise.all([
     ExperienceServices.getAll(),

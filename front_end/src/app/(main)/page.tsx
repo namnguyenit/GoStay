@@ -6,6 +6,8 @@ import type { Places } from "@/modules/place";
 import type { Services } from "@/modules/service";
 import type { ComplexOffering } from "@/services/complex";
 
+export const dynamic = "force-dynamic";
+
 const fallbackExperiences = [
   {
     id: "exp-1",

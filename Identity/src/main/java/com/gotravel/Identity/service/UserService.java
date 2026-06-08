@@ -434,6 +434,11 @@ public class UserService {
 
         String hostType = user.getRoles().stream()
                 .anyMatch(role -> role.getName().equals("ENTERPRISE")) ? "ENTERPRISE" : "PERSONAL";
+        EnterpriseProfile enterpriseProfile = user.getEnterpriseProfile();
+        boolean useEnterpriseBank = "ENTERPRISE".equals(hostType) && enterpriseProfile != null;
+        String bankName = useEnterpriseBank ? enterpriseProfile.getBankName() : hostProfile.getBankName();
+        String bankAccount = useEnterpriseBank ? enterpriseProfile.getBankAccount() : hostProfile.getBankAccount();
+        String bankAccountName = useEnterpriseBank ? enterpriseProfile.getBankAccountName() : hostProfile.getBankNameAccont();
 
         return HostDetailResponse.builder()
                 .accountId(user.getId())
@@ -441,6 +446,9 @@ public class UserService {
                 .avatarUrl(getAvatarUrl(user))
                 .hostType(hostType)
                 .approvalStatus(hostProfile.getApprovalStatus().toString())
+                .bankName(bankName)
+                .bankAccount(bankAccount)
+                .bankAccountName(bankAccountName)
                 .identityInfo(HostDetailResponse.IdentityInfo.builder()
                         .taxCode(hostProfile.getTaxCode())
                         .frontImageUrl(hostProfile.getFrontImageUrl())

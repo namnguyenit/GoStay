@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import { PlaceServices } from "@/services";
 import { GroupedOfferingLayout } from "@/shared/components";
 
+export const dynamic = "force-dynamic";
+
 export default async function Page() {
   const places = await PlaceServices.getAll();
 

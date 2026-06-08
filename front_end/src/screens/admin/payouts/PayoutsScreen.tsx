@@ -59,10 +59,13 @@ export function PayoutsScreen() {
     closePaymentModal();
   };
 
+  const isMissingBankValue = (value?: string) =>
+    !value || value === "Không xác định" || value === "Chưa cấu hình";
+
   const getVietQrUrl = () => {
     if (!selectedHostBank) return null;
     const { bankName, accountNumber, accountName } = selectedHostBank;
-    if (bankName === "Không xác định" || accountNumber === "Không xác định") return null;
+    if (isMissingBankValue(bankName) || isMissingBankValue(accountNumber)) return null;
     
     let amount = 0;
     let content = "";

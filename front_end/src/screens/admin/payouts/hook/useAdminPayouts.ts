@@ -23,6 +23,18 @@ type HostDetailResponse = {
     bankAccount?: string;
     bankAccountNumber?: string;
     bankAccountName?: string;
+    hostProfile?: {
+      bankName?: string;
+      bankAccount?: string;
+      bankAccountNumber?: string;
+      bankAccountName?: string;
+    };
+    enterpriseProfile?: {
+      bankName?: string;
+      bankAccount?: string;
+      bankAccountNumber?: string;
+      bankAccountName?: string;
+    };
     fullName?: string;
   };
 };
@@ -39,6 +51,9 @@ const getErrorMessage = (error: unknown, fallback: string) => {
   }
   return fallback;
 };
+
+const firstKnown = (...values: Array<string | undefined | null>) =>
+  values.find((value) => typeof value === "string" && value.trim())?.trim() ?? "";
 
 export function useAdminPayouts() {
   const [payouts, setPayouts] = useState<AdminPayout[]>([]);
@@ -98,10 +113,30 @@ export function useAdminPayouts() {
     try {
       const res = await AdminService.getHostDetail(hostId) as HostDetailResponse;
       if (res && res.data) {
+        const bankName = firstKnown(
+          res.data.bankName,
+          res.data.enterpriseProfile?.bankName,
+          res.data.hostProfile?.bankName,
+        );
+        const accountNumber = firstKnown(
+          res.data.bankAccountNumber,
+          res.data.bankAccount,
+          res.data.enterpriseProfile?.bankAccountNumber,
+          res.data.enterpriseProfile?.bankAccount,
+          res.data.hostProfile?.bankAccountNumber,
+          res.data.hostProfile?.bankAccount,
+        );
+        const accountName = firstKnown(
+          res.data.bankAccountName,
+          res.data.enterpriseProfile?.bankAccountName,
+          res.data.hostProfile?.bankAccountName,
+          res.data.fullName,
+        );
+
         setSelectedHostBank({
-          bankName: res.data.bankName || "Không xác định",
-          accountNumber: res.data.bankAccountNumber || res.data.bankAccount || "Không xác định",
-          accountName: res.data.bankAccountName || res.data.fullName || "Không xác định",
+          bankName: bankName || "Chưa cấu hình",
+          accountNumber: accountNumber || "Chưa cấu hình",
+          accountName: accountName || "Chưa cấu hình",
         });
       }
     } catch (err) {

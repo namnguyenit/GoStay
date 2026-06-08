@@ -59,6 +59,9 @@ export type AdminHostDetail = {
   avatarUrl?: string;
   hostType?: string;
   approvalStatus?: ApprovalStatus;
+  bankName?: string;
+  bankAccount?: string;
+  bankAccountName?: string;
   identityInfo?: {
     taxCode?: string;
     frontImageUrl?: string;

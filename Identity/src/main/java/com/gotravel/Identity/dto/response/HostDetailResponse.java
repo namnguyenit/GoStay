@@ -15,6 +15,9 @@ public class HostDetailResponse {
     String hostType; // ENTERPRISE or PERSONAL (can derive from user roles/profile)
     IdentityInfo identityInfo;
     String approvalStatus;
+    String bankName;
+    String bankAccount;
+    String bankAccountName;
 
     @Data
     @Builder

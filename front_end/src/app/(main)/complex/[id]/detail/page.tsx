@@ -1,6 +1,8 @@
 import { ComplexServices, RecommendationServices } from "@/services";
 import ComplexDetailScreen from "@/shared/components/ComplexDetailScreen";
 
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{
     id: string;
