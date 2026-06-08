@@ -30,7 +30,7 @@ import {
 import { ReactNode, useEffect, useState, useTransition } from "react";
 import { isTab } from "../hooks/useApp";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import AuthService from "@/services/auth.service";
 import { Footer, SearchInfoSection } from "@/shared/components";
 import CartDrawer from "@/shared/components/CartDrawer";
@@ -39,6 +39,7 @@ import { useAuthModal } from "@/shared/context/AuthModalContext";
 import { useSafeContext } from "@/shared/hooks";
 import { AppContext } from "@/features/app/providers/app.provider";
 import { FilterService } from "@/services/filter";
+import type { Filter } from "@/modules/filter";
 
 const NAV_ITEMS = [
   { value: "place", label: "Nơi lưu trú", icon: Home },
@@ -134,13 +135,17 @@ export default function MainLayoutClient({
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [searchExpandedPath, setSearchExpandedPath] = useState<string | null>(null);
   const [initialSearchPanel, setInitialSearchPanel] = useState<SearchPanel>();
-  const { tab, setTab, filter } = useSafeContext(AppContext) ?? { tab: undefined, setTab: () => {}, filter: undefined };
+  const { tab, setTab, filter, setFilter } = useSafeContext(AppContext) ?? {
+    tab: undefined,
+    setTab: () => {},
+    filter: undefined,
+    setFilter: () => {},
+  };
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const pathName = usePathname();
-  const [currentUser, setCurrentUser] = useState<CurrentUser>(
-    () => AuthService.getCurrentUser() as CurrentUser,
-  );
+  const [currentUser, setCurrentUser] = useState<CurrentUser>(null);
   const { itemCount, setIsDrawerOpen } = useCart();
   const { openModal } = useAuthModal();
 
@@ -160,6 +165,7 @@ export default function MainLayoutClient({
     isSearchExpanded && searchExpandedPath === pathName && !isHomePage;
   const showLargeSearch = isCategoryRootPage || isExpandedFromCompact;
   const showCompactSearch = !isHomePage && !isCategoryRootPage && !showLargeSearch;
+  const showMobileSearchPanel = isSearchExpanded && searchExpandedPath === pathName;
   const elevatedHeader =
     showLargeSearch ||
     scrolled ||
@@ -176,6 +182,20 @@ export default function MainLayoutClient({
     setCurrentUser(null);
     window.location.href = "/";
   };
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    queueMicrotask(() => {
+      if (!isCancelled) {
+        setCurrentUser(AuthService.getCurrentUser() as CurrentUser);
+      }
+    });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!currentUser) return;
@@ -205,12 +225,24 @@ export default function MainLayoutClient({
     }
   }, [pathName, setTab]);
 
+  useEffect(() => {
+    if (!pathName.startsWith("/search")) return;
+
+    const parsedFilter = FilterService.get(
+      new URLSearchParams(searchParams.toString()),
+    );
+    if (parsedFilter) {
+      setFilter(parsedFilter);
+    }
+  }, [pathName, searchParams, setFilter]);
+
   const goHome = () => {
     setIsSearchExpanded(false);
     setSearchExpandedPath(null);
     setInitialSearchPanel(undefined);
     startTransition(() => {
       setTab(undefined);
+      setFilter(undefined);
       router.push("/");
     });
   };
@@ -227,9 +259,35 @@ export default function MainLayoutClient({
   const openLogin = () => openModal("login");
 
   const openSearchPanel = (panel: SearchPanel) => {
+    setIsDrawerOpen(false);
     setSearchExpandedPath(pathName);
     setInitialSearchPanel(panel);
     setIsSearchExpanded(true);
+  };
+
+  const openCartDrawer = () => {
+    setIsSearchExpanded(false);
+    setSearchExpandedPath(null);
+    setInitialSearchPanel(undefined);
+    setIsDrawerOpen(true);
+  };
+
+  const submitSearch = (value: Filter) => {
+    setFilter(value);
+    const params = FilterService.set(
+      activeCategoryContext
+        ? {
+            ...value,
+            type:
+              activeCategoryContext === "experience"
+                ? "exp"
+                : activeCategoryContext,
+          }
+        : value,
+    );
+    router.push(`/search?${params.toString()}`);
+    setIsSearchExpanded(false);
+    setSearchExpandedPath(null);
   };
 
   return (
@@ -243,22 +301,23 @@ export default function MainLayoutClient({
       <header
         className={clsx(
           "fixed inset-x-0 top-0 z-50 overflow-visible border-b border-[#DDDDDD] bg-white transition-all duration-300",
-          showLargeSearch ? "h-[196px]" : "h-24",
+          "h-[140px] lg:h-24",
+          showLargeSearch && "lg:h-[196px]",
           elevatedHeader ? "shadow-sm" : "shadow-none",
         )}
       >
         {/* Row 1: Logo, Center (Nav items or Search Pill), Right Controls */}
-        <div className="relative mx-auto flex h-24 max-w-[1760px] items-center justify-between px-6 md:px-10 xl:px-20">
+        <div className="relative mx-auto flex h-[72px] max-w-[1760px] items-center justify-between px-4 sm:px-6 md:px-8 lg:h-24 lg:px-10 xl:px-20">
           <button
             type="button"
             onClick={goHome}
             className="flex items-center gap-2 rounded-full text-[#FF385C] transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#222222]"
             aria-label="Về trang chủ GoTravel"
           >
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#FF385C] text-white">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FF385C] text-white sm:h-11 sm:w-11 lg:h-9 lg:w-9">
               <Home className="h-5 w-5" />
             </span>
-            <span className="hidden text-2xl font-bold tracking-normal sm:block">
+            <span className="hidden text-xl font-bold tracking-normal sm:block lg:text-2xl">
               GoTravel
             </span>
           </button>
@@ -266,7 +325,7 @@ export default function MainLayoutClient({
           {/* Center Column: service tabs in large mode, compact search after scroll */}
           {showLargeSearch ? (
             <nav
-              className="absolute left-1/2 flex -translate-x-1/2 items-center gap-2"
+              className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-2 lg:flex"
               aria-label="Loại hình dịch vụ"
             >
               {NAV_ITEMS.map((item) => {
@@ -287,7 +346,7 @@ export default function MainLayoutClient({
             <div
               role="search"
               aria-label="Bắt đầu tìm kiếm"
-              className="absolute left-1/2 flex h-12 w-[464px] max-w-[calc(100vw_-_220px)] -translate-x-1/2 items-center rounded-full bg-white text-sm text-[#222222] shadow-[0_0_0_1px_rgba(0,0,0,.02),0_8px_24px_rgba(0,0,0,.10)] transition-shadow duration-200 hover:shadow-[0_0_0_1px_rgba(0,0,0,.04),0_10px_28px_rgba(0,0,0,.13)]"
+              className="absolute left-1/2 hidden h-12 w-[464px] max-w-[calc(100vw_-_220px)] -translate-x-1/2 items-center rounded-full bg-white text-sm text-[#222222] shadow-[0_0_0_1px_rgba(0,0,0,.02),0_8px_24px_rgba(0,0,0,.10)] transition-shadow duration-200 hover:shadow-[0_0_0_1px_rgba(0,0,0,.04),0_10px_28px_rgba(0,0,0,.13)] lg:flex"
             >
               <span className="sr-only">Bắt đầu tìm kiếm</span>
               <button
@@ -371,7 +430,7 @@ export default function MainLayoutClient({
               <Globe2 className="h-5 w-5" strokeWidth={2} />
             </HeaderIconButton>
 
-            <HeaderIconButton label="Giỏ hàng" onClick={() => setIsDrawerOpen(true)}>
+            <HeaderIconButton label="Giỏ hàng" onClick={openCartDrawer}>
               <ShoppingCart className="h-5 w-5" strokeWidth={2} />
               {itemCount > 0 && (
                 <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#FF385C] px-1 text-[10px] font-bold text-white ring-2 ring-white">
@@ -509,26 +568,67 @@ export default function MainLayoutClient({
           </div>
         </div>
 
+        <div className="mx-auto flex h-[68px] max-w-[1760px] items-center gap-3 px-4 pb-3 sm:px-6 md:px-8 lg:hidden">
+          <button
+            type="button"
+            onClick={() => openSearchPanel("place")}
+            className="flex h-12 min-w-0 flex-1 items-center gap-3 rounded-full border border-[#DDDDDD] bg-white px-4 text-left text-[#222222] shadow-[0_4px_18px_rgba(0,0,0,.10)] transition-all hover:border-[#B0B0B0]"
+            aria-label="Mở tìm kiếm"
+          >
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#FF385C] text-white">
+              <Search className="h-4 w-4" />
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate text-sm font-bold">
+                {filter?.place || "Bạn muốn đi đâu?"}
+              </span>
+              <span className="block truncate text-xs text-[#717171]">
+                {filter?.date?.from ? "Đã chọn ngày" : "Địa điểm, ngày, loại hình"}
+              </span>
+            </span>
+          </button>
+
+          <div className="hidden shrink-0 items-center gap-1.5 sm:flex">
+            {NAV_ITEMS.map((item) => {
+              const Icon = item.icon;
+              const isActive = tab === item.value;
+              return (
+                <button
+                  key={item.value}
+                  type="button"
+                  onClick={() => goToTab(item.value)}
+                  aria-label={item.label}
+                  className={clsx(
+                    "flex h-10 w-10 items-center justify-center rounded-full transition-all",
+                    isActive
+                      ? "bg-[#222222] text-white"
+                      : "bg-[#F7F7F7] text-[#717171] hover:text-[#222222]",
+                  )}
+                >
+                  <Icon className="h-[18px] w-[18px]" />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {showMobileSearchPanel && (
+          <div className="fixed inset-x-0 top-[140px] z-[80] max-h-[calc(100vh-140px)] overflow-y-auto border-t border-[#EBEBEB] bg-white p-4 shadow-[0_24px_60px_rgba(0,0,0,.18)] sm:p-6 lg:hidden">
+            <SearchInfoSection
+              onClickSearch={submitSearch}
+              filter={filter ?? {}}
+              initialOpen={initialSearchPanel}
+              categoryContext={activeCategoryContext}
+              className="max-w-none border-[#DDDDDD]"
+            />
+          </div>
+        )}
+
         {/* Row 2: Large Search Form */}
         {showLargeSearch && (
-          <div className="mx-auto w-full max-w-[1080px] px-6 pb-5">
+          <div className="mx-auto hidden w-full max-w-[1080px] px-6 pb-5 lg:block">
             <SearchInfoSection
-              onClickSearch={(value) => {
-                const params = FilterService.set(
-                  activeCategoryContext
-                    ? {
-                        ...value,
-                        type:
-                          activeCategoryContext === "experience"
-                            ? "exp"
-                            : activeCategoryContext,
-                      }
-                    : value,
-                );
-                router.push(`/search?${params.toString()}`);
-                setIsSearchExpanded(false);
-                setSearchExpandedPath(null);
-              }}
+              onClickSearch={submitSearch}
               filter={filter ?? {}}
               initialOpen={isExpandedFromCompact ? initialSearchPanel : undefined}
               categoryContext={activeCategoryContext}
@@ -538,7 +638,7 @@ export default function MainLayoutClient({
         )}
       </header>
 
-      <div className={clsx("transition-all duration-300", showLargeSearch ? "h-[196px]" : "h-24")} />
+      <div className={clsx("h-[140px] transition-all duration-300 lg:h-24", showLargeSearch && "lg:h-[196px]")} />
 
       {isPending && (
         <div className="center size-full">

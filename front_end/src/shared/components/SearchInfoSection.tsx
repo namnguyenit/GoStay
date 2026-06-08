@@ -150,7 +150,16 @@ export default function SearchInfoSection({
   const [landmarks, setLandmarks] = useState<LandmarkOption[]>([]);
   const [loadingLandmarks, setLoadingLandmarks] = useState(false);
   const [hoveredSegment, setHoveredSegment] = useState<SearchPanel>();
+  const [isCompactViewport, setIsCompactViewport] = useState(false);
   const layoutGroupId = useId();
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 767px)");
+    const updateViewport = () => setIsCompactViewport(mediaQuery.matches);
+    updateViewport();
+    mediaQuery.addEventListener("change", updateViewport);
+    return () => mediaQuery.removeEventListener("change", updateViewport);
+  }, []);
 
   useEffect(() => {
     setSearchInfo(filter);
@@ -505,7 +514,7 @@ export default function SearchInfoSection({
 
               <Calendar
                 mode="range"
-                numberOfMonths={2}
+                numberOfMonths={isCompactViewport ? 1 : 2}
                 selected={searchInfo?.date}
                 onSelect={(date) => updateSearchInfo({ date })}
                 disabled={{ before: new Date() }}
