@@ -20,6 +20,7 @@ type LandmarkLocationValue = {
 type LandmarkMapPickerProps = {
   value: LandmarkLocationValue;
   onChange: (patch: Partial<LandmarkLocationValue>) => void;
+  allowNameOverwrite?: boolean;
 };
 
 type NominatimResult = {
@@ -71,6 +72,7 @@ const getShortName = (result: NominatimResult) =>
 export default function LandmarkMapPicker({
   value,
   onChange,
+  allowNameOverwrite = false,
 }: LandmarkMapPickerProps) {
   const [query, setQuery] = useState(value.name);
   const [results, setResults] = useState<NominatimResult[]>([]);
@@ -133,7 +135,7 @@ export default function LandmarkMapPicker({
     const shortName = getShortName(result);
     setQuery(shortName);
     onChange({
-      name: value.name || shortName,
+      name: allowNameOverwrite ? shortName : value.name || shortName,
       suggestedProvince: province || value.suggestedProvince,
       suggestedLatitude: Number(result.lat).toFixed(6),
       suggestedLongitude: Number(result.lon).toFixed(6),

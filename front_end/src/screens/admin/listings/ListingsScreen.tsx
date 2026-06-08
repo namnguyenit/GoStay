@@ -6,6 +6,7 @@ import { AdminConfirmDialog } from "@/screens/admin/_components/AdminConfirmDial
 import { AdminPagination } from "@/screens/admin/_components/AdminPagination";
 import { formatCurrency } from "@/screens/admin/_components/admin-utils";
 import { AdminListing, ListingStatus } from "@/services/admin.service";
+import LocationMapPreview from "@/shared/components/LocationMapPreview";
 import { useAdminListings } from "./hook/useAdminListings";
 
 const STATUS_TABS: { label: string; value: ListingStatus | "" }[] = [
@@ -312,6 +313,13 @@ export function ListingsScreen() {
                   <p className="select-all rounded-lg border border-slate-100 bg-slate-50 px-2.5 py-1 font-mono text-slate-700">{selectedListing.hostId || "—"}</p>
                 </div>
               </div>
+
+              <LocationMapPreview
+                latitude={selectedListing.latitude}
+                longitude={selectedListing.longitude}
+                title={selectedListing.title || "Vị trí dịch vụ"}
+                address={selectedListing.province}
+              />
 
               {selectedListing.description && (
                 <div>

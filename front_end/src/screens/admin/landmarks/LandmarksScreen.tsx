@@ -1,12 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import { useRef, type ChangeEvent } from "react";
+import { useRef, useState, type ChangeEvent } from "react";
 import { Upload, X } from "lucide-react";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AdminConfirmDialog } from "@/screens/admin/_components/AdminConfirmDialog";
 import { AdminPagination } from "@/screens/admin/_components/AdminPagination";
+import type { LandmarkSuggestion } from "@/services/admin.service";
 import { PROVINCES } from "@/shared/constants/provinces";
+import LandmarkMapPicker from "@/shared/components/LandmarkMapPicker";
+import LocationMapPreview from "@/shared/components/LocationMapPreview";
 import { useAdminLandmark } from "./hook/useAdminLandmark";
 
 export function LandmarksScreen() {
@@ -57,6 +60,7 @@ export function LandmarksScreen() {
 
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+  const [selectedSuggestion, setSelectedSuggestion] = useState<LandmarkSuggestion | null>(null);
 
   const handleThumbnailChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -225,6 +229,13 @@ export function LandmarksScreen() {
                               <div className="flex justify-end gap-2">
                                 <button
                                   type="button"
+                                  onClick={() => setSelectedSuggestion(item)}
+                                  className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 transition-colors hover:bg-slate-100"
+                                >
+                                  Xem hồ sơ
+                                </button>
+                                <button
+                                  type="button"
                                   onClick={() => handleApproveSuggestion(item)}
                                   className="rounded-full bg-sky-500 px-2.5 py-1 text-[11px] font-medium text-white transition-colors hover:bg-sky-600"
                                 >
@@ -239,7 +250,13 @@ export function LandmarksScreen() {
                                 </button>
                               </div>
                             ) : (
-                              <span className="text-xs text-slate-500">—</span>
+                              <button
+                                type="button"
+                                onClick={() => setSelectedSuggestion(item)}
+                                className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 transition-colors hover:bg-slate-100"
+                              >
+                                Xem hồ sơ
+                              </button>
                             )}
                           </td>
                         </tr>
@@ -278,6 +295,25 @@ export function LandmarksScreen() {
           </div>
 
           <form onSubmit={handleCreate} className="space-y-5">
+            <LandmarkMapPicker
+              allowNameOverwrite
+              value={{
+                name: form.name,
+                suggestedProvince: form.province,
+                suggestedLatitude: form.latitude,
+                suggestedLongitude: form.longitude,
+              }}
+              onChange={(patch) =>
+                setForm({
+                  ...form,
+                  name: patch.name ?? form.name,
+                  province: patch.suggestedProvince ?? form.province,
+                  latitude: patch.suggestedLatitude ?? form.latitude,
+                  longitude: patch.suggestedLongitude ?? form.longitude,
+                })
+              }
+            />
+
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
               <div className="space-y-4 lg:col-span-2">
                 <div>
@@ -497,9 +533,28 @@ export function LandmarksScreen() {
       {tab === "showlandmarks" && (
         <div className="space-y-6 text-xs">
           {editingLandmark && (
-            <div className="max-w-3xl rounded-[20px] border border-slate-200 bg-slate-50/70 p-5 animate-scale-up">
+            <div className="max-w-6xl rounded-[20px] border border-slate-200 bg-white p-5 shadow-sm animate-scale-up">
               <h3 className="mb-3.5 text-xs font-semibold tracking-wider text-slate-900 uppercase">Chỉnh sửa địa danh</h3>
-              <form onSubmit={handleSaveEdit} className="space-y-3.5">
+              <form onSubmit={handleSaveEdit} className="space-y-5">
+                <LandmarkMapPicker
+                  allowNameOverwrite
+                  value={{
+                    name: editingLandmark.name,
+                    suggestedProvince: editingLandmark.province,
+                    suggestedLatitude: editingLandmark.latitude,
+                    suggestedLongitude: editingLandmark.longitude,
+                  }}
+                  onChange={(patch) =>
+                    setEditingLandmark({
+                      ...editingLandmark,
+                      name: patch.name ?? editingLandmark.name,
+                      province: patch.suggestedProvince ?? editingLandmark.province,
+                      latitude: patch.suggestedLatitude ?? editingLandmark.latitude,
+                      longitude: patch.suggestedLongitude ?? editingLandmark.longitude,
+                    })
+                  }
+                />
+
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <input
                     type="text"
@@ -546,6 +601,67 @@ export function LandmarksScreen() {
                     placeholder="Thumbnail URL"
                   />
                 </div>
+
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                  <div className="rounded-2xl border border-slate-100 bg-slate-50/60 p-3">
+                    <div className="mb-2 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Ảnh đại diện</div>
+                    <div className="relative h-44 overflow-hidden rounded-xl border border-slate-100 bg-white">
+                      {editingLandmark.thumbnailUrl ? (
+                        <Image
+                          unoptimized
+                          fill
+                          src={editingLandmark.thumbnailUrl}
+                          alt={editingLandmark.name || "landmark thumbnail"}
+                          className="object-cover"
+                          sizes="(max-width: 1024px) 100vw, 320px"
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-xs font-medium text-slate-500">
+                          Chưa có ảnh đại diện
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-100 bg-slate-50/60 p-3 lg:col-span-2">
+                    <div className="mb-2 flex items-center justify-between gap-2">
+                      <div className="text-[10px] font-bold tracking-wider text-slate-500 uppercase">Ảnh con / gallery</div>
+                      <span className="text-[10px] font-semibold text-slate-500">{editingLandmark.galleryUrls.length} ảnh</span>
+                    </div>
+                    {editingLandmark.galleryUrls.length > 0 ? (
+                      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+                        {editingLandmark.galleryUrls.map((url, index) => (
+                          <div key={url} className="group relative aspect-[4/3] overflow-hidden rounded-xl border border-slate-100 bg-white">
+                            <Image
+                              unoptimized
+                              fill
+                              src={url}
+                              alt={`Landmark gallery ${index + 1}`}
+                              className="object-cover"
+                              sizes="180px"
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setEditingLandmark({
+                                  ...editingLandmark,
+                                  galleryUrls: editingLandmark.galleryUrls.filter((_, itemIndex) => itemIndex !== index),
+                                })
+                              }
+                              className="absolute right-1.5 top-1.5 rounded-full bg-slate-900/70 px-2 py-0.5 text-[10px] font-bold text-white opacity-0 transition-opacity group-hover:opacity-100"
+                            >
+                              Xóa
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex h-44 items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white text-xs font-medium text-slate-500">
+                        Chưa có ảnh gallery
+                      </div>
+                    )}
+                  </div>
+                </div>
                 <label className="flex w-fit items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-[11px] font-semibold text-slate-600">
                   <input
                     type="checkbox"
@@ -561,27 +677,6 @@ export function LandmarksScreen() {
                   className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 focus:ring-1 focus:ring-slate-300 focus:outline-none"
                   placeholder="Mô tả"
                 />
-                {editingLandmark.galleryUrls.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {editingLandmark.galleryUrls.map((url, index) => (
-                      <span key={url} className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-1 text-[10px] text-slate-500">
-                        Ảnh {index + 1}
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setEditingLandmark({
-                              ...editingLandmark,
-                              galleryUrls: editingLandmark.galleryUrls.filter((_, itemIndex) => itemIndex !== index),
-                            })
-                          }
-                          className="font-bold text-slate-500"
-                        >
-                          x
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                )}
                 <div className="flex gap-2 pt-1">
                   <button
                     type="submit"
@@ -705,6 +800,154 @@ export function LandmarksScreen() {
               loading={loadingLandmarks}
               onPageChange={setLandmarksPage}
             />
+          </div>
+        </div>
+      )}
+
+      {selectedSuggestion && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-sky-500/20 p-4 backdrop-blur-sm animate-fade-in">
+          <div className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-[20px] border border-slate-100 bg-white text-xs text-slate-600 shadow-xl animate-scale-up">
+            <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-5 py-4">
+              <div className="min-w-0">
+                <h3 className="line-clamp-2 text-sm font-semibold text-slate-900">
+                  Hồ sơ đề xuất địa danh
+                </h3>
+                <p className="mt-0.5 break-all text-[10px] text-slate-500">ID: {selectedSuggestion.id}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedSuggestion(null)}
+                className="flex h-6 w-6 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
+              >
+                x
+              </button>
+            </div>
+
+            <div className="flex-1 space-y-5 overflow-y-auto p-5">
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                <div className="lg:col-span-2">
+                  <LocationMapPreview
+                    latitude={selectedSuggestion.suggestedLatitude}
+                    longitude={selectedSuggestion.suggestedLongitude}
+                    title={selectedSuggestion.name || "Vị trí địa danh đề xuất"}
+                    address={selectedSuggestion.suggestedProvince}
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <div className="rounded-2xl border border-slate-100 bg-slate-50/60 p-3">
+                    <div className="mb-2 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Ảnh đại diện</div>
+                    <div className="relative h-44 overflow-hidden rounded-xl border border-slate-100 bg-white">
+                      {(selectedSuggestion.thumbnailUrl || selectedSuggestion.referenceImageUrl) ? (
+                        <Image
+                          unoptimized
+                          fill
+                          src={selectedSuggestion.thumbnailUrl || selectedSuggestion.referenceImageUrl || ""}
+                          alt={selectedSuggestion.name || "suggestion thumbnail"}
+                          className="object-cover"
+                          sizes="320px"
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-xs font-medium text-slate-500">
+                          Chưa có ảnh
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 rounded-2xl border border-slate-100 bg-white p-3">
+                    <div>
+                      <div className="text-[10px] font-bold tracking-wider text-slate-500 uppercase">Tên</div>
+                      <div className="mt-1 font-semibold text-slate-900">{selectedSuggestion.name || "—"}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold tracking-wider text-slate-500 uppercase">Tỉnh/TP</div>
+                      <div className="mt-1 font-semibold text-slate-900">{selectedSuggestion.suggestedProvince || "—"}</div>
+                    </div>
+                    <div className="col-span-2">
+                      <div className="text-[10px] font-bold tracking-wider text-slate-500 uppercase">Host ID</div>
+                      <div className="mt-1 break-all font-mono text-[11px] text-slate-700">{selectedSuggestion.hostId || "—"}</div>
+                    </div>
+                    <div className="col-span-2">
+                      <div className="text-[10px] font-bold tracking-wider text-slate-500 uppercase">Trạng thái</div>
+                      <span className={`mt-1 inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${statusBadge(selectedSuggestion.status)}`}>
+                        {selectedSuggestion.status || "—"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {selectedSuggestion.description && (
+                <div>
+                  <h4 className="mb-1 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Mô tả</h4>
+                  <p className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 leading-relaxed whitespace-pre-line text-slate-600">
+                    {selectedSuggestion.description}
+                  </p>
+                </div>
+              )}
+
+              {(selectedSuggestion.galleryUrls?.length ?? 0) > 0 && (
+                <div>
+                  <h4 className="mb-2 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Ảnh con</h4>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+                    {selectedSuggestion.galleryUrls?.map((url, index) => (
+                      <div key={`${url}-${index}`} className="relative aspect-[4/3] overflow-hidden rounded-xl border border-slate-100 bg-slate-50">
+                        <Image
+                          unoptimized
+                          fill
+                          src={url}
+                          alt={`Suggestion gallery ${index + 1}`}
+                          className="object-cover"
+                          sizes="200px"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selectedSuggestion.rejectReason && (
+                <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-3">
+                  <h4 className="mb-1 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Lý do từ chối</h4>
+                  <p className="leading-relaxed text-slate-600">{selectedSuggestion.rejectReason}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-wrap justify-end gap-2 border-t border-slate-100 bg-slate-50/50 p-4">
+              <button
+                type="button"
+                onClick={() => setSelectedSuggestion(null)}
+                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+              >
+                Đóng
+              </button>
+              {selectedSuggestion.status === "PENDING" && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      openRejectSuggestion(selectedSuggestion.id);
+                      setSelectedSuggestion(null);
+                    }}
+                    className="rounded-full border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100"
+                  >
+                    Từ chối
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleApproveSuggestion(selectedSuggestion);
+                      setSelectedSuggestion(null);
+                    }}
+                    className="rounded-full bg-sky-500 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-sky-600"
+                  >
+                    Tạo địa danh từ hồ sơ
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}
