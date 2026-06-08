@@ -6,6 +6,7 @@ import Image from "next/image";
 import { PROVINCES } from "@/shared/constants/provinces";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getErrorMessage } from "../_utils";
+import LandmarkMapPicker from "@/shared/components/LandmarkMapPicker";
 
 type MediaUploadResponse = {
   data?: {
@@ -141,6 +142,10 @@ export default function HostLandmarkSuggestPage() {
 
       <div className="bg-white border border-gray-200 rounded-2xl p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
+          <LandmarkMapPicker
+            value={form}
+            onChange={(patch) => setForm((current) => ({ ...current, ...patch }))}
+          />
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="space-y-5">

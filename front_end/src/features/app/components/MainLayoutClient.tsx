@@ -53,10 +53,36 @@ type SearchPanel = "place" | "date" | "type";
 
 type CurrentUser = {
   id?: string;
+  username?: string;
+  email?: string;
+  fullName?: string;
   firstName?: string;
   lastName?: string;
   avatarUrl?: string;
+  userProfile?: {
+    fullName?: string;
+    avatarUrl?: string;
+  };
 } | null;
+
+const getUserDisplayName = (user: CurrentUser) => {
+  if (!user) return "Tài khoản GoTravel";
+
+  return (
+    user.userProfile?.fullName?.trim() ||
+    user.fullName?.trim() ||
+    [user.lastName, user.firstName].filter(Boolean).join(" ").trim() ||
+    user.username?.trim() ||
+    user.email?.trim() ||
+    "Tài khoản GoTravel"
+  );
+};
+
+const getUserInitial = (user: CurrentUser) =>
+  getUserDisplayName(user).charAt(0).toUpperCase() || "U";
+
+const getUserAvatarUrl = (user: CurrentUser) =>
+  user?.userProfile?.avatarUrl || user?.avatarUrl || "https://github.com/shadcn.png";
 
 function HeaderTabButton({
   icon: Icon,
@@ -450,13 +476,10 @@ export default function MainLayoutClient({
                   {currentUser ? (
                     <Avatar className="h-9 w-9 border border-[#EBEBEB]">
                       <AvatarImage
-                        src={
-                          currentUser.avatarUrl ||
-                          "https://github.com/shadcn.png"
-                        }
+                        src={getUserAvatarUrl(currentUser)}
                       />
                       <AvatarFallback className="bg-[#717171] text-xs font-bold text-white">
-                        {currentUser.firstName?.[0] || "U"}
+                        {getUserInitial(currentUser)}
                       </AvatarFallback>
                     </Avatar>
                   ) : (
@@ -476,19 +499,21 @@ export default function MainLayoutClient({
                     <div className="flex items-center gap-3 px-5 py-4">
                       <Avatar className="h-11 w-11 border border-[#DDDDDD]">
                         <AvatarImage
-                          src={
-                            currentUser.avatarUrl ||
-                            "https://github.com/shadcn.png"
-                          }
+                          src={getUserAvatarUrl(currentUser)}
                         />
                         <AvatarFallback className="bg-[#222222] text-sm font-bold text-white">
-                          {currentUser.firstName?.[0] || "U"}
+                          {getUserInitial(currentUser)}
                         </AvatarFallback>
                       </Avatar>
                       <div className="min-w-0">
                         <div className="truncate text-sm font-bold text-[#222222]">
-                          {[currentUser.lastName, currentUser.firstName].filter(Boolean).join(" ") || "Tài khoản GoTravel"}
+                          {getUserDisplayName(currentUser)}
                         </div>
+                        {currentUser.email && (
+                          <div className="mt-0.5 max-w-[210px] truncate text-[11px] font-medium text-[#717171]">
+                            {currentUser.email}
+                          </div>
+                        )}
                         <div className="mt-1 flex flex-wrap gap-1.5">
                           {roles.map((role) => (
                             <span
