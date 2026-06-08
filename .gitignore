@@ -1,0 +1,55 @@
+# JetBrains IDEs (IntelliJ, WebStorm, etc.)
+.idea/
+**/.idea/
+*.iml
+*.iws
+
+# Local editors / OS metadata
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Local agent / analysis artifacts
+.codex-service-logs/
+.understand-anything/
+scratch/
+
+# Local API client exports, not required to run services
+.postman/
+postman/
+
+# Node.js (APIGateway, cloudinary-service, front_end, search-and-recommendation)
+**/node_modules/
+**/.next/
+**/out/
+**/dist/
+**/.turbo/
+**/.tsbuildinfo
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/.env
+
+# Java/Spring Boot (Identity)
+**/target/
+**/.mvn/wrapper/maven-wrapper.jar
+**/logs/
+**/*.class
+**/*.log
+
+# Runtime logs / crash reports
+.logs/
+logs/
+hs_err_pid*.log
+replay_pid*.log
+
+# Generated reports / temporary review artifacts
+CSE702013_Report-Hoan thanh chuong 1/
+bieudo/
+*.patch
+
+Project Context.md
+BACKEND_REPORT_ALIGNMENT_REVIEW.md
+CATALOG_LISTING_SEED_DATA_PLAN.md

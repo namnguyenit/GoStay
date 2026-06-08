@@ -1,0 +1,189 @@
+:root {
+  --app-background: #ffffff;
+  --app-foreground: #222222;
+
+  --app-primary: #ff385c;
+  --app-primary-foreground: #ffffff;
+
+  --app-secondary: #e61e4f;
+  --app-secondary-foreground: #ffffff;
+
+  --app-accent: #e61e4f;
+  --app-accent-foreground: #ffffff;
+
+  --app-muted: #f7f7f7;
+  --app-muted-foreground: #717171;
+
+  --app-destructive: #ef4444;
+  /* red-500 */
+  --app-destructive-foreground: #ffffff;
+
+  --app-card: #ffffff;
+  --app-card-foreground: #222222;
+
+  --app-popover: #ffffff;
+  --app-popover-foreground: #222222;
+
+  /* SIZE */
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 30px;
+
+  /* ===== FONT WEIGHT ===== */
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* ANIMATION */
+  --slide-time: 700ms;
+}
+
+.app-dark {
+  --app-background: #ffffff;
+  --app-foreground: #e5e7eb;
+
+  --app-primary: #ff385c;
+  --app-primary-foreground: #ffffff;
+
+  --app-secondary: #e61e4f;
+  --app-secondary-foreground: #ffffff;
+
+  --app-accent: #e61e4f;
+  --app-accent-foreground: #ffffff;
+
+  --app-muted: #1f2937;
+  --app-muted-foreground: #9ca3af;
+
+  --app-card: #111827;
+  --app-card-foreground: #e5e7eb;
+
+  --app-popover: #111827;
+  --app-popover-foreground: #e5e7eb;
+}
+
+@theme inline {
+  --color-app-bg: var(--app-background);
+  --color-app-fg: var(--app-foreground);
+
+  --color-app-primary: var(--app-primary);
+  --color-app-primary-fg: var(--app-primary-foreground);
+
+  --color-app-secondary: var(--app-secondary);
+  --color-app-secondary-fg: var(--app-secondary-foreground);
+
+  --color-app-accent: var(--app-accent);
+  --color-app-accent-fg: var(--app-accent-foreground);
+
+  --color-app-muted: var(--app-muted);
+  --color-app-muted-fg: var(--app-muted-foreground);
+
+  --color-app-destructive: var(--app-destructive);
+  --color-app-destructive-fg: var(--app-destructive-foreground);
+
+  --color-app-card: var(--app-card);
+  --color-app-card-fg: var(--app-card-foreground);
+
+  --color-app-popover: var(--app-popover);
+  --color-app-popover-fg: var(--app-popover-foreground);
+
+  --animate-slide: slide var(--slide-time) ease-out;
+  @keyframes slide {
+    0% {
+      transform: translateX(var(--from-x, 100%));
+      opacity: 0;
+    }
+    100% {
+      transform: translateX(var(--to-x, 0));
+      opacity: 1;
+    }
+  }
+}
+
+@layer components {
+  .text-header {
+    @apply text-app-fg text-3xl font-bold;
+  }
+  .text-title {
+    @apply text-[22px] leading-[26px] font-bold;
+  }
+  .text-content {
+    @apply text-app-fg text-base font-normal;
+  }
+  .text-caption {
+    @apply text-app-muted-fg text-sm font-normal;
+  }
+  .scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .scrollbar::-webkit-scrollbar-thumb {
+    background-color: var(--app-primary);
+    border-radius: 9999px;
+  }
+  .scrollbar::-webkit-scrollbar-track {
+    background: var(--app-background);
+  }
+  /* .scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-primary) transparent;
+  } */
+  .blur-bottom {
+    background: linear-gradient(to top, var(--app-background), transparent 5%);
+  }
+  .center-x {
+    @apply flex w-full flex-row justify-center;
+  }
+  .center-y {
+    @apply flex h-full flex-row items-center;
+  }
+  .center {
+    @apply flex size-full items-center justify-center;
+  }
+  .row {
+    @apply flex flex-row;
+  }
+  .col {
+    @apply flex flex-col;
+  }
+  .pos-center-x {
+    @apply absolute left-1/2 -translate-x-1/2;
+  }
+  .pos-center-y {
+    @apply absolute top-1/2 -translate-y-1/2;
+  }
+  .pos-center {
+    @apply absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2;
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-app-bg text-app-fg;
+    font-family: var(--font-sans), Circular, -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+    /* CUSTOM BỎ CHẶN DO SELECT TRIGGER */
+    pointer-events: auto !important;
+  }
+
+  html {
+    @apply text-base font-normal;
+    letter-spacing: 0;
+  }
+}
+
+@layer utilities {
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+}

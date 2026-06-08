@@ -1,0 +1,27 @@
+package com.gotravel.PaymentandWallet.dto.request;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class SepayWebhookRequest {
+    private Long id;
+    private String gateway;
+    private String transactionDate;
+    private String accountNumber;
+    private String subAccount;
+    private String transferType;
+    private BigDecimal transferAmount;
+    private BigDecimal accumulated;
+    private String code;
+    private String content;
+    private String referenceCode;
+    private String description;
+}

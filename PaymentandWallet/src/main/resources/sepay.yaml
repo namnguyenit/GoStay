@@ -1,0 +1,7 @@
+sepay:
+  bank-account: ${SEPAY_BANK_ACCOUNT:SBSEPAYJD3ZNUS6AFBP}   # Tài khoản ảo (VA) từ SePay Test Mode
+  bank-name: ${SEPAY_BANK_NAME:BIDV}                         # Ngân hàng trong Test Mode
+  api-token: ${SEPAY_API_TOKEN:}                             # Dùng khi webhook chọn API Key
+  webhook-auth-mode: ${SEPAY_WEBHOOK_AUTH_MODE:HMAC_SHA256}  # HMAC_SHA256 hoặc API_KEY
+  webhook-secret: ${SEPAY_WEBHOOK_SECRET:}                   # Secret Key dùng khi webhook chọn HMAC-SHA256
+  webhook-tolerance-seconds: ${SEPAY_WEBHOOK_TOLERANCE_SECONDS:300}
