@@ -39,7 +39,9 @@ type NominatimResult = {
 };
 
 const TILE_SIZE = 256;
-const ZOOM = 14;
+const DEFAULT_ZOOM = 14;
+const MIN_ZOOM = 4;
+const MAX_ZOOM = 18;
 const MAP_WIDTH = 960;
 const MAP_HEIGHT = 360;
 const DEFAULT_LATITUDE = 16.047079;
@@ -106,19 +108,20 @@ export default function LocationCoordinatePicker({
   const [results, setResults] = useState<NominatimResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState("");
+  const [zoom, setZoom] = useState(DEFAULT_ZOOM);
 
   const latitude = isValidCoordinate(value.latitude) ? Number(value.latitude) : DEFAULT_LATITUDE;
   const longitude = isValidCoordinate(value.longitude) ? Number(value.longitude) : DEFAULT_LONGITUDE;
   const hasCoordinates = isValidCoordinate(value.latitude) && isValidCoordinate(value.longitude);
-  const centerX = lngToWorldX(longitude, ZOOM);
-  const centerY = latToWorldY(latitude, ZOOM);
+  const centerX = lngToWorldX(longitude, zoom);
+  const centerY = latToWorldY(latitude, zoom);
   const topLeftX = centerX - MAP_WIDTH / 2;
   const topLeftY = centerY - MAP_HEIGHT / 2;
   const tileMinX = Math.floor(topLeftX / TILE_SIZE);
   const tileMaxX = Math.floor((topLeftX + MAP_WIDTH) / TILE_SIZE);
   const tileMinY = Math.floor(topLeftY / TILE_SIZE);
   const tileMaxY = Math.floor((topLeftY + MAP_HEIGHT) / TILE_SIZE);
-  const maxTile = 2 ** ZOOM;
+  const maxTile = 2 ** zoom;
 
   const mapQuery = hasCoordinates
     ? `${value.latitude},${value.longitude}`
@@ -133,14 +136,14 @@ export default function LocationCoordinatePicker({
         const wrappedX = ((x % maxTile) + maxTile) % maxTile;
         list.push({
           key: `${wrappedX}-${y}`,
-          url: `https://tile.openstreetmap.org/${ZOOM}/${wrappedX}/${y}.png`,
+          url: `https://tile.openstreetmap.org/${zoom}/${wrappedX}/${y}.png`,
           left: x * TILE_SIZE - topLeftX,
           top: y * TILE_SIZE - topLeftY,
         });
       }
     }
     return list;
-  }, [maxTile, tileMaxX, tileMaxY, tileMinX, tileMinY, topLeftX, topLeftY]);
+  }, [maxTile, tileMaxX, tileMaxY, tileMinX, tileMinY, topLeftX, topLeftY, zoom]);
 
   const applyCoordinates = (lat: number, lng: number, patch: CoordinatePickerPatch = {}) => {
     onChange({
@@ -219,7 +222,7 @@ export default function LocationCoordinatePicker({
     const clickY = (event.clientY - rect.top) * ratioY;
     const worldX = topLeftX + clickX;
     const worldY = topLeftY + clickY;
-    applyCoordinates(worldYToLat(worldY, ZOOM), worldXToLng(worldX, ZOOM));
+    applyCoordinates(worldYToLat(worldY, zoom), worldXToLng(worldX, zoom));
   };
 
   return (
@@ -344,6 +347,37 @@ export default function LocationCoordinatePicker({
 
         <div className="pointer-events-none absolute bottom-3 left-3 rounded-full bg-white/95 px-3 py-1.5 text-[10px] font-bold text-gray-600 shadow-sm">
           Bấm vào bản đồ để đặt ghim
+        </div>
+        <div className="absolute right-3 top-3 z-20 flex flex-col overflow-hidden rounded-2xl border border-white/70 bg-white shadow-lg">
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              setZoom((current) => Math.min(current + 1, MAX_ZOOM));
+            }}
+            disabled={zoom >= MAX_ZOOM}
+            className="flex h-10 w-10 items-center justify-center border-b border-slate-100 text-lg font-bold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+            aria-label="Phóng to bản đồ"
+            title="Phóng to"
+          >
+            +
+          </button>
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              setZoom((current) => Math.max(current - 1, MIN_ZOOM));
+            }}
+            disabled={zoom <= MIN_ZOOM}
+            className="flex h-10 w-10 items-center justify-center text-xl font-bold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+            aria-label="Thu nhỏ bản đồ"
+            title="Thu nhỏ"
+          >
+            −
+          </button>
+        </div>
+        <div className="absolute left-3 top-3 z-20 rounded-full bg-white/95 px-3 py-1.5 text-[10px] font-bold text-gray-600 shadow-sm">
+          Zoom: {zoom}
         </div>
         <a
           href="https://www.openstreetmap.org/copyright"
