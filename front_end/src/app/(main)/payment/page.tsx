@@ -168,7 +168,7 @@ function PaymentContent() {
         {checking ? "Đang kiểm tra..." : "Tôi đã thanh toán xong ✓"}
       </button>
 
-      {process.env.NODE_ENV === "development" && payment?.paymentId && (
+      {payment?.paymentId && (
         <button
           onClick={async () => {
             try {
@@ -183,7 +183,7 @@ function PaymentContent() {
           }}
           className="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 rounded-xl transition-colors mb-3"
         >
-          [DEV] Mô phỏng Thanh toán thành công
+          Mô phỏng thanh toán thành công
         </button>
       )}
 

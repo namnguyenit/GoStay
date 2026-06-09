@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/gotravel_db}
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/auth_db}
     username: ${DB_USERNAME:gotravel_db}
     password: ${DB_PASSWORD:}
     driver-class-name: org.postgresql.Driver
@@ -20,5 +20,4 @@ media:
 internal:
   service:
     token: ${INTERNAL_SERVICE_TOKEN:gostay-internal-secret-token-12345}
-
 

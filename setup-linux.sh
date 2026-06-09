@@ -1,327 +1,397 @@
 #!/bin/bash
 set -euo pipefail
 
-# ============================================================
-# GoStay - Environment Setup Script for Linux Server
-# Note: This script ONLY provisions the environment and builds
-# the project. Use the separate run script to start services.
-# ============================================================
-
-RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; NC='\033[0m'
-log()  { echo -e "${GREEN}[✓]${NC} $1"; }
-warn() { echo -e "${YELLOW}[!]${NC} $1"; }
-err()  { echo -e "${RED}[✗]${NC} $1"; }
-info() { echo -e "${CYAN}[i]${NC} $1"; }
-
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$PROJECT_DIR"
 
-# ─── Config ────────────────────────────────────────────────────
-DB_SUPERUSER="${DB_SUPERUSER:-postgres}"
-DB_SUPERPASS="${DB_SUPERPASS:-postgres}"
+APP_DB_USER="${APP_DB_USER:-gotravel_db}"
+APP_DB_PASSWORD="${APP_DB_PASSWORD:-123456}"
+
+AUTH_DB_NAME="${AUTH_DB_NAME:-auth_db}"
+CATALOG_DB_NAME="${CATALOG_DB_NAME:-cataloglisting}"
+BOOKING_DB_NAME="${BOOKING_DB_NAME:-bookinginventory}"
+CART_DB_NAME="${CART_DB_NAME:-cartorder}"
+PAYMENT_DB_NAME="${PAYMENT_DB_NAME:-paymentwallet}"
+RECOMMENDATION_DB_NAME="${RECOMMENDATION_DB_NAME:-recommendation_db}"
+
+CATALOG_READER_ROLE="${CATALOG_READER_ROLE:-catalog_readonly}"
+CATALOG_READER_USER="${CATALOG_READER_USER:-catalog_node_reader}"
+CATALOG_READER_PASSWORD="${CATALOG_READER_PASSWORD:-reader_password}"
+RECOMMENDATION_DB_USER="${RECOMMENDATION_DB_USER:-recommendation_user}"
+RECOMMENDATION_DB_PASSWORD="${RECOMMENDATION_DB_PASSWORD:-recommendation_password}"
+
 INTERNAL_TOKEN="${INTERNAL_TOKEN:-gostay-internal-secret-token-12345}"
-JAVA_VERSION="17"
-NODE_VERSION="22"
-KEYSTORE_PATH="$PROJECT_DIR/Identity/src/main/resources/keystore.jks"
+GATEWAY_PORT="${GATEWAY_PORT:-5555}"
+MEDIA_PORT="${MEDIA_PORT:-5001}"
+SEARCH_PORT="${SEARCH_PORT:-8086}"
+FRONTEND_API_URL="${FRONTEND_API_URL:-http://localhost:${GATEWAY_PORT}/api}"
 
-# ─── 1. System Packages ───────────────────────────────────────
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
+log()  { printf "%b[OK]%b %s\n" "${GREEN}" "${NC}" "$1"; }
+info() { printf "%b[INFO]%b %s\n" "${CYAN}" "${NC}" "$1"; }
+warn() { printf "%b[WARN]%b %s\n" "${YELLOW}" "${NC}" "$1"; }
+error() { printf "%b[ERROR]%b %s\n" "${RED}" "${NC}" "$1"; }
+
+line() {
+  printf '%s\n' "============================================================"
+}
+
+postgres_psql() {
+  sudo -u postgres psql -v ON_ERROR_STOP=1 "$@"
+}
+
+role_exists() {
+  local role="$1"
+  postgres_psql -qtAc "SELECT 1 FROM pg_roles WHERE rolname = '$role';"
+}
+
+db_exists() {
+  local db="$1"
+  postgres_psql -qtAc "SELECT 1 FROM pg_database WHERE datname = '$db';"
+}
+
+ensure_role_login() {
+  local role="$1"
+  local password="$2"
+
+  if [[ "$(role_exists "$role")" == "1" ]]; then
+    postgres_psql -c "ALTER ROLE \"$role\" WITH LOGIN PASSWORD '$password';"
+  else
+    postgres_psql -c "CREATE ROLE \"$role\" WITH LOGIN PASSWORD '$password';"
+  fi
+
+  postgres_psql -c "ALTER ROLE \"$role\" WITH NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS;"
+}
+
+ensure_role_nologin() {
+  local role="$1"
+
+  if [[ "$(role_exists "$role")" == "1" ]]; then
+    postgres_psql -c "ALTER ROLE \"$role\" WITH NOLOGIN;"
+  else
+    postgres_psql -c "CREATE ROLE \"$role\" NOLOGIN;"
+  fi
+}
+
+ensure_database() {
+  local db="$1"
+  local owner="$2"
+
+  if [[ "$(db_exists "$db")" != "1" ]]; then
+    postgres_psql -c "CREATE DATABASE \"$db\" OWNER \"$owner\";"
+  fi
+
+  postgres_psql -c "ALTER DATABASE \"$db\" OWNER TO \"$owner\";"
+  postgres_psql -d "$db" -c "ALTER SCHEMA public OWNER TO \"$owner\";"
+  postgres_psql -d "$db" -c "GRANT ALL PRIVILEGES ON DATABASE \"$db\" TO \"$owner\";"
+  postgres_psql -d "$db" -c "GRANT ALL ON SCHEMA public TO \"$owner\";"
+}
+
 install_system_packages() {
-    info "Updating package list..."
-    sudo apt-get update -qq
+  line
+  info "INSTALLING SYSTEM PACKAGES"
+  line
 
-    info "Installing system dependencies..."
-    # Đã bỏ postgresql-16-postgis-3 để tránh lỗi trên các OS khác nhau. 
-    # Package 'postgis' sẽ tự động kéo bản PostGIS phù hợp với PostgreSQL mặc định của OS.
-    sudo apt-get install -y -qq \
-        curl wget gnupg ca-certificates \
-        build-essential git unzip \
-        libvips-dev \
-        postgresql postgresql-contrib postgis \
-        redis-server nginx ufw
+  sudo apt-get update -qq
+  sudo apt-get install -y -qq \
+    curl wget gnupg ca-certificates \
+    build-essential git unzip \
+    libvips-dev \
+    postgresql postgresql-contrib postgis \
+    redis-server nginx ufw
 
-    log "System packages installed"
+  log "System packages installed"
 }
 
-# ─── 2. Java 17 (Temurin) ─────────────────────────────────────
 install_java() {
-    if java -version 2>&1 | grep -q "version \"$JAVA_VERSION"; then
-        log "Java $JAVA_VERSION already installed"
-        return
-    fi
-    info "Installing Java $JAVA_VERSION (Temurin)..."
-    sudo mkdir -p /etc/apt/keyrings
-    wget -qO- https://packages.adoptium.net/artifactory/api/gpg/key/public \
-        | sudo tee /etc/apt/keyrings/adoptium.asc >/dev/null
-    echo "deb [signed-by=/etc/apt/keyrings/adoptium.asc] https://packages.adoptium.net/artifactory/deb $(lsb_release -cs 2>/dev/null || echo bookworm) main" \
-        | sudo tee /etc/apt/sources.list.d/adoptium.list >/dev/null
-    sudo apt-get update -qq
-    sudo apt-get install -y -qq temurin-${JAVA_VERSION}-jdk
-    log "Java $JAVA_VERSION installed"
+  if java -version 2>&1 | grep -q 'version "17'; then
+    log "Java 17 already installed"
+    return
+  fi
+
+  info "Installing Java 17 (Temurin)"
+  sudo mkdir -p /etc/apt/keyrings
+  curl -fsSL https://packages.adoptium.net/artifactory/api/gpg/key/public \
+    | sudo tee /etc/apt/keyrings/adoptium.asc >/dev/null
+  echo "deb [signed-by=/etc/apt/keyrings/adoptium.asc] https://packages.adoptium.net/artifactory/deb $(lsb_release -cs 2>/dev/null || echo bookworm) main" \
+    | sudo tee /etc/apt/sources.list.d/adoptium.list >/dev/null
+  sudo apt-get update -qq
+  sudo apt-get install -y -qq temurin-17-jdk
+  log "Java 17 installed"
 }
 
-# ─── 3. Node.js & PM2 ─────────────────────────────────────────
 install_node() {
-    if node -v 2>/dev/null | grep -q "^v$NODE_VERSION"; then
-        log "Node.js $NODE_VERSION already installed"
-    else
-        info "Installing Node.js $NODE_VERSION LTS..."
-        curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | sudo bash -
-        sudo apt-get install -y -qq nodejs
-        log "Node.js $(node -v) installed"
-    fi
+  if node -v 2>/dev/null | grep -q '^v22'; then
+    log "Node.js 22 already installed"
+  else
+    info "Installing Node.js 22 LTS"
+    curl -fsSL https://deb.nodesource.com/setup_22.x | sudo bash -
+    sudo apt-get install -y -qq nodejs
+    log "Node.js $(node -v) installed"
+  fi
 
-    info "Installing PM2 globally (for process management)..."
+  if command -v pm2 >/dev/null 2>&1; then
+    log "PM2 already installed"
+  else
+    info "Installing PM2 globally"
     sudo npm install -g pm2 yarn --silent
     log "PM2 installed"
+  fi
 }
 
-# ─── 4. PostgreSQL Databases ──────────────────────────────────
 setup_databases() {
-    info "Setting up PostgreSQL databases..."
+  line
+  info "SETTING UP POSTGRESQL DATABASES"
+  line
 
-    # Đảm bảo service postgresql đang chạy
-    sudo systemctl start postgresql 2>/dev/null || sudo service postgresql start 2>/dev/null || true
+  sudo systemctl start postgresql 2>/dev/null || sudo service postgresql start 2>/dev/null || true
 
-    sudo -u postgres psql <<-EOSQL
-        ALTER USER $DB_SUPERUSER PASSWORD '$DB_SUPERPASS';
-EOSQL
+  ensure_role_login "$APP_DB_USER" "$APP_DB_PASSWORD"
+  ensure_role_login "$RECOMMENDATION_DB_USER" "$RECOMMENDATION_DB_PASSWORD"
+  ensure_role_nologin "$CATALOG_READER_ROLE"
+  ensure_role_login "$CATALOG_READER_USER" "$CATALOG_READER_PASSWORD"
 
-    DB_LIST=(
-        "auth_db:auth_user:auth_password"
-        "cataloglisting:catalog_user:catalog_password"
-        "bookinginventory:booking_user:booking_password"
-        "cartorder:cart_user:cart_password"
-        "paymentwallet:payment_user:payment_password"
-        "recommendation_db:recommendation_user:recommendation_password"
-    )
+  ensure_database "$AUTH_DB_NAME" "$APP_DB_USER"
+  ensure_database "$CATALOG_DB_NAME" "$APP_DB_USER"
+  ensure_database "$BOOKING_DB_NAME" "$APP_DB_USER"
+  ensure_database "$CART_DB_NAME" "$APP_DB_USER"
+  ensure_database "$PAYMENT_DB_NAME" "$APP_DB_USER"
+  ensure_database "$RECOMMENDATION_DB_NAME" "$RECOMMENDATION_DB_USER"
 
-    for entry in "${DB_LIST[@]}"; do
-        DB_NAME="${entry%%:*}"
-        REMAINDER="${entry#*:}"
-        DB_USER="${REMAINDER%%:*}"
-        DB_PASS="${REMAINDER#*:}"
+  postgres_psql -d "$CATALOG_DB_NAME" -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+  postgres_psql -d "$CATALOG_DB_NAME" -c "CREATE EXTENSION IF NOT EXISTS unaccent;"
+  postgres_psql -d "$CATALOG_DB_NAME" -c "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
 
-        sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname = '$DB_NAME'" | grep -q 1 \
-            && warn "Database $DB_NAME already exists" \
-            || sudo -u postgres createdb "$DB_NAME"
+  postgres_psql -d "$RECOMMENDATION_DB_NAME" -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
 
-        sudo -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname = '$DB_USER'" | grep -q 1 \
-            && warn "User $DB_USER already exists" \
-            || sudo -u postgres psql -c "CREATE USER $DB_USER WITH PASSWORD '$DB_PASS';"
+  postgres_psql -d "$CATALOG_DB_NAME" -c "GRANT CONNECT ON DATABASE \"$CATALOG_DB_NAME\" TO \"$CATALOG_READER_ROLE\";"
+  postgres_psql -d "$CATALOG_DB_NAME" -c "GRANT USAGE ON SCHEMA public TO \"$CATALOG_READER_ROLE\";"
+  postgres_psql -d "$CATALOG_DB_NAME" -c "GRANT SELECT ON ALL TABLES IN SCHEMA public TO \"$CATALOG_READER_ROLE\";"
+  postgres_psql -d "$CATALOG_DB_NAME" -c "ALTER DEFAULT PRIVILEGES FOR ROLE \"$APP_DB_USER\" IN SCHEMA public GRANT SELECT ON TABLES TO \"$CATALOG_READER_ROLE\";"
+  postgres_psql -d "$CATALOG_DB_NAME" -c "ALTER ROLE \"$CATALOG_READER_USER\" SET search_path TO public;"
+  postgres_psql -d "$CATALOG_DB_NAME" -c "GRANT \"$CATALOG_READER_ROLE\" TO \"$CATALOG_READER_USER\";"
 
-        sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;"
-        sudo -u postgres psql -d "$DB_NAME" -c "GRANT ALL ON SCHEMA public TO $DB_USER;"
-    done
-
-    # PostGIS extensions
-    for DB in cataloglisting recommendation_db; do
-        sudo -u postgres psql -d "$DB" -c "CREATE EXTENSION IF NOT EXISTS postgis;" 2>/dev/null || true
-        log "PostGIS enabled on $DB"
-    done
-
-    # Create reader user for search-and-recommendation
-    sudo -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname = 'catalog_node_reader'" | grep -q 1 \
-        || sudo -u postgres psql -c "CREATE USER catalog_node_reader WITH PASSWORD 'reader_password';"
-    sudo -u postgres psql -d cataloglisting -c "GRANT SELECT ON ALL TABLES IN SCHEMA public TO catalog_node_reader;"
-    sudo -u postgres psql -d cataloglisting -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO catalog_node_reader;"
-
-    log "All databases configured"
+  log "Databases and roles configured"
 }
 
-# ─── 5. Redis ─────────────────────────────────────────────────
 setup_redis() {
-    info "Configuring Redis..."
-    sudo systemctl enable redis-server 2>/dev/null || true
-    sudo systemctl start redis-server 2>/dev/null || sudo service redis-server start 2>/dev/null || true
-    if redis-cli ping 2>/dev/null | grep -q PONG; then
-        log "Redis is running"
-    else
-        warn "Redis may not have started. Check manually."
-    fi
+  line
+  info "CONFIGURING REDIS"
+  line
+
+  sudo systemctl enable redis-server 2>/dev/null || true
+  sudo systemctl start redis-server 2>/dev/null || sudo service redis-server start 2>/dev/null || true
+
+  if redis-cli ping 2>/dev/null | grep -q PONG; then
+    log "Redis is running"
+  else
+    warn "Redis may not have started cleanly"
+  fi
 }
 
-# ─── 6. JKS Keystore for Identity ─────────────────────────────
 generate_keystore() {
-    if [ -f "$KEYSTORE_PATH" ]; then
-        log "Keystore already exists at $KEYSTORE_PATH"
-        return
+  local keystore_path="$PROJECT_DIR/Identity/src/main/resources/keystore.jks"
+
+  if [[ -f "$keystore_path" ]]; then
+    if keytool -list -keystore "$keystore_path" -storetype JKS -storepass secret 2>/dev/null | grep -q '^identity-key,'; then
+      log "Identity keystore already exists"
+      return
     fi
-    info "Generating JKS keystore for Identity JWT signing..."
-    
-    # Tạo thư mục nếu chưa tồn tại
-    mkdir -p "$(dirname "$KEYSTORE_PATH")"
-    
-    # Không dùng sudo ở đây để file được tạo thuộc quyền của user hiện tại, 
-    # giúp Java dễ dàng đọc file mà không bị lỗi Permission Denied.
-    keytool -genkeypair \
-        -alias jwt \
-        -keyalg RSA \
-        -keysize 2048 \
-        -keystore "$KEYSTORE_PATH" \
-        -storepass secret \
-        -keypass secret \
-        -dname "CN=GoStay, OU=GoStay, O=GoStay, L=Hanoi, ST=Hanoi, C=VN" \
-        -validity 3650
-        
-    chmod 644 "$KEYSTORE_PATH"
-    log "Keystore generated securely at $KEYSTORE_PATH"
+
+    warn "Existing Identity keystore does not match expected alias. Recreating."
+    rm -f "$keystore_path"
+  fi
+
+  info "Generating Identity JWT keystore"
+  mkdir -p "$(dirname "$keystore_path")"
+  keytool -genkeypair \
+    -alias identity-key \
+    -keyalg RSA \
+    -keysize 2048 \
+    -storetype JKS \
+    -keystore "$keystore_path" \
+    -storepass secret \
+    -keypass secret \
+    -dname "CN=GoStay, OU=GoStay, O=GoStay, L=Hanoi, ST=Hanoi, C=VN" \
+    -validity 3650 >/dev/null
+  chmod 644 "$keystore_path"
+  log "Keystore generated at $keystore_path"
 }
 
-# ─── 7. Environment Files ─────────────────────────────────────
 generate_env_files() {
-    info "Generating .env files..."
+  line
+  info "GENERATING ENV FILES"
+  line
 
-    # APIGateway
-    cat > APIGateway/.env <<EOF
-GATEWAY_PORT=5555
+  cat > APIGateway/.env <<EOF
+GATEWAY_PORT=${GATEWAY_PORT}
 IDENTITY_SERVICE_URL=http://localhost:8080
-MEDIA_SERVICE_URL=http://localhost:5001
+MEDIA_SERVICE_URL=http://localhost:${MEDIA_PORT}
 CATALOG_SERVICE_URL=http://localhost:8082
 BOOKING_SERVICE_URL=http://localhost:8083
 CART_SERVICE_URL=http://localhost:8084
 PAYMENT_SERVICE_URL=http://localhost:8085
-SEARCH_SERVICE_URL=http://localhost:8086
+SEARCH_SERVICE_URL=http://localhost:${SEARCH_PORT}
 INTERNAL_SERVICE_TOKEN=${INTERNAL_TOKEN}
 EOF
-    log "APIGateway/.env created"
+  log "APIGateway/.env created"
 
-    # cloudinary-service
-    cat > cloudinary-service/.env <<EOF
-MEDIA_PORT=5001
+  cat > cloudinary-service/.env <<EOF
+MEDIA_PORT=${MEDIA_PORT}
 IDENTITY_SERVICE_URL=http://localhost:8080
 INTERNAL_SERVICE_TOKEN=${INTERNAL_TOKEN}
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 EOF
-    log "cloudinary-service/.env created (EDIT CLOUDINARY CREDENTIALS)"
+  log "cloudinary-service/.env created"
 
-    # search-and-recommendation
-    cat > search-and-recommendation/.env <<EOF
-PORT=8086
+  cat > search-and-recommendation/.env <<EOF
+PORT=${SEARCH_PORT}
 NODE_ENV=production
 CATALOG_DB_HOST=localhost
 CATALOG_DB_PORT=5432
-CATALOG_DB_NAME=cataloglisting
-CATALOG_DB_USER=catalog_node_reader
-CATALOG_DB_PASSWORD=reader_password
+CATALOG_DB_NAME=${CATALOG_DB_NAME}
+CATALOG_DB_USER=${CATALOG_READER_USER}
+CATALOG_DB_PASSWORD=${CATALOG_READER_PASSWORD}
 RECOMMENDATION_DB_HOST=localhost
 RECOMMENDATION_DB_PORT=5432
-RECOMMENDATION_DB_NAME=recommendation_db
-RECOMMENDATION_DB_USER=recommendation_user
-RECOMMENDATION_DB_PASSWORD=recommendation_password
+RECOMMENDATION_DB_NAME=${RECOMMENDATION_DB_NAME}
+RECOMMENDATION_DB_USER=${RECOMMENDATION_DB_USER}
+RECOMMENDATION_DB_PASSWORD=${RECOMMENDATION_DB_PASSWORD}
 REDIS_URL=redis://localhost:6379
 INVENTORY_SERVICE_URL=http://localhost:8083
 INTERNAL_SERVICE_TOKEN=${INTERNAL_TOKEN}
 EOF
-    log "search-and-recommendation/.env created"
+  log "search-and-recommendation/.env created"
 
-    # front_end
-    cat > front_end/.env <<EOF
-NEXT_PUBLIC_API_URL=http://localhost:5555/api
+  cat > front_end/.env <<EOF
+NEXT_PUBLIC_API_URL=${FRONTEND_API_URL}
 EOF
-    log "front_end/.env created"
-
-    log "Environment files generated"
-    warn "EDIT cloudinary-service/.env with your Cloudinary credentials before starting!"
+  log "front_end/.env created"
 }
 
-# ─── 8. Build All Services ────────────────────────────────────
 build_all() {
-    info "Building Java services (Identity, CatalogandListing, BookingandInventory, CartandOrder, PaymentandWallet)..."
-    for svc in Identity CatalogandListing BookingandInventory CartandOrder PaymentandWallet; do
-        info "Building $svc..."
-        (cd "$svc" && chmod +x mvnw && ./mvnw clean package -DskipTests -q)
-        log "$svc built successfully."
-    done
+  line
+  info "BUILDING SERVICES"
+  line
 
-    info "Installing Node.js dependencies..."
-    for svc in APIGateway cloudinary-service search-and-recommendation; do
-        info "Running npm install in $svc..."
-        (cd "$svc" && npm install --silent)
-        
-        # Build NestJS (search-and-recommendation)
-        if [ -f "$svc/nest-cli.json" ]; then
-            (cd "$svc" && npm run build --silent)
-            log "$svc compiled."
-        fi
-        log "$svc dependencies installed."
-    done
+  for svc in Identity CatalogandListing BookingandInventory CartandOrder PaymentandWallet; do
+    info "Building $svc"
+    (
+      cd "$svc"
+      chmod +x mvnw
+      ./mvnw clean package -DskipTests -q
+    )
+    log "$svc built"
+  done
 
-    info "Building Next.js front_end..."
-    (cd front_end && npm install --silent && npm run build) || warn "front_end build skipped/failed (may need config adjustment)."
-    log "front_end built."
+  for svc in APIGateway cloudinary-service search-and-recommendation; do
+    info "Installing Node dependencies in $svc"
+    (cd "$svc" && npm install --silent)
+  done
 
-    log "All services built and ready."
+  info "Building search-and-recommendation"
+  (cd search-and-recommendation && npm run build --silent)
+  log "search-and-recommendation built"
+
+  info "Building frontend"
+  (cd front_end && npm install --silent && npm run build)
+  log "front_end built"
 }
 
-# ─── Main ──────────────────────────────────────────────────────
+stop_services() {
+  line
+  info "STOPPING PM2 SERVICES"
+  line
+
+  if command -v pm2 >/dev/null 2>&1; then
+    pm2 delete all 2>/dev/null || true
+    pm2 kill 2>/dev/null || true
+    log "PM2 services stopped"
+  else
+    warn "PM2 is not installed"
+  fi
+}
+
 usage() {
-    echo "Usage: $0 [command]"
-    echo ""
-    echo "Commands:"
-    echo "  install     Install all system dependencies (Java, Node, PM2, Postgres, Redis, Nginx)"
-    echo "  setup-db    Create databases, users, and configure PostGIS"
-    echo "  setup-redis Configure Redis"
-    echo "  keystore    Generate JWT keystore securely inside the Identity module"
-    echo "  env         Generate all required .env files"
-    echo "  build       Build all Java and Node.js/Next.js services"
-    echo "  all         Run all the above steps in sequence"
-    echo ""
-    echo "  (no args)   Equivalent to 'all'"
+  cat <<EOF
+Usage: $0 [command]
+
+Commands:
+  install     Install system dependencies
+  setup-db    Create databases, users, roles, and extensions
+  setup-redis Configure Redis
+  keystore    Generate the Identity JWT keystore
+  env         Generate .env files for all Node apps
+  build       Build Java, Node, and frontend services
+  stop        Stop all PM2 services for this project
+  all         Run install, db, redis, keystore, env, build
+  help        Show this help
+
+No args is equivalent to 'all'.
+EOF
 }
 
-case "${1:-all}" in
+main() {
+  case "${1:-all}" in
     install)
-        install_system_packages
-        install_java
-        install_node
-        ;;
+      install_system_packages
+      install_java
+      install_node
+      ;;
     setup-db)
-        setup_databases
-        ;;
+      setup_databases
+      ;;
     setup-redis)
-        setup_redis
-        ;;
+      setup_redis
+      ;;
     keystore)
-        generate_keystore
-        ;;
+      generate_keystore
+      ;;
     env)
-        generate_env_files
-        ;;
+      generate_env_files
+      ;;
     build)
-        build_all
-        ;;
+      build_all
+      ;;
+    stop)
+      stop_services
+      ;;
     all|"")
-        info "Starting Full Environment Setup..."
-        install_system_packages
-        install_java
-        install_node
-        setup_databases
-        setup_redis
-        generate_keystore
-        generate_env_files
-        build_all
-        echo ""
-        log "==========================================================="
-        log " ENVIRONMENT SETUP COMPLETE"
-        log "==========================================================="
-        echo -e "Next steps:"
-        echo -e "  1. Check and edit ${YELLOW}cloudinary-service/.env${NC} to add your keys."
-        echo -e "  2. Run your separate startup script (or use PM2/Systemd) to launch the services."
-        ;;
+      info "Starting full environment setup"
+      install_system_packages
+      install_java
+      install_node
+      setup_databases
+      setup_redis
+      generate_keystore
+      generate_env_files
+      build_all
+      line
+      log "ENVIRONMENT SETUP COMPLETE"
+      line
+      printf 'Next steps:\n'
+      printf '  1. Edit cloudinary-service/.env with real Cloudinary credentials.\n'
+      printf '  2. Start the stack with run-all.sh or your PM2 entrypoint.\n'
+      ;;
     help|--help|-h)
-        usage
-        ;;
+      usage
+      ;;
     *)
-        err "Unknown command: $1"
-        usage
-        exit 1
-        ;;
-esac
-```eof
+      error "Unknown command: $1"
+      usage
+      exit 1
+      ;;
+  esac
+}
 
-**Những thay đổi quan trọng so với bản cũ để phù hợp với định hướng của bạn:**
+main "$@"
 
 1.  **Cài sẵn PM2 và Nginx:** Kịch bản giờ đây tự động cài sẵn `pm2` bằng NPM toàn cầu (`npm install -g pm2`) và `nginx` bằng APT. Kịch bản chạy (run script) của bạn sau này có thể gọi trực tiếp pm2 để start Gateway/Frontend mà không bị lỗi command not found.
 2.  **Khắc phục lỗi Keystore:** Keystore giờ được sinh trực tiếp vào thư mục mã nguồn: `Identity/src/main/resources/keystore.jks`. Nó không cần dùng quyền `sudo`, nhờ đó khi Service Identity chạy (dù bằng user thường), nó vẫn có đủ quyền đọc (Read) file này.

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import type { Experiences } from "@/modules/experience";
 import type { Places } from "@/modules/place";
 import type { Services } from "@/modules/service";
@@ -33,21 +33,29 @@ export const useHome = (
   const [services, setServices] = useState<Services | undefined>(initServices);
   const [landmarks, setLandmarks] = useState<HomeLandmark[]>(initLandmarks);
   const [complexes, setComplexes] = useState<ComplexOffering[]>(initComplexes);
+  const landmarkCountRef = useRef(initLandmarks.length);
+  landmarkCountRef.current = landmarks.length;
 
-  const setClock = (time?: number) => {
+  const setClock = useCallback((time = 6000) => {
     clearInterval(clock.current ?? undefined);
+
+    const maxLimit = Math.min(landmarkCountRef.current, 6);
+    if (maxLimit <= 1) {
+      clock.current = null;
+      return;
+    }
 
     clock.current = setInterval(() => {
       setImageIndex((prev) => {
         let i = prev + 1;
-        const maxLimit = Math.min(landmarks?.length ?? 0, 6);
-        if (i >= maxLimit) {
+        const limit = Math.min(landmarkCountRef.current, 6);
+        if (i >= limit) {
           i = 0;
         }
         return i;
       });
     }, time);
-  };
+  }, []);
 
   return {
     imageIndex,

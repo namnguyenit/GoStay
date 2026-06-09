@@ -16,7 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
+import com.Listing.CatalogandListing.client.IdentityClient;
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -39,6 +39,9 @@ class ListingServiceTest {
 
     @Mock
     InventoryClient inventoryClient;
+    
+    @Mock
+    private IdentityClient identityClient; 
 
     @Test
     void createListingStartsAsPendingForAdminReview() {
@@ -66,7 +69,8 @@ class ListingServiceTest {
                 listingMapper,
                 listingRepository,
                 complexRepository,
-                inventoryClient
+                inventoryClient,
+                identityClient
         );
 
         service.createListing(hostId.toString(), request);

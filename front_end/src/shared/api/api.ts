@@ -1,7 +1,8 @@
-import { env } from "@/config";
 import Cookies from "js-cookie";
 
 const getToken = () => Cookies.get("access_token");
+const DEFAULT_BROWSER_API_URL = "/api";
+const DEFAULT_SERVER_API_URL = "http://localhost:5555/api";
 
 type ApiErrorPayload = {
   success?: boolean;
@@ -51,6 +52,25 @@ const toApiError = (payload: unknown, fallbackMessage?: string, fallbackStatus?:
   );
 };
 
+const trimTrailingSlash = (value: string) => value.replace(/\/+$/, "");
+
+const getApiBaseUrl = () => {
+  if (typeof window === "undefined") {
+    return trimTrailingSlash(process.env.NEXT_SERVER_API_URL || DEFAULT_SERVER_API_URL);
+  }
+
+  return trimTrailingSlash(process.env.NEXT_PUBLIC_API_URL || DEFAULT_BROWSER_API_URL);
+};
+
+const buildApiUrl = (endpoint: string) => {
+  if (/^https?:\/\//i.test(endpoint)) {
+    return endpoint;
+  }
+
+  const normalizedEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+  return `${getApiBaseUrl()}${normalizedEndpoint}`;
+};
+
 const request = async (endpoint: string, options: RequestInit = {}) => {
   const token = getToken();
   const headers = new Headers(options.headers || {});
@@ -66,7 +86,7 @@ const request = async (endpoint: string, options: RequestInit = {}) => {
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  const res = await fetch(`${env.apiUrl}${endpoint}`, {
+  const res = await fetch(buildApiUrl(endpoint), {
     ...options,
     headers,
   });

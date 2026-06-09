@@ -152,6 +152,17 @@ export default function SearchInfoSection({
   const [hoveredSegment, setHoveredSegment] = useState<SearchPanel>();
   const [isCompactViewport, setIsCompactViewport] = useState(false);
   const layoutGroupId = useId();
+  const filterPlace = filter?.place;
+  const filterType = filter?.type;
+  const filterSubCategory = filter?.subCategory;
+  const filterFromTime =
+    filter?.date?.from && isValid(filter.date.from)
+      ? filter.date.from.getTime()
+      : undefined;
+  const filterToTime =
+    filter?.date?.to && isValid(filter.date.to)
+      ? filter.date.to.getTime()
+      : undefined;
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 767px)");
@@ -162,9 +173,21 @@ export default function SearchInfoSection({
   }, []);
 
   useEffect(() => {
-    setSearchInfo(filter);
-    setLocationInput(filter?.place ?? "");
-  }, [filter]);
+    const nextFilter: NonNullable<Filter> = {};
+
+    if (filterPlace) nextFilter.place = filterPlace;
+    if (filterType) nextFilter.type = filterType;
+    if (filterSubCategory) nextFilter.subCategory = filterSubCategory;
+    if (filterFromTime || filterToTime) {
+      nextFilter.date = {
+        from: filterFromTime ? new Date(filterFromTime) : undefined,
+        to: filterToTime ? new Date(filterToTime) : undefined,
+      };
+    }
+
+    setSearchInfo(nextFilter);
+    setLocationInput(filterPlace ?? "");
+  }, [filterPlace, filterType, filterSubCategory, filterFromTime, filterToTime]);
 
   useEffect(() => {
     setOpen(initialOpen);
