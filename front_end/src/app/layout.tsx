@@ -3,6 +3,8 @@ import "@/styles/globals.css";
 import { AppProvider } from "../features/app/providers/app.provider";
 import { AuthModalProvider } from "@/shared/context/AuthModalContext";
 import AuthModal from "@/shared/components/AuthModal";
+import { I18nProvider } from "@/shared/i18n/I18nProvider";
+import LanguageToggle from "@/shared/components/LanguageToggle";
 
 export const metadata: Metadata = {
   title: "GoTravel",
@@ -22,8 +24,11 @@ export default function RootLayout({
       <AuthModalProvider>
         <html lang="vi">
           <body className="">
-            {children}
-            <AuthModal />
+            <I18nProvider>
+              {children}
+              <AuthModal />
+              <LanguageToggle variant="floating" />
+            </I18nProvider>
           </body>
         </html>
       </AuthModalProvider>

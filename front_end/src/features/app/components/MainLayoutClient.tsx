@@ -12,7 +12,6 @@ import {
 import clsx from "clsx";
 import {
   ConciergeBell,
-  Globe2,
   Heart,
   Home,
   LoaderCircle,
@@ -40,6 +39,7 @@ import { useSafeContext } from "@/shared/hooks";
 import { AppContext } from "@/features/app/providers/app.provider";
 import { FilterService } from "@/services/filter";
 import type { Filter } from "@/modules/filter";
+import LanguageToggle from "@/shared/components/LanguageToggle";
 
 const NAV_ITEMS = [
   { value: "place", label: "Nơi lưu trú", icon: Home },
@@ -452,9 +452,7 @@ export default function MainLayoutClient({
               </div>
             )}
 
-            <HeaderIconButton label="Ngôn ngữ" className="hidden md:flex">
-              <Globe2 className="h-5 w-5" strokeWidth={2} />
-            </HeaderIconButton>
+            <LanguageToggle className="hidden md:flex" />
 
             <HeaderIconButton label="Giỏ hàng" onClick={openCartDrawer}>
               <ShoppingCart className="h-5 w-5" strokeWidth={2} />
