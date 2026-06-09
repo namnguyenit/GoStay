@@ -7,6 +7,7 @@ import { ArrowLeft, ArrowRight, Save, Upload, X } from "lucide-react";
 import AuthService from "@/services/auth.service";
 import { PROVINCES } from "@/shared/constants/provinces";
 import { getErrorCode, getErrorMessage } from "@/app/host/_utils";
+import LocationCoordinatePicker from "@/shared/components/LocationCoordinatePicker";
 
 type ListingCategory = "STAY" | "EXP" | "SVC";
 type PriceUnit = "PER_NIGHT" | "PER_PAX" | "PER_HOUR";
@@ -894,10 +895,17 @@ export default function NewListingForm({ ownerType, serviceApi, redirectPath }: 
               )}
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <TextField label="Vĩ độ" value={latitude} onChange={setLatitude} type="number" placeholder="VD: 21.0285" />
-              <TextField label="Kinh độ" value={longitude} onChange={setLongitude} type="number" placeholder="VD: 105.8542" />
-            </div>
+            <LocationCoordinatePicker
+              title="Chọn vị trí dịch vụ trên bản đồ"
+              hint="Tìm địa chỉ hoặc bấm trực tiếp lên bản đồ. Front sẽ tự lấy vĩ độ/kinh độ gửi về backend."
+              searchPlaceholder="Nhập địa chỉ dịch vụ, tên khách sạn, địa danh gần đó..."
+              value={{ name: title, province, latitude, longitude }}
+              onChange={(patch) => {
+                setLatitude(patch.latitude ?? latitude);
+                setLongitude(patch.longitude ?? longitude);
+                if (patch.province) setProvince(patch.province);
+              }}
+            />
 
             <div className="grid gap-4 md:grid-cols-[220px_1fr]">
               <div>
@@ -1045,9 +1053,25 @@ export default function NewListingForm({ ownerType, serviceApi, redirectPath }: 
 
                 <div className="grid gap-4 sm:grid-cols-3">
                   <TextField label="Tên điểm hẹn" value={expMeetingPoint} onChange={setExpMeetingPoint} placeholder="VD: Cổng chính Nhà hát lớn" />
-                  <TextField label="Vĩ độ điểm hẹn" value={expMeetingLat} onChange={setExpMeetingLat} type="number" />
-                  <TextField label="Kinh độ điểm hẹn" value={expMeetingLng} onChange={setExpMeetingLng} type="number" />
                 </div>
+                <LocationCoordinatePicker
+                  title="Chọn điểm hẹn trải nghiệm"
+                  hint="Tìm điểm hẹn hoặc bấm lên bản đồ để lấy tọa độ điểm hẹn cho khách."
+                  searchPlaceholder="Nhập tên điểm hẹn, ví dụ: Cổng chính Nhà hát lớn..."
+                  allowNameOverwrite
+                  value={{
+                    name: expMeetingPoint,
+                    province,
+                    latitude: expMeetingLat,
+                    longitude: expMeetingLng,
+                  }}
+                  onChange={(patch) => {
+                    setExpMeetingLat(patch.latitude ?? expMeetingLat);
+                    setExpMeetingLng(patch.longitude ?? expMeetingLng);
+                    if (patch.name) setExpMeetingPoint(patch.name);
+                    if (patch.province) setProvince(patch.province);
+                  }}
+                />
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <label className="block">

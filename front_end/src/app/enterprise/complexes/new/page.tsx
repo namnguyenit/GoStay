@@ -8,6 +8,7 @@ import EnterpriseService from "@/services/enterprise.service";
 import { PROVINCES } from "@/shared/constants/provinces";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getErrorMessage } from "../../_utils";
+import LocationCoordinatePicker from "@/shared/components/LocationCoordinatePicker";
 
 export default function NewComplexPage() {
   const router = useRouter();
@@ -142,37 +143,27 @@ export default function NewComplexPage() {
             </Select>
           </div>
 
-          <div className="rounded-2xl border border-orange-100 bg-orange-50 p-4">
-            <p className="mb-4 text-sm font-medium text-orange-800">
-              Tọa độ trung tâm khu tổ hợp. Listing gắn vào khu này phải nằm trong bán kính 3km.
-            </p>
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-              <div>
-                <label className="mb-2 block text-sm font-semibold text-gray-700">Vĩ độ (Latitude) <span className="text-red-500">*</span></label>
-                <input
-                  type="number"
-                  step="any"
-                  required
-                  value={formData.latitude}
-                  onChange={(event) => setField("latitude", event.target.value)}
-                  placeholder="VD: 21.028511"
-                  className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm outline-none transition-all focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
-                />
-              </div>
-              <div>
-                <label className="mb-2 block text-sm font-semibold text-gray-700">Kinh độ (Longitude) <span className="text-red-500">*</span></label>
-                <input
-                  type="number"
-                  step="any"
-                  required
-                  value={formData.longitude}
-                  onChange={(event) => setField("longitude", event.target.value)}
-                  placeholder="VD: 105.804817"
-                  className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm outline-none transition-all focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
-                />
-              </div>
-            </div>
-          </div>
+          <LocationCoordinatePicker
+            title="Chọn tâm khu tổ hợp trên bản đồ"
+            hint="Tìm khu nghỉ dưỡng hoặc bấm lên bản đồ để lấy tọa độ trung tâm. Listing gắn vào khu này phải nằm trong bán kính 3km."
+            searchPlaceholder="Nhập tên khu tổ hợp, resort hoặc địa chỉ..."
+            allowNameOverwrite
+            value={{
+              name: formData.name,
+              province: formData.province,
+              latitude: formData.latitude,
+              longitude: formData.longitude,
+            }}
+            onChange={(patch) =>
+              setFormData((current) => ({
+                ...current,
+                name: patch.name ?? current.name,
+                province: patch.province ?? current.province,
+                latitude: patch.latitude ?? current.latitude,
+                longitude: patch.longitude ?? current.longitude,
+              }))
+            }
+          />
         </section>
 
         <div className="flex items-center justify-end gap-4 pt-4">

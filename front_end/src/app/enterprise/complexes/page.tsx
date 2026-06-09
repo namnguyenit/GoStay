@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, Building, MapPin, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import EnterpriseService from "@/services/enterprise.service";
 import { formatDate, getErrorMessage } from "../_utils";
+import LocationCoordinatePicker from "@/shared/components/LocationCoordinatePicker";
 
 type EnterpriseComplex = {
   id: string;
@@ -335,10 +336,27 @@ function ComplexEditModal({ edit, setEdit, onSave, saving }: { edit: EditState; 
           <Field label="Tên khu tổ hợp" value={edit.name} onChange={(value) => setField("name", value)} />
           <TextArea label="Mô tả" value={edit.description} onChange={(value) => setField("description", value)} />
           <Field label="Tỉnh/Thành phố" value={edit.province} onChange={(value) => setField("province", value)} />
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Latitude" value={edit.latitude} onChange={(value) => setField("latitude", value)} />
-            <Field label="Longitude" value={edit.longitude} onChange={(value) => setField("longitude", value)} />
-          </div>
+          <LocationCoordinatePicker
+            title="Chọn tâm khu tổ hợp"
+            hint="Bấm lên bản đồ hoặc tìm khu tổ hợp để cập nhật tọa độ trung tâm."
+            searchPlaceholder="Nhập tên khu tổ hợp, resort hoặc địa chỉ..."
+            allowNameOverwrite
+            value={{
+              name: edit.name,
+              province: edit.province,
+              latitude: edit.latitude,
+              longitude: edit.longitude,
+            }}
+            onChange={(patch) =>
+              setEdit({
+                ...edit,
+                name: patch.name ?? edit.name,
+                province: patch.province ?? edit.province,
+                latitude: patch.latitude ?? edit.latitude,
+                longitude: patch.longitude ?? edit.longitude,
+              })
+            }
+          />
           <Field label="Thumbnail URL" value={edit.thumbnailUrl} onChange={(value) => setField("thumbnailUrl", value)} />
         </div>
         <div className="flex justify-end gap-2 border-t border-gray-100 bg-gray-50 px-5 py-4">

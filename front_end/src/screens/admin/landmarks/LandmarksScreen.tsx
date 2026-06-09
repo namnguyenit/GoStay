@@ -350,28 +350,11 @@ export function LandmarksScreen() {
                   </Select>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                  <div>
-                    <label className="mb-1.5 block text-[10px] font-bold tracking-wider text-slate-500 uppercase">Vĩ độ *</label>
-                    <input
-                      type="number"
-                      step="any"
-                      required
-                      value={form.latitude}
-                      onChange={(event) => setForm({ ...form, latitude: event.target.value })}
-                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 focus:ring-1 focus:ring-slate-300 focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-[10px] font-bold tracking-wider text-slate-500 uppercase">Kinh độ *</label>
-                    <input
-                      type="number"
-                      step="any"
-                      required
-                      value={form.longitude}
-                      onChange={(event) => setForm({ ...form, longitude: event.target.value })}
-                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 focus:ring-1 focus:ring-slate-300 focus:outline-none"
-                    />
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-[1fr_180px]">
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] font-semibold text-slate-600">
+                    {form.latitude && form.longitude
+                      ? `Tọa độ đã chọn từ bản đồ: ${Number(form.latitude).toFixed(6)}, ${Number(form.longitude).toFixed(6)}`
+                      : "Chưa chọn tọa độ. Vui lòng tìm hoặc bấm vị trí trên bản đồ phía trên."}
                   </div>
                   <div>
                     <label className="mb-1.5 block text-[10px] font-bold tracking-wider text-slate-500 uppercase">Bán kính (m)</label>
@@ -570,22 +553,11 @@ export function LandmarksScreen() {
                     className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 focus:ring-1 focus:ring-slate-300 focus:outline-none"
                     placeholder="Tỉnh/Thành phố"
                   />
-                  <input
-                    type="number"
-                    step="any"
-                    value={editingLandmark.latitude}
-                    onChange={(event) => setEditingLandmark({ ...editingLandmark, latitude: event.target.value })}
-                    className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 focus:ring-1 focus:ring-slate-300 focus:outline-none"
-                    placeholder="Vĩ độ"
-                  />
-                  <input
-                    type="number"
-                    step="any"
-                    value={editingLandmark.longitude}
-                    onChange={(event) => setEditingLandmark({ ...editingLandmark, longitude: event.target.value })}
-                    className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 focus:ring-1 focus:ring-slate-300 focus:outline-none"
-                    placeholder="Kinh độ"
-                  />
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] font-semibold text-slate-600 sm:col-span-2">
+                    {editingLandmark.latitude && editingLandmark.longitude
+                      ? `Tọa độ đã chọn từ bản đồ: ${Number(editingLandmark.latitude).toFixed(6)}, ${Number(editingLandmark.longitude).toFixed(6)}`
+                      : "Chưa chọn tọa độ. Vui lòng tìm hoặc bấm vị trí trên bản đồ phía trên."}
+                  </div>
                   <input
                     type="number"
                     value={editingLandmark.radiusMeters}

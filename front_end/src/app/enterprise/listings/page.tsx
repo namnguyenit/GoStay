@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Calendar, Eye, Pencil, PlusCircle, Search, Trash2, X } from "lucide-react";
 import HostService from "@/services/enterprise.service";
+import LocationCoordinatePicker from "@/shared/components/LocationCoordinatePicker";
 import {
   HostListing,
   categoryLabel,
@@ -449,8 +450,27 @@ function EditListingModal({ edit, setEdit, loading, onClose, onSave }: {
               <option value="PER_HOUR">Theo giờ</option>
             </select>
           </div>
-          <Field label="Vĩ độ" value={edit.latitude} onChange={(value) => setField("latitude", value)} type="number" required />
-          <Field label="Kinh độ" value={edit.longitude} onChange={(value) => setField("longitude", value)} type="number" required />
+          <div className="sm:col-span-2">
+            <LocationCoordinatePicker
+              title="Chọn vị trí dịch vụ"
+              hint="Bấm lên bản đồ hoặc tìm địa chỉ để cập nhật vĩ độ/kinh độ của dịch vụ."
+              searchPlaceholder="Nhập địa chỉ hoặc địa danh gần dịch vụ..."
+              value={{
+                name: edit.title,
+                province: edit.province,
+                latitude: edit.latitude,
+                longitude: edit.longitude,
+              }}
+              onChange={(patch) =>
+                setEdit({
+                  ...edit,
+                  province: patch.province ?? edit.province,
+                  latitude: patch.latitude ?? edit.latitude,
+                  longitude: patch.longitude ?? edit.longitude,
+                })
+              }
+            />
+          </div>
           <div className="sm:col-span-2">
             <Field label="Thumbnail URL" value={edit.thumbnailUrl} onChange={(value) => setField("thumbnailUrl", value)} />
           </div>

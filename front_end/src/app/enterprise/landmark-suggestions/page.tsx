@@ -66,6 +66,12 @@ export default function HostLandmarkSuggestPage() {
     setLoading(true);
 
     try {
+      if (!form.suggestedLatitude || !form.suggestedLongitude) {
+        setErrorMsg("Vui lòng chọn vị trí trên bản đồ trước khi gửi đề xuất.");
+        setLoading(false);
+        return;
+      }
+
       let uploadedThumbnailUrl = "";
       let uploadedGalleryUrls: string[] = [];
 
@@ -187,36 +193,10 @@ export default function HostLandmarkSuggestPage() {
                 </Select>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-600 uppercase tracking-wider">
-                    Vĩ độ (Latitude) <span className="text-red-600">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    step="any"
-                    required
-                    value={form.suggestedLatitude}
-                    onChange={(e) => setForm({ ...form, suggestedLatitude: e.target.value })}
-                    placeholder="Ví dụ: 11.9547"
-                    className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-app-primary focus:ring-1 focus:ring-app-primary transition-all"
-                  />
-                </div>
-                
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-600 uppercase tracking-wider">
-                    Kinh độ (Longitude) <span className="text-red-600">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    step="any"
-                    required
-                    value={form.suggestedLongitude}
-                    onChange={(e) => setForm({ ...form, suggestedLongitude: e.target.value })}
-                    placeholder="Ví dụ: 108.4452"
-                    className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-app-primary focus:ring-1 focus:ring-app-primary transition-all"
-                  />
-                </div>
+              <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-xs font-semibold text-gray-600">
+                {form.suggestedLatitude && form.suggestedLongitude
+                  ? `Tọa độ đã chọn từ bản đồ: ${Number(form.suggestedLatitude).toFixed(6)}, ${Number(form.suggestedLongitude).toFixed(6)}`
+                  : "Chưa chọn tọa độ. Vui lòng tìm địa danh hoặc bấm trực tiếp lên bản đồ phía trên."}
               </div>
 
               <div className="space-y-1.5">
