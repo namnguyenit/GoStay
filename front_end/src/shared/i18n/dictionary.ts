@@ -22,6 +22,7 @@ export const TRANSLATION_PAIRS: TranslationPair[] = [
   ["Số điện thoại", "Phone number"],
   ["Họ và tên", "Full name"],
   ["Tên khách hàng", "Customer name"],
+  ["Tên đăng nhập", "Username"],
   ["Khách hàng", "Customer"],
   ["Người dùng", "User"],
   ["Quản trị viên", "Administrator"],
@@ -121,6 +122,9 @@ export const TRANSLATION_PAIRS: TranslationPair[] = [
   ["Hoàn tất", "Completed"],
   ["Đã hủy", "Cancelled"],
   ["Thất bại", "Failed"],
+  ["Hết hạn", "Expired"],
+  ["Bị khóa", "Banned"],
+  ["Thanh toán chờ xử lý", "Payment pending"],
   ["Chờ xử lý", "Pending"],
   ["Chờ duyệt", "Pending approval"],
   ["Đã duyệt", "Approved"],
@@ -131,10 +135,35 @@ export const TRANSLATION_PAIRS: TranslationPair[] = [
   ["Tạm ẩn", "Hidden"],
   ["Đã xóa", "Deleted"],
 
-  ["Dashboard", "Dashboard"],
+  ["Bảng điều khiển", "Dashboard"],
+  ["Menu chính", "Main Menu"],
+  ["Quản lý đối tác", "Partner Management"],
+  ["Dịch vụ & khả dụng", "Services & Inventory"],
+  ["Host chờ duyệt", "Pending Hosts"],
+  ["Host đã duyệt", "Approved Hosts"],
+  ["Doanh nghiệp chờ duyệt", "Pending Enterprises"],
+  ["Doanh nghiệp đã duyệt", "Approved Enterprises"],
+  ["Danh sách dịch vụ", "Service Listings"],
+  ["Tranh chấp & hoàn tiền", "Disputes & Refunds"],
+  ["Cấu hình hoa hồng", "Commission Config"],
+  ["Quản lý người dùng", "User Management"],
+  ["Chi trả cho Host", "Payout Hosts"],
+  ["Cổng quản trị", "Admin Portal"],
+  ["Quản trị hệ thống", "System Admin"],
+  ["Đang xác thực...", "Authenticating..."],
+  ["Các tài khoản", "Accounts"],
+  ["Sức khỏe dịch vụ", "Listing health"],
+  ["Trạng thái thanh toán", "Payment status"],
+  ["Luồng đơn hàng", "Order pipeline"],
+  ["Thanh toán / chi trả", "Payment / Payout"],
+  ["Thanh toán hoàn tất", "Payment completed"],
+  ["Tổng giá trị", "Gross amount"],
+  ["Cột hoa hồng", "Commission bars"],
+  ["Số tiền Host nhận", "Host amount"],
+  ["Chi trả Host", "Host payout"],
   ["Tổng quan", "Overview"],
   ["Người dùng", "Users"],
-  ["Hosts", "Hosts"],
+  ["Chủ nhà", "Hosts"],
   ["Doanh nghiệp", "Enterprises"],
   ["Duyệt host", "Approve hosts"],
   ["Duyệt doanh nghiệp", "Approve enterprises"],
@@ -152,6 +181,16 @@ export const TRANSLATION_PAIRS: TranslationPair[] = [
   ["Bán kính", "Radius"],
   ["Bán kính (m)", "Radius (m)"],
   ["Đánh dấu địa danh nổi bật", "Mark as featured landmark"],
+  ["Hồ sơ đề xuất", "Suggestion profile"],
+  ["Duyệt đề xuất", "Approve suggestion"],
+  ["Từ chối đề xuất", "Reject suggestion"],
+  ["Lý do từ chối", "Reject reason"],
+  ["Bắt buộc nhập lý do", "Reject reason is required"],
+  ["Tạo từ đề xuất", "Create from suggestion"],
+  ["Bản đồ địa danh", "Landmark map"],
+  ["Tìm trên bản đồ", "Search on map"],
+  ["Ảnh địa danh", "Landmark photos"],
+  ["Ảnh con", "Gallery photos"],
 
   ["Khu tổ hợp", "Complexes"],
   ["Khu du lịch", "Tourism complexes"],
@@ -166,6 +205,11 @@ export const TRANSLATION_PAIRS: TranslationPair[] = [
   ["Xem toàn bộ dịch vụ doanh nghiệp", "View all enterprise services"],
   ["Đăng dịch vụ mới", "Create new listing"],
   ["Đăng thêm dịch vụ", "Add more services"],
+  ["Khu du lịch & tổ hợp", "Tourism complex"],
+  ["Giới thiệu tổ hợp", "Complex introduction"],
+  ["Dịch vụ bên trong complex", "Services inside this complex"],
+  ["Các dịch vụ bên phải đều thuộc khu này.", "All services on the right belong to this complex."],
+  ["Chưa có khu tổ hợp phù hợp", "No matching complex found"],
 
   ["Đăng dịch vụ mới", "Create new listing"],
   ["Chọn loại dịch vụ", "Choose service category"],
@@ -190,6 +234,10 @@ export const TRANSLATION_PAIRS: TranslationPair[] = [
   ["Thumbnail URL", "Thumbnail URL"],
   ["Thông tin vận hành", "Operating details"],
   ["Lưu & gửi duyệt", "Save & submit for approval"],
+  ["Loại hình sẽ quyết định các trường cần nhập và đơn vị giá phù hợp.", "The category determines the required fields and suitable price units."],
+  ["Đơn vị giá đã được lọc theo loại hình để tránh chọn sai.", "Price units are filtered by category to avoid invalid selections."],
+  ["Các trường dưới đây sẽ thay đổi theo loại hình đã chọn.", "The fields below change based on the selected category."],
+  ["Loại dịch vụ cụ thể", "Specific service type"],
 
   ["Loại chỗ ở", "Property type"],
   ["Diện tích phòng (m2)", "Room size (m²)"],
@@ -309,6 +357,36 @@ export const TRANSLATION_PAIRS: TranslationPair[] = [
   ["Hết hàng", "Sold out"],
   ["Đã khóa", "Blocked"],
   ["Mở khóa", "Unblock"],
+  ["Quản lý đơn hàng", "Order management"],
+  ["Tìm kiếm đơn hàng", "Search orders"],
+  ["Trạng thái đơn", "Order status"],
+  ["Từ ngày tạo", "Created from"],
+  ["Đến ngày tạo", "Created to"],
+  ["Mã đơn", "Order ID"],
+  ["Mã đơn hàng", "Order code"],
+  ["Mã Host", "Host ID"],
+  ["Nhà cung cấp đăng nhập", "Provider"],
+  ["Tài khoản nội bộ", "Local"],
+  ["CCCD/Hộ chiếu", "CCCD/Passport"],
+  ["Mã số thuế", "MST"],
+  ["Mã đơn & Payout ID", "Order code & payout ID"],
+  ["Số đơn hàng", "Order count"],
+  ["Tổng tiền đơn", "Order total"],
+  ["Thực nhận của Host", "Host net amount"],
+  ["Ngày chuyển", "Transfer date"],
+  ["Thanh toán tất cả", "Pay all"],
+  ["Yêu cầu thanh toán", "Payment requested"],
+  ["Chưa yêu cầu", "Not requested"],
+  ["Lịch sử chuyển khoản", "Transfer history"],
+  ["Cần thanh toán", "Pending payout"],
+  ["Cần Thanh Toán", "Pending Payout"],
+  ["Đã Thanh Toán", "Paid Payout"],
+  ["Hoa Hồng Theo API", "API Commission"],
+  ["trên trang hiện tại", "on current page"],
+  ["Tìm kiếm theo mã...", "Search by code..."],
+  ["Không có khoản chờ xử lý nào.", "No pending payout found."],
+  ["Không tìm thấy dữ liệu phù hợp trong trang hiện tại.", "No matching data found on the current page."],
+  ["Tab này chưa có khoản thanh toán nào trong trang hiện tại.", "This tab has no payout on the current page."],
 
   ["Ngân hàng", "Bank"],
   ["Số tài khoản", "Account number"],
@@ -318,12 +396,21 @@ export const TRANSLATION_PAIRS: TranslationPair[] = [
   ["Cập nhật tài khoản ngân hàng", "Update bank account"],
   ["Chuyển khoản thanh toán", "Bank transfer payment"],
   ["Xác nhận đã chuyển", "Confirm transferred"],
+  ["Tài khoản nhận tiền payout", "Payout receiving account"],
+  ["Loại hồ sơ", "Profile type"],
+  ["Tên ngân hàng", "Bank name"],
+  ["Tên ngân hàng *", "Bank name *"],
+  ["Tên chủ tài khoản", "Account holder name"],
+  ["Tên chủ tài khoản *", "Account holder name *"],
+  ["Số tài khoản *", "Account number *"],
+  ["Trạng thái hiện tại", "Current status"],
+  ["Duyệt hồ sơ", "Profile approval"],
 
   ["Tranh chấp", "Disputes"],
   ["Khiếu nại", "Complaints"],
   ["Hoàn tiền", "Refund"],
-  ["Refund", "Hoàn tiền"],
-  ["Force cancel", "Buộc hủy"],
+  ["Buộc hủy", "Force cancel"],
+  ["Buộc hủy & hoàn tiền", "Force cancel & refund"],
   ["Báo cáo vi phạm", "Report violation"],
   ["Lý do", "Reason"],
   ["Nội dung", "Content"],
@@ -333,28 +420,112 @@ export const TRANSLATION_PAIRS: TranslationPair[] = [
   ["Đánh giá", "Reviews"],
   ["Viết đánh giá", "Write a review"],
   ["Chưa có đánh giá", "No reviews yet"],
+  ["Khiếu nại của tôi", "My disputes"],
+  ["Báo cáo vấn đề đơn hàng", "Report order issue"],
+  ["Mô tả chi tiết", "Detailed description"],
+  ["Lý do *", "Reason *"],
+  ["Tạo khiếu nại", "Create dispute"],
+  ["Nội dung khiếu nại", "Dispute content"],
+  ["Mô tả vấn đề", "Describe the issue"],
 
-  ["Popular", "Phổ biến"],
-  ["Services in Paris", "Dịch vụ tại Paris"],
-  ["Loading...", "Đang tải..."],
-  ["Search", "Tìm kiếm"],
-  ["Cancel", "Hủy"],
-  ["Save", "Lưu"],
-  ["Delete", "Xóa"],
-  ["Edit", "Sửa"],
-  ["View details", "Xem chi tiết"],
-  ["Status", "Trạng thái"],
-  ["Actions", "Thao tác"],
-  ["Customer", "Khách hàng"],
-  ["Created date", "Ngày tạo"],
-  ["Revenue", "Doanh thu"],
-  ["Commission", "Hoa hồng"],
-  ["Dashboard", "Bảng điều khiển"],
-  ["Users", "Người dùng"],
-  ["Listings", "Dịch vụ"],
-  ["Orders", "Đơn hàng"],
-  ["Reports", "Báo cáo"],
-  ["Settings", "Cài đặt"],
+  ["Phổ biến", "Popular"],
+  ["Dịch vụ tại Paris", "Services in Paris"],
+  ["Cài đặt", "Settings"],
+  ["Báo cáo", "Reports"],
+  ["Đăng nhập hoặc đăng ký", "Log in or sign up"],
+  ["Đồng ý và tiếp tục", "Agree and continue"],
+  ["Bằng cách chọn Đồng ý và tiếp tục, tôi đồng ý với các", "By selecting Agree and continue, I agree to the"],
+  ["của GoTravel.", "of GoTravel."],
+  ["hoặc", "or"],
+  ["Tiếp tục với Google", "Continue with Google"],
+  ["Tiếp tục với Facebook", "Continue with Facebook"],
+  ["Chưa có tài khoản?", "Don't have an account?"],
+  ["Đã có tài khoản?", "Already have an account?"],
+  ["Chào mừng bạn trở lại", "Welcome back"],
+  ["Tạo tài khoản mới", "Create a new account"],
+  ["Vui lòng điền thông tin để đăng nhập vào tài khoản của bạn.", "Please enter your information to log in to your account."],
+  ["Mọi tiện ích du lịch chỉ cách bạn vài thao tác đơn giản.", "Every travel feature is only a few simple steps away."],
+  ["Quên mật khẩu?", "Forgot password?"],
+  ["Đăng ký tài khoản", "Create account"],
+  ["Đăng ký ngay", "Sign up now"],
+  ["Họ và Tên", "Full name"],
+  ["Xác nhận mật khẩu", "Confirm password"],
+  ["Tên đăng nhập phải từ 3 ký tự trở lên.", "Username must be at least 3 characters."],
+  ["Mật khẩu phải từ 8 ký tự trở lên.", "Password must be at least 8 characters."],
+  ["Mật khẩu và Xác nhận mật khẩu không khớp.", "Password and confirmation password do not match."],
+  ["Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.", "Login failed. Please check your information."],
+  ["Đăng ký thất bại. Vui lòng thử lại.", "Registration failed. Please try again."],
+  ["Tài khoản không tồn tại. Vui lòng kiểm tra lại tên đăng nhập.", "Account does not exist. Please check your username."],
+  ["Mật khẩu không chính xác. Vui lòng thử lại.", "Incorrect password. Please try again."],
+  ["Tài khoản của bạn đã bị khóa.", "Your account has been locked."],
+  ["Tài khoản này đã bị xóa.", "This account has been deleted."],
+  ["Đơn hàng của tôi", "My orders"],
+  ["Lịch sử đơn hàng", "Order history"],
+  ["Chưa có đơn hàng hoàn tất", "No completed orders yet"],
+  ["Thông tin cá nhân", "Personal information"],
+  ["Bảo mật", "Security"],
+  ["Bảo mật & Mật khẩu", "Security & Password"],
+  ["Mật khẩu mới", "New password"],
+  ["Xác nhận mật khẩu mới", "Confirm new password"],
+  ["Cài đặt Tài khoản", "Account Settings"],
+  ["Quản lý hồ sơ cá nhân, nâng cấp đối tác và bảo mật tài khoản của bạn.", "Manage your personal profile, partner upgrades and account security."],
+  ["Cập nhật ảnh đại diện và hồ sơ liên hệ cơ bản của bạn.", "Update your avatar and basic contact profile."],
+  ["Nhấp vào ảnh để tải lên ảnh mới. Định dạng hỗ trợ: JPG, PNG.", "Click the photo to upload a new image. Supported formats: JPG, PNG."],
+  ["Địa chỉ Email", "Email address"],
+  ["Ngày sinh", "Date of birth"],
+  ["Đổi mật khẩu tài khoản để tăng tính bảo mật.", "Change your account password to improve security."],
+  ["Đang tải cấu hình cài đặt...", "Loading account settings..."],
+  ["Thêm vào giỏ hàng", "Add to cart"],
+  ["Ngày nhận", "Check-in date"],
+  ["Ngày trả", "Check-out date"],
+  ["Ngày đặt", "Booking date"],
+  ["Khung giờ", "Time slot"],
+  ["Khung giờ còn trống", "Available time slot"],
+  ["Khung giờ còn trống *", "Available time slot *"],
+  ["Không còn khung giờ trống", "No available time slots"],
+  ["Không còn khung giờ trống trong ngày này", "No available time slots on this date"],
+  ["Số lượng phòng", "Room quantity"],
+  ["Số người", "Number of guests"],
+  ["Số lượng người *", "Number of guests *"],
+  ["Xác nhận thêm", "Confirm add"],
+  ["Đang thêm...", "Adding..."],
+  ["Giỏ hàng của bạn", "Your cart"],
+  ["Giỏ hàng của bạn đang trống.", "Your cart is empty."],
+  ["Đang tải giỏ hàng...", "Loading cart..."],
+  ["Đơn hàng của Chủ nhà", "Host order"],
+  ["Bỏ chọn tất cả", "Clear all selections"],
+  ["Chọn tất cả còn hàng", "Select all available"],
+  ["Thanh toán dịch vụ đã chọn", "Checkout selected services"],
+  ["Bỏ chọn hoặc xoá dịch vụ hết chỗ trước khi thanh toán.", "Unselect or remove sold-out services before checkout."],
+  ["Hết chỗ. Vui lòng xoá!", "Sold out. Please remove it!"],
+  ["Xoá khỏi giỏ hàng", "Remove from cart"],
+  ["Ngày bắt đầu *", "Start date *"],
+  ["Ngày kết thúc *", "End date *"],
+  ["Không tìm thấy dịch vụ.", "Listing not found."],
+  ["Quay về trang chủ", "Back to home"],
+  ["Đang tạo thanh toán...", "Creating payment..."],
+  ["Thanh toán thành công!", "Payment successful!"],
+  ["Thanh toán thất bại", "Payment failed"],
+  ["Không tìm thấy đơn hàng.", "Order not found."],
+  ["Tổng tiền", "Total amount"],
+  ["Quét mã QR bằng ứng dụng ngân hàng để thanh toán:", "Scan the QR code with your banking app to pay:"],
+  ["Nội dung chuyển khoản", "Transfer content"],
+  ["Đang tạo mã thanh toán... Vui lòng chờ.", "Creating payment code... Please wait."],
+  ["Tiện nghi chỗ ở", "Property amenities"],
+  ["Tiện ích cung cấp", "Provided amenities"],
+  ["Chính sách chỗ ở", "House rules"],
+  ["Thông tin trải nghiệm", "Experience information"],
+  ["Thông tin dịch vụ", "Service information"],
+  ["Các lựa chọn quanh khu vực", "Nearby options"],
+  ["Bình luận", "Comments"],
+  ["Đánh giá của khách", "Guest reviews"],
+  ["Hủy miễn phí", "Free cancellation"],
+  ["Tối đa", "Maximum"],
+  ["Giường", "Beds"],
+  ["Phòng ngủ", "Bedrooms"],
+  ["Phòng tắm", "Bathrooms"],
+  ["Nhận phòng", "Check in"],
+  ["Trả phòng", "Check out"],
 ];
 
 const normalizeKey = (value: string) => value.replace(/\s+/g, " ").trim();
@@ -369,6 +540,105 @@ for (const [vi, en] of TRANSLATION_PAIRS) {
   TRANSLATIONS.vi[normalizeKey(en)] = vi;
 }
 
+Object.assign(TRANSLATIONS.vi, {
+  ADMIN: "Quản trị viên",
+  USER: "Người dùng",
+  HOST: "Chủ nhà",
+  ENTERPRISE: "Doanh nghiệp",
+  ALL: "Tất cả",
+  HISTORY: "Lịch sử",
+  PENDING: "Chờ xử lý",
+  REQUESTED: "Đã yêu cầu",
+  APPROVED: "Đã duyệt",
+  REJECTED: "Đã từ chối",
+  OPEN: "Mới gửi",
+  REFUNDED: "Đã hoàn tiền",
+  RESOLVED: "Đã xử lý",
+  ACTIVE: "Đang hoạt động",
+  HIDDEN: "Đã ẩn",
+  DELETED: "Đã xóa",
+  EXPIRED: "Hết hạn",
+  BANNED: "Bị khóa",
+  PAID: "Đã thanh toán",
+  FAILED: "Thất bại",
+  CANCELLED: "Đã hủy",
+  CANCELED: "Đã hủy",
+  COMPLETED: "Hoàn tất",
+  CONFIRMED: "Đã xác nhận",
+  BLOCKED: "Đã khóa",
+  AVAILABLE: "Còn trống",
+  LOCKED: "Đang giữ chỗ",
+  SUCCESS: "Thành công",
+});
+
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const countWords = (value: string) => normalizeKey(value).split(/\s+/).filter(Boolean).length;
+
+const REPLACEMENTS: Record<Locale, Array<[string, string]>> = {
+  vi: Object.entries(TRANSLATIONS.vi)
+    .filter(([source, target]) => source.length >= 4 && source !== target)
+    .sort(([a], [b]) => b.length - a.length),
+  en: Object.entries(TRANSLATIONS.en)
+    .filter(([source, target]) => source.length >= 4 && source !== target)
+    .sort(([a], [b]) => b.length - a.length),
+};
+
+function translatePattern(value: string, locale: Locale) {
+  const selectedServices = value.match(/^Đã chọn\s+(\d+)\s+dịch vụ$/i);
+  if (selectedServices && locale === "en") {
+    return `${selectedServices[1]} selected services`;
+  }
+
+  const selectedServicesEn = value.match(/^(\d+)\s+selected services$/i);
+  if (selectedServicesEn && locale === "vi") {
+    return `Đã chọn ${selectedServicesEn[1]} dịch vụ`;
+  }
+
+  const showingServices = value.match(/^Hiển thị\s+(.+?)\s+dịch vụ(.*)$/i);
+  if (showingServices && locale === "en") {
+    return `Showing ${showingServices[1]} services${showingServices[2]}`;
+  }
+
+  const showingServicesEn = value.match(/^Showing\s+(.+?)\s+services(.*)$/i);
+  if (showingServicesEn && locale === "vi") {
+    return `Hiển thị ${showingServicesEn[1]} dịch vụ${showingServicesEn[2]}`;
+  }
+
+  const serviceCount = value.match(/^Tìm thấy\s+(\d+)\s+kết quả(.*)$/i);
+  if (serviceCount && locale === "en") {
+    return `Found ${serviceCount[1]} result${Number(serviceCount[1]) === 1 ? "" : "s"}${serviceCount[2]}`;
+  }
+
+  const serviceCountEn = value.match(/^Found\s+(\d+)\s+results?(.*)$/i);
+  if (serviceCountEn && locale === "vi") {
+    return `Tìm thấy ${serviceCountEn[1]} kết quả${serviceCountEn[2]}`;
+  }
+
+  const pageCount = value.match(/^Trang\s+(\d+)\s*\/\s*(\d+)$/i);
+  if (pageCount && locale === "en") {
+    return `Page ${pageCount[1]} / ${pageCount[2]}`;
+  }
+
+  const pageCountEn = value.match(/^Page\s+(\d+)\s*\/\s*(\d+)$/i);
+  if (pageCountEn && locale === "vi") {
+    return `Trang ${pageCountEn[1]} / ${pageCountEn[2]}`;
+  }
+
+  return undefined;
+}
+
+function translateShortSegments(value: string, locale: Locale) {
+  if (countWords(value) > 7 && !/[():/*…]/.test(value)) return value;
+
+  let translated = value;
+  for (const [source, target] of REPLACEMENTS[locale]) {
+    translated = translated.replace(new RegExp(escapeRegExp(source), "g"), target);
+  }
+
+  return translated;
+}
+
 export function translateStaticText(value: string, locale: Locale) {
   if (!value.trim()) return value;
 
@@ -377,6 +647,12 @@ export function translateStaticText(value: string, locale: Locale) {
   const normalized = normalizeKey(value);
   const exact = TRANSLATIONS[locale][normalized];
   if (exact) return `${leading}${exact}${trailing}`;
+
+  const patterned = translatePattern(normalized, locale);
+  if (patterned) return `${leading}${patterned}${trailing}`;
+
+  const segmented = translateShortSegments(normalized, locale);
+  if (segmented !== normalized) return `${leading}${segmented}${trailing}`;
 
   return value;
 }

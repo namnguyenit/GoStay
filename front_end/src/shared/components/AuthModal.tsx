@@ -7,6 +7,14 @@ import { Eye, EyeOff, X } from "lucide-react";
 import AuthService from "@/services/auth.service";
 import { useAuthModal } from "../context/AuthModalContext";
 
+type AuthError = {
+  code?: string;
+  message?: string;
+};
+
+const toAuthError = (error: unknown): AuthError =>
+  error && typeof error === "object" ? (error as AuthError) : {};
+
 export default function AuthModal() {
   const { isOpen, view, setView, closeModal } = useAuthModal();
 
@@ -50,14 +58,15 @@ export default function AuthModal() {
     try {
       await AuthService.login({ username: loginUsername, password: loginPassword });
       handleSuccess();
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const authError = toAuthError(err);
       const errorMessages: Record<string, string> = {
         USER_NOT_FOUND: "Tài khoản không tồn tại. Vui lòng kiểm tra lại tên đăng nhập.",
         UNAUTHENTICATED: "Mật khẩu không chính xác. Vui lòng thử lại.",
         BANNED_USER: "Tài khoản của bạn đã bị khóa.",
         DELETE_USER: "Tài khoản này đã bị xóa.",
       };
-      const msg = errorMessages[err?.code] || err?.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.";
+      const msg = (authError.code && errorMessages[authError.code]) || authError.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.";
       setError(msg);
     } finally {
       setLoading(false);
@@ -97,8 +106,8 @@ export default function AuthModal() {
       // Tự động đăng nhập sau khi đăng ký thành công
       await AuthService.login({ username: regUsername, password: regPassword });
       handleSuccess();
-    } catch (err: any) {
-      setError(err?.message || "Đăng ký thất bại. Vui lòng thử lại.");
+    } catch (err: unknown) {
+      setError(toAuthError(err).message || "Đăng ký thất bại. Vui lòng thử lại.");
     } finally {
       setLoading(false);
     }

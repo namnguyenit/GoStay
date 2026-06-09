@@ -53,11 +53,25 @@ function shouldSkipNode(node: Node) {
   return !parent || Boolean(parent.closest(SKIP_SELECTOR));
 }
 
+function isKnownTranslation(current: string, original: string) {
+  return (
+    current === original ||
+    current === translateStaticText(original, "vi") ||
+    current === translateStaticText(original, "en")
+  );
+}
+
 function translateTextNode(node: Text, locale: Locale) {
   if (shouldSkipNode(node)) return;
 
-  const original = textOriginals.get(node) ?? node.nodeValue ?? "";
-  if (!textOriginals.has(node)) {
+  const current = node.nodeValue ?? "";
+  const storedOriginal = textOriginals.get(node);
+  const original =
+    storedOriginal && !isKnownTranslation(current, storedOriginal)
+      ? current
+      : storedOriginal ?? current;
+
+  if (!storedOriginal || original !== storedOriginal) {
     textOriginals.set(node, original);
   }
 
@@ -75,8 +89,13 @@ function translateElementAttributes(element: Element, locale: Locale) {
     if (!current) continue;
 
     const originalAttr = `data-i18n-original-${attr}`;
-    const original = element.getAttribute(originalAttr) ?? current;
-    if (!element.hasAttribute(originalAttr)) {
+    const storedOriginal = element.getAttribute(originalAttr);
+    const original =
+      storedOriginal && !isKnownTranslation(current, storedOriginal)
+        ? current
+        : storedOriginal ?? current;
+
+    if (!storedOriginal || original !== storedOriginal) {
       element.setAttribute(originalAttr, original);
     }
 
