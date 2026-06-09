@@ -22,7 +22,6 @@ export default async function Page({ searchParams }: PageProps) {
         places={places || []}
         experiences={experiences || []}
         services={services || []}
-        searchParamsRaw={resolvedSearchParams}
       />
     </Suspense>
   );

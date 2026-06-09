@@ -36,7 +36,6 @@ interface SearchClientProps {
   places: ListItem[];
   experiences: ListItem[];
   services: ListItem[];
-  searchParamsRaw: any;
 }
 
 export default function SearchClient({
@@ -52,34 +51,39 @@ export default function SearchClient({
   useEffect(() => {
     const params = new URLSearchParams(searchParams);
     setFilter(FilterService.get(params));
-  }, [searchParams]);
+  }, [searchParams.toString()]);
 
   // Determine active category and appropriate list of items
   const { currentItems, categoryLabel, categoryType } = useMemo(() => {
     const type = filter?.type;
 
-    const mappedPlaces = (places || []).filter(Boolean).map(item => ({
+    const mappedPlaces = (places || []).filter(Boolean).map((item) => ({
       ...item,
       categoryType: "place",
       categoryLabel: "Nơi cư trú",
-      badgeStyles: "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400",
-      unit: "/đêm"
+      badgeStyles:
+        "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400",
+      unit: "/đêm",
     }));
 
-    const mappedExperiences = (experiences || []).filter(Boolean).map(item => ({
-      ...item,
-      categoryType: "experience",
-      categoryLabel: "Trải nghiệm",
-      badgeStyles: "bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400",
-      unit: "/nhóm"
-    }));
+    const mappedExperiences = (experiences || [])
+      .filter(Boolean)
+      .map((item) => ({
+        ...item,
+        categoryType: "experience",
+        categoryLabel: "Trải nghiệm",
+        badgeStyles:
+          "bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400",
+        unit: "/nhóm",
+      }));
 
-    const mappedServices = (services || []).filter(Boolean).map(item => ({
+    const mappedServices = (services || []).filter(Boolean).map((item) => ({
       ...item,
       categoryType: "service",
       categoryLabel: "Dịch vụ",
-      badgeStyles: "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400",
-      unit: "/dịch vụ"
+      badgeStyles:
+        "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400",
+      unit: "/dịch vụ",
     }));
 
     if (type === "exp" || type === "experience") {
@@ -102,7 +106,11 @@ export default function SearchClient({
       };
     } else {
       return {
-        currentItems: [...mappedPlaces, ...mappedExperiences, ...mappedServices],
+        currentItems: [
+          ...mappedPlaces,
+          ...mappedExperiences,
+          ...mappedServices,
+        ],
         categoryLabel: "Tất cả dịch vụ",
         categoryType: "all",
       };
@@ -183,7 +191,7 @@ export default function SearchClient({
             {filter?.place && (
               <Badge
                 variant="outline"
-                className="rounded-full bg-zinc-50 px-3 py-1 font-medium dark:bg-zinc-900 flex items-center gap-1"
+                className="flex items-center gap-1 rounded-full bg-zinc-50 px-3 py-1 font-medium dark:bg-zinc-900"
               >
                 <MapPin className="text-app-muted-fg mr-1 h-3.5 w-3.5" />
                 {filter.place}
@@ -192,7 +200,7 @@ export default function SearchClient({
                     const newFilter = { ...filter, place: "" };
                     handleSearchSubmit(newFilter);
                   }}
-                  className="hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-650 ml-1 rounded-full p-0.5"
+                  className="hover:text-zinc-650 ml-1 rounded-full p-0.5 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800"
                   title="Xóa lọc địa điểm"
                 >
                   <X className="h-3 w-3" />
@@ -202,7 +210,7 @@ export default function SearchClient({
             {filter?.date?.from && (
               <Badge
                 variant="outline"
-                className="rounded-full bg-zinc-50 px-3 py-1 font-medium dark:bg-zinc-900 flex items-center gap-1"
+                className="flex items-center gap-1 rounded-full bg-zinc-50 px-3 py-1 font-medium dark:bg-zinc-900"
               >
                 <Calendar className="text-app-muted-fg mr-1 h-3.5 w-3.5" />
                 {format(new Date(filter.date.from), "dd/MM/yyyy")}
@@ -213,7 +221,7 @@ export default function SearchClient({
                     const newFilter = { ...filter, date: undefined };
                     handleSearchSubmit(newFilter);
                   }}
-                  className="hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-650 ml-1 rounded-full p-0.5"
+                  className="hover:text-zinc-650 ml-1 rounded-full p-0.5 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800"
                   title="Xóa lọc ngày"
                 >
                   <X className="h-3 w-3" />
@@ -222,7 +230,7 @@ export default function SearchClient({
             )}
             {filter?.type && filter.type !== "all" && (
               <Badge
-                className={`rounded-full px-3 py-1 font-bold tracking-wider uppercase flex items-center gap-1 ${getBadgeStyles()}`}
+                className={`flex items-center gap-1 rounded-full px-3 py-1 font-bold tracking-wider uppercase ${getBadgeStyles()}`}
               >
                 {categoryLabel}
                 <button
@@ -230,7 +238,7 @@ export default function SearchClient({
                     const newFilter = { ...filter, type: "" };
                     handleSearchSubmit(newFilter);
                   }}
-                  className="hover:bg-white/20 text-current ml-1 rounded-full p-0.5 transition-colors"
+                  className="ml-1 rounded-full p-0.5 text-current transition-colors hover:bg-white/20"
                   title="Xóa lọc loại hình"
                 >
                   <X className="h-3 w-3" />
