@@ -1,6 +1,7 @@
 package com.GoTravel.CartandOrder.service;
 
 import com.GoTravel.CartandOrder.client.CatalogClient;
+import com.GoTravel.CartandOrder.client.CommunicationClient;
 import com.GoTravel.CartandOrder.client.InventoryClient;
 import com.GoTravel.CartandOrder.enums.OrderStatus;
 import com.GoTravel.CartandOrder.mapper.OrderMapper;
@@ -35,6 +36,9 @@ class OrderServiceTest {
     CatalogClient catalogClient;
 
     @Mock
+    CommunicationClient communicationClient;
+
+    @Mock
     OrderMapper orderMapper;
 
     @Test
@@ -48,6 +52,7 @@ class OrderServiceTest {
                 cartRepository,
                 inventoryClient,
                 catalogClient,
+                communicationClient,
                 orderMapper
         );
 
@@ -74,6 +79,7 @@ class OrderServiceTest {
                 cartRepository,
                 inventoryClient,
                 catalogClient,
+                communicationClient,
                 orderMapper
         );
 
