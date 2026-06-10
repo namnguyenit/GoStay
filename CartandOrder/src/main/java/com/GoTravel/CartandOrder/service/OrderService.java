@@ -1,11 +1,13 @@
 package com.GoTravel.CartandOrder.service;
 
 import com.GoTravel.CartandOrder.client.CatalogClient;
+import com.GoTravel.CartandOrder.client.CommunicationClient;
 import com.GoTravel.CartandOrder.client.InventoryClient;
 import com.GoTravel.CartandOrder.dto.request.BatchLockRequest;
 import com.GoTravel.CartandOrder.dto.request.BookNowRequest;
 import com.GoTravel.CartandOrder.dto.request.CheckoutCartRequest;
 import com.GoTravel.CartandOrder.dto.request.CartItemRequest;
+import com.GoTravel.CartandOrder.dto.request.TicketEmailRequest;
 import com.GoTravel.CartandOrder.dto.response.ApiResponse;
 import com.GoTravel.CartandOrder.dto.response.AdminOrderSummaryResponse;
 import com.GoTravel.CartandOrder.dto.response.BatchLockResponse;
@@ -24,12 +26,15 @@ import com.GoTravel.CartandOrder.repository.CartRepository;
 import com.GoTravel.CartandOrder.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -46,7 +51,10 @@ public class OrderService {
     private final CartRepository cartRepository;
     private final InventoryClient inventoryClient;
     private final CatalogClient catalogClient;
+    private final CommunicationClient communicationClient;
     private final OrderMapper orderMapper;
+    @Value("${frontend.base-url:http://localhost:3000}")
+    private String frontendBaseUrl;
 
     @Transactional
     public OrderResponse checkoutCart(UUID userId, CheckoutCartRequest request) {
@@ -272,7 +280,7 @@ public class OrderService {
                 .orElseThrow(() -> new AppException(OrderErrorCode.ORDER_NOT_FOUND));
 
         order.setStatus(OrderStatus.CONFIRMED);
-        markTicketEmailSent(order);
+        deliverTicketEmail(order, false);
         orderRepository.save(order);
 
         try {
@@ -291,7 +299,7 @@ public class OrderService {
             throw new AppException(OrderErrorCode.INVALID_ORDER_STATE);
         }
 
-        markTicketEmailSent(order);
+        deliverTicketEmail(order, true);
         orderRepository.save(order);
         return orderMapper.toOrderResponse(order);
     }
@@ -396,13 +404,58 @@ public class OrderService {
         return hostId;
     }
 
-    private void markTicketEmailSent(Order order) {
+    private void deliverTicketEmail(Order order, boolean failOnError) {
         String recipient = order.getCustomerInfo() != null ? order.getCustomerInfo().getEmail() : null;
         order.setTicketEmailRecipient(recipient);
-        order.setTicketEmailSent(true);
-        order.setTicketEmailSentAt(LocalDateTime.now());
         order.setTicketEmailAttempts((order.getTicketEmailAttempts() == null ? 0 : order.getTicketEmailAttempts()) + 1);
-        log.info("Ticket email marked as sent for order {} to {}", order.getId(), recipient);
+        if (recipient == null || recipient.isBlank()) {
+            order.setTicketEmailSent(false);
+            if (failOnError) {
+                throw new AppException(OrderErrorCode.TICKET_EMAIL_SEND_FAILED);
+            }
+            return;
+        }
+
+        try {
+            communicationClient.sendTicketEmail(buildTicketEmailRequest(order, recipient));
+            order.setTicketEmailSent(true);
+            order.setTicketEmailSentAt(LocalDateTime.now());
+            log.info("Ticket email sent for order {} to {}", order.getId(), recipient);
+        } catch (Exception e) {
+            order.setTicketEmailSent(false);
+            log.error("Failed to send ticket email for order {} to {}", order.getId(), recipient, e);
+            if (failOnError) {
+                throw new AppException(OrderErrorCode.TICKET_EMAIL_SEND_FAILED);
+            }
+        }
+    }
+
+    private TicketEmailRequest buildTicketEmailRequest(Order order, String recipient) {
+        String ticketSeed = order.getOrderNumber() != null ? order.getOrderNumber() : order.getId().toString();
+        String ticketUrl = frontendBaseUrl.replaceAll("/+$", "") + "/orders/completed?orderId=" + order.getId();
+        String qrImageUrl = "https://quickchart.io/qr?size=256&text=" + URLEncoder.encode(ticketSeed, StandardCharsets.UTF_8);
+
+        return TicketEmailRequest.builder()
+                .to(recipient)
+                .customerName(order.getCustomerInfo() != null ? order.getCustomerInfo().getFullName() : null)
+                .orderId(order.getId())
+                .orderNumber(order.getOrderNumber())
+                .totalAmount(order.getTotalAmount())
+                .currency(order.getCurrency())
+                .ticketUrl(ticketUrl)
+                .qrImageUrl(qrImageUrl)
+                .items(order.getItems().stream().map(item -> TicketEmailRequest.TicketEmailItem.builder()
+                        .listingId(item.getListingId())
+                        .listingTitle(item.getListingTitle())
+                        .thumbnailUrl(item.getThumbnailUrl())
+                        .startDate(item.getStartDate())
+                        .endDate(item.getEndDate())
+                        .timeSlot(item.getTimeSlot())
+                        .quantity(item.getQuantity())
+                        .unitPrice(item.getUnitPrice())
+                        .totalPrice(item.getTotalPrice())
+                        .build()).toList())
+                .build();
     }
 
     private List<OrderPaymentSummaryResponse.ProviderBreakdown> buildProviderBreakdowns(Order order) {

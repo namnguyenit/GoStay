@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { Eye, EyeOff, X } from "lucide-react";
 import AuthService from "@/services/auth.service";
 import { useAuthModal } from "../context/AuthModalContext";
@@ -21,6 +20,7 @@ export default function AuthModal() {
   // Common loading & error states
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   // Login states
   const [loginUsername, setLoginUsername] = useState("");
@@ -38,6 +38,14 @@ export default function AuthModal() {
   const [showRegPassword, setShowRegPassword] = useState(false);
   const [showRegConfirmPassword, setShowRegConfirmPassword] = useState(false);
 
+  // Forgot password states
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetOtp, setResetOtp] = useState("");
+  const [resetPassword, setResetPassword] = useState("");
+  const [resetConfirmPassword, setResetConfirmPassword] = useState("");
+  const [showResetPassword, setShowResetPassword] = useState(false);
+
   if (!isOpen) return null;
 
   const handleSuccess = () => {
@@ -53,6 +61,7 @@ export default function AuthModal() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
     setLoading(true);
 
     try {
@@ -76,6 +85,7 @@ export default function AuthModal() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
 
     if (regUsername.trim().length < 3) {
       setError("Tên đăng nhập phải từ 3 ký tự trở lên.");
@@ -113,6 +123,81 @@ export default function AuthModal() {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    if (!forgotEmail.trim()) {
+      setError("Vui lòng nhập email tài khoản.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await AuthService.forgotPassword(forgotEmail.trim());
+      setResetEmail(forgotEmail.trim());
+      setSuccess("Nếu email tồn tại, mã đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra hộp thư.");
+      setView("reset-password");
+    } catch (err: unknown) {
+      setError(toAuthError(err).message || "Không thể gửi email đặt lại mật khẩu. Vui lòng thử lại.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    if (resetPassword.length < 8) {
+      setError("Mật khẩu mới phải từ 8 ký tự trở lên.");
+      return;
+    }
+
+    if (resetPassword !== resetConfirmPassword) {
+      setError("Mật khẩu mới và xác nhận mật khẩu không khớp.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await AuthService.resetPassword({
+        email: resetEmail.trim(),
+        otp: resetOtp.trim(),
+        newPassword: resetPassword,
+      });
+      setLoginUsername(resetEmail.trim());
+      setLoginPassword("");
+      setSuccess("Đặt lại mật khẩu thành công. Bạn có thể đăng nhập bằng mật khẩu mới.");
+      setView("login");
+    } catch (err: unknown) {
+      const authError = toAuthError(err);
+      setError(authError.message || "Mã xác thực không hợp lệ hoặc đã hết hạn.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const title =
+    view === "login"
+      ? "Chào mừng bạn trở lại"
+      : view === "register"
+        ? "Tạo tài khoản mới"
+        : view === "forgot-password"
+          ? "Quên mật khẩu"
+          : "Đặt lại mật khẩu";
+
+  const description =
+    view === "login"
+      ? "Vui lòng điền thông tin để đăng nhập vào tài khoản của bạn."
+      : view === "register"
+        ? "Mọi tiện ích du lịch chỉ cách bạn vài thao tác đơn giản."
+        : view === "forgot-password"
+          ? "Nhập email tài khoản để nhận mã xác thực đặt lại mật khẩu."
+          : "Nhập mã xác thực trong email và tạo mật khẩu mới.";
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center font-sans text-[#222222]">
       {/* Background with blur */}
@@ -133,12 +218,10 @@ export default function AuthModal() {
         {/* Content */}
         <div className="p-6 overflow-y-auto">
           <h3 className="mb-2 text-2xl font-semibold tracking-tight">
-            {view === "login" ? "Chào mừng bạn trở lại" : "Tạo tài khoản mới"}
+            {title}
           </h3>
           <p className="mb-6 text-sm text-[#717171]">
-            {view === "login" 
-              ? "Vui lòng điền thông tin để đăng nhập vào tài khoản của bạn." 
-              : "Mọi tiện ích du lịch chỉ cách bạn vài thao tác đơn giản."}
+            {description}
           </p>
           
           {view === "login" ? (
@@ -182,17 +265,122 @@ export default function AuthModal() {
                 </div>
               </div>
 
+              {success && <p className="text-sm text-emerald-600">{success}</p>}
               {error && <p className="text-sm text-red-500">{error}</p>}
 
               <div className="flex justify-between text-xs">
-                <Link href="#" className="font-semibold underline transition-colors hover:text-[#717171]">
+                <button type="button" onClick={() => { setError(""); setSuccess(""); setForgotEmail(regEmail || ""); setView("forgot-password"); }} className="font-semibold underline transition-colors hover:text-[#717171]">
                   Quên mật khẩu?
-                </Link>
+                </button>
               </div>
 
               <Button disabled={loading} type="submit" className="mt-2 h-12 w-full rounded-lg bg-[#FF5A5F] text-base font-semibold text-white transition-colors hover:bg-[#E35054] active:scale-[0.98]">
                 {loading ? "Đang xử lý..." : "Tiếp tục"}
               </Button>
+            </form>
+          ) : view === "forgot-password" ? (
+            <form className="space-y-4" onSubmit={handleForgotPassword}>
+              <div className="relative">
+                <input
+                  id="forgot_email"
+                  type="email"
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                  required
+                  className="peer w-full rounded-lg border border-[#B0B0B0] bg-white px-3 pb-1 pt-5 text-sm outline-none transition focus:border-[#222222] focus:ring-1 focus:ring-[#222222]"
+                  placeholder=" "
+                />
+                <label htmlFor="forgot_email" className="pointer-events-none absolute left-3 top-1.5 z-10 origin-[0] transform text-[11px] text-[#717171] duration-150 peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-focus:top-1.5 peer-focus:text-[11px]">
+                  Email tài khoản
+                </label>
+              </div>
+
+              {error && <p className="text-sm text-red-500">{error}</p>}
+
+              <Button disabled={loading} type="submit" className="mt-2 h-12 w-full rounded-lg bg-[#FF5A5F] text-base font-semibold text-white transition-colors hover:bg-[#E35054] active:scale-[0.98]">
+                {loading ? "Đang gửi..." : "Gửi mã xác thực"}
+              </Button>
+
+              <button type="button" onClick={() => { setError(""); setSuccess(""); setView("login"); }} className="w-full text-center text-sm font-semibold underline">
+                Quay lại đăng nhập
+              </button>
+            </form>
+          ) : view === "reset-password" ? (
+            <form className="space-y-4" onSubmit={handleResetPassword}>
+              {success && <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{success}</p>}
+              <div className="relative">
+                <input
+                  id="reset_email"
+                  type="email"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  required
+                  className="peer w-full rounded-lg border border-[#B0B0B0] bg-white px-3 pb-1 pt-5 text-sm outline-none transition focus:border-[#222222] focus:ring-1 focus:ring-[#222222]"
+                  placeholder=" "
+                />
+                <label htmlFor="reset_email" className="pointer-events-none absolute left-3 top-1.5 z-10 origin-[0] transform text-[11px] text-[#717171] duration-150 peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-focus:top-1.5 peer-focus:text-[11px]">
+                  Email tài khoản
+                </label>
+              </div>
+
+              <div className="relative">
+                <input
+                  id="reset_otp"
+                  type="text"
+                  inputMode="numeric"
+                  value={resetOtp}
+                  onChange={(e) => setResetOtp(e.target.value)}
+                  required
+                  className="peer w-full rounded-lg border border-[#B0B0B0] bg-white px-3 pb-1 pt-5 text-sm outline-none transition focus:border-[#222222] focus:ring-1 focus:ring-[#222222]"
+                  placeholder=" "
+                />
+                <label htmlFor="reset_otp" className="pointer-events-none absolute left-3 top-1.5 z-10 origin-[0] transform text-[11px] text-[#717171] duration-150 peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-focus:top-1.5 peer-focus:text-[11px]">
+                  Mã xác thực
+                </label>
+              </div>
+
+              <div className="relative">
+                <input
+                  id="reset_password"
+                  type={showResetPassword ? "text" : "password"}
+                  value={resetPassword}
+                  onChange={(e) => setResetPassword(e.target.value)}
+                  required
+                  className="peer w-full rounded-lg border border-[#B0B0B0] bg-white px-3 pb-1 pt-5 pr-10 text-sm outline-none transition focus:border-[#222222] focus:ring-1 focus:ring-[#222222]"
+                  placeholder=" "
+                />
+                <label htmlFor="reset_password" className="pointer-events-none absolute left-3 top-1.5 z-10 origin-[0] transform text-[11px] text-[#717171] duration-150 peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-focus:top-1.5 peer-focus:text-[11px]">
+                  Mật khẩu mới
+                </label>
+                <button type="button" onClick={() => setShowResetPassword(!showResetPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#717171] hover:text-[#222222] focus:outline-none">
+                  {showResetPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
+
+              <div className="relative">
+                <input
+                  id="reset_confirm_password"
+                  type={showResetPassword ? "text" : "password"}
+                  value={resetConfirmPassword}
+                  onChange={(e) => setResetConfirmPassword(e.target.value)}
+                  required
+                  className="peer w-full rounded-lg border border-[#B0B0B0] bg-white px-3 pb-1 pt-5 text-sm outline-none transition focus:border-[#222222] focus:ring-1 focus:ring-[#222222]"
+                  placeholder=" "
+                />
+                <label htmlFor="reset_confirm_password" className="pointer-events-none absolute left-3 top-1.5 z-10 origin-[0] transform text-[11px] text-[#717171] duration-150 peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-focus:top-1.5 peer-focus:text-[11px]">
+                  Xác nhận mật khẩu mới
+                </label>
+              </div>
+
+              {error && <p className="text-sm text-red-500">{error}</p>}
+
+              <Button disabled={loading} type="submit" className="mt-2 h-12 w-full rounded-lg bg-[#FF5A5F] text-base font-semibold text-white transition-colors hover:bg-[#E35054] active:scale-[0.98]">
+                {loading ? "Đang xử lý..." : "Đặt lại mật khẩu"}
+              </Button>
+
+              <button type="button" onClick={() => { setError(""); setSuccess(""); setView("forgot-password"); }} className="w-full text-center text-sm font-semibold underline">
+                Gửi lại mã
+              </button>
             </form>
           ) : (
             <form className="space-y-3" onSubmit={handleRegister}>
@@ -330,7 +518,7 @@ export default function AuthModal() {
               {error && <p className="text-sm text-red-500">{error}</p>}
 
               <p className="text-[11px] leading-relaxed text-[#717171]">
-                Bằng cách chọn Đồng ý và tiếp tục, tôi đồng ý với các <Link href="#" className="font-semibold text-[#222] underline">Điều khoản</Link> của GoTravel.
+                Bằng cách chọn Đồng ý và tiếp tục, tôi đồng ý với các <span className="font-semibold text-[#222] underline">Điều khoản</span> của GoTravel.
               </p>
 
               <Button disabled={loading} type="submit" className="mt-2 h-12 w-full rounded-lg bg-[#FF5A5F] text-base font-semibold text-white transition-colors hover:bg-[#E35054] active:scale-[0.98]">
@@ -368,14 +556,21 @@ export default function AuthModal() {
             {view === "login" ? (
               <>
                 <span>Chưa có tài khoản? </span>
-                <button type="button" onClick={() => setView("register")} className="font-semibold underline transition-colors hover:text-[#717171]">
+                <button type="button" onClick={() => { setError(""); setSuccess(""); setView("register"); }} className="font-semibold underline transition-colors hover:text-[#717171]">
                   Đăng ký ngay
+                </button>
+              </>
+            ) : view === "forgot-password" || view === "reset-password" ? (
+              <>
+                <span>Đã nhớ mật khẩu? </span>
+                <button type="button" onClick={() => { setError(""); setSuccess(""); setView("login"); }} className="font-semibold underline transition-colors hover:text-[#717171]">
+                  Đăng nhập
                 </button>
               </>
             ) : (
               <>
                 <span>Đã có tài khoản? </span>
-                <button type="button" onClick={() => setView("login")} className="font-semibold underline transition-colors hover:text-[#717171]">
+                <button type="button" onClick={() => { setError(""); setSuccess(""); setView("login"); }} className="font-semibold underline transition-colors hover:text-[#717171]">
                   Đăng nhập
                 </button>
               </>

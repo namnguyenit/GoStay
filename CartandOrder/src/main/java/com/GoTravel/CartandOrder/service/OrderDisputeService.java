@@ -1,9 +1,11 @@
 package com.GoTravel.CartandOrder.service;
 
+import com.GoTravel.CartandOrder.client.CommunicationClient;
 import com.GoTravel.CartandOrder.client.InventoryClient;
 import com.GoTravel.CartandOrder.client.PaymentClient;
 import com.GoTravel.CartandOrder.dto.request.CreateOrderDisputeRequest;
 import com.GoTravel.CartandOrder.dto.request.ForceCancelOrderRequest;
+import com.GoTravel.CartandOrder.dto.request.RefundEmailRequest;
 import com.GoTravel.CartandOrder.dto.request.RefundOrderRequest;
 import com.GoTravel.CartandOrder.dto.request.ResolveOrderDisputeRequest;
 import com.GoTravel.CartandOrder.dto.response.OrderDisputeResponse;
@@ -17,6 +19,7 @@ import com.GoTravel.CartandOrder.repository.OrderDisputeRepository;
 import com.GoTravel.CartandOrder.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -34,6 +37,10 @@ public class OrderDisputeService {
     private final OrderRepository orderRepository;
     private final PaymentClient paymentClient;
     private final InventoryClient inventoryClient;
+    private final CommunicationClient communicationClient;
+
+    @Value("${frontend.base-url:http://localhost:3000}")
+    private String frontendBaseUrl;
 
     private static final List<DisputeStatus> ACTIVE_STATUSES = List.of(DisputeStatus.OPEN, DisputeStatus.IN_REVIEW);
 
@@ -114,6 +121,7 @@ public class OrderDisputeService {
         paymentClient.refundOrder(order.getId(), RefundOrderRequest.builder()
                 .reason(reason)
                 .build());
+        sendRefundSuccessEmail(order, reason);
 
         order.setStatus(OrderStatus.CANCELLED);
         orderRepository.save(order);
@@ -123,6 +131,50 @@ public class OrderDisputeService {
         } catch (Exception e) {
             log.warn("Failed to release inventory while force-canceling order {}", order.getId(), e);
         }
+    }
+
+    private void sendRefundSuccessEmail(Order order, String reason) {
+        Order.CustomerInfo customer = order.getCustomerInfo();
+        String recipient = customer == null ? null : customer.getEmail();
+        if (recipient == null || recipient.isBlank()) {
+            log.warn("Skip refund email for order {} because customer email is missing", order.getId());
+            return;
+        }
+
+        try {
+            communicationClient.sendRefundEmail(buildRefundEmailRequest(order, reason, recipient));
+            log.info("Refund success email sent for order {} to {}", order.getId(), recipient);
+        } catch (Exception e) {
+            log.error("Failed to send refund success email for order {} to {}", order.getId(), recipient, e);
+        }
+    }
+
+    private RefundEmailRequest buildRefundEmailRequest(Order order, String reason, String recipient) {
+        Order.CustomerInfo customer = order.getCustomerInfo();
+        String orderUrl = frontendBaseUrl.replaceAll("/+$", "") + "/orders/completed?orderId=" + order.getId();
+
+        return RefundEmailRequest.builder()
+                .to(recipient)
+                .customerName(customer == null ? null : customer.getFullName())
+                .orderId(order.getId())
+                .orderNumber(order.getOrderNumber())
+                .refundAmount(order.getTotalAmount())
+                .totalAmount(order.getTotalAmount())
+                .currency(order.getCurrency())
+                .reason(reason)
+                .orderUrl(orderUrl)
+                .items(order.getItems().stream().map(item -> RefundEmailRequest.RefundEmailItem.builder()
+                        .listingId(item.getListingId())
+                        .listingTitle(item.getListingTitle())
+                        .thumbnailUrl(item.getThumbnailUrl())
+                        .startDate(item.getStartDate())
+                        .endDate(item.getEndDate())
+                        .timeSlot(item.getTimeSlot())
+                        .quantity(item.getQuantity())
+                        .unitPrice(item.getUnitPrice())
+                        .totalPrice(item.getTotalPrice())
+                        .build()).toList())
+                .build();
     }
 
     private OrderDisputeResponse toResponse(OrderDispute dispute) {

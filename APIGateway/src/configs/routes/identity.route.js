@@ -89,6 +89,8 @@ export const identityRoutes = [
             if (url === '/api/v1/auth/login') return '/api/auth/login' + query;
             if (url === '/api/v1/auth/register') return '/api/users' + query; // Nối vào @PostMapping("/api/users")
             if (url === '/api/v1/auth/refresh-roles') return '/api/auth/refresh-roles' + query;
+            if (url === '/api/v1/auth/forgot-password') return '/api/auth/forgot-password' + query;
+            if (url === '/api/v1/auth/reset-password') return '/api/auth/reset-password' + query;
 
             return path;
         }

@@ -13,3 +13,7 @@ internal:
 services:
   catalog:
     url: ${CATALOG_SERVICE_URL:http://localhost:8082}
+  communication:
+    url: ${COMMUNICATION_SERVICE_URL:http://localhost:5001}
+frontend:
+  base-url: ${FRONTEND_BASE_URL:http://localhost:3000}

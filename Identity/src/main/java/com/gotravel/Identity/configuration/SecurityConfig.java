@@ -34,7 +34,9 @@ public class SecurityConfig {
 
     private final String[] PUBLIC_URL_POST = {
             "/api/users",
-            "/api/auth/login"
+            "/api/auth/login",
+            "/api/auth/forgot-password",
+            "/api/auth/reset-password"
     };
 
     private final String[] PUBLIC_URL_GET = {

@@ -18,6 +18,12 @@ media:
   service:
     url: http://localhost:5001/api/v1/media/upload
     token: ${MEDIA_INTERNAL_SERVICE_TOKEN:gostay-internal-secret-token-12345}
+communication:
+  service:
+    forgot-password-url: ${COMMUNICATION_FORGOT_PASSWORD_URL:http://localhost:5001/api/v1/communications/email/forgot-password}
+    token: ${EMAIL_INTERNAL_TOKEN:${INTERNAL_SERVICE_TOKEN:gostay-internal-secret-token-12345}}
+password-reset:
+  otp-expiration-minutes: ${PASSWORD_RESET_OTP_EXPIRATION_MINUTES:10}
 internal:
   service:
     token: ${INTERNAL_SERVICE_TOKEN:gostay-internal-secret-token-12345}

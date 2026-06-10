@@ -13,7 +13,7 @@ public class InternalFeignConfig {
             @Value("${internal.service.token:}") String internalServiceToken
     ) {
         return requestTemplate -> {
-            if (!isInternalPath(requestTemplate.path())) {
+            if (!isInternalPath(requestTemplate.path()) && !isCommunicationPath(requestTemplate.path())) {
                 return;
             }
 
@@ -31,5 +31,14 @@ public class InternalFeignConfig {
 
         String normalizedPath = path.startsWith("/") ? path : "/" + path;
         return normalizedPath.equals("/api/v1/internal") || normalizedPath.startsWith("/api/v1/internal/");
+    }
+
+    private boolean isCommunicationPath(String path) {
+        if (path == null || path.isBlank()) {
+            return false;
+        }
+
+        String normalizedPath = path.startsWith("/") ? path : "/" + path;
+        return normalizedPath.equals("/api/v1/communications") || normalizedPath.startsWith("/api/v1/communications/");
     }
 }

@@ -43,6 +43,14 @@ const AuthService = {
     return res;
   },
 
+  forgotPassword: async (email: string) => {
+    return await Api.post("/v1/auth/forgot-password", { email });
+  },
+
+  resetPassword: async (payload: { email: string; otp: string; newPassword: string }) => {
+    return await Api.post("/v1/auth/reset-password", payload);
+  },
+
   logout: () => {
     Cookies.remove("access_token");
     localStorage.removeItem("user_info");

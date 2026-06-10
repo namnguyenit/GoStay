@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
-type AuthView = "login" | "register";
+type AuthView = "login" | "register" | "forgot-password" | "reset-password";
 
 interface AuthModalContextProps {
   isOpen: boolean;
