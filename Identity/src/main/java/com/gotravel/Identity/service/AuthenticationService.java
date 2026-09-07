@@ -55,7 +55,7 @@ public class AuthenticationService {
             throw new AppException(UserErrorCode.BANED_USER);
         }
 
-        boolean checkpassword = passwordEncoder.matches(request.getPassword(),user.getPassword());
+        boolean checkpassword = passwordEncoder.matches(request.getPassword(), user.getPassword());
         if (!checkpassword) {
             throw new AppException(AuthErrorCode.UNAUTHENTICATED);
         }
@@ -90,7 +90,8 @@ public class AuthenticationService {
 
     // BƯỚC 3: SỬA HÀM TẠO TOKEN ĐỂ DÙNG PRIVATE KEY KÝ VÀO.
     private String generateToken(User user) {
-        // Chuyển sang thuật toán RSA256, phải gắn kèm keyID để người phân loại (ở ngoài ai thích lấy thì gọi key này)
+        // Chuyển sang thuật toán RSA256, phải gắn kèm keyID để người phân loại (ở ngoài
+        // ai thích lấy thì gọi key này)
         JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.RS256)
                 .keyID("identity-key")
                 .type(JOSEObjectType.JWT)
@@ -102,8 +103,7 @@ public class AuthenticationService {
                 .audience("gotravel-api")
                 .issueTime(new Date())
                 .expirationTime(new Date(
-                        Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()
-                ))
+                        Instant.now().plus(30, ChronoUnit.DAYS).toEpochMilli()))
                 .claim("scope", buildScope(user))
                 .build();
 
@@ -112,7 +112,8 @@ public class AuthenticationService {
         JWSObject jwsObject = new JWSObject(header, payload);
 
         try {
-            // Bước 3.1: Sử dụng RSASSASigner và lấy cái Khóa Bí Mật Private ra ký vào nội dung
+            // Bước 3.1: Sử dụng RSASSASigner và lấy cái Khóa Bí Mật Private ra ký vào nội
+            // dung
             jwsObject.sign(new RSASSASigner(rsaKeyConfig.getPrivateKey()));
             return jwsObject.serialize();
         } catch (JOSEException e) {

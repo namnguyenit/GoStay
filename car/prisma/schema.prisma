@@ -1,0 +1,156 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// 1. Operator (Nhà xe)
+// ============================================================================
+model Operator {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id") // ID tài khoản chủ nhà xe (từ Identity Service)
+  name      String   // Tên nhà xe / công ty
+
+  cars      Car[]
+  routes    Route[]
+  trips     Trip[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("operators")
+}
+
+// ============================================================================
+// 2. Car (Xe khách)
+// ============================================================================
+model Car {
+  id           String     @id @default(uuid())
+  operatorId   String     @map("operator_id")
+  operator     Operator   @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  name         String                                    // Tên xe (VD: Xe 01, Limousine VIP)
+  type         CarType    @default(SLEEPER)             // Loại xe (Giường nằm, Limousine, Ghế ngồi)
+  licensePlate String     @unique @map("license_plate") // Biển số xe
+  totalSeats   Int        @map("total_seats")           // Tổng số ghế
+
+  trips        Trip[]
+
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  @@map("cars")
+}
+
+enum CarType {
+  SLEEPER   // Xe giường nằm
+  LIMOUSINE // Xe Limousine
+  SEAT      // Xe ghế ngồi
+}
+
+// ============================================================================
+// 3. Route (Tuyến xe khách)
+// ============================================================================
+model Route {
+  id          String      @id @default(uuid())
+  operatorId  String      @map("operator_id")
+  operator    Operator    @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  origin      String      // Điểm khởi hành (VD: Hà Nội)
+  destination String      // Điểm đến (VD: Đà Nẵng)
+
+  stops       RouteStop[]
+  trips       Trip[]
+
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  @@map("routes")
+}
+
+// ============================================================================
+// 4. RouteStop (Điểm dừng / Đón trả trên tuyến)
+// ============================================================================
+model RouteStop {
+  id             String   @id @default(uuid())
+  routeId        String   @map("route_id")
+  route          Route    @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  name           String   // Tên điểm dừng (VD: Bến xe Nước Ngầm, Trạm dừng Phủ Lý)
+  order          Int      // Thứ tự điểm dừng trên tuyến (0, 1, 2, 3...)
+
+  // Quan hệ với Ticket (Điểm đón và điểm trả)
+  pickUpTickets  Ticket[] @relation("PickUpPoint")
+  dropOffTickets Ticket[] @relation("DropOffPoint")
+
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@unique([routeId, order]) // Thứ tự điểm dừng trên cùng 1 tuyến phải là duy nhất
+  @@map("route_stops")
+}
+
+// ============================================================================
+// 5. Trip (Chuyến xe cụ thể)
+// ============================================================================
+model Trip {
+  id            String     @id @default(uuid())
+  operatorId    String     @map("operator_id")
+  operator      Operator   @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  routeId       String     @map("route_id")
+  route         Route      @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  carId         String     @map("car_id")
+  car           Car        @relation(fields: [carId], references: [id], onDelete: Cascade)
+  
+  departureTime DateTime   @map("departure_time") // Giờ xuất bến
+  arrivalTime   DateTime   @map("arrival_time")   // Giờ đến dự kiến
+  pricePerSeat  Float      @map("price_per_seat") // Giá vé cơ bản trên mỗi ghế (VNĐ)
+  status        TripStatus @default(SCHEDULED)
+
+  tickets       Ticket[]
+
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+
+  @@index([carId, departureTime, arrivalTime]) // Index phục vụ query kiểm tra trùng lặp lịch chạy xe
+  @@map("trips")
+}
+
+enum TripStatus {
+  SCHEDULED // Sắp chạy
+  DEPARTED  // Đã xuất bến
+  COMPLETED // Hoàn thành
+  CANCELLED // Hủy chuyến
+}
+
+// ============================================================================
+// 6. Ticket (Vé xe đã đặt)
+// ============================================================================
+model Ticket {
+  id             String       @id @default(uuid())
+  userId         String       @map("user_id") // ID người dùng đặt vé (từ Identity Service)
+  tripId         String       @map("trip_id")
+  trip           Trip         @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  
+  pickUpPointId  String       @map("pick_up_point_id")
+  pickUpPoint    RouteStop    @relation("PickUpPoint", fields: [pickUpPointId], references: [id])
+  dropOffPointId String       @map("drop_off_point_id")
+  dropOffPoint   RouteStop    @relation("DropOffPoint", fields: [dropOffPointId], references: [id])
+
+  seatNumber     String       @map("seat_number") // Số ghế (VD: A01, A02, B05)
+  price          Float        // Giá vé thực tế lưu lại tại thời điểm đặt vé
+  status         TicketStatus @default(BOOKED)
+
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  @@unique([tripId, seatNumber]) // Business Rule: Một ghế chỉ được đặt duy nhất 1 lần trong cùng 1 Trip
+  @@map("tickets")
+}
+
+enum TicketStatus {
+  BOOKED    // Đã đặt / giữ chỗ
+  PAID      // Đã thanh toán
+  CANCELLED // Đã hủy vé
+}
