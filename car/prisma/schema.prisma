@@ -34,6 +34,7 @@ model Car {
   operator     Operator   @relation(fields: [operatorId], references: [id], onDelete: Cascade)
   name         String                                    // Tên xe (VD: Xe 01, Limousine VIP)
   type         CarType    @default(SLEEPER)             // Loại xe (Giường nằm, Limousine, Ghế ngồi)
+  status       CarStatus  @default(ACTIVE)              // Trạng thái xe (Đang hoạt động, Bảo trì/Hỏng, Tạm ngừng)
   licensePlate String     @unique @map("license_plate") // Biển số xe
   totalSeats   Int        @map("total_seats")           // Tổng số ghế
 
@@ -49,6 +50,12 @@ enum CarType {
   SLEEPER   // Xe giường nằm
   LIMOUSINE // Xe Limousine
   SEAT      // Xe ghế ngồi
+}
+
+enum CarStatus {
+  ACTIVE      // Hoạt động
+  MAINTENANCE // Đang bảo trì / hỏng hóc
+  INACTIVE    // Tạm khóa / ngưng sử dụng
 }
 
 // ============================================================================
