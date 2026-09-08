@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CarController } from './presentation/controller/car.controller';
 import { AddCarUseCase } from './application/usecase/add-car.usecase';
+import { GetCarsUseCase } from './application/usecase/get-cars.usecase';
 import { PrismaCarRepository } from './infrastructure/repository/prisma-car.repository';
 
 @Module({
@@ -14,7 +15,11 @@ import { PrismaCarRepository } from './infrastructure/repository/prisma-car.repo
       provide: 'IAddCarUseCase',
       useClass: AddCarUseCase,
     },
+    {
+      provide: 'IGetCarsUseCase',
+      useClass: GetCarsUseCase,
+    },
   ],
-  exports: ['ICarRepository', 'IAddCarUseCase'],
+  exports: ['ICarRepository', 'IAddCarUseCase', 'IGetCarsUseCase'],
 })
 export class CarModule {}

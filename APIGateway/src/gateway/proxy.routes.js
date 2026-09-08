@@ -9,10 +9,11 @@ import {bookingRoutes} from "../configs/routes/booking.route.js";
 import {cartRoutes} from "../configs/routes/cart.route.js";
 import {paymentRoutes} from "../configs/routes/payment.route.js";
 import {searchRoutes} from "../configs/routes/search.route.js";
+import {carRoutes} from "../configs/routes/car.route.js";
 
 export const setupProxy = (app) => {
     const routes = [
-        ...identityRoutes, ...mediaRoutes, ...catalogRoutes, ...bookingRoutes, ...cartRoutes, ...paymentRoutes, ...searchRoutes
+        ...identityRoutes, ...mediaRoutes, ...catalogRoutes, ...bookingRoutes, ...cartRoutes, ...paymentRoutes, ...searchRoutes, ...carRoutes
     ];
 
     routes.sort((a, b) => b.url.length  - a.url.length);

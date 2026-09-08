@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { ICarRepository } from '../../domain/repository/car.repository.interface';
+import { Prisma } from '@prisma/client';
+import { ICarRepository, CarFilterParams, CarListQueryResult } from '../../domain/repository/car.repository.interface';
 import { Car } from '../../domain/entity/car.entity';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { CarMapper } from '../mapper/car.mapper';
+import { CarType } from '../../domain/value-object/car-type.enum';
 
 @Injectable()
 export class PrismaCarRepository implements ICarRepository {
@@ -81,5 +83,55 @@ export class PrismaCarRepository implements ICarRepository {
     }
 
     return operator.id;
+  }
+
+  async findManyWithFilters(params: CarFilterParams): Promise<CarListQueryResult> {
+    const { operatorId, keyword, type, sortBy = 'createdAt', sortOrder = 'desc', page = 1, limit = 10 } = params;
+
+    // Build WHERE clause
+    const where: Prisma.CarWhereInput = {
+      operatorId,
+    };
+
+    if (type) {
+      where.type = type as unknown as Prisma.EnumCarTypeFilter;
+    }
+
+    if (keyword && keyword.trim() !== '') {
+      const trimmedKeyword = keyword.trim();
+      where.OR = [
+        { name: { contains: trimmedKeyword, mode: 'insensitive' } },
+        { licensePlate: { contains: trimmedKeyword, mode: 'insensitive' } },
+      ];
+    }
+
+    const skip = (page - 1) * limit;
+
+    // Execute queries concurrently for performance
+    const [carModels, totalCount, kpiSleeper, kpiLimousine, kpiSeat] = await Promise.all([
+      this.prisma.car.findMany({
+        where,
+        orderBy: { [sortBy]: sortOrder },
+        skip,
+        take: limit,
+      }),
+      this.prisma.car.count({ where }),
+      this.prisma.car.count({ where: { operatorId, type: CarType.SLEEPER as any } }),
+      this.prisma.car.count({ where: { operatorId, type: CarType.LIMOUSINE as any } }),
+      this.prisma.car.count({ where: { operatorId, type: CarType.SEAT as any } }),
+    ]);
+
+    const totalCars = kpiSleeper + kpiLimousine + kpiSeat;
+
+    return {
+      cars: carModels.map(CarMapper.toDomain),
+      total: totalCount,
+      kpi: {
+        totalCars,
+        sleeperCars: kpiSleeper,
+        limousineCars: kpiLimousine,
+        seatCars: kpiSeat,
+      },
+    };
   }
 }
