@@ -27,6 +27,5 @@ export interface ICarRepository {
   findByLicensePlate(licensePlate: string): Promise<Car | null>;
   findById(id: string): Promise<Car | null>;
   findOperatorIdByUserId(userId: string): Promise<string | null>;
-  ensureDefaultOperatorExists(userId: string): Promise<string>;
   findManyWithFilters(params: CarFilterParams): Promise<CarListQueryResult>;
 }

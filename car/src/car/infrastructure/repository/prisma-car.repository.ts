@@ -68,23 +68,6 @@ export class PrismaCarRepository implements ICarRepository {
     return operator ? operator.id : null;
   }
 
-  async ensureDefaultOperatorExists(userId: string): Promise<string> {
-    let operator = await this.prisma.operator.findFirst({
-      where: { userId },
-    });
-
-    if (!operator) {
-      operator = await this.prisma.operator.create({
-        data: {
-          userId,
-          name: `Nhà xe của ${userId}`,
-        },
-      });
-    }
-
-    return operator.id;
-  }
-
   async findManyWithFilters(params: CarFilterParams): Promise<CarListQueryResult> {
     const { operatorId, keyword, type, sortBy = 'createdAt', sortOrder = 'desc', page = 1, limit = 10 } = params;
 

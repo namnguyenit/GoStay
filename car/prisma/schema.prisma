@@ -8,7 +8,7 @@ datasource db {
 }
 
 // ============================================================================
-// 1. Operator (Nhà xe)
+// 1. Operator (Nhà xe chính thức)
 // ============================================================================
 model Operator {
   id        String   @id @default(uuid())
@@ -23,6 +23,31 @@ model Operator {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("operators")
+}
+
+// ============================================================================
+// 1b. OperatorApplication (Đơn đăng ký trở thành Nhà xe)
+// ============================================================================
+model OperatorApplication {
+  id           String                    @id @default(uuid())
+  userId       String                    @map("user_id") // ID người dùng nộp đơn
+  name         String                                    // Tên nhà xe xin đăng ký
+  phone        String                                    // Số điện thoại liên hệ
+  address      String                                    // Địa chỉ trụ sở
+  status       OperatorApplicationStatus @default(PENDING)// PENDING, APPROVED, REJECTED, CANCELLED
+  rejectReason String?                   @map("reject_reason") // Lý do từ chối (nếu có)
+
+  createdAt    DateTime                  @default(now()) @map("created_at")
+  updatedAt    DateTime                  @updatedAt @map("updated_at")
+
+  @@map("operator_applications")
+}
+
+enum OperatorApplicationStatus {
+  PENDING   // Đang chờ Admin duyệt
+  APPROVED  // Đã được Admin phê duyệt
+  REJECTED  // Bị Admin từ chối
+  CANCELLED // Người dùng tự hủy đơn
 }
 
 // ============================================================================

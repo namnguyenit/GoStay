@@ -1,4 +1,4 @@
-import { Inject, Injectable, BadRequestException } from '@nestjs/common';
+import { Inject, Injectable, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { IGetCarsUseCase } from '../port/get-cars.usecase.interface';
 import { GetCarsInput } from '../dto/get-cars.input';
 import { GetCarsOutput } from '../dto/get-cars.output';
@@ -17,9 +17,11 @@ export class GetCarsUseCase implements IGetCarsUseCase {
     }
 
     // 1. Kiểm tra / lấy Operator ID của User
-    let operatorId = await this.carRepository.findOperatorIdByUserId(input.userId);
+    const operatorId = await this.carRepository.findOperatorIdByUserId(input.userId);
     if (!operatorId) {
-      operatorId = await this.carRepository.ensureDefaultOperatorExists(input.userId);
+      throw new ForbiddenException(
+        'Tài khoản của bạn chưa được cấp quyền Nhà xe (Operator). Vui lòng nộp đơn đăng ký Nhà xe và chờ Admin phê duyệt.',
+      );
     }
 
     // 2. Chuẩn hóa phân trang & sắp xếp mặc định

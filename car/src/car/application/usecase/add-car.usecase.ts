@@ -1,4 +1,4 @@
-import { Inject, Injectable, ConflictException, BadRequestException } from '@nestjs/common';
+import { Inject, Injectable, ConflictException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { IAddCarUseCase } from '../port/add-car.usecase.interface';
 import { AddCarInput } from '../dto/add-car.input';
 import { AddCarOutput } from '../dto/add-car.output';
@@ -18,11 +18,12 @@ export class AddCarUseCase implements IAddCarUseCase {
       throw new BadRequestException('Vui lòng cung cấp mã người dùng (userId).');
     }
 
-    // 1. Kiểm tra / lấy Operator ID thuộc sở hữu của User
-    let operatorId = await this.carRepository.findOperatorIdByUserId(input.userId);
+    // 1. Kiểm tra / lấy Operator ID thuộc sở hữu của User (Bắt buộc tài khoản đã được Admin duyệt thành Nhà xe)
+    const operatorId = await this.carRepository.findOperatorIdByUserId(input.userId);
     if (!operatorId) {
-      // Tự động tạo hồ sơ Nhà xe (Operator) mặc định nếu chưa tồn tại
-      operatorId = await this.carRepository.ensureDefaultOperatorExists(input.userId);
+      throw new ForbiddenException(
+        'Tài khoản của bạn chưa được cấp quyền Nhà xe (Operator). Vui lòng nộp đơn đăng ký Nhà xe và chờ Admin phê duyệt trước khi thêm xe.',
+      );
     }
 
     // 2. Validate định dạng biển số xe trước khi query
