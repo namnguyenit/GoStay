@@ -16,6 +16,7 @@ import { ProcessOperatorApplicationDto } from '../dto/process-operator-applicati
 import type { ICreateOperatorApplicationUseCase } from '../../application/port/create-operator-application.usecase.interface';
 import type { IProcessOperatorApplicationUseCase } from '../../application/port/process-operator-application.usecase.interface';
 import type { IGetOperatorApplicationsUseCase } from '../../application/port/get-operator-applications.usecase.interface';
+import type { IGetMyOperatorStatusUseCase } from '../../application/port/get-my-operator-status.usecase.interface';
 import { OperatorApplicationPresentationMapper } from '../mapper/operator-application-presentation.mapper';
 import { OperatorApplicationStatus } from '../../domain/value-object/operator-application-status.enum';
 
@@ -28,6 +29,8 @@ export class OperatorApplicationController {
     private readonly processApplicationUseCase: IProcessOperatorApplicationUseCase,
     @Inject('IGetOperatorApplicationsUseCase')
     private readonly getApplicationsUseCase: IGetOperatorApplicationsUseCase,
+    @Inject('IGetMyOperatorStatusUseCase')
+    private readonly getMyStatusUseCase: IGetMyOperatorStatusUseCase,
   ) {}
 
   private checkAdminRole(userRoles?: string): void {
@@ -36,6 +39,23 @@ export class OperatorApplicationController {
         'Bạn không có quyền thực hiện thao tác này. Chỉ Quản trị viên (Admin) mới có quyền truy cập.',
       );
     }
+  }
+
+  /**
+   * Lấy thông tin trạng thái Nhà xe của người dùng hiện tại (Kiểm tra xem có phải Nhà xe hay không)
+   */
+  @Get('me')
+  async getMyStatus(
+    @Headers('x-user-id') headerUserId?: string,
+    @Query('userId') queryUserId?: string,
+  ) {
+    const userId = headerUserId || queryUserId;
+    if (!userId) {
+      throw new BadRequestException('Không tìm thấy thông tin định danh người dùng (x-user-id header).');
+    }
+
+    const result = await this.getMyStatusUseCase.execute({ userId });
+    return OperatorApplicationPresentationMapper.toGetMyStatusApiResponse(result);
   }
 
   /**

@@ -3,6 +3,7 @@ import { OperatorApplicationController } from './presentation/controller/operato
 import { CreateOperatorApplicationUseCase } from './application/usecase/create-operator-application.usecase';
 import { ProcessOperatorApplicationUseCase } from './application/usecase/process-operator-application.usecase';
 import { GetOperatorApplicationsUseCase } from './application/usecase/get-operator-applications.usecase';
+import { GetMyOperatorStatusUseCase } from './application/usecase/get-my-operator-status.usecase';
 import { PrismaOperatorApplicationRepository } from './infrastructure/repository/prisma-operator-application.repository';
 import { PrismaOperatorRepository } from './infrastructure/repository/prisma-operator.repository';
 
@@ -29,6 +30,10 @@ import { PrismaOperatorRepository } from './infrastructure/repository/prisma-ope
       provide: 'IGetOperatorApplicationsUseCase',
       useClass: GetOperatorApplicationsUseCase,
     },
+    {
+      provide: 'IGetMyOperatorStatusUseCase',
+      useClass: GetMyOperatorStatusUseCase,
+    },
   ],
   exports: [
     'IOperatorApplicationRepository',
@@ -36,6 +41,7 @@ import { PrismaOperatorRepository } from './infrastructure/repository/prisma-ope
     'ICreateOperatorApplicationUseCase',
     'IProcessOperatorApplicationUseCase',
     'IGetOperatorApplicationsUseCase',
+    'IGetMyOperatorStatusUseCase',
   ],
 })
 export class OperatorModule {}

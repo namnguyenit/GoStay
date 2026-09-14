@@ -47,4 +47,13 @@ export class OperatorApplicationPresentationMapper {
       data: list,
     };
   }
+
+  public static toGetMyStatusApiResponse(output: any) {
+    return {
+      success: true,
+      code: 'GET_MY_OPERATOR_STATUS_SUCCESS',
+      message: 'Lấy thông tin trạng thái nhà xe thành công.',
+      data: output,
+    };
+  }
 }

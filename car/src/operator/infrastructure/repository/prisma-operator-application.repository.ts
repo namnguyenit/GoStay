@@ -49,6 +49,19 @@ export class PrismaOperatorApplicationRepository implements IOperatorApplication
     return OperatorApplicationMapper.toDomain(model);
   }
 
+  async findLatestByUserId(userId: string): Promise<OperatorApplication | null> {
+    const model = await this.prisma.operatorApplication.findFirst({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!model) {
+      return null;
+    }
+
+    return OperatorApplicationMapper.toDomain(model);
+  }
+
   async findById(id: string): Promise<OperatorApplication | null> {
     const model = await this.prisma.operatorApplication.findUnique({
       where: { id },

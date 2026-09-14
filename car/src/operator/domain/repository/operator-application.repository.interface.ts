@@ -4,6 +4,7 @@ import { OperatorApplicationStatus } from '../value-object/operator-application-
 export interface IOperatorApplicationRepository {
   save(application: OperatorApplication): Promise<OperatorApplication>;
   findPendingByUserId(userId: string): Promise<OperatorApplication | null>;
+  findLatestByUserId(userId: string): Promise<OperatorApplication | null>;
   findById(id: string): Promise<OperatorApplication | null>;
   findAll(status?: OperatorApplicationStatus): Promise<OperatorApplication[]>;
 }
