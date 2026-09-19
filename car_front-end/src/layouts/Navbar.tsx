@@ -8,6 +8,7 @@ import {
   LogOut,
   User,
   LayoutDashboard,
+  Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +24,7 @@ import {
 
 export const Navbar: React.FC = () => {
   const location = useLocation();
-  const { user, logout, isOperator } = useAuth();
+  const { user, logout, isOperator, isAdmin } = useAuth();
   const isActive = (path: string) => location.pathname === path;
 
   const displayName = user ? user.getDisplayName() : "Tài khoản";
@@ -98,38 +99,75 @@ export const Navbar: React.FC = () => {
                       </span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuLabel className="font-normal">
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm leading-none font-medium">
-                          {displayName}
-                        </p>
+                      <div className="flex flex-col space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm leading-none font-semibold text-gray-900">
+                            {displayName}
+                          </p>
+                          {isAdmin ? (
+                            <Badge className="border-purple-200 bg-purple-100 text-[10px] font-bold text-purple-800">
+                              Admin
+                            </Badge>
+                          ) : isOperator ? (
+                            <Badge className="border-blue-200 bg-blue-100 text-[10px] font-bold text-blue-800">
+                              Nhà xe
+                            </Badge>
+                          ) : (
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] text-gray-500"
+                            >
+                              Khách hàng
+                            </Badge>
+                          )}
+                        </div>
                         <p className="text-muted-foreground text-xs leading-none">
                           {user.email || `@${user.username}`}
                         </p>
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
+
+                    {/* Admin Portal Link */}
+                    {isAdmin && (
+                      <DropdownMenuItem asChild className="cursor-pointer">
+                        <Link
+                          to="/admin/operators"
+                          className="flex w-full items-center font-semibold text-purple-700 hover:text-purple-800 focus:bg-purple-50 focus:text-purple-800"
+                        >
+                          <Shield className="mr-2 h-4 w-4 text-purple-600" />
+                          <span>Trang Quản Trị (Admin)</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+
+                    {/* Operator Portal Link */}
                     {isOperator && (
                       <DropdownMenuItem asChild className="cursor-pointer">
                         <Link
                           to="/operator/dashboard"
-                          className="flex w-full items-center"
+                          className="flex w-full items-center font-semibold text-blue-700 hover:text-blue-800 focus:bg-blue-50 focus:text-blue-800"
                         >
                           <LayoutDashboard className="mr-2 h-4 w-4 text-blue-600" />
-                          <span>Kênh Nhà Xe</span>
+                          <span>Trang Nhà Xe (Operator)</span>
                         </Link>
                       </DropdownMenuItem>
                     )}
+
+                    {(isAdmin || isOperator) && <DropdownMenuSeparator />}
+
+                    {/* User Links */}
                     <DropdownMenuItem asChild className="cursor-pointer">
                       <Link to="/profile" className="flex w-full items-center">
-                        <User className="mr-2 h-4 w-4 text-blue-600" />
+                        <User className="mr-2 h-4 w-4 text-gray-600" />
                         <span>Trang cá nhân</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild className="cursor-pointer">
                       <Link to="/login" className="flex w-full items-center">
-                        <LogIn className="mr-2 h-4 w-4 text-blue-600" />
+                        <LogIn className="mr-2 h-4 w-4 text-gray-600" />
                         <span>Đăng nhập</span>
                       </Link>
                     </DropdownMenuItem>

@@ -35,5 +35,20 @@ export const carRoutes = [
 
             return url + query;
         }
+    },
+    {
+        url: '/api/v1/operators',
+        target: (process.env.CAR_SERVICE_URL || "http://localhost:3333"),
+        auth: true, // Yêu cầu JWT Token (verifyUser & đính kèm header x-user-id, x-user-roles)
+        pathRewrite: (path, req) => {
+            const parts = req.originalUrl.split('?');
+            let url = parts[0];
+            const query = parts[1] ? `?${parts[1]}` : '';
+
+            // Rewrite /api/v1/operators -> /operators
+            url = url.replace(/^\/api\/v1\/operators/, '/operators');
+
+            return url + query;
+        }
     }
 ];

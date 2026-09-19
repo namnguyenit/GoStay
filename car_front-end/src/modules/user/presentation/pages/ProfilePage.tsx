@@ -20,10 +20,17 @@ import {
   RefreshCw,
   CheckCircle,
   AlertCircle,
+  LayoutDashboard,
 } from "lucide-react";
+import { useAuth } from "@/modules/auth/presentation/context/AuthContext";
 
 export const ProfilePage: React.FC = () => {
+  const { isOperator: authIsOperator, isAdmin: authIsAdmin } = useAuth();
   const [profile, setProfile] = useState<UserProfileEntity | null>(null);
+  const isUserAdmin = Boolean(profile?.isAdmin() || authIsAdmin);
+  const isUserOperator = Boolean(
+    !isUserAdmin && (profile?.isOperator() || authIsOperator)
+  );
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -138,7 +145,11 @@ export const ProfilePage: React.FC = () => {
               className="border-blue-200 bg-blue-100 px-3 py-1 font-semibold text-blue-800"
             >
               <Shield className="mr-1 h-3.5 w-3.5" />
-              {profile?.role || "Thành viên"}
+              {isUserAdmin
+                ? "Quản trị viên"
+                : isUserOperator
+                  ? "Nhà xe (Operator)"
+                  : profile?.role || "Thành viên"}
             </Badge>
           </div>
 
@@ -265,44 +276,89 @@ export const ProfilePage: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Operator Registration & Admin Card */}
-      <Card className="border-blue-100 bg-blue-50/40 shadow-sm">
-        <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="rounded-xl bg-blue-600 p-3 text-white shadow-sm">
-              <ShieldCheck className="h-6 w-6" />
+      {/* Role-specific Navigation Card */}
+      {isUserAdmin ? (
+        <Card className="border-purple-100 bg-purple-50/40 shadow-sm">
+          <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="rounded-xl bg-purple-600 p-3 text-white shadow-sm">
+                <Shield className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-gray-900">
+                  Cổng Quản Trị Hệ Thống (Admin)
+                </h3>
+                <p className="text-xs text-gray-600">
+                  Quản lý và kiểm duyệt danh sách nhà xe đối tác, người dùng và
+                  hệ thống GoStay
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-base font-bold text-gray-900">
-                Đăng ký làm Đối tác Nhà xe
-              </h3>
-              <p className="text-xs text-gray-600">
-                Trở thành nhà xe đối tác của GoStay để mở rộng quy mô kinh doanh
-                chuyến xe
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-3">
-            {profile?.isAdmin() && (
-              <Link to="/operator/admin">
-                <Button
-                  variant="outline"
-                  className="gap-1.5 border-blue-200 bg-white whitespace-nowrap text-blue-700 hover:bg-blue-50"
-                >
-                  <UserCheck className="h-4 w-4 text-blue-600" />
-                  <span>Duyệt Nhà Xe</span>
+            <div className="flex items-center space-x-3">
+              <Link to="/admin/operators">
+                <Button className="gap-1.5 bg-purple-600 whitespace-nowrap text-white shadow-sm hover:bg-purple-700">
+                  <UserCheck className="h-4 w-4" />
+                  <span>Quản lý Nhà Xe</span>
                 </Button>
               </Link>
-            )}
-            <Link to="/operator/register">
-              <Button className="gap-1.5 bg-blue-600 whitespace-nowrap text-white shadow-sm hover:bg-blue-700">
-                <span>Đăng ký ngay</span>
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
+            </div>
+          </CardContent>
+        </Card>
+      ) : isUserOperator ? (
+        <Card className="border-blue-100 bg-blue-50/40 shadow-sm">
+          <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="rounded-xl bg-blue-600 p-3 text-white shadow-sm">
+                <LayoutDashboard className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-gray-900">
+                  Kênh Đối tác Nhà xe (Operator)
+                </h3>
+                <p className="text-xs text-gray-600">
+                  Quản lý đội xe, chuyến đi và hoạt động kinh doanh nhà xe của
+                  bạn
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <Link to="/operator/dashboard">
+                <Button className="gap-1.5 bg-blue-600 whitespace-nowrap text-white shadow-sm hover:bg-blue-700">
+                  <LayoutDashboard className="h-4 w-4" />
+                  <span>Vào Kênh Nhà Xe</span>
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="border-blue-100 bg-blue-50/40 shadow-sm">
+          <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="rounded-xl bg-blue-600 p-3 text-white shadow-sm">
+                <ShieldCheck className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-gray-900">
+                  Đăng ký làm Đối tác Nhà xe
+                </h3>
+                <p className="text-xs text-gray-600">
+                  Trở thành nhà xe đối tác của GoStay để mở rộng quy mô kinh
+                  doanh chuyến xe
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <Link to="/operator/register">
+                <Button className="gap-1.5 bg-blue-600 whitespace-nowrap text-white shadow-sm hover:bg-blue-700">
+                  <span>Đăng ký ngay</span>
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

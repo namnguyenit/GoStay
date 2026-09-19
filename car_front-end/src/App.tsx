@@ -13,12 +13,26 @@ import { ProfilePage } from "./modules/user/presentation/pages/ProfilePage";
 import { OperatorGuard } from "./modules/operator/presentation/components/OperatorGuard";
 import { OperatorLayout } from "./modules/operator/presentation/layouts/OperatorLayout";
 import { OperatorDashboardPage } from "./modules/operator/presentation/pages/OperatorDashboardPage";
+import { AdminGuard } from "./modules/admin/presentation/components/AdminGuard";
+import { AdminLayout } from "./modules/admin/presentation/layouts/AdminLayout";
+import { AdminOperatorListPage } from "./modules/admin/presentation/pages/AdminOperatorListPage";
 
 export const App: React.FC = () => {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
+          {/* Protected Admin Portal Routes */}
+          <Route element={<AdminGuard />}>
+            <Route element={<AdminLayout />}>
+              <Route path="/admin" element={<AdminOperatorListPage />} />
+              <Route
+                path="/admin/operators"
+                element={<AdminOperatorListPage />}
+              />
+            </Route>
+          </Route>
+
           {/* Protected Operator Portal Routes */}
           <Route element={<OperatorGuard />}>
             <Route element={<OperatorLayout />}>

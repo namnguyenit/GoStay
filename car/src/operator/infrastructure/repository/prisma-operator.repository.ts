@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { IOperatorRepository } from '../../domain/repository/operator.repository.interface';
+import {
+  IOperatorRepository,
+  OperatorFilterParams,
+  OperatorListQueryResult,
+} from '../../domain/repository/operator.repository.interface';
 import { Operator } from '../../domain/entity/operator.entity';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { OperatorMapper } from '../mapper/operator.mapper';
@@ -47,5 +51,40 @@ export class PrismaOperatorRepository implements IOperatorRepository {
     }
 
     return OperatorMapper.toDomain(model);
+  }
+
+  async findAll(params?: OperatorFilterParams): Promise<OperatorListQueryResult> {
+    const page = Math.max(1, params?.page || 1);
+    const limit = Math.max(1, params?.limit || 10);
+    const skip = (page - 1) * limit;
+
+    const where = params?.search
+      ? {
+          name: {
+            contains: params.search,
+            mode: 'insensitive' as const,
+          },
+        }
+      : undefined;
+
+    const sortBy = params?.sortBy || 'createdAt';
+    const sortOrder = params?.sortOrder || 'desc';
+
+    const [models, total] = await Promise.all([
+      this.prisma.operator.findMany({
+        where,
+        orderBy: {
+          [sortBy]: sortOrder,
+        },
+        skip,
+        take: limit,
+      }),
+      this.prisma.operator.count({ where }),
+    ]);
+
+    return {
+      operators: models.map((model) => OperatorMapper.toDomain(model)),
+      total,
+    };
   }
 }

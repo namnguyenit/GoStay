@@ -67,6 +67,7 @@ export class UserProfileEntity {
   }
 
   public isOperator(): boolean {
-    return this.props.role === "OPERATOR" || this.props.role === "ADMIN";
+    if (this.isAdmin()) return false;
+    return this.props.role === "OPERATOR" || this.props.role === "HOST";
   }
 }

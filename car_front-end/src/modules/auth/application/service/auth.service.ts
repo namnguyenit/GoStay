@@ -65,6 +65,11 @@ export class AuthService implements IAuthService {
 
     const json = await res.json();
     const raw = json.data || json;
+    const rawRoles: string[] = Array.isArray(raw.roles)
+      ? raw.roles
+      : typeof raw.role === "string"
+        ? [raw.role]
+        : [];
     const profile = raw.userProfile || {};
 
     const userEntity = new UserEntity({
@@ -77,7 +82,16 @@ export class AuthService implements IAuthService {
         raw.username ||
         raw.email ||
         "Người dùng",
-      role: Array.isArray(raw.roles) ? raw.roles[0] : raw.role || "USER",
+      role:
+        rawRoles.find((r) => r.toUpperCase().includes("ADMIN")) ||
+        rawRoles.find(
+          (r) =>
+            r.toUpperCase().includes("OPERATOR") ||
+            r.toUpperCase().includes("HOST")
+        ) ||
+        rawRoles[0] ||
+        "USER",
+      roles: rawRoles,
     });
 
     return userEntity;

@@ -14,6 +14,7 @@ interface AuthContextType {
   user: UserEntity | null;
   token: string | null;
   isOperator: boolean;
+  isAdmin: boolean;
   loading: boolean;
   login: (dto: LoginDTO) => Promise<void>;
   register: (dto: RegisterDTO) => Promise<void>;
@@ -45,11 +46,15 @@ export const AuthProvider: React.FC<{
       const me = await service.getMe();
       setUser(me);
 
-      try {
-        const opStatus = await operatorService.getMyOperatorStatus();
-        setIsOperatorStatus(opStatus.isOperator);
-      } catch {
-        setIsOperatorStatus(me.isOperator());
+      if (me.isAdmin()) {
+        setIsOperatorStatus(false);
+      } else {
+        try {
+          const opStatus = await operatorService.getMyOperatorStatus();
+          setIsOperatorStatus(opStatus.isOperator);
+        } catch {
+          setIsOperatorStatus(me.isOperator());
+        }
       }
     } catch {
       service.logout();
@@ -82,7 +87,10 @@ export const AuthProvider: React.FC<{
     setIsOperatorStatus(false);
   };
 
-  const isOperator = Boolean(user && (user.isOperator() || isOperatorStatus));
+  const isAdmin = Boolean(user && user.isAdmin());
+  const isOperator = Boolean(
+    !isAdmin && user && (user.isOperator() || isOperatorStatus)
+  );
 
   return (
     <AuthContext.Provider
@@ -90,6 +98,7 @@ export const AuthProvider: React.FC<{
         user,
         token,
         isOperator,
+        isAdmin,
         loading,
         login,
         register,

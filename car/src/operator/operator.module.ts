@@ -1,14 +1,16 @@
 import { Module } from '@nestjs/common';
 import { OperatorApplicationController } from './presentation/controller/operator-application.controller';
+import { OperatorController } from './presentation/controller/operator.controller';
 import { CreateOperatorApplicationUseCase } from './application/usecase/create-operator-application.usecase';
 import { ProcessOperatorApplicationUseCase } from './application/usecase/process-operator-application.usecase';
 import { GetOperatorApplicationsUseCase } from './application/usecase/get-operator-applications.usecase';
 import { GetMyOperatorStatusUseCase } from './application/usecase/get-my-operator-status.usecase';
+import { GetOperatorsUseCase } from './application/usecase/get-operators.usecase';
 import { PrismaOperatorApplicationRepository } from './infrastructure/repository/prisma-operator-application.repository';
 import { PrismaOperatorRepository } from './infrastructure/repository/prisma-operator.repository';
 
 @Module({
-  controllers: [OperatorApplicationController],
+  controllers: [OperatorApplicationController, OperatorController],
   providers: [
     {
       provide: 'IOperatorApplicationRepository',
@@ -34,6 +36,10 @@ import { PrismaOperatorRepository } from './infrastructure/repository/prisma-ope
       provide: 'IGetMyOperatorStatusUseCase',
       useClass: GetMyOperatorStatusUseCase,
     },
+    {
+      provide: 'IGetOperatorsUseCase',
+      useClass: GetOperatorsUseCase,
+    },
   ],
   exports: [
     'IOperatorApplicationRepository',
@@ -42,6 +48,7 @@ import { PrismaOperatorRepository } from './infrastructure/repository/prisma-ope
     'IProcessOperatorApplicationUseCase',
     'IGetOperatorApplicationsUseCase',
     'IGetMyOperatorStatusUseCase',
+    'IGetOperatorsUseCase',
   ],
 })
 export class OperatorModule {}

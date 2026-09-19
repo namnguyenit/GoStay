@@ -134,6 +134,12 @@ public class UserController {
         return ApiRequest.success(SuccessCode.UPDATE_MY_INFO_SUCCESS, userService.updateUser(userId, userUpdateRequest));
     }
 
+    @GetMapping("/admin/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiRequest<UserResponse> getUserById(@PathVariable String id) {
+        return ApiRequest.success(SuccessCode.GET_USERS_SUCCESS, userService.getUserById(id));
+    }
+
     @DeleteMapping("/admin/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ApiRequest<Void> deleteAccount(@PathVariable String id) {

@@ -4,6 +4,7 @@ export interface UserProps {
   email: string;
   fullName: string;
   role: string;
+  roles?: string[];
 }
 
 export class UserEntity {
@@ -28,6 +29,9 @@ export class UserEntity {
   get role(): string {
     return this.props.role;
   }
+  get roles(): string[] {
+    return this.props.roles || (this.props.role ? [this.props.role] : []);
+  }
 
   public getDisplayName(): string {
     return (
@@ -39,10 +43,13 @@ export class UserEntity {
   }
 
   public isAdmin(): boolean {
-    return this.props.role === "ADMIN";
+    const list = this.roles.map((r) => r.toUpperCase());
+    return list.some((r) => r.includes("ADMIN"));
   }
 
   public isOperator(): boolean {
-    return this.props.role === "OPERATOR" || this.props.role === "ADMIN";
+    if (this.isAdmin()) return false;
+    const list = this.roles.map((r) => r.toUpperCase());
+    return list.some((r) => r.includes("OPERATOR") || r.includes("HOST"));
   }
 }

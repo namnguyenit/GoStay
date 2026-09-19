@@ -14,11 +14,18 @@ import {
   PlusCircle,
 } from "lucide-react";
 
+import { useAuth } from "@/modules/auth/presentation/context/AuthContext";
+
 export const OperatorGuard: React.FC = () => {
+  const { isAdmin } = useAuth();
   const [status, setStatus] = useState<OperatorStatusEntity | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(!isAdmin);
 
   const checkStatus = async () => {
+    if (isAdmin) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const data = await operatorService.getMyOperatorStatus();
@@ -32,7 +39,48 @@ export const OperatorGuard: React.FC = () => {
 
   useEffect(() => {
     checkStatus();
-  }, []);
+  }, [isAdmin]);
+
+  if (isAdmin) {
+    return (
+      <div className="mx-auto my-12 max-w-xl px-4">
+        <Card className="border-red-100 shadow-lg">
+          <CardHeader className="space-y-2 text-center">
+            <div className="mx-auto inline-flex rounded-full bg-red-50 p-3 text-red-600">
+              <ShieldAlert className="h-10 w-10" />
+            </div>
+            <CardTitle className="text-xl font-bold text-gray-900">
+              Quản trị viên không có quyền làm Nhà Xe
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6 text-center">
+            <p className="text-sm text-gray-600">
+              Tài khoản của bạn là <strong>Quản trị viên (Admin)</strong>. Quản
+              trị viên không được phép hoạt động với tư cách Nhà Xe hoặc truy
+              cập Kênh Nhà Xe. Vui lòng chuyển sang Trang Quản Trị.
+            </p>
+            <div className="flex justify-center gap-3 pt-2">
+              <Link to="/">
+                <Button variant="outline" size="sm" className="gap-1.5">
+                  <ArrowLeft className="h-4 w-4" />
+                  <span>Trang chủ</span>
+                </Button>
+              </Link>
+              <Link to="/admin/operators">
+                <Button
+                  size="sm"
+                  className="gap-1.5 bg-purple-600 text-white hover:bg-purple-700"
+                >
+                  <ShieldAlert className="h-4 w-4" />
+                  <span>Trang Quản Trị</span>
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
