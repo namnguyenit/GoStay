@@ -1,11 +1,10 @@
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./modules/auth/presentation/context/AuthContext";
 import { MainLayout } from "./layouts/MainLayout";
 import { HomePage } from "./pages/HomePage";
 import { CarListPage } from "./pages/CarListPage";
 import { OperatorRegisterPage } from "./pages/OperatorRegisterPage";
-import { OperatorAdminPage } from "./pages/OperatorAdminPage";
 import { AddCarPage } from "./pages/AddCarPage";
 import { LoginPage } from "./modules/auth/presentation/pages/LoginPage";
 import { RegisterPage } from "./modules/auth/presentation/pages/RegisterPage";
@@ -16,6 +15,7 @@ import { OperatorDashboardPage } from "./modules/operator/presentation/pages/Ope
 import { AdminGuard } from "./modules/admin/presentation/components/AdminGuard";
 import { AdminLayout } from "./modules/admin/presentation/layouts/AdminLayout";
 import { AdminOperatorListPage } from "./modules/admin/presentation/pages/AdminOperatorListPage";
+import { AdminOperatorApplicationsPage } from "./modules/admin/presentation/pages/AdminOperatorApplicationsPage";
 
 export const App: React.FC = () => {
   return (
@@ -29,6 +29,14 @@ export const App: React.FC = () => {
               <Route
                 path="/admin/operators"
                 element={<AdminOperatorListPage />}
+              />
+              <Route
+                path="/admin/applications"
+                element={<AdminOperatorApplicationsPage />}
+              />
+              <Route
+                path="/admin/operator-applications"
+                element={<AdminOperatorApplicationsPage />}
               />
             </Route>
           </Route>
@@ -58,7 +66,7 @@ export const App: React.FC = () => {
                   />
                   <Route
                     path="/operator/admin"
-                    element={<OperatorAdminPage />}
+                    element={<Navigate to="/admin/applications" replace />}
                   />
                   <Route path="/add-car" element={<AddCarPage />} />
                   <Route path="/login" element={<LoginPage />} />

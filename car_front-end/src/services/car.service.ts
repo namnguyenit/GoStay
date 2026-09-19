@@ -1,4 +1,4 @@
-﻿import { fetchApi } from "./api";
+import { fetchApi } from "./api";
 import type { Car, OperatorApplication, PaginatedResponse } from "../types";
 
 export interface GetCarsParams {
@@ -22,10 +22,8 @@ export interface CreateCarInput {
 }
 
 export interface CreateOperatorInput {
-  companyName: string;
-  businessLicense: string;
-  phoneNumber: string;
-  email: string;
+  name: string;
+  phone: string;
   address: string;
 }
 

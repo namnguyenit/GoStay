@@ -51,8 +51,10 @@ export const AdminLayout: React.FC = () => {
           </Link>
 
           <Link
-            to="/operator/admin"
+            to="/admin/applications"
             className={`flex items-center space-x-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+              isActive("/admin/applications") ||
+              isActive("/admin/operator-applications") ||
               isActive("/operator/admin")
                 ? "bg-purple-50 font-semibold text-purple-700"
                 : "text-gray-700 hover:bg-gray-100"

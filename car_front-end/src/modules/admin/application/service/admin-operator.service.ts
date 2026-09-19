@@ -2,9 +2,11 @@ import type {
   IAdminOperatorService,
   GetOperatorsParams,
   GetOperatorsResult,
+  ProcessApplicationDTO,
 } from "../port/admin-operator.service.interface";
 import { OperatorEntity } from "../../domain/entity/operator.entity";
 import { AdminUserDetailEntity } from "../../domain/entity/admin-user-detail.entity";
+import { OperatorApplicationEntity } from "../../domain/entity/operator-application.entity";
 import { tokenStorage } from "@/modules/auth/composition";
 
 export class AdminOperatorService implements IAdminOperatorService {
@@ -119,5 +121,77 @@ export class AdminOperatorService implements IAdminOperatorService {
     throw new Error(
       `Không tìm thấy thông tin tài khoản người dùng với mã ID: ${userId}`
     );
+  }
+
+  async getOperatorApplications(
+    status?: string
+  ): Promise<OperatorApplicationEntity[]> {
+    const token = tokenStorage.getToken();
+    const query = new URLSearchParams();
+    if (status && status !== "ALL") {
+      query.append("status", status);
+    }
+
+    const endpoint = `${this.apiBaseUrl}/api/v1/operator-applications${
+      query.toString() ? `?${query.toString()}` : ""
+    }`;
+
+    const res = await fetch(endpoint, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: "Bearer " + token } : {}),
+      },
+    });
+
+    if (res.status === 403) {
+      throw new Error(
+        "Bạn không có quyền thực hiện thao tác này. Chỉ Quản trị viên (Admin) mới có quyền truy cập."
+      );
+    }
+
+    if (!res.ok) {
+      const errorJson = await res.json().catch(() => null);
+      throw new Error(
+        errorJson?.message || "Không thể lấy danh sách đơn đăng ký nhà xe"
+      );
+    }
+
+    const json = await res.json();
+    const list = json.data || json.result || json || [];
+    return list.map((item: any) =>
+      OperatorApplicationEntity.fromApiResponse(item)
+    );
+  }
+
+  async processOperatorApplication(dto: ProcessApplicationDTO): Promise<void> {
+    const token = tokenStorage.getToken();
+    const res = await fetch(
+      `${this.apiBaseUrl}/api/v1/operator-applications/${dto.applicationId}/process`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: "Bearer " + token } : {}),
+        },
+        body: JSON.stringify({
+          status: dto.status,
+          rejectReason: dto.rejectReason,
+        }),
+      }
+    );
+
+    if (res.status === 403) {
+      throw new Error(
+        "Bạn không có quyền thực hiện thao tác này. Chỉ Quản trị viên (Admin) mới có quyền truy cập."
+      );
+    }
+
+    if (!res.ok) {
+      const errorJson = await res.json().catch(() => null);
+      throw new Error(
+        errorJson?.message || "Không thể xử lý đơn đăng ký nhà xe"
+      );
+    }
   }
 }

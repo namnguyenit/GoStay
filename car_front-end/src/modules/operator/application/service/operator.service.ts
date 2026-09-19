@@ -35,4 +35,34 @@ export class OperatorService implements IOperatorService {
       latestApplication: data.latestApplication,
     });
   }
+
+  async requestOperatorApplication(dto: {
+    name: string;
+    phone: string;
+    address: string;
+  }): Promise<any> {
+    const token = tokenStorage.getToken();
+    const res = await fetch(this.apiBaseUrl + "/api/v1/operator-applications", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: "Bearer " + token } : {}),
+      },
+      body: JSON.stringify({
+        name: dto.name,
+        phone: dto.phone,
+        address: dto.address,
+      }),
+    });
+
+    if (!res.ok) {
+      const errorJson = await res.json().catch(() => null);
+      const msg = Array.isArray(errorJson?.message)
+        ? errorJson.message.join(", ")
+        : errorJson?.message || "Không thể gửi đơn đăng ký nhà xe";
+      throw new Error(msg);
+    }
+
+    return await res.json();
+  }
 }
