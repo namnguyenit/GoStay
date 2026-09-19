@@ -67,9 +67,9 @@ export const Navbar: React.FC = () => {
             </Link>
 
             <Link
-              to="/cars"
+              to={isOperator ? "/operator/cars" : "/cars"}
               className={`flex items-center space-x-1.5 text-sm font-medium transition-colors ${
-                isActive("/cars")
+                isActive("/cars") || isActive("/operator/cars")
                   ? "font-semibold text-blue-600"
                   : "text-gray-600 hover:text-blue-600"
               }`}

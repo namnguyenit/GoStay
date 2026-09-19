@@ -61,7 +61,7 @@ export const OperatorDashboardPage: React.FC = () => {
           </p>
         </div>
 
-        <Link to="/add-car">
+        <Link to="/operator/cars?action=new">
           <Button className="gap-1.5 bg-white font-semibold text-blue-700 shadow hover:bg-blue-50">
             <PlusCircle className="h-4 w-4 text-blue-600" />
             <span>Thêm Xe Khách</span>
@@ -82,7 +82,7 @@ export const OperatorDashboardPage: React.FC = () => {
             <CardDescription className="mt-1 text-xs">
               Theo dõi và thêm mới các xe khách đường dài
             </CardDescription>
-            <Link to="/cars" className="mt-3 inline-block">
+            <Link to="/operator/cars" className="mt-3 inline-block">
               <Button variant="outline" size="sm" className="text-xs">
                 Xem đội xe &rarr;
               </Button>

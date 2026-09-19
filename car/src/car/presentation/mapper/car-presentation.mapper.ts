@@ -51,10 +51,12 @@ export class CarPresentationMapper {
     return {
       success: true,
       code: 'GET_CARS_SUCCESS',
-      message: 'Lấy danh sách xe thành công!',
-      kpi: output.kpi,
-      pagination: output.pagination,
-      data: output.data,
+      message: 'Lấy danh sách xe thành công.',
+      data: {
+        kpi: output.kpi,
+        pagination: output.pagination,
+        data: output.data,
+      },
     };
   }
 }

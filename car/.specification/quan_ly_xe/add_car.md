@@ -16,6 +16,7 @@ Cho phép Chủ nhà xe (Operator) thêm một phương tiện xe khách mới v
 - Tổng số lượng xe của nhà xe được cập nhật tự động.
 
 #### 1.1.5. Quy tắc nghiệp vụ
+- **Quyền hạn truy cập (Chỉ dành cho Nhà xe - Operator)**: Chức năng này **chỉ có Nhà xe chính thức mới được phép thực hiện**. Người dùng bắt buộc phải có tài khoản đã được Quản trị viên (Admin) phê duyệt trở thành Nhà xe (tồn tại bản ghi hợp lệ trong bảng `operators` liên kết với `user_id`). Nếu tài khoản người dùng thông thường (`USER`) hoặc chưa được duyệt làm Nhà xe cố tình gọi thao tác này, hệ thống sẽ từ chối truy cập và báo lỗi `403 Forbidden`.
 - **Tên xe (`name`)**: Bắt buộc nhập, độ dài từ 3 đến 100 ký tự (Ví dụ: "Xe Limousine VIP 01", "Xe Giường nằm Hà Nội - Sài Gòn").
 - **Biển số xe (`license_plate`)**:
   - Bắt buộc nhập.

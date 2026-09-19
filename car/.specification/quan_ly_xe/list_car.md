@@ -15,6 +15,7 @@ Cho phép Chủ nhà xe (Operator) xem danh sách tất cả các phương tiệ
 - Không làm thay đổi dữ liệu của các xe trên hệ thống.
 
 #### 1.2.5. Quy tắc nghiệp vụ
+- **Quyền hạn truy cập (Chỉ dành cho Nhà xe - Operator)**: Chức năng này **chỉ có Nhà xe chính thức mới được phép thực hiện** và **chỉ được xem danh sách các xe thuộc quyền sở hữu của chính nhà xe mình**. Hệ thống dựa vào `user_id` của người dùng đang đăng nhập để tra cứu `operator_id` tương ứng; nếu không tìm thấy bản ghi Nhà xe trong bảng `operators`, hệ thống sẽ từ chối truy cập và báo lỗi `403 Forbidden`. Tuyệt đối không cho phép xem danh sách xe của nhà xe khác qua API này.
 - **Thống kê (KPI Stats)**: Hiển thị 4 chỉ số tổng quan ở phía trên bảng:
   - **Tổng số xe**: Tổng số lượng xe thuộc nhà xe hiện tại.
   - **Xe giường nằm**: Số lượng xe thuộc loại Giường nằm (`SLEEPER`).

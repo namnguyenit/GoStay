@@ -454,6 +454,7 @@ export const AdminOperatorListPage: React.FC = () => {
         open={Boolean(selectedUserForModal)}
         userId={selectedUserForModal?.userId || null}
         operatorName={selectedUserForModal?.operatorName}
+        roleBadge="Nhà xe"
         onClose={() => setSelectedUserForModal(null)}
       />
     </div>

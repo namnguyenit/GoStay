@@ -42,9 +42,9 @@ export const OperatorLayout: React.FC = () => {
           </Link>
 
           <Link
-            to="/cars"
+            to="/operator/cars"
             className={`flex items-center space-x-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-              isActive("/cars")
+              isActive("/operator/cars") || isActive("/cars")
                 ? "bg-blue-50 font-semibold text-blue-600"
                 : "text-gray-700 hover:bg-gray-100"
             }`}

@@ -29,6 +29,7 @@ import { adminOperatorService } from "../../composition";
 interface AdminUserDetailModalProps {
   userId: string | null;
   operatorName?: string;
+  roleBadge?: string;
   open: boolean;
   onClose: () => void;
 }
@@ -36,6 +37,7 @@ interface AdminUserDetailModalProps {
 export const AdminUserDetailModal: React.FC<AdminUserDetailModalProps> = ({
   userId,
   operatorName,
+  roleBadge,
   open,
   onClose,
 }) => {
@@ -87,6 +89,52 @@ export const AdminUserDetailModal: React.FC<AdminUserDetailModalProps> = ({
     navigator.clipboard.writeText(userId);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const getDisplayRoles = (): string[] => {
+    if (roleBadge) {
+      return [roleBadge];
+    }
+    const rawRoles = user?.roles || [];
+    const isHostOrOperator =
+      Boolean(operatorName) ||
+      rawRoles.some((r) => {
+        const upper = r.toUpperCase();
+        return upper.includes("OPERATOR") || upper.includes("HOST");
+      });
+
+    const displayRoles: string[] = [];
+
+    if (isHostOrOperator) {
+      displayRoles.push("Nhà xe");
+    }
+
+    rawRoles.forEach((r) => {
+      const upper = r.toUpperCase();
+      if (upper.includes("ADMIN")) {
+        if (!displayRoles.includes("Quản trị viên")) {
+          displayRoles.push("Quản trị viên");
+        }
+      } else if (upper.includes("OPERATOR") || upper.includes("HOST")) {
+        if (!displayRoles.includes("Nhà xe")) {
+          displayRoles.push("Nhà xe");
+        }
+      } else if (upper.includes("USER") || upper === "ROLE_USER") {
+        if (!isHostOrOperator && !displayRoles.includes("Thành viên")) {
+          displayRoles.push("Thành viên");
+        }
+      } else {
+        if (!displayRoles.includes(r)) {
+          displayRoles.push(r);
+        }
+      }
+    });
+
+    if (displayRoles.length === 0) {
+      displayRoles.push(isHostOrOperator ? "Nhà xe" : "Thành viên");
+    }
+
+    return displayRoles;
   };
 
   return (
@@ -176,13 +224,13 @@ export const AdminUserDetailModal: React.FC<AdminUserDetailModalProps> = ({
                     {user.isActive ? "Hoạt động" : "Bị khóa"}
                   </Badge>
 
-                  {user.roles.map((role) => (
+                  {getDisplayRoles().map((role) => (
                     <Badge
                       key={role}
                       variant="secondary"
-                      className="border border-purple-200 bg-purple-50 text-[10px] font-semibold text-purple-700"
+                      className="border border-purple-200 bg-purple-50 text-[10px] font-bold text-purple-700"
                     >
-                      <Shield className="mr-1 h-2.5 w-2.5" />
+                      <Shield className="mr-1 h-2.5 w-2.5 text-purple-600" />
                       {role}
                     </Badge>
                   ))}
